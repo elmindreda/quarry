@@ -179,6 +179,7 @@ static void	 show_or_hide_game_action_buttons
 		   (GtkGobanWindow *goban_window);
 static void	 show_or_hide_sgf_tree_view (GtkGobanWindow *goban_window,
 					     guint callback_action);
+static void	 recenter_sgf_tree_view (GtkGobanWindow *goban_window);
 
 static void	 show_sgf_tree_view_automatically
 		   (GtkGobanWindow *goban_window, const SgfNode *sgf_node);
@@ -258,11 +259,8 @@ static void	 update_children_for_new_node (GtkGobanWindow *goban_window);
 
 static void	 update_game_information (GtkGobanWindow *goban_window);
 static void	 update_window_title (GtkGobanWindow *goban_window);
-static void	 update_player_information (const SgfNode *game_info_node,
-					    GtkLabel *player_label,
-					    SgfType name_property,
-					    SgfType rank_property,
-					    SgfType team_property);
+static void	 update_player_information (GtkGobanWindow *goban_window,
+					    int player_color);
 static void	 update_game_specific_information
 		   (const GtkGobanWindow *goban_window);
 static void	 update_move_information (const GtkGobanWindow *goban_window);
@@ -462,6 +460,9 @@ gtk_goban_window_init (GtkGobanWindow *goban_window)
     { N_("/View/Game _Tree"),		NULL,
       show_or_hide_sgf_tree_view,	GTK_GOBAN_WINDOW_TOGGLE_CHILD,
       "<CheckItem>" },
+    { N_("/View/_Recenter on Current Node"), "<ctrl><alt>C",
+      recenter_sgf_tree_view,		0,
+      "<Item>" },
     { N_("/View/"), NULL, NULL, 0, "<Separator>" },
 
     { N_("/View/_Control Center"),	NULL,
@@ -824,6 +825,11 @@ gtk_goban_window_init (GtkGobanWindow *goban_window)
 
   if (game_tree_view.show_game_tree == SHOW_GAME_TREE_ALWAYS)
     show_or_hide_sgf_tree_view (goban_window, GTK_GOBAN_WINDOW_SHOW_CHILD);
+  else {
+    gtk_utils_set_menu_items_sensitive (goban_window->item_factory, FALSE,
+					_("/View/Recenter on Current Node"),
+					NULL);
+  }
 
   /* Look up here when the classes are certainly loaded. */
   clicked_signal_id	  = g_signal_lookup ("clicked", GTK_TYPE_BUTTON);
@@ -1519,7 +1525,12 @@ do_find_text (GtkGobanWindow *goban_window, guint callback_action)
 
   char * (* do_search) (const char *haystack, const char *needle);
 
-  assert (goban_window->text_to_find);
+  if (!goban_window->text_to_find) {
+    /* Don't have text to find yet. */
+    show_find_dialog (goban_window);
+
+    return FALSE;
+  }
 
   text_to_find_normalized = get_normalized_text (goban_window->text_to_find,
 						 -1, case_sensitive);
@@ -1932,25 +1943,21 @@ static void
 game_info_dialog_property_changed (GtkGobanWindow *goban_window,
 				   SgfType sgf_property_type)
 {
-  SgfNode *game_info_node = goban_window->sgf_board_state.game_info_node;
-
   switch (sgf_property_type) {
+  case SGF_GAME_NAME:
+    update_window_title (goban_window);
+    break;
+
   case SGF_PLAYER_BLACK:
   case SGF_BLACK_RANK:
   case SGF_BLACK_TEAM:
-    update_player_information (game_info_node,
-			       goban_window->player_labels[BLACK_INDEX],
-			       SGF_PLAYER_BLACK, SGF_BLACK_RANK,
-			       SGF_BLACK_TEAM);
+    update_player_information (goban_window, BLACK);
     break;
 
   case SGF_PLAYER_WHITE:
   case SGF_WHITE_RANK:
   case SGF_WHITE_TEAM:
-    update_player_information (game_info_node,
-			       goban_window->player_labels[WHITE_INDEX],
-			       SGF_PLAYER_WHITE, SGF_WHITE_RANK,
-			       SGF_WHITE_TEAM);
+    update_player_information (goban_window, WHITE);
     break;
 
   case SGF_KOMI:
@@ -1964,9 +1971,11 @@ game_info_dialog_property_changed (GtkGobanWindow *goban_window,
       update_move_information (goban_window);
     }
 
+    break;
+
   default:
     /* Silence warnings. */
-    return;
+    break;
   }
 }
 
@@ -2064,15 +2073,34 @@ show_or_hide_sgf_tree_view (GtkGobanWindow *goban_window,
     g_signal_handlers_unblock_by_func (menu_item, show_or_hide_sgf_tree_view,
 				       goban_window);
 
+    gtk_utils_set_menu_items_sensitive (goban_window->item_factory,
+					show_sgf_tree_view,
+					_("/View/Recenter on Current Node"),
+					NULL);
+
     if (show_sgf_tree_view) {
       gtk_paned_pack2 (goban_window->vpaned, sgf_tree_view_parent,
 		       TRUE, FALSE);
+
+      /* Force reallocation of `sgf_tree_view' now: recentering
+       * algorithm needs to know the widget size to find the center.
+       */
+      gtk_container_check_resize (GTK_CONTAINER (goban_window->vpaned));
+
+      gtk_sgf_tree_view_center_on_current_node (goban_window->sgf_tree_view);
     }
     else {
       gtk_container_remove (GTK_CONTAINER (goban_window->vpaned),
 			    sgf_tree_view_parent);
     }
   }
+}
+
+
+static void
+recenter_sgf_tree_view (GtkGobanWindow *goban_window)
+{
+  gtk_sgf_tree_view_center_on_current_node (goban_window->sgf_tree_view);
 }
 
 
@@ -3036,12 +3064,8 @@ update_game_information (GtkGobanWindow *goban_window)
 
   update_window_title (goban_window);
 
-  update_player_information (game_info_node,
-			     goban_window->player_labels[BLACK_INDEX],
-			     SGF_PLAYER_BLACK, SGF_BLACK_RANK, SGF_BLACK_TEAM);
-  update_player_information (game_info_node,
-			     goban_window->player_labels[WHITE_INDEX],
-			     SGF_PLAYER_WHITE, SGF_WHITE_RANK, SGF_WHITE_TEAM);
+  update_player_information (goban_window, BLACK);
+  update_player_information (goban_window, WHITE);
 
   goban_window->last_game_info_node = game_info_node;
 
@@ -3107,20 +3131,27 @@ update_window_title (GtkGobanWindow *goban_window)
 
 
 static void
-update_player_information (const SgfNode *game_info_node,
-			   GtkLabel *player_label,
-			   SgfType name_property, SgfType rank_property,
-			   SgfType team_property)
+update_player_information (GtkGobanWindow *goban_window, int player_color)
 {
+  SgfNode *game_info_node = goban_window->sgf_board_state.game_info_node;
   const char *name = NULL;
   const char *rank = NULL;
   const char *team = NULL;
   char *label_text;
 
   if (game_info_node) {
-    name = sgf_node_get_text_property_value (game_info_node, name_property);
-    rank = sgf_node_get_text_property_value (game_info_node, rank_property);
-    team = sgf_node_get_text_property_value (game_info_node, team_property);
+    name = sgf_node_get_text_property_value (game_info_node,
+					     (player_color == BLACK
+					      ? SGF_PLAYER_BLACK
+					      : SGF_PLAYER_WHITE));
+    rank = sgf_node_get_text_property_value (game_info_node,
+					     (player_color == BLACK
+					      ? SGF_BLACK_RANK
+					      : SGF_WHITE_RANK));
+    team = sgf_node_get_text_property_value (game_info_node,
+					     (player_color == BLACK
+					      ? SGF_BLACK_TEAM
+					      : SGF_WHITE_TEAM));
   }
 
   label_text = utils_duplicate_string (name ? name : _("[unknown]"));
@@ -3137,7 +3168,8 @@ update_player_information (const SgfNode *game_info_node,
   if (team)
     label_text = utils_cat_strings (label_text, " (", team, ")", NULL);
 
-  gtk_label_set_text (player_label, label_text);
+  gtk_label_set_text (goban_window->player_labels[COLOR_INDEX (player_color)],
+		      label_text);
   utils_free (label_text);
 }
 
