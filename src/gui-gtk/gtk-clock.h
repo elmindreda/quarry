@@ -30,18 +30,18 @@
 #include <gtk/gtk.h>
 
 
-#define GTK_TYPE_CLOCK		(gtk_clock_get_type())
-#define GTK_CLOCK(obj)		(GTK_CHECK_CAST((obj), GTK_TYPE_CLOCK,	\
-						GtkClock))
+#define GTK_TYPE_CLOCK		(gtk_clock_get_type ())
+#define GTK_CLOCK(obj)		(GTK_CHECK_CAST ((obj), GTK_TYPE_CLOCK,	\
+						 GtkClock))
 #define GTK_CLOCK_CLASS(klass)						\
-  (GTK_CHECK_CLASS_CAST((klass), GTK_TYPE_CLOCK, GtkClockClass))
+  (GTK_CHECK_CLASS_CAST ((klass), GTK_TYPE_CLOCK, GtkClockClass))
 
-#define GTK_IS_CLOCK(obj)	(GTK_CHECK_TYPE((obj), GTK_TYPE_CLOCK))
+#define GTK_IS_CLOCK(obj)	(GTK_CHECK_TYPE ((obj), GTK_TYPE_CLOCK))
 #define GTK_IS_CLOCK_CLASS(klass)					\
-  (GTK_CHECK_CLASS_TYPE((klass), GTK_TYPE_CLOCK))
+  (GTK_CHECK_CLASS_TYPE ((klass), GTK_TYPE_CLOCK))
 
 #define GTK_CLOCK_GET_CLASS(obj)					\
-  (GTK_CHECK_GET_CLASS((obj), GTK_TYPE_CLOCK, GtkClockClass))
+  (GTK_CHECK_GET_CLASS ((obj), GTK_TYPE_CLOCK, GtkClockClass))
 
 
 typedef struct _GtkClockSymbolParameters	GtkClockSymbolParameters;
@@ -49,42 +49,55 @@ typedef struct _GtkClockSymbolParameters	GtkClockSymbolParameters;
 typedef struct _GtkClock			GtkClock;
 typedef struct _GtkClockClass			GtkClockClass;
 
+typedef void (* GtkClockOutOfTimeCallback) (GtkClock *clock,
+					    gpointer user_data);
+
+
 struct _GtkClockSymbolParameters {
-  gint			     segment_length;
-  gint			     segment_thickness;
+  gint			      segment_length;
+  gint			      segment_thickness;
 };
 
+
 struct _GtkClock {
-  GtkWidget		     widget;
+  GtkWidget		      widget;
 
-  GtkClockSymbolParameters   normal_symbol_parameters;
-  GtkClockSymbolParameters   small_symbol_parameters;
+  GtkClockSymbolParameters    normal_symbol_parameters;
+  GtkClockSymbolParameters    small_symbol_parameters;
 
-  gint			     max_hours_positions;
-  gint			     max_moves_positions;
+  gint			      max_hours_positions;
+  gint			      max_moves_positions;
 
-  gint			     seconds;
-  gint			     moves;
+  gint			      seconds;
+  gint			      moves;
+  gboolean		      is_highlighted;
 
-  TimeControl		    *time_control;
-  gint			     source_id;
+  const TimeControl	     *time_control;
+  GSource		     *time_control_watch_source;
+
+  GtkClockOutOfTimeCallback   out_of_time_callback;
+  gpointer		      user_data;
 };
 
 struct _GtkClockClass {
-  GtkWidgetClass   parent_class;
+  GtkWidgetClass	      parent_class;
 };
 
 
-GtkType		gtk_clock_get_type(void);
+GType		gtk_clock_get_type (void);
 
-GtkWidget *	gtk_clock_new(void);
+GtkWidget *	gtk_clock_new (void);
 
 
-double		gtk_clock_start(GtkClock *clock, TimeControl *time_control);
-int		gtk_clock_stop(GtkClock *clock);
+void		gtk_clock_set_time (GtkClock *clock,
+				    gdouble seconds, gint moves);
 
-void		gtk_clock_initialize_for_time_control
-		  (GtkClock *clock, const TimeControl *time_control);
+void		gtk_clock_use_time_control
+		  (GtkClock *clock, const TimeControl *time_control,
+		   GtkClockOutOfTimeCallback  out_of_time_callback,
+		   gpointer user_data);
+
+void		gtk_clock_time_control_state_changed (GtkClock *clock);
 
 
 #endif /* QUARRY_GTK_CLOCK_H */
