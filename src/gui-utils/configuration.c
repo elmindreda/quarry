@@ -141,8 +141,8 @@ configuration_read_from_file(const ConfigurationSection *sections,
 	  if (k < current_section->num_values) {
 	    void *field = (((char *) current_section_structure)
 			   + value->field_offset);
-	    char *string;
-	    char *actual_contents;
+	    char *string = NULL;
+	    char *actual_contents = NULL;
 
 	    scan++;
 

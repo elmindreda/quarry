@@ -379,12 +379,12 @@ generate_sgf_collection_diff(const EditGraph *edit_graph,
 {
   const SgfGameTree *from_tree_subsequence = from_collection->first_tree;
   const SgfGameTree *to_tree_subsequence = to_collection->first_tree;
-  const SgfGameTree *leading_context_subsequence;
+  const SgfGameTree *leading_context_subsequence = NULL;
   const EditGraphLayer *zero_layer = reconstruct_minimal_path(edit_graph);
   const EditGraphLayer *layer;
   int layer_distance;
   int x = 0;
-  int num_leading_context_trees;
+  int num_leading_context_trees = 0;
   int num_traling_context_trees;
 
   for (layer = zero_layer, layer_distance = 0; layer;
@@ -613,12 +613,12 @@ generate_sgf_node_layer_diff(const EditGraph *edit_graph,
 			     SgfGameTree *tree, SgfNode *parent)
 {
   SgfNode **link = (parent ? &parent->child : &tree->root);
-  const SgfNode *leading_context_subsequence;
+  const SgfNode *leading_context_subsequence = NULL;
   const EditGraphLayer *zero_layer = reconstruct_minimal_path(edit_graph);
   const EditGraphLayer *layer;
   int layer_distance;
   int x = 0;
-  int num_leading_context_nodes;
+  int num_leading_context_nodes = 0;
   int num_traling_context_nodes;
 
   for (layer = zero_layer, layer_distance = 0; layer;

@@ -305,8 +305,8 @@ GtkWidget *
 gtk_utils_create_titled_page(GtkWidget *contents,
 			     const gchar *icon_stock_id, const gchar *title)
 {
-  GtkWidget *image;
-  GtkWidget *label;
+  GtkWidget *image = NULL;
+  GtkWidget *label = NULL;
   GtkWidget *title_widget;
   GtkWidget *hseparator;
 
@@ -330,12 +330,12 @@ gtk_utils_create_titled_page(GtkWidget *contents,
     utils_free(marked_up_title);
   }
 
-  if (icon_stock_id && title) {
+  if (image && label) {
     title_widget = gtk_utils_pack_in_box(GTK_TYPE_HBOX, QUARRY_SPACING_SMALL,
 					 image, GTK_UTILS_FILL, label, 0,
 					 NULL);
   }
-  else if (title) {
+  else if (label) {
     gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
     title_widget = label;
   }
