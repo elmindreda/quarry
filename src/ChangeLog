@@ -1,3 +1,9 @@
+2004-08-26  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* gui-utils/tile-renderer.c (render_othello_disks): New function.
+	* gui-gtk/gtk-tile-set.c (gtk_main_tile_set_create): Use
+	render_othello_disks() for Othello.
+
 2004-08-25  Paul Pogonyshev  <pogonyshev@gmx.net>
 
 	* gui-gtk/gtk-goban.c (set_goban_non_style_appearance): Update
