@@ -165,10 +165,47 @@ configuration_read_from_file (const ConfigurationSection *sections,
 		else {
 		  char *actual_contents = NULL;
 		  char *whitespace_scan;
+		  int enumeration_value = 0;
 
 		  for (actual_contents = string;
 		       *actual_contents == ' ' || *actual_contents == '\t';)
 		    actual_contents++;
+
+		  if (value->type == VALUE_TYPE_ENUMERATION) {
+		    const char *value_string;
+		    int actual_contents_length;
+
+		    /* Trim trailing whitespace. */
+		    for (whitespace_scan = (actual_contents
+					    + (strlen (actual_contents) - 1));
+			 (whitespace_scan >= actual_contents
+			  && (*whitespace_scan == ' '
+			      || *whitespace_scan == '\t'));)
+		      whitespace_scan--;
+
+		    *(whitespace_scan + 1) = 0;
+		    actual_contents_length = ((whitespace_scan + 1)
+					      - actual_contents);
+
+		    for (value_string = value->enumeration_values_as_strings,
+			   enumeration_value = 0;
+			 *value_string; enumeration_value++) {
+		      do {
+			int value_string_length = strlen (value_string);
+
+			if (actual_contents_length == value_string_length
+			    && (strcasecmp (actual_contents, value_string)
+				== 0)) {
+			  * (int *) field = enumeration_value;
+			  goto enumeration_value_found;
+			}
+
+			value_string += value_string_length + 1;
+		      } while (*value_string);
+
+		      value_string++;
+		    }
+		  }
 
 		  /* Find first whitespace character and break line at
 		   * its position.
@@ -200,37 +237,19 @@ configuration_read_from_file (const ConfigurationSection *sections,
 
 		  case VALUE_TYPE_ENUMERATION:
 		    {
-		      const char *value_string;
-		      int enumeration_value;
-		      int actual_contents_length = strlen (actual_contents);
 		      int numeric_value;
 
-		      for (value_string = value->enumeration_values_as_strings,
-			     enumeration_value = 0;
-			   *value_string; enumeration_value++) {
-			do {
-			  int value_string_length = strlen (value_string);
-
-			  if (actual_contents_length == value_string_length
-			      && (strcasecmp (actual_contents, value_string)
-				  == 0)) {
-			    * (int *) field = enumeration_value;
-			    goto enumeration_value_found;
-			  }
-
-			  value_string += value_string_length + 1;
-			} while (*value_string);
-
-			value_string++;
-		      }
-
+		      /* A second attempt, try to parse as numeric
+		       * value.  Placed separately, because we have a
+		       * different `actual_contents' here, more suited
+		       * for numeric parsing.
+		       */
 		      if (parse_integer (actual_contents, &numeric_value)
 			  && 0 <= numeric_value
 			  && numeric_value < enumeration_value)
 			* (int *) field = numeric_value;
 		    }
 
-		  enumeration_value_found:
 		    break;
 
 		  case VALUE_TYPE_REAL:
@@ -293,6 +312,8 @@ configuration_read_from_file (const ConfigurationSection *sections,
 		  default:
 		    assert (0);
 		  }
+
+		enumeration_value_found:
 
 		  utils_free (string);
 		}
