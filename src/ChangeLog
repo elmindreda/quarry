@@ -1,3 +1,31 @@
+2004-10-18  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* gui-gtk/gtk-goban.c (gtk_goban_set_parameters): Update goban's
+	hoshi points using new go_get_hoshi_points() function.
+	(gtk_goban_size_allocate): Don't touch hoshi points here.
+	(gtk_goban_expose): Use new draw_vertical_line_with_gaps() and
+	draw_horizontal_line_with_gaps() to draw all lines.  Don't draw
+	hoshi points over SGF labels.
+	(draw_vertical_line_with_gaps, draw_horizontal_line_with_gaps):
+	New functions.
+	(gtk_goban_finalize): Free overlay data, don't leak memory.
+	(gtk_goban_update): Adjust `rectangle_sgf_label' so that label
+	gaps get redrawn properly.
+	(find_hoshi_points): Remove function.
+
+	* board/go.c (go_get_hoshi_points): New function, inherit code of
+	removed find_hoshi_points() in `gui-gtk/gtk-goban.c'.
+
+	* gui-gtk/gtk-new-game-dialog.c (begin_game): Bug-fix: duplicate
+	"Void" string before passing it to sgf_node_add_text_property().
+
+	* gui-gtk/gtk-utils.c (time_spin_button_output): Use
+	utils_ncprintf() once more: now it knows about field width.
+
+	* utils/utils.c (utils_vncprintf): Add support for field width
+	This is an indirect bug-fix for write_section() in
+	`gui-utils/configuration.c', it used to write time incorrectly.
+
 2004-10-14  Paul Pogonyshev  <pogonyshev@gmx.net>
 
 	* (Quarry version 0.1.9.)
