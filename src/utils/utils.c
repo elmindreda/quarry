@@ -133,7 +133,7 @@ utils_realloc (void *pointer, size_t size)
 #endif
 
   pointer = realloc (pointer, size);
-  if (pointer)
+  if (pointer || size == 0)
     return pointer;
 
   fprintf (stderr, ("%s: fatal error: out of memory "
