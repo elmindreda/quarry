@@ -524,6 +524,46 @@ string_list_move(void *abstract_list, void *abstract_item,
 
 
 
+char *
+string_list_implode(const void *abstract_list, const char *separator)
+{
+  const StringList *list = (const StringList *) abstract_list;
+  char *result = NULL;
+
+  assert(list);
+  assert(separator);
+
+  if (list->first) {
+    const StringListItem *item;
+    int separator_length = strlen(separator);
+    int result_length;
+    char *scan;
+
+    for (result_length = 1, item = list->first; item; item = item->next)
+      result_length += strlen(item->text) + separator_length;
+
+    result = utils_malloc(result_length);
+
+    for (scan = result, item = list->first; item; item = item->next) {
+      int item_text_length = strlen(item->text);
+
+      memcpy(scan, item->text, item_text_length);
+      scan += item_text_length;
+
+      if (item->next) {
+	memcpy(scan, separator, separator_length);
+	scan += separator_length;
+      }
+    }
+
+    *scan = 0;
+  }
+
+  return result;
+}
+
+
+
 void
 association_list_item_dispose(AssociationListItem *item)
 {

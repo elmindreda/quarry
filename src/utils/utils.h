@@ -360,6 +360,9 @@ void		  string_list_swap_with_previous(void *abstract_list,
 void		  string_list_move(void *abstract_list, void *abstract_item,
 				   void *abstract_notch);
 
+char *		  string_list_implode(const void *abstract_list,
+				      const char *separator);
+
 
 /* A type derived from string list. */
 typedef struct _AssociationListItem	AssociationListItem;
