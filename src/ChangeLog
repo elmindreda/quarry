@@ -1,3 +1,52 @@
+2005-01-17  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* gui-gtk/gtk-goban-window.c (gtk_goban_window_save): Don't show
+	warning about potential information loss.
+
+	* sgf/sgf-writer.c (write_game_tree): Write `ST' property value,
+	if set.
+	(sgf_write_list_of_vector): Implement.
+	(sgf_write_figure_description): New function.
+
+	* sgf/sgf-parser.c (sgf_parse_constrained_number): Also handle
+	`PM' property.
+	(sgf_parse_list_of_point): Use end_parsing_value() instead of
+	next_token_in_value() so that whitespaces is warned about.
+	(sgf_parse_list_of_vector): Implement.
+	(sgf_parse_list_of_label): Treat non-composite values as values
+	with empty label.
+	(sgf_parse_figure): Implement.
+	(sgf_parse_print_mode): Remove function.
+	(sgf_parse_style): Implement.
+
+	* sgf/sgf-errors.list (SGF_WARNING_DUPLICATE_VECTOR)
+	(SGF_ERROR_ZERO_LENGTH_VECTOR, SGF_WARNING_UNKNOWN_FLAGS)
+	(SGF_ERROR_FIGURE_FLAGS_EXPECTED, SGF_WARNING_UNKNOWN_PRINT_MODE):
+	New error strings.
+
+	* sgf/sgf-properties.list (ST): Use `not_stored' storage type.
+	(FG): Change storage type to `figure_description'.
+	(PM): Use `sgf_parse_constrained_number' as value parser.
+
+	* sgf/sgf-tree.c (sgf_game_tree_new): Initialize new
+	`style_is_set' field.
+	(sgf_game_tree_duplicate): Copy `style' field only if it is set.
+	(sgf_node_get_list_of_label_property_value): New function.
+	(sgf_node_add_pointer_property): Handle values of
+	`SGF_FIGURE_DESCRIPTION' type.
+	(sgf_property_duplicate): Handle values of `SGF_LIST_OF_VECTOR'
+	and `SGF_FIGURE_DESCRIPTION' types.
+	(free_property_value): Handle `SGF_FIGURE_DESCRIPTION' value type.
+	(SGF_VECTOR_LIST_DEFAULT_INITIAL_SIZE)
+	(SGF_VECTOR_LIST_SIZE_INCREMENT): New macros.
+	(sgf_vector_list_new, sgf_vector_list_shrink)
+	(sgf_vector_list_add_vector, sgf_vector_list_has_vector)
+	(sgf_vector_list_duplicate, sgf_figure_description_new)
+	(sgf_figure_description_duplicate)
+	(sgf_figure_description_delete): New functions.
+
+	* sgf/sgf.h (sgf_vector_list_delete): New macro.
+
 2005-01-15  Paul Pogonyshev  <pogonyshev@gmx.net>
 
 	* (Quarry version 0.1.12.)
