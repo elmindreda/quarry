@@ -1,3 +1,7 @@
+2004-08-30  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* POTFILES.in: Add `src/gui-gtk/gtk-game-info-dialog.c'.
+
 2004-08-28  Paul Pogonyshev  <pogonyshev@gmx.net>
 
 	* (Quarry version 0.1.7.)

@@ -1,4 +1,80 @@
+2004-09-09  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* gui-gtk/gtk-utils.h
+	(gtk_utils_make_window_only_horizontally_resizable): Define to
+	nothing for pre-2.2 GTK+ (workaround GTK+ bug).
+
+	* gui-gtk/gtk-parser-interface.c (gtk_parse_sgf_file): Don't use
+	GTK_WIDGET() on NULL pointer.
+	* gui-gtk/gtk-progress-dialog.c (gtk_progress_dialog_new):
+	Likewise.
+
+	* gui-gtk/gtk-assistant.c (gtk_assistant_update_buttons): Make
+	`is_last_page' calculation work in pre-2.2 case.
+
+	* gui-gtk/gtk-preferences.c (do_remove_gtp_engine): Pre-2.4 (or
+	pre-2.2?) gtk_list_store_remove() didn't return anything.  Add
+	special case.
+
+	* gui-gtk/gtk-clock.c (gtk_clock_expose): Remove `const' from
+	`black_color' and `gray_color' declaration to avoid warnings with
+	earlier GTK+ versions.
+	
+2004-08-31  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* utils/utils.c (utils_parse_double): Bug-fix: don't skip one
+	extra character when there is no decimal dot.
+
+	* sgf/sgf-tree.c (sgf_node_get_time_limit): New function.
+
+	* gui-gtk/gtk-goban-window.c (gtk_goban_window_init): Add "Game
+	Information" menu item.  Initialize new `game_info_dialog' field.
+	(gtk_goban_window_destroy): Destroy game info dialog if exists.
+	(show_game_information_dialog, game_info_dialog_destroyed): New
+	functions.
+	(update_game_information): Call gtk_game_info_dialog_set_node() if
+	game info dialog exists.
+
+	* sgf/sgf-properties.list: Rename `SGF_RULES' to `SGF_RULE_SET'.
+
+	* gui-gtk/gtk-game-info-dialog.c, gui-gtk/gtk-game-info-dialog.h:
+	New files.
+
+	* gui-gtk/gtk-utils.c (gtk_utils_create_entry): Add `mode'
+	argument.
+	(advance_focus): New function.
+	(gtk_utils_align_left_widgets)
+	(do_align_left_widgets, do_align_left_widget): New functions.
+	(time_spin_button_output): Bug-fix: use sprintf() again,
+	utils_ncprintf() doesn't know about field width.
+
+2004-08-30  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* sgf/sgf-parser.c (sgf_parse_date): Fall back to
+	sgf_parse_simple_text() for now.
+	(sgf_parse_result): Implement with error checking.
+	(looking_at, invalid_game_info_property): New functions.
+
 2004-08-29  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* sgf/sgf-writer.c (sgf_write_file): Remove `1||' accidentally
+	left in the code.
+
+	* gui-gtk/gtk-goban-window.c (gtk_goban_window_save): Use
+	configuration variable to decide whether to force UTF-8.
+	(save_file_as_response): Likewise.
+
+	* gui-gtk/gtk-preferences.c: Add "Game Records (SGF)" category.
+	(create_saving_sgf_page, store_toggle_setting): New functions.
+	(update_board_background): Remove function.
+	(update_board_markup): Remove GtkCheckButton case.
+	(update_board_appearance): Add GtkToggleButton case.  Bug-fix:
+	don't ignore first field of appearance structures.
+
+	* gui-utils/common-configuration-sections.list: Add configuration
+	parameter (whether to force UTF-8 encoding) for saving SGF files.
+	* gui-utils/common-configuration-values.list: Likewise.
+	* gui-utils/common-configuration-defaults.list: Likewise.
 
 	* gui-gtk/gtk-new-game-dialog.c (begin_game): Use *cprintf()
 	functions when locale-specific formatting is not needed and is not
@@ -58,7 +134,7 @@
 
 	* gui-utils/tile-renderer.c (render_go_stones): Fix stone center
 	positioning once more (previous fix didn't work in all cases).
-	Remove debug output accidentially left in the code.
+	Remove debug output accidentally left in the code.
 	(render_othello_disks): Likewise for disk center positioning.
 
 	* gui-gtk/gtk-goban-window.c (gtk_goban_window_init): Make sure
