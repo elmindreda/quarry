@@ -340,9 +340,6 @@ gtk_new_game_dialog_present(void)
 				      NULL);
   }
 
-  /* FIXME: Implement free handicap and remove this line. */
-  gtk_widget_set_sensitive(hboxes[1], FALSE);
-
   vbox1 = gtk_utils_pack_in_box(GTK_TYPE_VBOX, QUARRY_SPACING_SMALL,
 				hboxes[0], GTK_UTILS_FILL,
 				hboxes[1], GTK_UTILS_FILL, NULL);
@@ -509,7 +506,7 @@ set_handicap_adjustment_limits(GtkAdjustment *board_size_adjustment,
   g_object_set(data->handicaps[0],
 	       "upper", (gdouble) max_fixed_handicap, NULL);
   g_object_set(data->handicaps[1],
-	       "upper", (gdouble) board_size * board_size, NULL);
+	       "upper", (gdouble) (board_size * board_size - 1), NULL);
 }
 
 
