@@ -3,6 +3,7 @@
  *                                                                 *
  * Copyright (C) 2003 Paul Pogonyshev.                             *
  * Copyright (C) 2004 Paul Pogonyshev and Martin Holters.          *
+ * Copyright (C) 2005 Paul Pogonyshev.                             *
  *                                                                 *
  * This program is free software; you can redistribute it and/or   *
  * modify it under the terms of the GNU General Public License as  *
@@ -349,9 +350,16 @@ void *		  string_list_insert_ready_item (void *abstract_list,
 						 void *abstract_notch,
 						 void *abstract_item);
 
+void		  string_list_dispose_item (const void *abstract_list,
+					    void *abstract_item);
+
 void		  string_list_delete_item (void *abstract_list,
 					   void *abstract_item);
 void		  string_list_delete_first_item (void *abstract_list);
+
+void *		  string_list_steal_item (void *abstract_list,
+					  void *abstract_item);
+void *		  string_list_steal_first_item (void *abstract_list);
 
 int		  string_list_get_item_index (void *abstract_list,
 					      void *abstract_item);

@@ -3,6 +3,7 @@
  *                                                                 *
  * Copyright (C) 2003 Paul Pogonyshev.                             *
  * Copyright (C) 2004 Paul Pogonyshev and Martin Holters.          *
+ * Copyright (C) 2005 Paul Pogonyshev.                             *
  *                                                                 *
  * This program is free software; you can redistribute it and/or   *
  * modify it under the terms of the GNU General Public License as  *
@@ -29,7 +30,7 @@
 #include <assert.h>
 
 
-#define ITEM_DISPOSE(list, item)					\
+#define DISPOSE_ITEM(list, item)					\
   do {									\
     if ((list)->item_dispose)						\
       (list)->item_dispose (item);					\
@@ -139,7 +140,7 @@ string_list_empty (void *abstract_list)
   for (this_item = list->first; this_item;) {
     StringListItem *next_item = this_item->next;
 
-    ITEM_DISPOSE (list, this_item);
+    DISPOSE_ITEM (list, this_item);
     this_item = next_item;
   }
 
@@ -337,6 +338,19 @@ string_list_insert_ready_item (void *abstract_list, void *abstract_notch,
 
 
 void
+string_list_dispose_item (const void *abstract_list, void *abstract_item)
+{
+  const StringList *list = (const StringList *) abstract_list;
+  StringListItem *item = (StringListItem *) abstract_item;
+
+  assert (list);
+  assert (item);
+
+  DISPOSE_ITEM (list, item);
+}
+
+
+void
 string_list_delete_item (void *abstract_list, void *abstract_item)
 {
   StringList *list = (StringList *) abstract_list;
@@ -357,7 +371,7 @@ string_list_delete_item (void *abstract_list, void *abstract_item)
   if (!item->next)
     list->last = previous_item;
 
-  ITEM_DISPOSE (list, item);
+  DISPOSE_ITEM (list, item);
 }
 
 
@@ -375,7 +389,50 @@ string_list_delete_first_item (void *abstract_list)
   if (list->first == NULL)
     list->last = NULL;
 
-  ITEM_DISPOSE (list, first);
+  DISPOSE_ITEM (list, first);
+}
+
+
+void *
+string_list_steal_item (void *abstract_list, void *abstract_item)
+{
+  StringList *list = (StringList *) abstract_list;
+  StringListItem *item = (StringListItem *) abstract_item;
+  StringListItem *previous_item;
+  StringListItem **link = &list->first;
+
+  assert (list);
+  assert (item);
+
+  for (link = &list->first, previous_item = NULL;
+       *link != item; link = &previous_item->next) {
+    previous_item = *link;
+    assert (previous_item);
+  }
+
+  *link = item->next;
+  if (!item->next)
+    list->last = previous_item;
+
+  return item;
+}
+
+
+void *
+string_list_steal_first_item (void *abstract_list)
+{
+  StringList *list = (StringList *) abstract_list;
+  StringListItem *first;
+
+  assert (list);
+  assert (list->first);
+
+  first = list->first;
+  list->first = first->next;
+  if (list->first == NULL)
+    list->last = NULL;
+
+  return first;
 }
 
 
