@@ -1,3 +1,5 @@
 .deps
 Makefile
+markup-theme-configuration.c
+markup-theme-configuration.h
 parse-configuration
