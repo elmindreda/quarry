@@ -63,7 +63,7 @@ sgf_write_file(const char *filename, SgfCollection *collection, int force_utf8)
   if (buffered_writer_init(&data.writer, filename, 0x4000)) {
     for (data.tree = collection->first_tree; data.tree;
 	 data.tree = data.tree->next) {
-      write_game_tree(&data, data.tree, 1||force_utf8);
+      write_game_tree(&data, data.tree, force_utf8);
       if (data.tree->next)
 	buffered_writer_add_newline(&data.writer);
 
