@@ -13,8 +13,9 @@ it.  I'm sure you will like at least the way it looks.
 			     INSTALLATION
 
 The usual `./configure; make' should build Quarry.  The only serious
-requirement for Quarry is GTK+ 2.x library, everything else must be
-present on a sane system.  See file INSTALL for details.
+requirement for Quarry are GTK+ 2.x and librsvg 2.5+ libraries,
+everything else must be present on a sane system.  See file INSTALL
+for details.
 
 
 			    RUNNING QUARRY

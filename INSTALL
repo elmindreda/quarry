@@ -6,10 +6,11 @@ invoke `configure' script:
 	./configure [OPTIONS]
 
 If your system is sane, the only reason for `configure' to complain is
-absence of GTK+ 2.x library.  If this is the case, download the
-library from
+absence of either GTK+ 2.x or librsvg 2.5+.  If this is the case,
+download them library from
 
-	http://gtk.org/download/
+	http://gtk.org/download/			  [GTK+]
+	http://ftp.gnome.org/pub/gnome/sources/librsvg/	  [librsvg]
 
 Note that GTK+ 1.x won't work and will never be supported in Quarry.
 GTK+ 2.x is so much better that there is no reason to support older
