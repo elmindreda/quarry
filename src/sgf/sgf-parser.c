@@ -54,6 +54,7 @@
 #include "utils.h"
 
 #include <assert.h>
+#include <iconv.h>
 #include <limits.h>
 #include <stdarg.h>
 #include <stdio.h>
@@ -143,9 +144,13 @@ static void	    parse_unknown_property_values(SgfParsingData *data);
 
 static int	    do_parse_number(SgfParsingData *data, int *number);
 static int	    do_parse_real(SgfParsingData *data, double *real);
+
 static char *	    do_parse_simple_text(SgfParsingData *data,
 					 char extra_stop_character);
 static char *	    do_parse_text(SgfParsingData *data, char *existing_text);
+static char *	    convert_text_to_utf8(SgfParsingData *data,
+					 char *existing_text);
+
 static int	    do_parse_point(SgfParsingData *data, BoardPoint *point);
 
 static SgfError	    do_parse_go_move(SgfParsingData *data);
@@ -361,6 +366,9 @@ parse_buffer(SgfParsingData *data,
   data->board = NULL;
   data->error_list = *error_list;
 
+  data->latin1_to_utf8 = iconv_open("UTF-8", "ISO-8859-1");
+  assert(data->latin1_to_utf8 != (iconv_t) (-1));
+
   next_token(data);
 
   do {
@@ -381,10 +389,16 @@ parse_buffer(SgfParsingData *data,
       sgf_collection_add_game_tree(*collection, data->tree);
     else
       sgf_game_tree_delete(data->tree);
+
+    if (data->tree_char_set_to_utf8 != data->latin1_to_utf8
+	&& data->tree_char_set_to_utf8 != NULL)
+      iconv_close(data->tree_char_set_to_utf8);
   } while (data->token != SGF_END);
 
   if (data->board)
     board_delete(data->board);
+
+  iconv_close(data->latin1_to_utf8);
 
   if (data->cancelled) {
     string_list_delete(*error_list);
@@ -412,15 +426,18 @@ parse_buffer(SgfParsingData *data,
 }
 
 
-/* Parse root node.  This function is needed because values of `GM'
- * and `SZ' properties are crucial for property value validation.  The
- * function does nothing but finding these properties (if they are
+/* Parse root node.  This function is needed because values of `CA',
+ * `GM' and `SZ' properties are crucial for property value validation.
+ * The function does nothing but finding these properties (if they are
  * present at all).  Afterwards, root node is parsed as usually.
  */
 static int
 parse_root(SgfParsingData *data)
 {
+  SgfGameTree *tree = data->tree;
   BufferPositionStorage storage;
+
+  data->tree_char_set_to_utf8 = data->latin1_to_utf8;
 
   STORE_BUFFER_POSITION(data, 1, storage);
 
@@ -459,7 +476,8 @@ parse_root(SgfParsingData *data)
       next_token(data);
       if (do_parse_number(data, &data->game)) {
 	if (1 <= data->game && data->game <= 1000) {
-	  if (data->board_width || !GAME_IS_SUPPORTED(data->game))
+	  if ((data->board_width || !GAME_IS_SUPPORTED(data->game))
+	      && tree->char_set)
 	    break;
 	}
 	else
@@ -469,8 +487,38 @@ parse_root(SgfParsingData *data)
     else if (property_type == SGF_BOARD_SIZE && !data->board_width) {
       next_token(data);
       if (do_parse_board_size(data, &data->board_width, &data->board_height, 0)
-	  && data->game)
+	  && data->game && tree->char_set)
 	break;
+    }
+    else if (property_type == SGF_CHAR_SET && !tree->char_set) {
+      tree->char_set = do_parse_simple_text(data, SGF_END);
+
+      if (tree->char_set) {
+	char *char_set_uppercased = utils_duplicate_string(tree->char_set);
+	char *scan;
+
+	/* We now deal with an UTF-8 string, so uppercasing latin
+	 * letters is not a problem.
+	 */
+	for (scan = char_set_uppercased; *scan; scan++) {
+	  if ('a' <= *scan && *scan <= 'z')
+	    *scan += 'A' - 'a';
+	}
+
+	data->tree_char_set_to_utf8
+	  = (strcmp(char_set_uppercased, "UTF-8") == 0
+	     ? NULL : iconv_open("UTF-8", char_set_uppercased));
+	utils_free(char_set_uppercased);
+
+	if (data->tree_char_set_to_utf8 != (iconv_t) (-1)) {
+	  if (data->game && data->board_width)
+	    break;
+	}
+	else {
+	  data->tree_char_set_to_utf8 = data->latin1_to_utf8;
+	  utils_free(tree->char_set);
+	}
+      }
     }
 
     discard_values(data);
@@ -543,19 +591,19 @@ parse_root(SgfParsingData *data)
   data->has_any_territory_property = 0;
   data->first_territory_property   = 1;
 
-  sgf_game_tree_set_game(data->tree, data->game);
-  data->tree->board_width = data->board_width;
-  data->tree->board_height = data->board_height;
+  sgf_game_tree_set_game(tree, data->game);
+  tree->board_width = data->board_width;
+  tree->board_height = data->board_height;
 
-  data->tree->file_format = 0;
-  data->tree->root = parse_node_tree(data, NULL);
+  tree->file_format = 0;
+  tree->root = parse_node_tree(data, NULL);
 
   if (data->token == SGF_END && !data->cancelled)
     add_error(data, SGF_CRITICAL_UNEXPECTED_END_OF_FILE);
   next_token(data);
 
-  if (data->tree->root) {
-    data->tree->current_node = data->tree->root;
+  if (tree->root) {
+    tree->current_node = tree->root;
     return 1;
   }
 
@@ -1070,15 +1118,9 @@ discard_single_value(SgfParsingData *data)
 static void
 discard_values(SgfParsingData *data)
 {
-  do {
-    while (data->token != ']' && data->token != SGF_END) {
-      if (data->token == '\\')
-	next_character(data);
-      next_character(data);
-    }
-
-    next_token(data);
-  } while (data->token == '[');
+  do
+    discard_single_value(data);
+  while (data->token == '[');
 }
 
 
@@ -1405,11 +1447,100 @@ do_parse_simple_text(SgfParsingData *data, char extra_stop_character)
     while (*(data->temp_buffer - 1) == ' ')
       data->temp_buffer--;
 
-    return utils_duplicate_as_string(data->buffer,
-				     data->temp_buffer - data->buffer);
+    return convert_text_to_utf8(data, NULL);
   }
 
   return NULL;
+}
+
+
+static char *
+do_parse_text(SgfParsingData *data, char *existing_text)
+{
+  next_character(data);
+
+  data->temp_buffer = data->buffer;
+  while (data->token != ']' && data->token != SGF_END) {
+    if (data->token != '\\')
+      *data->temp_buffer++ = data->token;
+    else {
+      next_character(data);
+      if (data->token != '\n')
+	*data->temp_buffer++ = data->token;
+    }
+
+    next_character(data);
+  }
+
+  while (1) {
+    if (data->temp_buffer == data->buffer) {
+      add_error(data, SGF_WARNING_EMPTY_VALUE);
+      next_token(data);
+      return existing_text;
+    }
+
+    if ((*(data->temp_buffer - 1) != ' ' && *(data->temp_buffer - 1) != '\n'))
+      break;
+
+    data->temp_buffer--;
+  }
+
+  next_token(data);
+
+  if (existing_text)
+    existing_text = utils_cat_as_string(existing_text, "\n\n", 2);
+
+  return convert_text_to_utf8(data, existing_text);
+}
+
+
+/* Convert text to UTF-8 encoding.  Text to be converted is bounded by
+ * `data->buffer' and `data->temp_buffer' pointers.  Memory between
+ * `data->temp_buffer' and `data->buffer_pointer' can be used as
+ * conversion buffer and thus overwritten.
+ *
+ * Converted text is concatenated to `existing_text'.  If
+ * `existing_text' is NULL to begin with, then converted text is
+ * allocated in a new memory region on the heap.
+ */
+static char *
+convert_text_to_utf8(SgfParsingData *data, char *existing_text)
+{
+  if (data->tree_char_set_to_utf8) {
+    char local_buffer[0x1000];
+    char *original_text = data->buffer;
+    size_t original_bytes_left = data->temp_buffer - data->buffer;
+    char *utf8_buffer;
+    size_t utf8_buffer_size;
+
+    if (data->buffer_pointer - data->temp_buffer > sizeof(local_buffer)) {
+      utf8_buffer = data->temp_buffer;
+      utf8_buffer_size = data->buffer_pointer - data->temp_buffer;
+    }
+    else {
+      utf8_buffer = local_buffer;
+      utf8_buffer_size = sizeof(local_buffer);
+    }
+
+    while (original_bytes_left > 0) {
+      size_t utf8_bytes_left = utf8_buffer_size;
+      char *utf8_text = utf8_buffer;
+
+      iconv(data->tree_char_set_to_utf8,
+	    &original_text, &original_bytes_left,
+	    &utf8_text, &utf8_bytes_left);
+
+      existing_text = utils_cat_as_string(existing_text, utf8_buffer,
+					  utf8_text - utf8_buffer);
+    }
+
+    return existing_text;
+  }
+  else {
+    /* The text is already in UTF-8, no conversion needed. */
+    return utils_cat_as_string(existing_text, data->buffer,
+			       data->temp_buffer - data->buffer);
+  }
 }
 
 
@@ -1434,47 +1565,6 @@ sgf_parse_simple_text(SgfParsingData *data)
   }
 
   return SGF_WARNING_PROPERTY_WITH_EMPTY_VALUE;
-}
-
-
-static char *
-do_parse_text(SgfParsingData *data, char *existing_text)
-{
-  char *text_end;
-
-  next_character(data);
-
-  data->temp_buffer = data->buffer;
-  while (data->token != ']' && data->token != SGF_END) {
-    if (data->token != '\\')
-      *data->temp_buffer++ = data->token;
-    else {
-      next_character(data);
-      if (data->token != '\n')
-	*data->temp_buffer++ = data->token;
-    }
-
-    next_character(data);
-  }
-
-  for (text_end = data->temp_buffer; ; text_end--) {
-    if (text_end == data->buffer) {
-      add_error(data, SGF_WARNING_EMPTY_VALUE);
-      next_token(data);
-      return existing_text;
-    }
-
-    if ((*(text_end - 1) != ' ' && *(text_end - 1) != '\n'))
-      break;
-  }
-
-  next_token(data);
-
-  if (!existing_text)
-    return utils_duplicate_as_string(data->buffer, text_end - data->buffer);
-
-  return utils_cat_as_strings(existing_text, "\n\n", 2,
-			      data->buffer, text_end - data->buffer, NULL);
 }
 
 

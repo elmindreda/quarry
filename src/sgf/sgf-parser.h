@@ -30,6 +30,7 @@
 #include "utils.h"
 #include "quarry.h"
 
+#include <iconv.h>
 #include <stdio.h>
 
 
@@ -62,6 +63,9 @@ struct _SgfParsingData {
   const char	      *stored_buffer_pointers[3];
 
   char		       token;
+
+  iconv_t	       latin1_to_utf8;
+  iconv_t	       tree_char_set_to_utf8;
 
   FILE		      *file;
   int		       file_bytes_remaining;
