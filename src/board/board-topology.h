@@ -61,6 +61,14 @@
 #define NULL_POSITION		POSITION(NULL_X, NULL_Y)
 #define IS_NULL_POINT(x, y)	((x) == NULL_X && (y) == NULL_Y)
 
+/* These values has no meaning for the board code, but they cannot be
+ * mistook for normal coordinates.  Higher-level modules can treat
+ * them in a special way.
+ */
+#define SPECIAL_X		(-2)
+#define SPECIAL_Y		(-2)
+#define SPECIAL_POSITION	POSITION(SPECIAL_X, SPECIAL_Y)
+
 
 #endif /* QUARRY_BOARD_TOPOLOGY_H */
 
