@@ -216,6 +216,42 @@ sgf_game_tree_set_game(SgfGameTree *tree, Game game)
 }
 
 
+/* Create a copy of given game tree structure.  Nodes are duplicated
+ * (not even root).  Use sgf_game_tree_duplicate_with_nodes() if you
+ * need a copy with all nodes. */
+SgfGameTree *
+sgf_game_tree_duplicate(const SgfGameTree *tree)
+{
+  SgfGameTree *tree_copy = sgf_game_tree_new();
+
+  assert(tree);
+
+  sgf_game_tree_set_game(tree_copy, tree->game);
+  tree_copy->board_width = tree->board_width;
+  tree_copy->board_height = tree->board_height;
+
+  tree_copy->variation_style = tree->variation_style;
+
+  return tree_copy;
+}
+
+
+SgfGameTree *
+sgf_game_tree_duplicate_with_nodes(const SgfGameTree *tree)
+{
+  SgfGameTree *tree_copy;
+
+  assert(tree);
+  assert(tree->root);
+
+  tree_copy = sgf_game_tree_duplicate(tree);
+  tree_copy->root = sgf_node_duplicate_recursively(tree->root, tree_copy,
+						   NULL);
+
+  return tree_copy;
+}
+
+
 int
 sgf_game_tree_count_nodes(const SgfGameTree *tree)
 {
@@ -224,7 +260,7 @@ sgf_game_tree_count_nodes(const SgfGameTree *tree)
 #if ENABLE_MEMORY_POOLS
   return memory_pool_count_items(&tree->node_pool);
 #else
-  return tree->root ? sgf_node_count_sub_tree_nodes(tree->root) : 0;
+  return tree->root ? sgf_node_count_subtree_nodes(tree->root) : 0;
 #endif
 }
 
@@ -251,15 +287,18 @@ sgf_node_new(SgfGameTree *tree, SgfNode *parent)
 
 
 /* Free a previously allocated SgfNode structure and all its
- * properties.  To reduce stack usage, we free nodes in main variation
- * (the one, determined by `node->child') in a loop, rather than with
- * recursion.
+ * properties.  All children nodes are deleted as well.  To reduce
+ * stack usage, non-branching sequences of nodes are deleted in a
+ * loop, not with recursion.
  */
 void
 sgf_node_delete(SgfNode *node, SgfGameTree *tree)
 {
   assert(node);
 
+  /* Delete a sequence of nodes starting at the given `node' until it
+   * ends or we find a branching point.
+   */
   do {
     SgfProperty *this_property;
     SgfNode *next_node = node->child;
@@ -271,12 +310,17 @@ sgf_node_delete(SgfNode *node, SgfGameTree *tree)
       this_property = next_property;
     }
 
-    if (node->next)
-      sgf_node_delete(node->next, tree);
-
     memory_pool_free(&tree->node_pool, node);
     node = next_node;
-  } while (node);
+  } while (node && !node->next);
+
+  /* Recurse for each branch. */
+  while (node) {
+    SgfNode *next_node = node->next;
+
+    sgf_node_delete(node, tree);
+    node = next_node;
+  }
 }
 
 
@@ -289,8 +333,8 @@ sgf_node_append_child(SgfNode *node, SgfGameTree *tree)
   SgfNode *child;
   SgfNode **link;
 
-  assert(tree);
   assert(node);
+  assert(tree);
 
   child = sgf_node_new(tree, node);
 
@@ -301,6 +345,103 @@ sgf_node_append_child(SgfNode *node, SgfGameTree *tree)
   *link = child;
 
   return child;
+}
+
+
+/* Create a copy of an SGF node (with properties) for a given tree.
+ * This function copies only the specified node, not its children.
+ * Use sgf_node_duplicate_recursively() if you need a copy of full
+ * subtree.
+ */
+SgfNode *
+sgf_node_duplicate(const SgfNode *node, SgfGameTree *tree, SgfNode *parent)
+{
+  SgfNode *node_copy = sgf_node_new(tree, parent);
+  const SgfProperty *property;
+  SgfProperty **link;
+
+  assert(node);
+  assert(tree);
+
+  node_copy->move_color = node->move_color;
+  if (IS_STONE(node->move_color)) {
+    node_copy->move_point = node->move_point;
+
+    if (tree->game == GAME_AMAZONS)
+      node_copy->data.amazons = node->data.amazons;
+  }
+
+  for (property = node->properties, link = &node_copy->properties; property;
+       property = property->next, link = & (*link)->next)
+    *link = sgf_property_duplicate(property, tree, NULL);
+
+  return node_copy;
+}
+
+
+/* Make a copy of given node and all its children.
+ *
+ * As in other functions, recursion only happens for sibling subnodes,
+ * not the subnodes in main variation for performance reasons.
+ */
+SgfNode *
+sgf_node_duplicate_recursively(const SgfNode *node, SgfGameTree *tree,
+			       SgfNode *parent)
+{
+  /* Duplicate just the given node. */
+  SgfNode *node_copy = sgf_node_duplicate(node, tree, parent);
+
+  /* Duplicate all nodes in sequence until we find a branching
+   * point or the sequence ends.
+   */
+  parent = node_copy;
+  while (1) {
+    node = node->child;
+
+    if (!node || node->next)
+      break;
+
+    parent->child = sgf_node_duplicate(node, tree, parent);
+    parent = parent->child;
+  }
+
+  if (node) {
+    SgfNode **link;
+
+    /* Recurse for each branch. */
+    for (link = &parent->child; node;
+	 node = node->next, link = & (*link)->next)
+      *link = sgf_node_duplicate(node, tree, parent);
+  }
+
+  return node_copy;
+}
+
+
+/* Similar to sgf_node_duplicate_recursively(), but duplicates only
+ * some levels of nodes, not the whole node subtree.  If `depth'
+ * parameter is 1, duplicate only the node itself.  If it is 2 then
+ * direct children are included and so on.
+ */
+SgfNode *
+sgf_node_duplicate_to_given_depth(const SgfNode *node, SgfGameTree *tree,
+				  SgfNode *parent, int depth)
+{
+  SgfNode *node_copy = sgf_node_duplicate(node, tree, parent);
+
+  assert(depth > 0);
+
+  if (depth > 1) {
+    SgfNode **link;
+
+    for (node = node->child, link = &node_copy->child; node;
+	 node = node->next, link = & (*link)->next) {
+      *link = sgf_node_duplicate_to_given_depth(node, tree, node_copy,
+						depth - 1);
+    }
+  }
+
+  return node_copy;
 }
 
 
@@ -687,15 +828,23 @@ sgf_node_split(SgfNode *node, SgfGameTree *tree)
 
 
 int
-sgf_node_count_sub_tree_nodes(const SgfNode *node)
+sgf_node_count_subtree_nodes(const SgfNode *node)
 {
-  const SgfNode *child;
-  int num_nodes = 1;
+  int num_nodes = 0;
 
   assert(node);
 
-  for (child = node->child; child; child = child->next)
-    num_nodes += sgf_node_count_sub_tree_nodes(child);
+  /* Count number of nodes in non-branching node sequence. */
+  do {
+    num_nodes++;
+    node = node->child;
+  } while (node && !node->next);
+
+  /* Recursively count nodes in all branches, if any. */
+  while (node) {
+    num_nodes += sgf_node_count_subtree_nodes(node);
+    node = node->next;
+  }
 
   return num_nodes;
 }
@@ -726,6 +875,7 @@ inline void
 sgf_property_delete(SgfProperty *property, SgfGameTree *tree)
 {
   assert(property);
+  assert(tree);
 
   if (SGF_FIRST_MALLOC_TYPE <= property_info[property->type].value_type
       && property_info[property->type].value_type <= SGF_LAST_MALLOC_TYPE
@@ -746,6 +896,60 @@ sgf_property_delete_at_link(SgfProperty **link, SgfGameTree *tree)
 
   sgf_property_delete(*link, tree);
   *link = next_property;
+}
+
+
+/* Copy given `property' and its value for use in the given game
+ * `tree'.
+ */
+SgfProperty *
+sgf_property_duplicate(const SgfProperty *property, SgfGameTree *tree,
+		       SgfProperty *next)
+{
+  SgfProperty *property_copy = sgf_property_new(tree, property->type, next);
+
+  switch (property_info[property->type].value_type) {
+  case SGF_NUMBER:
+  case SGF_DOUBLE:
+  case SGF_COLOR:
+    property_copy->value.number = property->value.number;
+    break;
+
+  case SGF_REAL:
+    property_copy->value.real = utils_malloc(sizeof(double));
+    *property_copy->value.real = *property->value.real;
+    break;
+
+  case SGF_SIMPLE_TEXT:
+  case SGF_FAKE_SIMPLE_TEXT:
+  case SGF_TEXT:
+  case SGF_TYPE_UNKNOWN:
+    property_copy->value.text = utils_duplicate_string(property->value.text);
+    break;
+
+  case SGF_LIST_OF_POINT:
+  case SGF_ELIST_OF_POINT:
+    property_copy->value.position_list
+      = sgf_position_list_duplicate(property->value.position_list);
+    break;
+
+  case SGF_LIST_OF_VECTOR:
+    /* FIXME: Implement.  First need to implement in the parser
+     *	      though.
+     */
+    assert(0);
+
+  case SGF_LIST_OF_LABEL:
+    property_copy->value.label_list
+      = sgf_label_list_duplicate(property->value.label_list);
+    break;
+
+  default:
+    /* Make sure all property types are handled. */
+    assert(property_info[property->type].value_type == SGF_NONE);
+  };
+
+  return property_copy;
 }
 
 
@@ -815,6 +1019,23 @@ sgf_label_list_delete(SgfLabelList *list)
     utils_free(list->labels[k].text);
 
   utils_free(list);
+}
+
+
+SgfLabelList *
+sgf_label_list_duplicate(const SgfLabelList *list)
+{
+  SgfLabelList *list_copy = sgf_label_list_new_empty(list->num_labels);
+  int k;
+
+  assert(list);
+
+  for (k = 0; k < list->num_labels; k++) {
+    list_copy->labels[k].point = list->labels[k].point;
+    list_copy->labels[k].text = utils_duplicate_string(list->labels[k].text);
+  }
+
+  return list_copy;
 }
 
 
