@@ -23,6 +23,7 @@
 #include "gtk-utils.h"
 
 #include "gtk-control-center.h"
+#include "gtk-file-selector.h"
 #include "gtk-freezable-spin-button.h"
 #include "quarry-stock.h"
 #include "utils.h"
@@ -53,7 +54,7 @@ struct _GtkUtilsBrowseButtonData {
   GtkWindow			*browsing_dialog;
   const gchar			*browsing_dialog_caption;
 
-  GtkEntry			*associated_entry;
+  GtkWidget			*associated_entry;
   gboolean			 is_command_line_entry;
 
   GtkUtilsBrowsingDoneCallback	 callback;
@@ -666,6 +667,13 @@ gtk_utils_create_browse_button (gboolean with_text,
 
   assert (browsing_dialog_caption);
 
+#ifdef GTK_TYPE_FILE_SELECTOR
+  assert (GTK_IS_ENTRY (associated_entry)
+	  || GTK_IS_FILE_SELECTOR (associated_entry));
+#else
+  assert (GTK_IS_ENTRY (associated_entry));
+#endif
+
   if (with_text)
     button = gtk_button_new_from_stock (QUARRY_STOCK_BROWSE);
   else {
@@ -678,7 +686,7 @@ gtk_utils_create_browse_button (gboolean with_text,
   data->browsing_dialog = NULL;
   data->browsing_dialog_caption = browsing_dialog_caption;
 
-  data->associated_entry = GTK_ENTRY (associated_entry);
+  data->associated_entry = associated_entry;
   data->is_command_line_entry = is_command_line_entry;
 
   data->callback = callback;
@@ -699,13 +707,16 @@ browse_button_clicked (GtkWidget *button, GtkUtilsBrowseButtonData *data)
     GtkWidget *file_selection_widget
       = gtk_file_selection_new (data->browsing_dialog_caption);
     GtkWindow *parent_window = GTK_WINDOW (gtk_widget_get_toplevel (button));
-    const gchar *current_entry_text;
+    GtkEntry *entry
+      = GTK_ENTRY (GTK_IS_ENTRY (data->associated_entry)
+		   ? data->associated_entry
+		   : GTK_BIN (data->associated_entry)->child);
+    const gchar *current_entry_text = gtk_entry_get_text (entry);
 
     data->browsing_dialog = GTK_WINDOW (file_selection_widget);
     gtk_window_set_transient_for (data->browsing_dialog, parent_window);
     gtk_window_set_destroy_with_parent (data->browsing_dialog, TRUE);
 
-    current_entry_text = gtk_entry_get_text (data->associated_entry);
     if (*current_entry_text) {
       GtkFileSelection *file_selection
 	= GTK_FILE_SELECTION (data->browsing_dialog);
@@ -743,17 +754,30 @@ browsing_dialog_response (GtkFileSelection *file_selection,
 			  gint response_id, GtkUtilsBrowseButtonData *data)
 {
   if (response_id == GTK_RESPONSE_OK) {
+    GtkEntry *entry;
     const gchar *filename   = gtk_file_selection_get_filename (file_selection);
     gchar *filename_in_utf8 = g_filename_to_utf8 (filename, -1,
 						  NULL, NULL, NULL);
 
-    gtk_entry_set_text (data->associated_entry, filename_in_utf8);
-    gtk_widget_grab_focus (GTK_WIDGET (data->associated_entry));
+    if (GTK_IS_ENTRY (data->associated_entry)) {
+      entry = GTK_ENTRY (data->associated_entry);
+      gtk_entry_set_text (entry, filename_in_utf8);
+    }
+
+#ifdef GTK_TYPE_FILE_SELECTOR
+    else {
+      entry = GTK_ENTRY (GTK_BIN (data->associated_entry)->child);
+      gtk_file_selector_set_text (GTK_FILE_SELECTOR (data->associated_entry),
+				  filename_in_utf8);
+    }
+#endif /* defined GTK_TYPE_FILE_SELECTOR */
+
+    gtk_widget_grab_focus (data->associated_entry);
 
     g_free (filename_in_utf8);
 
     if (data->callback)
-      data->callback (data->associated_entry, NULL, data->user_data);
+      data->callback (entry, NULL, data->user_data);
   }
 
   gtk_widget_destroy (GTK_WIDGET (file_selection));
