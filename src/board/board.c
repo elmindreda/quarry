@@ -105,6 +105,36 @@ board_delete(Board *board)
 }
 
 
+/* Duplicate given board, but don't copy the stacks.  The stacks of
+ * the copy will be empty.
+ */
+Board *
+board_duplicate_without_stacks(const Board *board)
+{
+  Board *board_copy;
+  int x;
+  int y;
+  int pos;
+
+  assert(board);
+
+  board_copy = board_new(board->game, board->width, board->height);
+
+  board_copy->move_number = board->move_number;
+
+  for (y = 0, pos = POSITION(0, 0); y < board->height; y++) {
+    for (x = 0; x < board->width; x++, pos++)
+      board_copy->grid[pos] = board->grid[pos];
+    pos += BOARD_MAX_WIDTH + 1 - board->width;
+  }
+
+  if (board->game == GAME_GO)
+    memcpy(&board_copy->data.go, &board->data.go, sizeof(GoBoardData));
+
+  return board_copy;
+}
+
+
 /* Set board dimensions to specified values and clear the board as
  * needed.  This may include clearing board's grid, resetting
  * game-specific data (e.g. ko state for Go) and reallocating board

@@ -183,6 +183,8 @@ struct _BoardPositionList {
 Board *		board_new(Game game, int width, int height);
 void		board_delete(Board *board);
 
+Board *		board_duplicate_without_stacks(const Board *board);
+
 void		board_set_parameters(Board *board, Game game,
 				     int width, int height);
 #define board_clear(board)						\
