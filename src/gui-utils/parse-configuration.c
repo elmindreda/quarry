@@ -196,7 +196,8 @@ static const ListDescription   configuration_lists[] = {
   { NULL, 0, SORT_NORMAL, 0, NULL, NULL, NULL, NULL, configuration_finalize }
 };
 
-const ListDescriptionSet       list_set = { NULL, configuration_lists };
+const ListDescriptionSet       list_set = { "configuration",
+					    configuration_lists };
 
 
 static char		      *configuration_sections_array_name;
