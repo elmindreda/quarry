@@ -1453,29 +1453,25 @@ initialize_gtp_player(GtpClient *client, int successful,
     if (game_tree->game == GAME_GO) {
       int handicap = sgf_node_get_handicap(root_node);
 
-      if (handicap != -1) {
+      if (handicap > 0) {
 	gboolean is_fixed_handicap = FALSE;
 	const BoardPositionList *handicap_stones = NULL;
 
-	if (handicap > 0) {
-	  handicap_stones
-	    = sgf_node_get_list_of_point_property_value(root_node,
-							SGF_ADD_BLACK);
-	  if (handicap_stones) {
-	    BoardPositionList *fixed_handicap_stones
-	      = go_get_fixed_handicap_stones(game_tree->board_width,
-					     game_tree->board_height,
-					     handicap);
+	handicap_stones
+	  = sgf_node_get_list_of_point_property_value(root_node,
+						      SGF_ADD_BLACK);
+	if (handicap_stones) {
+	  BoardPositionList *fixed_handicap_stones
+	    = go_get_fixed_handicap_stones(game_tree->board_width,
+					   game_tree->board_height,
+					   handicap);
 
-	    if (board_position_lists_are_equal(fixed_handicap_stones,
-					       handicap_stones))
-	      is_fixed_handicap = TRUE;
+	  if (board_position_lists_are_equal(fixed_handicap_stones,
+					     handicap_stones))
+	    is_fixed_handicap = TRUE;
 
-	    board_position_list_delete(fixed_handicap_stones);
-	  }
+	  board_position_list_delete(fixed_handicap_stones);
 	}
-	else
-	  is_fixed_handicap = TRUE;
 
 	if (is_fixed_handicap) {
 	  *initialization_step = INITIALIZATION_FIXED_HANDICAP_SET;
