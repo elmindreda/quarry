@@ -160,6 +160,7 @@ tile_set_create_or_reuse(int cell_size, const TileSetParameters *parameters)
       = gui_back_end_image_new(pixel_data[k], cell_size, cell_size);
   }
 
+  stock_item->tile_set.cell_size = cell_size;
   create_go_stone_images(cell_size, pixel_data,
 			 &stock_item->tile_set.stones_x_offset,
 			 &stock_item->tile_set.stones_y_offset,
