@@ -31,6 +31,16 @@ values  - gtp_engine_section_values {
 }
 
 
+values  - editing_and_viewing_values {
+  "Show game tree"		show_game_tree			 enumeration
+								new
+    SHOW_GAME_TREE_ALWAYS	  "Always"
+    SHOW_GAME_TREE_AUTOMATICALLY  "Auto" "Automatically"
+    SHOW_GAME_TREE_NEVER	  "Never"
+  end
+}
+
+
 values  - sgf_configuration_values {
   "Force UTF-8"			force_utf8			boolean
 }
@@ -43,15 +53,16 @@ values  - board_appearance_values {
   "Grid and labels color"	grid_and_labels_color		color
 
   "Markup theme"		markup_theme			string
+  "Use theme defaults"		use_theme_defaults		boolean
 
   "Markup size"			markup_size			real
   "Markup size is relative"	markup_size_is_relative		boolean
 
+  "Markup opacity"		markup_opacity			real
+
   "Markup color on white"	markup_colors[2]		color
   "Markup color on black"	markup_colors[1]		color
   "Markup color on other"	markup_colors[0]		color
-
-  "Markup opacity"		markup_opacity			real
 }
 
 
@@ -65,12 +76,15 @@ values  - amazons_board_appearance_values {
 
   "Grid and labels color"	board_appearance.grid_and_labels_color		color
 
+  "Markup theme"		board_appearance.markup_theme			string
+  "Use theme defaults"		board_appearance.use_theme_defaults		boolean
+
   "Markup size"			board_appearance.markup_size			real
   "Markup size is relative"	board_appearance.markup_size_is_relative	boolean
+
+  "Markup opacity"		board_appearance.markup_opacity			real
 
   "Markup color on white"	board_appearance.markup_colors[1]		color
   "Markup color on black"	board_appearance.markup_colors[2]		color
   "Markup color on other"	board_appearance.markup_colors[0]		color
-
-  "Markup opacity"		board_appearance.markup_opacity			real
 }

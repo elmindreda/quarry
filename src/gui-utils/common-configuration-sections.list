@@ -30,6 +30,15 @@
 		gtp_engine_defaults
 
 
+  SECTION_EDITING_AND_VIEWING	"Editing and Viewing"
+		single
+		new		EditingAndViewing	editing_and_viewing_dispose
+
+		editing_and_viewing
+		editing_and_viewing_values
+		editing_and_viewing_defaults
+
+
   SECTION_SGF			"SGF"
 		single
 		new		SgfConfiguration	sgf_configuration_dispose

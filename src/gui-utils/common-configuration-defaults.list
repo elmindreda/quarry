@@ -29,6 +29,11 @@ defaults  - gtp_engine_defaults {
 }
 
 
+defaults  - editing_and_viewing_defaults {
+  show_game_tree		enumeration	SHOW_GAME_TREE_ALWAYS
+}
+
+
 defaults  - sgf_configuration_defaults {
   force_utf8			boolean		true
 }
@@ -44,9 +49,12 @@ defaults  - go_board_appearance_defaults {
   grid_and_labels_color		color		#000000
 
   markup_theme			string		"Default"
+  use_theme_defaults		boolean		true
 
   markup_size			real		0.65
   markup_size_is_relative	boolean		true
+
+  markup_opacity		real		0.8
 
   markup_colors			array		[3]
 				color
@@ -54,8 +62,6 @@ defaults  - go_board_appearance_defaults {
     [1]						#e6d8c6
     [2]						#606060
   end
-
-  markup_opacity		real		0.8
 }
 
 
@@ -72,9 +78,12 @@ defaults  - amazons_board_appearance_defaults {
     grid_and_labels_color	color		#000000
 
     markup_theme		string		"Default"
+    use_theme_defaults		boolean		true
 
     markup_size			real		0.65
     markup_size_is_relative	boolean		true
+
+    markup_opacity		real		0.8
 
     markup_colors		array		[3]
 				color
@@ -82,9 +91,6 @@ defaults  - amazons_board_appearance_defaults {
       [1]					#e6d8c6
       [2]					#606060
     end
-
-    markup_opacity		real		0.8
-
   end
 
   # Force some brownish tint.
@@ -100,9 +106,12 @@ defaults  - othello_board_appearance_defaults {
   grid_and_labels_color		color		#cceebb
 
   markup_theme			string		"Default"
+  use_theme_defaults		boolean		true
 
   markup_size			real		0.65
   markup_size_is_relative	boolean		true
+
+  markup_opacity		real		0.8
 
   markup_colors			array		[3]
 				color
@@ -110,6 +119,4 @@ defaults  - othello_board_appearance_defaults {
     [1]						#e6d8c6
     [2]						#606060
   end
-
-  markup_opacity		real		0.8
 }
