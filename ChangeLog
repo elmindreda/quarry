@@ -1,3 +1,10 @@
+2005-01-19  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* README-PACKAGERS: New file.
+
+	* README: General update.  Remove `RUNNING QUARRY' section
+	contents and refer readers to the manual instead.
+
 2005-01-17  Arend Bayer  <arend.bayer@web.de>
 
 	* INSTALL: Make system requirements more explicit.

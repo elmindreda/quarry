@@ -1,3 +1,54 @@
+2005-01-19  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* gui-gtk/gtk-new-game-dialog.c (update_game_and_players_page):
+	Use gtk_preferences_have_non_hidden_gtp_engine() to determine if
+	there are computer opponents available.
+
+	* gui-gtk/gtk-preferences.c (gtk_preferences_init): Add
+	`ENGINES_IS_VISIBLE' column to tree model.  Recompute engine names
+	based on `screen_name' fields.  For GTK+ 2.4+ create a filtered
+	model based on this column.
+	(create_gtp_engines_page): Add "Show" column to the list.  Fix
+	"Support game(s):" label.  Create a label for displaying
+	additional information.
+	(gtk_preferences_dialog_update_gtp_engine_info): Don't allow
+	removing engines coming from site configuration.  Show whether
+	engine is coming from there in additional label.
+	(show_or_hide_gtp_engine): New function.
+	(do_remove_gtp_engine): Use
+	gtk_preferences_have_non_hidden_gtp_engine().
+	(gtk_preferences_have_non_hidden_gtp_engine): New function.
+	(gtk_preferences_create_engine_selector): Use filtered model for
+	GTK+ 2.4+ to exclude hidden engines.
+	(gtk_preferences_set_engine_selector_selection): Take hidden
+	engines into account.
+	(gtk_preferences_get_engine_selector_selection): Likewise.
+	(build_and_attach_menu): Likewise.
+	(update_engine_screen_name): Add `update_tree_model' argument.
+
+	* gui-gtk/gui-back-end.c (initialize_main_loop): Read site
+	configuration file if the user doesn't have any configuration yet.
+
+	* gui-utils/common-configuration-values.list: Add values for
+	tracking site configuration and hidden engines to
+	`gtp_engine_section_values'.
+	* gui-utils/common-configuration-defaults.list: Likewise.
+
+	* gui-utils/configuration.c (configuration_read_from_file):
+	Support new `VALUE_TYPE_BOOLEAN_WRITE_TRUE_ONLY' value type.
+	(write_section): Likewise.
+	(configuration_init_repeatable_section): New function.
+
+	* gui-utils/parse-configuration.c (configuration_parse_values2):
+	Support new `VALUE_TYPE_BOOLEAN_WRITE_TRUE_ONLY' value type.
+	(configuration_parse_defaults2): Likewise.
+	(add_field_declaration_if_needed): Likewise.
+	(look_at_field_type): New function.
+
+	* utils/string-list.c (string_list_dispose_item)
+	(string_list_steal_item, string_list_steal_first_item): New
+	functions.
+
 2005-01-18  Paul Pogonyshev  <pogonyshev@gmx.net>
 
 	* gui-gtk/gtk-goban-window.c (leave_game_mode): New function.
