@@ -29,8 +29,8 @@
 #include "configuration.h"
 #include "utils.h"
 
-#include <string.h>
 #include <assert.h>
+#include <string.h>
 
 
 static const char *configuration_file_intro_comment =
@@ -142,11 +142,31 @@ configuration_read_from_file(const ConfigurationSection *sections,
 	    void *field = (((char *) current_section_structure)
 			   + value->field_offset);
 	    char *string;
+	    char *actual_contents;
 
 	    scan++;
 
-	    if (value->type != VALUE_TYPE_STRING_LIST)
+	    if (value->type != VALUE_TYPE_STRING_LIST) {
 	      string = parse_string(&scan, 0);
+
+	      if (value->type != VALUE_TYPE_STRING) {
+		char *whitespace_scan;
+
+		for (actual_contents = string;
+		     *actual_contents == ' ' || *actual_contents == '\t';)
+		  actual_contents++;
+
+		/* Find first whitespace character and break line at
+		 * its position.
+		 */
+		for (whitespace_scan = actual_contents;
+		     (*whitespace_scan != ' ' && *whitespace_scan != '\t'
+		      && *whitespace_scan != 0);)
+		  whitespace_scan++;
+
+		*whitespace_scan = 0;
+	      }
+	    }
 
 	    if (value->type == VALUE_TYPE_STRING_LIST || string) {
 	      switch (value->type) {
@@ -178,28 +198,23 @@ configuration_read_from_file(const ConfigurationSection *sections,
 		break;
 
 	      case VALUE_TYPE_BOOLEAN:
-		if (strcasecmp(string, "true") == 0
-		    || strcasecmp(string, "yes") == 0
-		    || strcmp(string, "1") == 0)
+		if (strcasecmp(actual_contents, "true") == 0
+		    || strcasecmp(actual_contents, "yes") == 0
+		    || strcmp(actual_contents, "1") == 0)
 		  * (int *) field = 1;
-		else if (strcasecmp(string, "false") == 0
-			 || strcasecmp(string, "no") == 0
-			 || strcmp(string, "0") == 0)
+		else if (strcasecmp(actual_contents, "false") == 0
+			 || strcasecmp(actual_contents, "no") == 0
+			 || strcmp(actual_contents, "0") == 0)
 		  * (int *) field = 0;
 
-		utils_free(string);
 		break;
 
 	      case VALUE_TYPE_INT:
 	      case VALUE_TYPE_REAL:
 		{
-		  const char *contents = string;
-		  const char *digit_scan;
+		  /* FIXME: Can be improved. */
+		  const char *digit_scan = actual_contents;
 
-		  while (*contents == ' ' || *contents == '\t')
-		    contents++;
-
-		  digit_scan = contents;
 		  if (*digit_scan == '+' || *digit_scan == '-')
 		    digit_scan++;
 
@@ -207,18 +222,58 @@ configuration_read_from_file(const ConfigurationSection *sections,
 		      || (value->type == VALUE_TYPE_REAL
 			  && *digit_scan == '.')) {
 		    if (value->type == VALUE_TYPE_INT)
-		      * (int *) field = atoi(contents);
+		      * (int *) field = atoi(actual_contents);
 		    else
-		      * (double *) field = atof(contents);
+		      * (double *) field = atof(actual_contents);
 		  }
 		}
 
-		utils_free(string);
+		break;
+
+	      case VALUE_TYPE_COLOR:
+		{
+		  int num_digits;
+
+		  if (*actual_contents == '#')
+		    actual_contents++;
+
+		  for (num_digits = 0;
+		       ((('0' <= *actual_contents && *actual_contents <= '9')
+			 || ('a' <= *actual_contents && *actual_contents <= 'f')
+			 || ('A' <= *actual_contents && *actual_contents <= 'F'))
+			&& num_digits <= 6);
+		       num_digits++)
+		    actual_contents++;
+
+		  if (num_digits == 6 || num_digits == 3) {
+		    int red;
+		    int green;
+		    int blue;
+
+		    if (num_digits == 6)
+		      sscanf(actual_contents - 6, "%2x%2x%2x", &red, &green, &blue);
+		    else {
+		      sscanf(actual_contents - 3, "%1x%1x%1x", &red, &green, &blue);
+		      red   *= 0x11;
+		      green *= 0x11;
+		      blue  *= 0x11;
+		    }
+
+		    ((QuarryColor *) field)->red   = red;
+		    ((QuarryColor *) field)->green = green;
+		    ((QuarryColor *) field)->blue  = blue;
+		  }
+		}
+
 		break;
 
 	      default:
 		assert(0);
 	      }
+
+	      if (value->type != VALUE_TYPE_STRING_LIST
+		  && value->type != VALUE_TYPE_STRING)
+		utils_free(string);
 	    }
 	  }
 	}
@@ -425,6 +480,13 @@ write_section(BufferedWriter *writer, const ConfigurationSection *section,
 				 format_double(* (const double *) field));
       break;
 
+    case VALUE_TYPE_COLOR:
+      buffered_writer_printf(writer, "#%02x%02x%02x",
+			     ((const QuarryColor *) field)->red,
+			     ((const QuarryColor *) field)->green,
+			     ((const QuarryColor *) field)->blue);
+      break;
+
     default:
       assert(0);
     }
@@ -525,6 +587,9 @@ configuration_set_section_values(const ConfigurationSection *section, ...)
     case VALUE_TYPE_REAL:
       * (double *) field = va_arg(arguments, double);
       break;
+
+    case VALUE_TYPE_COLOR:
+      * (QuarryColor *) field = va_arg(arguments, QuarryColor);
 
     default:
       assert(0);
