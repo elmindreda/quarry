@@ -99,6 +99,9 @@ errors  SgfError sgf_errors {
   SGF_ERROR_SENSELESS_MOVE
   "error: move %M is senseless: no piece of appropriate color at %P (deleted)"
 
+  SGF_ERROR_KO_PROPERTY_WITHOUT_MOVE
+  "error: `KO' property in a node without a move (deleted)"
+
   SGF_WARNING_NON_SGF_POINT_NOTATION
   "warning: non-SGF point notation `%c%d' "
   "(parsed anyway; note: this warning is reported once only)"
