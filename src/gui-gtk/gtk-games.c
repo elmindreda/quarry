@@ -29,7 +29,9 @@
 
 
 const gchar *game_labels[NUM_SUPPORTED_GAMES] = {
-  "_Go", "_Amazons", "_Othello"
+  N_("_Go"),
+  N_("_Amazons"),
+  N_("_Othello")
 };
 
 const Game index_to_game[NUM_SUPPORTED_GAMES] = {
