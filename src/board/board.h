@@ -211,26 +211,6 @@ inline void	board_dump(const Board *board);
 inline void	board_validate(const Board *board);
 
 
-int		game_format_point(Game game, int board_width, int board_height,
-				  char *buffer, int x, int y);
-int		game_format_move(Game game, int board_width, int board_height,
-				 char *buffer, ...);
-int		game_format_move_valist(Game game,
-					int board_width, int board_height,
-					char *buffer, va_list move);
-
-int		game_parse_point(Game game, int board_width, int board_height,
-				 const char *point_string, int *x, int *y);
-int		game_parse_move(Game game, int board_width, int board_height,
-				const char *move_string,
-				int *x, int *y,
-				BoardAbstractMoveData *move_data);
-
-inline int	game_get_default_setup(Game game, int width, int height,
-				       BoardPositionList **black_stones,
-				       BoardPositionList **white_stones);
-
-
 BoardPositionList *  board_position_list_new(const int *positions,
 					     int num_positions);
 BoardPositionList *  board_position_list_new_empty(int num_positions);
@@ -253,6 +233,37 @@ BoardPositionList *  board_position_list_new_empty(int num_positions);
 int		     board_position_lists_are_equal
 		       (const BoardPositionList *list1,
 			const BoardPositionList *list2);
+
+
+#define SUGGESTED_POSITION_LIST_BUFFER_SIZE	(4 * BOARD_MAX_POSITIONS)
+
+
+int		game_format_point(Game game, int board_width, int board_height,
+				  char *buffer, int x, int y);
+int		game_format_position_list
+		  (Game game, int board_width, int board_height,
+		   char *buffer, const BoardPositionList *position_list);
+int		game_format_move(Game game, int board_width, int board_height,
+				 char *buffer, ...);
+int		game_format_move_valist(Game game,
+					int board_width, int board_height,
+					char *buffer, va_list move);
+
+int		game_parse_point(Game game, int board_width, int board_height,
+				 const char *point_string, int *x, int *y);
+BoardPositionList *
+		game_parse_position_list(Game game,
+					 int board_width, int board_height,
+					 const char *positions_string);
+int		game_parse_move(Game game, int board_width, int board_height,
+				const char *move_string,
+				int *x, int *y,
+				BoardAbstractMoveData *move_data);
+
+
+inline int	game_get_default_setup(Game game, int width, int height,
+				       BoardPositionList **black_stones,
+				       BoardPositionList **white_stones);
 
 
 void		board_fill_grid(Board *board, char grid[BOARD_GRID_SIZE],

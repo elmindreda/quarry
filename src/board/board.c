@@ -516,6 +516,62 @@ board_validate(const Board *board)
 
 
 
+BoardPositionList *
+board_position_list_new(const int *positions, int num_positions)
+{
+  BoardPositionList *list;
+
+  assert(0 <= num_positions && num_positions < BOARD_MAX_POSITIONS);
+
+  list = utils_malloc(sizeof(BoardPositionList)
+		      - (BOARD_MAX_POSITIONS - num_positions) * sizeof(int));
+  list->num_positions = num_positions;
+  memcpy(list->positions, positions, num_positions * sizeof(int));
+
+  return list;
+}
+
+
+BoardPositionList *
+board_position_list_new_empty(int num_positions)
+{
+  BoardPositionList *list;
+
+  assert(0 <= num_positions && num_positions < BOARD_MAX_POSITIONS);
+
+  list = utils_malloc(sizeof(BoardPositionList)
+		      - (BOARD_MAX_POSITIONS - num_positions) * sizeof(int));
+  list->num_positions = num_positions;
+
+  return list;
+}
+
+
+/* Position lists are always stored sorted in ascending order of
+ * positions.  This is essential here and also for SGF writer.
+ */
+int
+board_position_lists_are_equal(const BoardPositionList *list1,
+			       const BoardPositionList *list2)
+{
+  int k;
+
+  assert(list1);
+  assert(list2);
+
+  if (list1->num_positions != list2->num_positions)
+    return 0;
+
+  for (k = 0; k < list1->num_positions; k++) {
+    if (list1->positions[k] != list2->positions[k])
+      return 0;
+  }
+
+  return 1;
+}
+
+
+
 int
 game_format_point(Game game, int board_width, int board_height,
 		  char *buffer, int x, int y)
@@ -530,6 +586,29 @@ game_format_point(Game game, int board_width, int board_height,
   return (1 + sprintf(buffer + 1, "%d",
 		      (game_info[game].reversed_vertical_coordinates
 		       ? board_height - y : y + 1)));
+}
+
+
+int
+game_format_position_list(Game game, int board_width, int board_height,
+			  char *buffer, const BoardPositionList *position_list)
+{
+  char *buffer_pointer = buffer;
+  int k;
+
+  assert(position_list);
+
+  for (k = 0; k < position_list->num_positions; k++) {
+    int pos = position_list->positions[k];
+
+    buffer_pointer += game_format_point(game, board_width, board_height,
+					buffer_pointer,
+					POSITION_X(pos), POSITION_Y(pos));
+    *buffer_pointer++ = ' ';
+  }
+
+  *--buffer_pointer = 0;
+  return buffer_pointer - buffer;
 }
 
 
@@ -618,6 +697,64 @@ game_parse_point(Game game, int board_width, int board_height,
 }
 
 
+BoardPositionList *
+game_parse_position_list(Game game, int board_width, int board_height,
+			 const char *positions_string)
+{
+  assert(positions_string);
+
+  if (*positions_string) {
+    BoardPositionList *position_list;
+    int num_positions = 0;
+    char present_positions[BOARD_GRID_SIZE];
+    int x;
+    int y;
+    int k;
+    int pos;
+
+    for (y = 0, pos = POSITION(0, 0); y < board_height; y++) {
+      for (x = 0; x < board_width; x++, pos++)
+	present_positions[pos] = 0;
+      pos += BOARD_MAX_WIDTH + 1 - board_width;
+    }
+
+    do {
+      int num_characters_eaten = game_parse_point(game,
+						  board_width, board_height,
+						  positions_string, &x, &y);
+
+      if (!num_characters_eaten)
+	return NULL;
+
+      pos = POSITION(x, y);
+      if (present_positions[pos])
+	return NULL;
+
+      present_positions[pos] = 1;
+      num_positions++;
+
+      positions_string += num_characters_eaten;
+      if (*positions_string == ' ')
+	positions_string++;
+    } while (*positions_string);
+
+    position_list = board_position_list_new_empty(num_positions);
+    for (y = 0, pos = POSITION(0, 0), k = 0; k < num_positions; y++) {
+      for (x = 0; x < board_width; x++, pos++) {
+	if (present_positions[pos])
+	  position_list->positions[k++] = pos;
+      }
+
+      pos += BOARD_MAX_WIDTH + 1 - board_width;
+    }
+
+    return position_list;
+  }
+
+  return NULL;
+}
+
+
 int
 game_parse_move(Game game, int board_width, int board_height,
 		const char *move_string,
@@ -653,62 +790,6 @@ game_get_default_setup(Game game, int width, int height,
   return (game_info[game].get_default_setup
 	  && game_info[game].get_default_setup(width, height,
 					       black_stones, white_stones));
-}
-
-
-
-BoardPositionList *
-board_position_list_new(const int *positions, int num_positions)
-{
-  BoardPositionList *list;
-
-  assert(0 <= num_positions && num_positions < BOARD_MAX_POSITIONS);
-
-  list = utils_malloc(sizeof(BoardPositionList)
-		      - (BOARD_MAX_POSITIONS - num_positions) * sizeof(int));
-  list->num_positions = num_positions;
-  memcpy(list->positions, positions, num_positions * sizeof(int));
-
-  return list;
-}
-
-
-BoardPositionList *
-board_position_list_new_empty(int num_positions)
-{
-  BoardPositionList *list;
-
-  assert(0 <= num_positions && num_positions < BOARD_MAX_POSITIONS);
-
-  list = utils_malloc(sizeof(BoardPositionList)
-		      - (BOARD_MAX_POSITIONS - num_positions) * sizeof(int));
-  list->num_positions = num_positions;
-
-  return list;
-}
-
-
-/* Position lists are always stored sorted in ascending order of
- * positions.  This is essential here and also for SGF writer.
- */
-int
-board_position_lists_are_equal(const BoardPositionList *list1,
-			       const BoardPositionList *list2)
-{
-  int k;
-
-  assert(list1);
-  assert(list2);
-
-  if (list1->num_positions != list2->num_positions)
-    return 0;
-
-  for (k = 0; k < list1->num_positions; k++) {
-    if (list1->positions[k] != list2->positions[k])
-      return 0;
-  }
-
-  return 1;
 }
 
 
