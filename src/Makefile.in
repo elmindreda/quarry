@@ -82,9 +82,13 @@ PACKAGE_TARNAME = @PACKAGE_TARNAME@
 PACKAGE_VERSION = @PACKAGE_VERSION@
 PATH_SEPARATOR = @PATH_SEPARATOR@
 PKG_CONFIG = @PKG_CONFIG@
+QUARRY_GTHREAD_CFLAGS = @QUARRY_GTHREAD_CFLAGS@
+QUARRY_GTHREAD_LIBS = @QUARRY_GTHREAD_LIBS@
 QUARRY_GTK_CFLAGS = @QUARRY_GTK_CFLAGS@
 QUARRY_GTK_DEPRECATED_FLAGS = @QUARRY_GTK_DEPRECATED_FLAGS@
 QUARRY_GTK_LIBS = @QUARRY_GTK_LIBS@
+QUARRY_RSVG_CFLAGS = @QUARRY_RSVG_CFLAGS@
+QUARRY_RSVG_LIBS = @QUARRY_RSVG_LIBS@
 QUARRY_WARNINGS = @QUARRY_WARNINGS@
 QUARRY_WARNINGS_GTK = @QUARRY_WARNINGS_GTK@
 RANLIB = @RANLIB@
@@ -144,14 +148,16 @@ quarry_SOURCES = \
 
 
 quarry_LDADD = \
-	gui-gtk/libguigtk.a			\
-	gui-utils/libguiutils.a			\
-	gtp/libgtp.a				\
-	sgf/libsgf.a				\
-	board/libboard.a			\
-	utils/libutils.a			\
-						\
-	$(QUARRY_GTK_LIBS)
+	gui-gtk/libguigtk.a	\
+	gui-utils/libguiutils.a	\
+	gtp/libgtp.a		\
+	sgf/libsgf.a		\
+	board/libboard.a	\
+	utils/libutils.a	\
+				\
+	$(QUARRY_GTK_LIBS)	\
+	$(QUARRY_GTHREAD_LIBS)	\
+	$(QUARRY_RSVG_LIBS)
 
 
 DISTCLEANFILES = *~

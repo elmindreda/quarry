@@ -22,15 +22,17 @@ quarry_SOURCES =	\
 			\
 	quarry.h
 
-quarry_LDADD = 					\
-	gui-gtk/libguigtk.a			\
-	gui-utils/libguiutils.a			\
-	gtp/libgtp.a				\
-	sgf/libsgf.a				\
-	board/libboard.a			\
-	utils/libutils.a			\
-						\
-	$(QUARRY_GTK_LIBS)
+quarry_LDADD = 			\
+	gui-gtk/libguigtk.a	\
+	gui-utils/libguiutils.a	\
+	gtp/libgtp.a		\
+	sgf/libsgf.a		\
+	board/libboard.a	\
+	utils/libutils.a	\
+				\
+	$(QUARRY_GTK_LIBS)	\
+	$(QUARRY_GTHREAD_LIBS)	\
+	$(QUARRY_RSVG_LIBS)
 
 
 DISTCLEANFILES = *~
