@@ -25,6 +25,7 @@
 #include "gtk-configuration.h"
 #include "gtk-control-center.h"
 #include "gtk-games.h"
+#include "gtk-goban.h"
 #include "gtk-named-vbox.h"
 #include "gtk-gtp-client-interface.h"
 #include "gtk-progress-dialog.h"
@@ -149,6 +150,18 @@ static gboolean	    show_progress_dialog(GtkProgressDialog *progress_dialog,
 					 gpointer user_data);
 static gboolean	    cancel_engine_query(GtkProgressDialog *progress_dialog,
 					GtkEngineDialogData *data);
+
+static inline BoardAppearance *
+		    game_index_to_board_appearance_structure
+		      (GtkGameIndex game_index);
+
+static void	    update_board_background(GtkWidget *widget,
+					    GtkGameIndex game_index);
+static void	    update_board_background_texture(GtkEntry *entry,
+						    GdkEvent *event,
+						    GtkGameIndex game_index);
+static void	    update_board_foreground(GtkColorButton *color_button,
+					    GtkGameIndex game_index);
 
 
 static void	    engine_selector_changed(GtkWidget *selector,
@@ -444,9 +457,6 @@ create_gtp_engines_page(void)
 						     GTK_POLICY_AUTOMATIC,
 						     GTK_POLICY_AUTOMATIC);
 
-  gtk_utils_create_size_group(GTK_SIZE_GROUP_HORIZONTAL,
-			      label, scrolled_window, NULL);
-
   add_gtp_engine = gtk_button_new_from_stock(GTK_STOCK_ADD);
   g_signal_connect_swapped(add_gtp_engine, "clicked",
 			   G_CALLBACK(gtk_gtp_engine_dialog_present),
@@ -511,7 +521,101 @@ create_gtp_engines_page(void)
 static GtkWidget *
 create_board_appearance_page(void)
 {
-  return gtk_label_new("Not implemented yet");
+  GtkWidget *notebook;
+  int k;
+
+  notebook = gtk_notebook_new();
+
+  for (k = 0; k < NUM_SUPPORTED_GAMES; k++) {
+    static const gchar *radio_button_labels[2] = { "Use _texture:",
+						   "Use _solid color:" };
+    BoardAppearance *board_appearance
+      = game_index_to_board_appearance_structure(k);
+    GdkColor color;
+    GtkWidget *radio_buttons[2];
+    GtkWidget *entry;
+    GtkWidget *hbox1;
+    GtkWidget *color_button;
+    GtkWidget *hbox2;
+    GtkWidget *background_vbox;
+    GtkWidget *label;
+    GtkWidget *foreground_vbox;
+    GtkWidget *page;
+
+    gtk_utils_create_radio_chain(radio_buttons, radio_button_labels, 2);
+    if (!board_appearance->use_background_texture)
+      gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(radio_buttons[1]), TRUE);
+
+    g_signal_connect(radio_buttons[0], "toggled",
+		     G_CALLBACK(update_board_background), GINT_TO_POINTER(k));
+
+    entry = gtk_utils_create_entry(board_appearance->background_texture);
+    gtk_utils_set_sensitive_on_toggle(GTK_TOGGLE_BUTTON(radio_buttons[0]),
+				      entry);
+
+    g_signal_connect(entry, "focus-out-event",
+		     G_CALLBACK(update_board_background_texture),
+		     GINT_TO_POINTER(k));
+
+    hbox1 = gtk_utils_pack_in_box(GTK_TYPE_HBOX, QUARRY_SPACING,
+				  radio_buttons[0], GTK_UTILS_FILL,
+				  entry, GTK_UTILS_PACK_DEFAULT, NULL);
+
+    gtk_utils_set_gdk_color(&color, board_appearance->background_color);
+    color_button = gtk_color_button_new_with_color(&color);
+    gtk_color_button_set_title(GTK_COLOR_BUTTON(color_button),
+			       "Pick Background Color");
+    gtk_utils_set_sensitive_on_toggle(GTK_TOGGLE_BUTTON(radio_buttons[1]),
+				      color_button);
+
+    g_signal_connect(color_button, "color-set",
+		     G_CALLBACK(update_board_background), GINT_TO_POINTER(k));
+
+    hbox2 = gtk_utils_pack_in_box(GTK_TYPE_HBOX, QUARRY_SPACING,
+				  radio_buttons[1], GTK_UTILS_FILL,
+				  color_button, GTK_UTILS_PACK_DEFAULT, NULL);
+
+    background_vbox = gtk_utils_pack_in_box(GTK_TYPE_NAMED_VBOX,
+					    QUARRY_SPACING_SMALL,
+					    hbox1, GTK_UTILS_FILL,
+					    hbox2, GTK_UTILS_FILL, NULL);
+    gtk_named_vbox_set_label_text(GTK_NAMED_VBOX(background_vbox),
+				  "Background");
+
+    label = gtk_label_new_with_mnemonic("_Grid and labels color:");
+
+    gtk_utils_set_gdk_color(&color, board_appearance->foreground_color);
+    color_button = gtk_color_button_new_with_color(&color);
+    gtk_color_button_set_title(GTK_COLOR_BUTTON(color_button),
+			       "Pick Color for Grid and Labels");
+    gtk_label_set_mnemonic_widget(GTK_LABEL(label), color_button);
+
+    g_signal_connect(color_button, "color-set",
+		     G_CALLBACK(update_board_foreground), GINT_TO_POINTER(k));
+
+    hbox1 = gtk_utils_pack_in_box(GTK_TYPE_HBOX, QUARRY_SPACING,
+				  label, GTK_UTILS_FILL,
+				  color_button, GTK_UTILS_PACK_DEFAULT, NULL);
+
+    foreground_vbox = gtk_utils_pack_in_box(GTK_TYPE_NAMED_VBOX,
+					    QUARRY_SPACING_SMALL,
+					    hbox1, GTK_UTILS_FILL, NULL);
+    gtk_named_vbox_set_label_text(GTK_NAMED_VBOX(foreground_vbox),
+				  "Grid and Labels");
+
+    gtk_utils_create_size_group(GTK_SIZE_GROUP_HORIZONTAL,
+				radio_buttons[0], radio_buttons[1], label,
+				NULL);
+
+    page = gtk_utils_pack_in_box(GTK_TYPE_VBOX, QUARRY_SPACING_BIG,
+				 background_vbox, GTK_UTILS_FILL,
+				 foreground_vbox, GTK_UTILS_FILL, NULL);
+    gtk_container_set_border_width(GTK_CONTAINER(page), QUARRY_SPACING);
+    gtk_notebook_append_page(GTK_NOTEBOOK(notebook), page,
+			     gtk_label_new(INDEX_TO_GAME_NAME(k)));
+  }
+
+  return notebook;
 }
 
 
@@ -1065,6 +1169,92 @@ cancel_engine_query(GtkProgressDialog *progress_dialog,
 }
 
 
+
+static inline BoardAppearance *
+game_index_to_board_appearance_structure(GtkGameIndex game_index)
+{
+  if (game_index == GTK_GAME_GO)
+    return &go_board_appearance;
+
+  if (game_index == GTK_GAME_AMAZONS)
+    return &amazons_board_appearance;
+
+  if (game_index == GTK_GAME_OTHELLO)
+    return &othello_board_appearance;
+
+  assert(0);
+}
+
+
+static void
+update_board_background(GtkWidget *widget, GtkGameIndex game_index)
+{
+  BoardAppearance *board_appearance
+    = game_index_to_board_appearance_structure(game_index);
+
+  if (GTK_IS_RADIO_BUTTON(widget)) {
+    board_appearance->use_background_texture =
+      gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget));
+  }
+  else {
+    GdkColor gdk_color;
+    QuarryColor quarry_color;
+
+    gtk_color_button_get_color(GTK_COLOR_BUTTON(widget), &gdk_color);
+    gtk_utils_set_quarry_color(&quarry_color, &gdk_color);
+
+    if (QUARRY_COLORS_ARE_EQUAL(quarry_color,
+				board_appearance->background_color))
+      return;
+
+    board_appearance->background_color = quarry_color;
+  }
+
+  gtk_goban_update_appearance(index_to_game[game_index]);
+}
+
+
+static void
+update_board_background_texture(GtkEntry *entry, GdkEvent *event,
+				GtkGameIndex game_index)
+{
+  BoardAppearance *board_appearance
+    = game_index_to_board_appearance_structure(game_index);
+  const gchar *new_texture = gtk_entry_get_text(entry);
+
+  UNUSED(event);
+
+  if (!board_appearance->background_texture
+      || strcmp(new_texture, board_appearance->background_texture) != 0) {
+    utils_free(board_appearance->background_texture);
+    board_appearance->background_texture = utils_duplicate_string(new_texture);
+
+    gtk_goban_update_appearance(index_to_game[game_index]);
+  }
+}
+
+
+static void
+update_board_foreground(GtkColorButton *color_button, GtkGameIndex game_index)
+{
+  BoardAppearance *board_appearance
+    = game_index_to_board_appearance_structure(game_index);
+  GdkColor gdk_color;
+  QuarryColor quarry_color;
+
+  gtk_color_button_get_color(color_button, &gdk_color);
+  gtk_utils_set_quarry_color(&quarry_color, &gdk_color);
+
+  if (!QUARRY_COLORS_ARE_EQUAL(quarry_color,
+			       board_appearance->foreground_color)) {
+    board_appearance->foreground_color = quarry_color;
+
+    gtk_goban_update_appearance(index_to_game[game_index]);
+  }
+}
+
+
+
 GtkWidget *
 gtk_preferences_create_engine_selector(GtkGameIndex game_index,
 				       const gchar *engine_name,
