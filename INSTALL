@@ -45,6 +45,26 @@ files in `data/' subdirectory has changed or you intend to run the
 installed binary, not the one in build directory.
 
 
+		   BUILDING IN A SEPARATE DIRECTORY
+
+Starting with version 0.1.13 Quarry supports building in a separate
+directory.  It is not tested thoroughly, but should work just fine.
+
+To build Quarry in a separate directory, proceed as usually:
+
+	mkdir some-build-directory
+	cd some-build-directory
+	path/to/source/directory/configure
+	make
+	make install
+
+Your build directory can be named whatever you like; the only
+requirement is that it is placed outside the source directory.
+`path/to/source/directory/configure' should be the path to the topmost
+directory of the distribution (where this file is placed), not to
+`src/'.
+
+
 			INSTALLATION PROBLEMS
 
 If Quarry won't configure or compile on your system and you are sure
