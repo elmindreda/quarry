@@ -31,8 +31,7 @@ quarry_LDADD = 			\
 	utils/libutils.a	\
 				\
 	$(QUARRY_GTK_LIBS)	\
-	$(QUARRY_GTHREAD_LIBS)	\
-	$(QUARRY_RSVG_LIBS)
+	$(QUARRY_GTHREAD_LIBS)
 
 
 DISTCLEANFILES = *~
