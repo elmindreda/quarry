@@ -21,11 +21,10 @@
 
 
 h_include "../gui-utils/configuration-internals.h"
-h_include "gtk-configuration-structures.h"
+h_include "board.h"
 h_include "utils.h"
 
 c_include "gtk-configuration.h"
-c_include "gtk-configuration-structures.h"
 c_include "gtk-games.h"
 c_include "gui-back-end.h"
 c_include "utils.h"
@@ -36,12 +35,39 @@ section_list  unnamed gtk_configuration_sections {
 
   SECTION_NEW_GAME_DIALOG	"New Game Parameters"
 		single
-		existing	NewGameConfiguration
+		new		NewGameConfiguration
 				new_game_configuration_dispose
 
 		new_game_configuration
 		new_game_section_values
 		new_game_defaults
+
+  SECTION_NEW_GO_GAME		"New Go Game Parameters"
+		single
+		new		NewGoGameConfiguration
+				new_go_game_configuration_dispose
+
+		new_go_game_configuration
+		new_go_game_section_values
+		new_go_game_defaults
+
+  SECTION_NEW_AMAZONS_GAME	"New Amazons Game Parameters"
+		single
+		new		NewAmazonsGameConfiguration
+				new_amazons_game_configuration_dispose
+
+		new_amazons_game_configuration
+		new_amazons_game_section_values
+		new_amazons_game_defaults
+
+  SECTION_NEW_OTHELLO_GAME	"New Othello Game Parameters"
+		single
+		new		NewOthelloGameConfiguration
+				new_othello_game_configuration_dispose
+
+		new_othello_game_configuration
+		new_othello_game_section_values
+		new_othello_game_defaults
 
   + NUM_GTK_CONFIGURATION_SECTIONS
 }
@@ -60,16 +86,54 @@ values  - new_game_section_values {
   "Black player name"		player_names[BLACK_INDEX]	string
   "Black is computer"		player_is_computer[BLACK_INDEX]	boolean
   "Engine playing black"	engine_names[BLACK_INDEX]	string
+}
 
-  "Go board size"		go_board_size			int
+
+values  - new_go_game_section_values {
+  "Board size"			board_size			int
+
   "Handicap is fixed"		handicap_is_fixed		boolean
   "Fixed handicap"		fixed_handicap			int
   "Free handicap"		free_handicap			int
+
   "Komi"			komi				real
 
-  "Amazons board size"		amazons_board_size		int
+  "Time control type"		time_control.type		int
+  "Keep track of total time"	time_control.track_total_time	int
+  "Time limit for game"		time_control.game_time_limit	time
+  "Time limit for move"		time_control.move_time_limit	time
+  "Main time"			time_control.main_time		time
+  "Overtime period length"	time_control.overtime_period_length
+								time
+  "Moves per overtime"		time_control.moves_per_overtime	int
+}
 
-  "Othello board size"		othello_board_size		int
+
+values  - new_amazons_game_section_values {
+  "Board size"			board_size			int
+
+  "Time control type"		time_control.type		int
+  "Keep track of total time"	time_control.track_total_time	int
+  "Time limit for game"		time_control.game_time_limit	time
+  "Time limit for move"		time_control.move_time_limit	time
+  "Main time"			time_control.main_time		time
+  "Overtime period length"	time_control.overtime_period_length
+								time
+  "Moves per overtime"		time_control.moves_per_overtime	int
+}
+
+
+values  - new_othello_game_section_values {
+  "Board size"			board_size			int
+
+  "Time control type"		time_control.type		int
+  "Keep track of total time"	time_control.track_total_time	int
+  "Time limit for game"		time_control.game_time_limit	time
+  "Time limit for move"		time_control.move_time_limit	time
+  "Main time"			time_control.main_time		time
+  "Overtime period length"	time_control.overtime_period_length
+								time
+  "Moves per overtime"		time_control.moves_per_overtime	int
 }
 
 
@@ -79,22 +143,81 @@ include_list ../gui-utils/common-configuration-defaults.list
 defaults  - new_game_defaults {
   game_name				string		"Go"
 
-  player_names[BLACK_INDEX]		string		user_real_name
-  player_names[WHITE_INDEX]		string		user_real_name
+  player_names				array		[NUM_COLORS]
+					string
+    [BLACK_INDEX]					user_real_name
+    [WHITE_INDEX]					user_real_name
+  end
 
-  player_is_computer[BLACK_INDEX]	boolean		false
-  player_is_computer[WHITE_INDEX]	boolean		false
+  player_is_computer			array		[NUM_COLORS]
+					boolean
+    [BLACK_INDEX]					false
+    [WHITE_INDEX]					false
+  end
 
-  engine_names[BLACK_INDEX]		string		NULL
-  engine_names[WHITE_INDEX]		string		NULL
+  engine_names				array		[NUM_COLORS]
+					string
+    [BLACK_INDEX]					NULL
+    [WHITE_INDEX]					NULL
+  end
+}
 
-  go_board_size				int		19
-  amazons_board_size			int		10
-  othello_board_size			int		8
+
+defaults  - new_go_game_defaults {
+  board_size				int		19
 
   handicap_is_fixed			boolean		true
   fixed_handicap			int		0
   free_handicap				int		0
 
   komi					real		6.5
+
+  time_control				structure	new
+					TimeControlConfiguration
+					time_control_configuration_dispose
+
+    type				int		0
+    track_total_time			int		0
+    game_time_limit			time		30:00
+    move_time_limit			time		00:30
+    main_time				time		10:00
+    overtime_period_length		time		10:00
+    moves_per_overtime			int		25
+  end
+}
+
+
+defaults  - new_amazons_game_defaults {
+  board_size				int		10
+
+  time_control				structure	new
+					TimeControlConfiguration
+					time_control_configuration_dispose
+
+    type				int		0
+    track_total_time			int		0
+    game_time_limit			time		15:00
+    move_time_limit			time		00:20
+    main_time				time		00:00
+    overtime_period_length		time		05:00
+    moves_per_overtime			int		10
+  end
+}
+
+
+defaults  - new_othello_game_defaults {
+  board_size				int		8
+
+  time_control				structure	new
+					TimeControlConfiguration
+					time_control_configuration_dispose
+
+    type				int		0
+    track_total_time			int		0
+    game_time_limit			time		10:00
+    move_time_limit			time		00:15
+    main_time				time		00:00
+    overtime_period_length		time		05:00
+    moves_per_overtime			int		10
+  end
 }
