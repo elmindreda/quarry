@@ -932,8 +932,10 @@ utils_parse_double(const char *float_string, double *result)
   while (*scan >= '0' && *scan <= '9')
     *result = *result * 10 + (double) (*scan++ - '0');
 
-  if (*(scan++) == '.') {
+  if (*scan == '.') {
     double factor = 0.1;
+
+    scan++;
     while (*scan >= '0' && *scan <= '9') {
       *result += (double) (*(scan++) - '0') * factor;
       factor /= 10.0;
