@@ -20,11 +20,10 @@
 \* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 /* The main purpose of this file is to use stuff in `config.h' in a
- * include-once protected way.  There are also a few commonly used
- * things.
+ * include-once protected way.  There are also some commonly used
+ * things, like i18n macros.
  *
- * It should be included in every other `.h' file (mainly to cope with
- * missing `const' / `inline' compiler features).
+ * It should be included in every other `.h' file.
  */
 
 
@@ -69,6 +68,8 @@
 #endif
 
 
+/* A set of useful macros. */
+
 #undef MIN
 #define MIN(a, b)		((a) < (b) ? (a) : (b))
 
@@ -82,6 +83,15 @@
 #undef ROUND_UP
 #define ROUND_UP(value, power_of_2)			\
   (((value) + (power_of_2) - 1) & ~((power_of_2) - 1))
+
+
+/* I18n macros. The `gettext.h' header disables NLS itself, if
+ * requested by `configure' script.
+ */
+#include "gettext.h"
+
+#define _(string)		gettext(string)
+#define N_(string)		gettext_noop(string)
 
 
 /* Determine if given byte (`character') starts an UTF-8 character,
