@@ -32,6 +32,7 @@
 #include "gtk-progress-dialog.h"
 #include "gtk-utils.h"
 #include "quarry-stock.h"
+#include "markup-theme-configuration.h"
 #include "utils.h"
 
 #include <assert.h>
@@ -69,6 +70,21 @@ enum {
   ENGINES_COMMAND_LINE,
 #endif
   ENGINES_NUM_COLUMNS
+};
+
+
+typedef struct _UseThemeDefaultSizeData		UseThemeDefaultSizeData;
+typedef struct _UseThemeDefaultOpacityData	UseThemeDefaultOpacityData;
+
+struct _UseThemeDefaultSizeData {
+  GtkGameIndex	      game_index;
+  GtkRange	     *range;
+  GtkToggleButton    *toggle_button;
+};
+
+struct _UseThemeDefaultOpacityData {
+  GtkGameIndex	      game_index;
+  GtkRange	     *range;
 };
 
 
@@ -123,8 +139,10 @@ static GtkWidget *  create_othello_board_appearance_page(void);
 
 static GtkWidget *  create_background_table(GtkGameIndex game_index,
 					    gint num_table_rows);
+static GtkWidget *  create_markup_box(GtkGameIndex game_index,
+				      const gchar *labels[4]);
 static GtkWidget *  create_board_appearance_notebook_page
-		      (GtkWidget *background_widget);
+		      (GtkWidget *background_widget, GtkWidget *markup_widget);
 
 
 static void	    gtk_preferences_dialog_change_page
@@ -158,14 +176,18 @@ static gboolean	    show_progress_dialog(GtkProgressDialog *progress_dialog,
 static gboolean	    cancel_engine_query(GtkProgressDialog *progress_dialog,
 					GtkEngineDialogData *data);
 
-static void	    update_board_background(GtkWidget *widget,
-					    GtkGameIndex game_index);
+static void	    update_board_background(GtkToggleButton *toggle_button,
+					    gpointer game_index);
 static void	    update_board_background_texture(GtkEntry *entry,
 						    GdkEvent *event,
-						    GtkGameIndex game_index);
-static void	    update_board_grid_and_labels_color
-		      (GtkColorButton *color_button, GtkGameIndex game_index);
-static void	    update_checkerboard_pattern(GtkWidget *widget);
+						    gpointer game_index);
+static void	    update_board_markup(GtkWidget *widget,
+					gpointer game_index);
+static void	    update_board_appearance(GtkWidget *widget, 
+					    gpointer value_storage);
+static void	    use_theme_default_size(UseThemeDefaultSizeData *data);
+static void	    use_theme_default_opacity
+		      (UseThemeDefaultOpacityData *data);
 
 static inline BoardAppearance *
 		    game_index_to_board_appearance_structure
@@ -364,7 +386,7 @@ gtk_preferences_dialog_present(gint page_to_select)
     gtk_tree_view_set_headers_visible(category_tree_view, FALSE);
     g_object_unref(categories);
 
-    label = gtk_utils_create_mnemonic_label(_("Cat_egory:"), category_list);
+    label = gtk_utils_create_mnemonic_label(_("Categor_y:"), category_list);
 
     vbox = gtk_utils_pack_in_box(GTK_TYPE_VBOX, QUARRY_SPACING_SMALL,
 				 label, GTK_UTILS_FILL,
@@ -631,17 +653,33 @@ create_gtp_engines_page(void)
 static GtkWidget *
 create_go_board_appearance_page(void)
 {
-  GtkWidget *background_table = create_background_table(GTK_GAME_GO, 3);
+  static const gchar *labels[4] = {
+    N_("_Relative to stone size"),
+    N_("On _white stones:"),
+    N_("On _black stones:"),
+    N_("On _empty intersections:")
+  };
 
-  return create_board_appearance_notebook_page(background_table);
+  GtkWidget *background_table = create_background_table(GTK_GAME_GO, 3);
+  GtkWidget *markup_box = create_markup_box(GTK_GAME_GO, labels);
+
+  return create_board_appearance_notebook_page(background_table, markup_box);
 }
 
 
 static GtkWidget *
 create_amazons_board_appearance_page(void)
 {
+  static const gchar *labels[4] = {
+    N_("_Relative to amazon size"),
+    N_("On _white amazons:"),
+    N_("On _black amazons:"),
+    N_("On _empty fields:")
+  };
+
   GtkWidget *background_table = create_background_table(GTK_GAME_AMAZONS, 5);
   GtkTable *table = GTK_TABLE(background_table);
+  GtkWidget *markup_box = create_markup_box(GTK_GAME_AMAZONS, labels);
   QuarryColor *quarry_color
     = &amazons_board_appearance.checkerboard_pattern_color;
   GdkColor color;
@@ -658,7 +696,8 @@ create_amazons_board_appearance_page(void)
 			     _("Pick Checkerboard Pattern Color"));
 
   g_signal_connect(color_button, "color-set",
-		   G_CALLBACK(update_checkerboard_pattern), NULL);
+		   G_CALLBACK(update_board_appearance),
+		   &amazons_board_appearance.checkerboard_pattern_color);
 
   gtk_table_attach(table, color_button, 1, 2, 2, 3,
 		   GTK_EXPAND | GTK_FILL, 0, 0, 0);
@@ -673,7 +712,8 @@ create_amazons_board_appearance_page(void)
   gtk_range_set_value(GTK_RANGE(scale), opacity);
 
   g_signal_connect(scale, "value-changed",
-		   G_CALLBACK(update_checkerboard_pattern), NULL);
+		   G_CALLBACK(update_board_appearance),
+		   &amazons_board_appearance.checkerboard_pattern_opacity);
 
   gtk_table_attach(table, scale, 1, 2, 3, 4,
 		   GTK_EXPAND | GTK_FILL, 0, 0, 0);
@@ -682,16 +722,24 @@ create_amazons_board_appearance_page(void)
 					  scale);
   gtk_table_attach(table, label, 0, 1, 3, 4, GTK_FILL, 0, 0, 0);
 
-  return create_board_appearance_notebook_page(background_table);
+  return create_board_appearance_notebook_page(background_table, markup_box);
 }
 
 
 static GtkWidget *
 create_othello_board_appearance_page(void)
 {
-  GtkWidget *background_table = create_background_table(GTK_GAME_OTHELLO, 3);
+  static const gchar *labels[4] = {
+    N_("_Relative to disk size"),
+    N_("On _white disks:"),
+    N_("On _black disks:"),
+    N_("On _empty fields:")
+  };
 
-  return create_board_appearance_notebook_page(background_table);
+  GtkWidget *background_table = create_background_table(GTK_GAME_OTHELLO, 3);
+  GtkWidget *markup_box = create_markup_box(GTK_GAME_OTHELLO, labels);
+
+  return create_board_appearance_notebook_page(background_table, markup_box);
 }
 
 
@@ -756,8 +804,8 @@ create_background_table(GtkGameIndex game_index, gint num_table_rows)
 				    color_button);
 
   g_signal_connect(color_button, "color-set",
-		   G_CALLBACK(update_board_background),
-		   GINT_TO_POINTER(game_index));
+		   G_CALLBACK(update_board_appearance),
+		   &board_appearance->background_color);
 
   gtk_table_attach(table, color_button, 1, 2, 1, 2,
 		   GTK_EXPAND | GTK_FILL, 0, 0, 0);
@@ -768,8 +816,8 @@ create_background_table(GtkGameIndex game_index, gint num_table_rows)
 			     _("Pick Color for Grid and Labels"));
 
   g_signal_connect(color_button, "color-set",
-		   G_CALLBACK(update_board_grid_and_labels_color),
-		   GINT_TO_POINTER(game_index));
+		   G_CALLBACK(update_board_appearance),
+		   &board_appearance->grid_and_labels_color);
 
   gtk_table_attach(table, color_button,
 		   1, 2, num_table_rows - 1, num_table_rows,
@@ -785,16 +833,174 @@ create_background_table(GtkGameIndex game_index, gint num_table_rows)
 
 
 static GtkWidget *
-create_board_appearance_notebook_page(GtkWidget *background_widget)
+create_markup_box(GtkGameIndex game_index, const gchar *labels[4])
+{
+  UseThemeDefaultSizeData *size_data
+    = g_malloc(sizeof(UseThemeDefaultSizeData));
+  UseThemeDefaultOpacityData *opacity_data
+    = g_malloc(sizeof(UseThemeDefaultOpacityData));
+  BoardAppearance *board_appearance
+    = game_index_to_board_appearance_structure(game_index);
+  GtkWidget *selector;
+  GtkWidget *label1;
+  GtkWidget *theme_hbox;
+  GtkWidget *scale;
+  GtkWidget *label2;
+  GtkWidget *label3;
+  GtkWidget *hbox;
+  GtkWidget *check_button;
+  GtkWidget *vbox;
+  GtkWidget *button;
+  GtkWidget *size_named_vbox;
+  GtkWidget *opacity_named_vbox;
+  GtkWidget *color_named_vbox;
+  GtkSizeGroup *size_group;
+  int k;
+
+  selector = gtk_utils_create_selector_from_string_list(&markup_themes,
+							(board_appearance
+							 ->markup_theme));
+  g_signal_connect(selector, "changed",
+		   G_CALLBACK(update_board_markup),
+		   GINT_TO_POINTER(game_index));
+
+  label1 = gtk_utils_create_mnemonic_label(_("_Theme:"), selector);
+
+  theme_hbox = gtk_utils_pack_in_box(GTK_TYPE_HBOX, 0,
+				     label1, 0, gtk_label_new("    "), 0,
+				     selector, GTK_UTILS_FILL | QUARRY_SPACING,
+				     NULL);
+
+  scale = gtk_hscale_new_with_range(0.2, 1.0, 0.05);
+  gtk_scale_set_draw_value(GTK_SCALE(scale), FALSE);
+  gtk_range_set_update_policy(GTK_RANGE(scale), GTK_UPDATE_DELAYED);
+  gtk_range_set_value(GTK_RANGE(scale), board_appearance->markup_size);
+
+  g_signal_connect(scale, "value-changed",
+		   G_CALLBACK(update_board_appearance),
+		   &board_appearance->markup_size);
+
+  label2 = gtk_utils_create_mnemonic_label(_("_Size:"), scale);
+
+  hbox = gtk_utils_pack_in_box(GTK_TYPE_HBOX, QUARRY_SPACING,
+			       label2, 0, scale, GTK_UTILS_PACK_DEFAULT, NULL);
+
+  check_button = gtk_check_button_new_with_mnemonic(_(labels[0]));
+  if (board_appearance->markup_size_is_relative)
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(check_button), TRUE);
+
+  g_signal_connect(check_button, "toggled",
+		   G_CALLBACK(update_board_markup),
+		   GINT_TO_POINTER(game_index));
+
+  vbox = gtk_utils_pack_in_box(GTK_TYPE_VBOX, QUARRY_SPACING_SMALL,
+			       hbox, GTK_UTILS_FILL,
+			       check_button, GTK_UTILS_FILL, NULL);
+
+  button = gtk_button_new_with_mnemonic(_("Theme _default"));
+
+  size_data->game_index	   = game_index;
+  size_data->range	   = GTK_RANGE(scale);
+  size_data->toggle_button = GTK_TOGGLE_BUTTON(check_button);
+
+  g_signal_connect_swapped(button, "clicked",
+			   G_CALLBACK(use_theme_default_size), size_data);
+  g_signal_connect_swapped(button, "destroy", G_CALLBACK(g_free), size_data);
+
+  hbox = gtk_utils_pack_in_box(GTK_TYPE_HBOX, QUARRY_SPACING,
+			       vbox, GTK_UTILS_PACK_DEFAULT,
+			       gtk_utils_align_widget(button, 0.5, 0.5),
+			       GTK_UTILS_FILL,
+			       NULL);
+
+  size_named_vbox = gtk_named_vbox_new(_("Markup Size"), FALSE, 0);
+  gtk_box_pack_start_defaults(GTK_BOX(size_named_vbox), hbox);
+
+  scale = gtk_hscale_new_with_range(0.2, 1.0, 0.05);
+  gtk_scale_set_draw_value(GTK_SCALE(scale), FALSE);
+  gtk_range_set_update_policy(GTK_RANGE(scale), GTK_UPDATE_DELAYED);
+  gtk_range_set_value(GTK_RANGE(scale), board_appearance->markup_opacity);
+
+  g_signal_connect(scale, "value-changed",
+		   G_CALLBACK(update_board_appearance),
+		   &board_appearance->markup_opacity);
+
+  label3 = gtk_utils_create_mnemonic_label(_("_Opacity:"), scale);
+
+  button = gtk_button_new_with_mnemonic(_("Theme de_fault"));
+
+  opacity_data->game_index = game_index;
+  opacity_data->range	   = GTK_RANGE(scale);
+
+  g_signal_connect_swapped(button, "clicked",
+			   G_CALLBACK(use_theme_default_opacity),
+			   opacity_data);
+  g_signal_connect_swapped(button, "destroy", G_CALLBACK(g_free),
+			   opacity_data);
+
+  hbox = gtk_utils_pack_in_box(GTK_TYPE_HBOX, QUARRY_SPACING,
+			       label3, 0, scale, GTK_UTILS_PACK_DEFAULT,
+			       button, GTK_UTILS_FILL, NULL);
+
+  gtk_utils_create_size_group(GTK_SIZE_GROUP_HORIZONTAL,
+			      label1, label2, label3, NULL);
+
+  opacity_named_vbox = gtk_named_vbox_new(_("Markup Opacity"), FALSE, 0);
+  gtk_box_pack_start_defaults(GTK_BOX(opacity_named_vbox), hbox);
+
+  color_named_vbox = gtk_named_vbox_new(_("Markup Color"),
+					FALSE, QUARRY_SPACING_SMALL);
+
+  size_group = gtk_size_group_new(GTK_SIZE_GROUP_HORIZONTAL);
+
+  for (k = 0; k < NUM_SGF_MARKUP_BACKGROUNDS; k++) {
+    GdkColor color;
+    GtkWidget *color_button;
+    int color_index = (NUM_SGF_MARKUP_BACKGROUNDS - 1) - k;
+
+    gtk_utils_set_gdk_color(&color,
+			    board_appearance->markup_colors[color_index]);
+    color_button = gtk_color_button_new_with_color(&color);
+    gtk_color_button_set_title(GTK_COLOR_BUTTON(color_button),
+			       _("Pick Color for Markup"));
+
+    g_signal_connect(color_button, "color-set",
+		     G_CALLBACK(update_board_appearance),
+		     &board_appearance->markup_colors[color_index]);
+
+    label1 = gtk_utils_create_mnemonic_label(_(labels[1 + k]), color_button);
+
+    hbox = gtk_utils_pack_in_box(GTK_TYPE_HBOX, QUARRY_SPACING,
+				 label1, 0,
+				 color_button, GTK_UTILS_PACK_DEFAULT, NULL);
+    gtk_box_pack_start_defaults(GTK_BOX(color_named_vbox), hbox);
+
+    gtk_size_group_add_widget(size_group, label1);
+  }
+
+  return gtk_utils_pack_in_box(GTK_TYPE_VBOX, QUARRY_SPACING_BIG,
+			       theme_hbox, GTK_UTILS_FILL,
+			       size_named_vbox, GTK_UTILS_FILL,
+			       opacity_named_vbox, GTK_UTILS_FILL,
+			       color_named_vbox, GTK_UTILS_FILL, NULL);
+}
+
+
+static GtkWidget *
+create_board_appearance_notebook_page(GtkWidget *background_widget,
+				      GtkWidget *markup_widget)
 {
   GtkWidget *notebook_widget = gtk_notebook_new();
   GtkNotebook *notebook = GTK_NOTEBOOK(notebook_widget);
 
   gtk_container_set_border_width(GTK_CONTAINER(background_widget),
 				 QUARRY_SPACING);
+  gtk_container_set_border_width(GTK_CONTAINER(markup_widget), QUARRY_SPACING);
 
   gtk_notebook_append_page(notebook, background_widget,
 			   gtk_label_new(_("Background")));
+  gtk_notebook_append_page(notebook, markup_widget,
+			   gtk_label_new(_("Markup")));
 
   return notebook_widget;
 }
@@ -1362,39 +1568,24 @@ cancel_engine_query(GtkProgressDialog *progress_dialog,
 
 
 static void
-update_board_background(GtkWidget *widget, GtkGameIndex game_index)
+update_board_background(GtkToggleButton *toggle_button, gpointer game_index)
 {
   BoardAppearance *board_appearance
-    = game_index_to_board_appearance_structure(game_index);
+    = game_index_to_board_appearance_structure(GPOINTER_TO_INT(game_index));
 
-  if (GTK_IS_RADIO_BUTTON(widget)) {
-    board_appearance->use_background_texture =
-      gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget));
-  }
-  else {
-    GdkColor gdk_color;
-    QuarryColor quarry_color;
+  board_appearance->use_background_texture =
+      gtk_toggle_button_get_active(toggle_button);
 
-    gtk_color_button_get_color(GTK_COLOR_BUTTON(widget), &gdk_color);
-    gtk_utils_set_quarry_color(&quarry_color, &gdk_color);
-
-    if (QUARRY_COLORS_ARE_EQUAL(quarry_color,
-				board_appearance->background_color))
-      return;
-
-    board_appearance->background_color = quarry_color;
-  }
-
-  gtk_goban_update_appearance(index_to_game[game_index]);
+  gtk_goban_update_appearance(index_to_game[GPOINTER_TO_INT(game_index)]);
 }
 
 
 static void
 update_board_background_texture(GtkEntry *entry, GdkEvent *event,
-				GtkGameIndex game_index)
+				gpointer game_index)
 {
   BoardAppearance *board_appearance
-    = game_index_to_board_appearance_structure(game_index);
+    = game_index_to_board_appearance_structure(GPOINTER_TO_INT(game_index));
   const gchar *new_texture = gtk_entry_get_text(entry);
 
   UNUSED(event);
@@ -1404,54 +1595,118 @@ update_board_background_texture(GtkEntry *entry, GdkEvent *event,
     configuration_set_string_value(&board_appearance->background_texture,
 				   new_texture);
 
-    gtk_goban_update_appearance(index_to_game[game_index]);
+    gtk_goban_update_appearance(index_to_game[GPOINTER_TO_INT(game_index)]);
   }
 }
 
 
 static void
-update_board_grid_and_labels_color(GtkColorButton *color_button,
-				   GtkGameIndex game_index)
+update_board_markup(GtkWidget *widget, gpointer game_index)
 {
   BoardAppearance *board_appearance
-    = game_index_to_board_appearance_structure(game_index);
-  GdkColor gdk_color;
-  QuarryColor quarry_color;
+    = game_index_to_board_appearance_structure(GPOINTER_TO_INT (game_index));
 
-  gtk_color_button_get_color(color_button, &gdk_color);
-  gtk_utils_set_quarry_color(&quarry_color, &gdk_color);
-
-  if (!QUARRY_COLORS_ARE_EQUAL(quarry_color,
-			       board_appearance->grid_and_labels_color)) {
-    board_appearance->grid_and_labels_color = quarry_color;
-
-    gtk_goban_update_appearance(index_to_game[game_index]);
+  if (GTK_IS_CHECK_BUTTON(widget)) {
+    board_appearance->markup_size_is_relative
+      = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget));
   }
+  else {
+    gint selected_theme_index
+      = gtk_utils_get_selector_active_item_index(widget);
+    MarkupThemeListItem *selected_theme
+      = markup_theme_list_get_item(&markup_themes, selected_theme_index);
+
+    if (strcmp(board_appearance->markup_theme, selected_theme->name) == 0)
+      return;
+
+    board_appearance->markup_theme = selected_theme->name;
+  }
+
+  gtk_goban_update_appearance(index_to_game[GPOINTER_TO_INT(game_index)]);
 }
 
 
 static void
-update_checkerboard_pattern(GtkWidget *widget)
+update_board_appearance(GtkWidget *widget, gpointer value_storage)
 {
-  if (GTK_IS_COLOR_BUTTON(widget)) {
+  Game game;
+
+  if ((gpointer) &go_board_appearance < value_storage
+      && value_storage < (gpointer) (&go_board_appearance + 1))
+    game = GAME_GO;
+  else if ((gpointer) &amazons_board_appearance < value_storage
+	   && value_storage < ((gpointer) (&amazons_board_appearance + 1)))
+    game = GAME_AMAZONS;
+  else if ((gpointer) &othello_board_appearance < value_storage
+      && value_storage < (gpointer) (&othello_board_appearance + 1))
+    game = GAME_OTHELLO;
+  else
+    assert(0);
+
+  if ((gpointer) &go_board_appearance < value_storage
+      && value_storage < (gpointer) (&go_board_appearance + 1))
+    game = GAME_GO;
+
+  if (GTK_IS_RANGE(widget))
+    * (double *) value_storage = gtk_range_get_value(GTK_RANGE(widget));
+  else if (GTK_IS_COLOR_BUTTON(widget)) {
     GdkColor gdk_color;
     QuarryColor quarry_color;
 
     gtk_color_button_get_color(GTK_COLOR_BUTTON(widget), &gdk_color);
     gtk_utils_set_quarry_color(&quarry_color, &gdk_color);
 
-    if (QUARRY_COLORS_ARE_EQUAL(quarry_color,
-				amazons_board_appearance.checkerboard_pattern_color))
+    if (QUARRY_COLORS_ARE_EQUAL(quarry_color, * (QuarryColor *) value_storage))
       return;
 
-    amazons_board_appearance.checkerboard_pattern_color = quarry_color;
+    * (QuarryColor *) value_storage = quarry_color;
   }
-  else {
-    amazons_board_appearance.checkerboard_pattern_opacity
-      = gtk_range_get_value(GTK_RANGE(widget));
-  }
+  else
+    assert(0);
 
-  gtk_goban_update_appearance(GAME_AMAZONS);
+  gtk_goban_update_appearance(game);
+}
+
+
+static void
+use_theme_default_size(UseThemeDefaultSizeData *data)
+{
+  BoardAppearance *board_appearance
+    = game_index_to_board_appearance_structure(data->game_index);
+  MarkupThemeListItem *current_theme
+    = markup_theme_list_find(&markup_themes, board_appearance->markup_theme);
+
+  gtk_range_set_value(data->range, current_theme->default_size);
+  gtk_toggle_button_set_active(data->toggle_button,
+			       current_theme->size_is_relative);
+}
+
+
+static void
+use_theme_default_opacity(UseThemeDefaultOpacityData *data)
+{
+  BoardAppearance *board_appearance
+    = game_index_to_board_appearance_structure(data->game_index);
+  MarkupThemeListItem *current_theme
+    = markup_theme_list_find(&markup_themes, board_appearance->markup_theme);
+
+  gtk_range_set_value(data->range, current_theme->default_opacity);
+}
+
+
+BoardAppearance *
+game_to_board_appearance_structure(Game game)
+{
+  if (game == GAME_GO)
+    return &go_board_appearance;
+
+  if (game == GAME_AMAZONS)
+    return &amazons_board_appearance.board_appearance;
+
+  if (game == GAME_OTHELLO)
+    return &othello_board_appearance;
+
+  assert(0);
 }
 
 
