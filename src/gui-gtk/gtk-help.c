@@ -31,7 +31,10 @@
 void
 gtk_help_display(const gchar *link_id)
 {
+#if HAVE_SCROLLKEEPER
   static gboolean yelp_works = TRUE;
+#endif
+
   static gchar locale_directory[16] = "";
   gchar *child_argv[3];
 
@@ -83,6 +86,7 @@ gtk_help_display(const gchar *link_id)
     }
   }
 
+#if HAVE_SCROLLKEEPER
   if (yelp_works) {
     child_argv[0] = "yelp";
 
@@ -104,6 +108,8 @@ gtk_help_display(const gchar *link_id)
   }
 
   if (!yelp_works) {
+#endif
+
     /* FIXME: Make fallback browser configurable. */
     child_argv[0] = "mozilla";
 
@@ -122,7 +128,10 @@ gtk_help_display(const gchar *link_id)
 
     if (link_id)
       g_free(child_argv[1]);
+
+#if HAVE_SCROLLKEEPER
   }
+#endif
 }
 
 
