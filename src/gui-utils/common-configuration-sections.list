@@ -20,7 +20,7 @@
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
 
-  SECTION_GTP_ENGINES	"GTP Engine"
+  SECTION_GTP_ENGINES		"GTP Engine"
 		repeatable
 		new		GtpEngineList		screen_name
 				gtp_engine_list		STATIC_GTP_ENGINE_LIST
@@ -28,3 +28,30 @@
 		gtp_engines
 		gtp_engine_section_values
 		gtp_engine_defaults
+
+
+  SECTION_GO_BOARD_APPEARANCE	"Go Board Appearance"
+		single
+		new		BoardAppearance		board_appearance_dispose
+
+		go_board_appearance
+		board_appearance_values
+		go_board_appearance_defaults
+
+
+  SECTION_AMAZONS_BOARD_APPEARANCE "Amazons Board Appearance"
+		single
+		new		BoardAppearance		board_appearance_dispose
+
+		amazons_board_appearance
+		board_appearance_values
+		amazons_board_appearance_defaults
+
+
+  SECTION_OTHELLO_BOARD_APPEARANCE "Othello Board Appearance"
+		single
+		new		BoardAppearance		board_appearance_dispose
+
+		othello_board_appearance
+		board_appearance_values
+		othello_board_appearance_defaults

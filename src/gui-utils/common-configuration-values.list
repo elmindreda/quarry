@@ -36,3 +36,18 @@ values  unnamed gtp_engine_section_values {
   GTP_ENGINE_SUPPORTED_GAMES
   "Supported games"		supported_games			string_list
 }
+
+
+values  unnamed board_appearance_values {
+  BOARD_APPEARANCE_USE_TEXTURE
+  "Use background texture"	use_background_texture		boolean
+
+  BOARD_APPEARANCE_TEXTURE
+  "Background texture"		background_texture		string
+
+  BOARD_APPEARANCE_BACKGROUND_COLOR
+  "Background color"		background_color		color
+
+  BOARD_APPEARANCE_FOREGROUND_COLOR
+  "Foreground color"		foreground_color		color
+}
