@@ -1,7 +1,7 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *\
  * This file is part of Quarry.                                    *
  *                                                                 *
- * Copyright (C) 2003, 2004 Paul Pogonyshev.                       *
+ * Copyright (C) 2003, 2004, 2005 Paul Pogonyshev.                 *
  *                                                                 *
  * This program is free software; you can redistribute it and/or   *
  * modify it under the terms of the GNU General Public License as  *
@@ -30,9 +30,17 @@
 #include <gtk/gtk.h>
 
 
-void		gtk_parser_interface_present(void);
+typedef void (* GtkHandleParsedData) (SgfCollection *sgf_collection,
+				      SgfErrorList *error_list,
+				      const gchar *filename);
 
-void		gtk_parse_sgf_file(const char *filename, GtkWindow *parent);
+
+void		gtk_parser_interface_present_default (void);
+void		gtk_parser_interface_present (const gchar *title,
+					      GtkHandleParsedData callback);
+
+void		gtk_parse_sgf_file (const char *filename, GtkWindow *parent,
+				    GtkHandleParsedData callback);
 
 
 #endif /* QUARRY_GTK_PARSER_INTERFACE_H */

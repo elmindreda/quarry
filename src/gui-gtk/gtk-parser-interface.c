@@ -32,15 +32,16 @@
 
 
 #include "gtk-parser-interface.h"
-#include "gtk-thread-interface.h"
-#include "gtk-goban-window.h"
+
 #include "gtk-control-center.h"
+#include "gtk-goban-window.h"
+#include "gtk-thread-interface.h"
 #include "gtk-utils.h"
 #include "sgf.h"
 #include "utils.h"
 
-#include <gtk/gtk.h>
 #include <assert.h>
+#include <gtk/gtk.h>
 
 /* For chdir() function. */
 #if HAVE_UNISTD_H
@@ -68,37 +69,66 @@ static const gchar *not_sgf_file_error_hint =
 
 
 static void	 open_file_response (GtkFileSelection *dialog,
-				     gint response_id);
+				     gint response_id,
+				     GtkHandleParsedData callback);
+
+static void	 open_game_record (SgfCollection *sgf_collection,
+				   SgfErrorList *sgf_error_list,
+				   const gchar *filename);
+
+
+/* For hooking up as a callback. */
+void
+gtk_parser_interface_present_default (void)
+{
+  gtk_parser_interface_present (NULL, NULL);
+}
 
 
 void
-gtk_parser_interface_present (void)
+gtk_parser_interface_present (const gchar *title, GtkHandleParsedData callback)
 {
-  GtkWidget *file_selection = gtk_file_selection_new (_("Open SGF File..."));
+  GtkWidget *file_selection;
 
+  file_selection = gtk_file_selection_new (title
+					   ? title : _("Open SGF File..."));
   gtk_control_center_window_created (GTK_WINDOW (file_selection));
 
   gtk_utils_add_file_selection_response_handlers (file_selection, FALSE,
 						  (G_CALLBACK
 						   (open_file_response)),
-						  NULL);
+						  callback);
   g_signal_connect (file_selection, "destroy",
 		    G_CALLBACK (gtk_control_center_window_destroyed), NULL);
 
-  gtk_widget_show (file_selection);
+  gtk_window_present (GTK_WINDOW (file_selection));
 }
 
 
 static void
-open_file_response (GtkFileSelection *dialog, gint response_id)
+open_file_response (GtkFileSelection *dialog, gint response_id,
+		    GtkHandleParsedData callback)
 {
   if (response_id == GTK_RESPONSE_OK) {
     const gchar *filename = gtk_file_selection_get_filename (dialog);
 
-    gtk_parse_sgf_file (filename, GTK_WINDOW (dialog));
+    gtk_parse_sgf_file (filename, GTK_WINDOW (dialog), callback);
   }
   else if (response_id == GTK_RESPONSE_CANCEL)
     gtk_widget_destroy (GTK_WIDGET (dialog));
+}
+
+
+static void
+open_game_record (SgfCollection *sgf_collection, SgfErrorList *sgf_error_list,
+		  const gchar *filename)
+{
+  GtkWidget *goban_window = gtk_goban_window_new (sgf_collection, filename);
+
+  gtk_window_present (GTK_WINDOW (goban_window));
+
+  if (sgf_error_list)
+    string_list_delete (sgf_error_list);
 }
 
 
@@ -118,20 +148,40 @@ static gboolean	 cancel_parsing (GtkProgressDialog *progress_dialog,
 static void	 analyze_parsed_data (void *result);
 
 
+/* NOTE: `filename' must be in file system encoding! */
 void
-gtk_parse_sgf_file (const char *filename, GtkWindow *parent)
+gtk_parse_sgf_file (const char *filename, GtkWindow *parent,
+		    GtkHandleParsedData callback)
 {
   ParsingThreadData *data;
   gchar *label_text;
+  gchar *absolute_filename;
+  gchar *filename_in_utf8;
+
+  assert (filename);
+
+  if (g_path_is_absolute (filename))
+    absolute_filename = g_strdup (filename);
+  else {
+    gchar *current_directory = g_get_current_dir ();
+
+    absolute_filename = g_build_filename (current_directory, filename, NULL);
+    g_free (current_directory);
+  }
 
   data = g_malloc (sizeof (ParsingThreadData));
-  data->filename	  = g_strdup (filename);
+  data->filename	  = absolute_filename;
   data->file_size	  = 0;
   data->bytes_parsed	  = 0;
   data->cancellation_flag = 0;
   data->parent		  = (parent ? GTK_WIDGET (parent) : NULL);
+  data->callback	  = callback ? callback : open_game_record;
 
-  label_text = g_strdup_printf (_("Parsing file `%s'..."), filename);
+  filename_in_utf8 = g_filename_to_utf8 (absolute_filename, -1,
+					 NULL, NULL, NULL);
+  label_text = g_strdup_printf (_("Parsing file `%s'..."), filename_in_utf8);
+  g_free (filename_in_utf8);
+
   data->progress_dialog
     = gtk_progress_dialog_new (parent, "Quarry", label_text,
 			       (GtkProgressDialogCallback) update_progress_bar,
@@ -208,14 +258,6 @@ analyze_parsed_data (void *result)
   gtk_widget_destroy (data->progress_dialog);
 
   if (data->result == SGF_PARSED) {
-    GtkWidget *goban_window = gtk_goban_window_new (data->sgf_collection,
-						    data->filename);
-
-    gtk_widget_show (goban_window);
-
-    if (data->error_list)
-      string_list_delete (data->error_list);
-
     if (data->parent) {
       gchar *directory = g_path_get_dirname (data->filename);
 
@@ -224,6 +266,8 @@ analyze_parsed_data (void *result)
 
       gtk_widget_destroy (data->parent);
     }
+
+    data->callback (data->sgf_collection, data->error_list, data->filename);
   }
   else if (data->result == SGF_PARSING_CANCELLED) {
     if (data->parent)
@@ -233,6 +277,8 @@ analyze_parsed_data (void *result)
     GtkProgressDialog *progress_dialog
       = GTK_PROGRESS_DIALOG (data->progress_dialog);
     GtkWidget *message_dialog;
+    gchar *filename_in_utf8 = g_filename_to_utf8 (data->filename, -1,
+						  NULL, NULL, NULL);
 
     gtk_progress_dialog_recover_parent (progress_dialog);
 
@@ -246,7 +292,9 @@ analyze_parsed_data (void *result)
 	   ? _(reading_error_hint) : _(not_sgf_file_error_hint)),
 	  (data->result == SGF_ERROR_READING_FILE
 	   ? _(reading_error) : _(not_sgf_file_error)),
-	  data->filename));
+	  filename_in_utf8));
+
+    g_free (filename_in_utf8);
 
     if (!data->parent) {
       gtk_control_center_window_created (GTK_WINDOW (message_dialog));
@@ -269,46 +317,59 @@ analyze_parsed_data (void *result)
 
 
 void
-gtk_parse_sgf_file (const char *filename, GtkWindow *parent)
+gtk_parse_sgf_file (const char *filename, GtkWindow *parent,
+		    GtkHandleParsedData callback)
 {
+  gchar *absolute_filename;
   SgfCollection *sgf_collection;
   SgfErrorList *error_list;
   int result;
 
-  result = sgf_parse_file (filename, &sgf_collection, &error_list,
+  if (g_path_is_absolute (filename))
+    absolute_filename = g_strdup (filename);
+  else {
+    gchar *current_directory = g_get_current_dir ();
+
+    absolute_filename = g_build_filename (current_directory, filename, NULL);
+    g_free (current_directory);
+  }
+
+  result = sgf_parse_file (absolute_filename, &sgf_collection, &error_list,
 			   &sgf_parser_defaults, NULL, NULL, NULL);
 
   if (result == SGF_PARSED) {
-    GtkWidget *goban_window = gtk_goban_window_new (sgf_collection, filename);
-
-    gtk_widget_show (goban_window);
-
-    if (error_list)
-      string_list_delete (error_list);
-
     if (parent) {
-      gchar *directory = g_path_get_dirname (filename);
+      gchar *directory = g_path_get_dirname (absolute_filename);
 
       chdir (directory);
       g_free (directory);
 
       gtk_widget_destroy (GTK_WIDGET (parent));
     }
+
+    if (!callback)
+      callback = open_game_record;
+
+    callback (sgf_collection, error_list, absolute_filename);
   }
   else {
+    gchar *filename_in_utf8 = g_filename_to_utf8 (absolute_filename, -1,
+						  NULL, NULL, NULL);
     GtkWidget *message_dialog
       = (gtk_utils_create_message_dialog
-	 (data->parent ? GTK_WINDOW (data->parent) : NULL,
+	 (parent ? GTK_WINDOW (parent) : NULL,
 	  GTK_STOCK_DIALOG_ERROR,
 	  (GTK_UTILS_BUTTONS_OK | GTK_UTILS_DESTROY_ON_RESPONSE
-	   | (data->parent ? 0 : GTK_UTILS_NON_MODAL_WINDOW)),
-	  (data->result == SGF_ERROR_READING_FILE
+	   | (parent ? 0 : GTK_UTILS_NON_MODAL_WINDOW)),
+	  (result == SGF_ERROR_READING_FILE
 	   ? _(reading_error_hint) : _(not_sgf_file_error_hint)),
-	  (data->result == SGF_ERROR_READING_FILE
+	  (result == SGF_ERROR_READING_FILE
 	   ? _(reading_error) : _(not_sgf_file_error)),
-	  data->filename));
+	  filename_in_utf8));
 
-    if (!data->parent) {
+    g_free (filename_in_utf8);
+
+    if (!parent) {
       gtk_control_center_window_created (GTK_WINDOW (message_dialog));
       g_signal_connect (message_dialog, "destroy",
 			G_CALLBACK (gtk_control_center_window_destroyed),
