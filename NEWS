@@ -1,3 +1,10 @@
+--- New in Quarry 0.1.9 ----------------------------------------------
+
+* Compilation-time error with GTK+ 2.4 fixed (bug #898,
+  mateusz@kaduk.net.)
+
+* Minor bug-fixes in game information editing.
+
 --- New in Quarry 0.1.8 ----------------------------------------------
 
 * Full support for SGF game information, including editing.
