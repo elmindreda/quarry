@@ -36,7 +36,13 @@
 static void	gtk_goban_base_class_init (GtkGobanBaseClass *class);
 static void	gtk_goban_base_init (GtkGobanBase *goban_base);
 
-static void	gtk_goban_base_appearance_changed (GtkGobanBase *goban_base);
+static void	gtk_goban_base_realize (GtkWidget *widget);
+static void	gtk_goban_base_unrealize (GtkWidget *widget);
+
+static void	gtk_goban_base_allocate_screen_resources
+		  (GtkGobanBase *goban_base);
+static void	gtk_goban_base_free_screen_resources
+		  (GtkGobanBase *goban_base);
 
 static void	gtk_goban_base_finalize (GObject *object);
 
@@ -51,7 +57,8 @@ static GSList	       *all_goban_bases;
 
 
 enum {
-  APPEARANCE_CHANGED,
+  ALLOCATE_SCREEN_RESOURCES,
+  FREE_SCREEN_RESOURCES,
   NUM_SIGNALS
 };
 
@@ -89,17 +96,34 @@ gtk_goban_base_get_type (void)
 static void
 gtk_goban_base_class_init (GtkGobanBaseClass *class)
 {
+  GtkWidgetClass *widget_class = GTK_WIDGET_CLASS (class);
+
   parent_class = g_type_class_peek_parent (class);
 
   G_OBJECT_CLASS (class)->finalize = gtk_goban_base_finalize;
 
-  class->appearance_changed = gtk_goban_base_appearance_changed;
+  widget_class->realize	  = gtk_goban_base_realize;
+  widget_class->unrealize = gtk_goban_base_unrealize;
 
-  goban_base_signals[APPEARANCE_CHANGED]
-    = g_signal_new ("appearance-changed",
+  class->allocate_screen_resources = gtk_goban_base_allocate_screen_resources;
+  class->free_screen_resources	   = gtk_goban_base_free_screen_resources;
+
+  goban_base_signals[ALLOCATE_SCREEN_RESOURCES]
+    = g_signal_new ("allocate-screen-resources",
 		    G_TYPE_FROM_CLASS (class),
 		    G_SIGNAL_RUN_LAST,
-		    G_STRUCT_OFFSET (GtkGobanBaseClass, appearance_changed),
+		    G_STRUCT_OFFSET (GtkGobanBaseClass,
+				     allocate_screen_resources),
+		    NULL, NULL,
+		    quarry_marshal_VOID__VOID,
+		    G_TYPE_NONE, 0);
+
+  goban_base_signals[FREE_SCREEN_RESOURCES]
+    = g_signal_new ("free-screen-resources",
+		    G_TYPE_FROM_CLASS (class),
+		    G_SIGNAL_RUN_LAST,
+		    G_STRUCT_OFFSET (GtkGobanBaseClass,
+				     free_screen_resources),
 		    NULL, NULL,
 		    quarry_marshal_VOID__VOID,
 		    G_TYPE_NONE, 0);
@@ -116,37 +140,48 @@ gtk_goban_base_init (GtkGobanBase *goban_base)
   goban_base->font_description
     = pango_font_description_copy (gtk_widget_get_default_style ()->font_desc);
 
-  goban_base->main_tile_set	  = NULL;
-  goban_base->sgf_markup_tile_set = NULL;
-
   all_goban_bases = g_slist_prepend (all_goban_bases, goban_base);
 }
 
 
 static void
-gtk_goban_base_appearance_changed (GtkGobanBase *goban_base)
+gtk_goban_base_realize (GtkWidget *widget)
 {
-  if (goban_base->cell_size > 0) {
-    gint main_tile_size = (goban_base->cell_size
-			   - (goban_base->game == GAME_GO ? 0 : 1));
+  assert (GTK_GOBAN_BASE (widget)->cell_size != 0);
 
-    if (goban_base->main_tile_set) {
-      object_cache_unreference_object (&gtk_main_tile_set_cache,
-				       goban_base->main_tile_set);
-    }
+  g_signal_emit (widget, goban_base_signals[ALLOCATE_SCREEN_RESOURCES], 0);
+}
 
-    goban_base->main_tile_set
-      = gtk_main_tile_set_create_or_reuse (main_tile_size, goban_base->game);
 
-    if (goban_base->sgf_markup_tile_set) {
-      object_cache_unreference_object (&gtk_sgf_markup_tile_set_cache,
-				       goban_base->sgf_markup_tile_set);
-    }
+static void
+gtk_goban_base_unrealize (GtkWidget *widget)
+{
+  g_signal_emit (widget, goban_base_signals[FREE_SCREEN_RESOURCES], 0);
+}
 
-    goban_base->sgf_markup_tile_set
-      = gtk_sgf_markup_tile_set_create_or_reuse (main_tile_size,
-						 goban_base->game);
-  }
+
+static void
+gtk_goban_base_allocate_screen_resources (GtkGobanBase *goban_base)
+{
+  gint main_tile_size = (goban_base->cell_size
+			 - (goban_base->game == GAME_GO ? 0 : 1));
+
+  goban_base->main_tile_set
+    = gtk_main_tile_set_create_or_reuse (main_tile_size, goban_base->game);
+
+  goban_base->sgf_markup_tile_set
+    = gtk_sgf_markup_tile_set_create_or_reuse (main_tile_size,
+					       goban_base->game);
+}
+
+
+static void
+gtk_goban_base_free_screen_resources (GtkGobanBase *goban_base)
+{
+  object_cache_unreference_object (&gtk_main_tile_set_cache,
+				   goban_base->main_tile_set);
+  object_cache_unreference_object (&gtk_sgf_markup_tile_set_cache,
+				   goban_base->sgf_markup_tile_set);
 }
 
 
@@ -156,16 +191,6 @@ gtk_goban_base_finalize (GObject *object)
   GtkGobanBase *goban_base = GTK_GOBAN_BASE (object);
 
   pango_font_description_free (goban_base->font_description);
-
-  if (goban_base->main_tile_set) {
-    object_cache_unreference_object (&gtk_main_tile_set_cache,
-				     goban_base->main_tile_set);
-  }
-
-  if (goban_base->sgf_markup_tile_set) {
-    object_cache_unreference_object (&gtk_sgf_markup_tile_set_cache,
-				     goban_base->sgf_markup_tile_set);
-  }
 
   all_goban_bases = g_slist_remove (all_goban_bases, goban_base);
 
@@ -186,7 +211,13 @@ gtk_goban_base_update_appearance (Game game)
 
     if (goban_base->game == game) {
       set_background (goban_base);
-      g_signal_emit (goban_base, goban_base_signals[APPEARANCE_CHANGED], 0);
+
+      if (GTK_WIDGET_REALIZED (GTK_WIDGET (goban_base))) {
+	g_signal_emit (goban_base,
+		       goban_base_signals[FREE_SCREEN_RESOURCES], 0);
+	g_signal_emit (goban_base,
+		       goban_base_signals[ALLOCATE_SCREEN_RESOURCES], 0);
+      }
     }
   }
 }
@@ -218,7 +249,12 @@ gtk_goban_base_set_cell_size (GtkGobanBase *goban_base, gint cell_size)
 
   if (goban_base->cell_size != cell_size) {
     goban_base->cell_size = cell_size;
-    g_signal_emit (goban_base, goban_base_signals[APPEARANCE_CHANGED], 0);
+
+    if (GTK_WIDGET_REALIZED (GTK_WIDGET (goban_base))) {
+      g_signal_emit (goban_base, goban_base_signals[FREE_SCREEN_RESOURCES], 0);
+      g_signal_emit (goban_base,
+		     goban_base_signals[ALLOCATE_SCREEN_RESOURCES], 0);
+    }
   }
 }
 

@@ -71,7 +71,8 @@ struct _GtkGobanBase {
 struct _GtkGobanBaseClass {
   GtkWidgetClass	 parent_class;
 
-  void (* appearance_changed) (GtkGobanBase *goban_base);
+  void (* allocate_screen_resources) (GtkGobanBase *goban_base);
+  void (* free_screen_resources) (GtkGobanBase *goban_base);
 };
 
 
