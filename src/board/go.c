@@ -22,9 +22,11 @@
 
 #include "go.h"
 #include "board-internals.h"
+#include "utils.h"
 
-#include <stdio.h>
 #include <assert.h>
+#include <math.h>
+#include <stdio.h>
 
 #ifdef HAVE_MEMORY_H
 #include <memory.h>
@@ -1022,6 +1024,277 @@ go_get_fixed_handicap_stones(int board_width, int board_height,
   }
 
   return handicap_stones;
+}
+
+
+BoardPositionList *
+go_get_string_stones(Board *board, int x, int y)
+{
+  int pos = POSITION(x, y);
+
+  assert(board);
+  assert(board->game == GAME_GO);
+  assert(ON_BOARD(board, x, y));
+
+  if (IS_STONE(board->grid[pos])) {
+    BoardPositionList *position_list;
+    const char *grid = board->grid;
+    int color = grid[pos];
+    int stones[BOARD_MAX_POSITIONS];
+    int queue_start = 0;
+    int queue_end = 1;
+
+    board->data.go.position_mark++;
+
+    stones[0] = pos;
+    MARK_POSITION(board, pos);
+
+    do {
+      int k;
+      int stone = stones[queue_start++];
+
+      for (k = 0; k < 4; k++) {
+	int neighbor = stone + delta[k];
+
+	if (grid[neighbor] == color && UNMARKED_POSITION(board, neighbor)) {
+	  stones[queue_end++] = neighbor;
+	  MARK_POSITION(board, neighbor);
+	}
+      }
+    } while (queue_start < queue_end);
+
+    position_list = board_position_list_new(stones, queue_end);
+    board_position_list_sort(position_list);
+
+    return position_list;
+  }
+  else
+    return NULL;
+}
+
+
+/* Find all stones that shold be logically dead if the stone at given
+ * position is dead and the game is finished.  At present, all strings
+ * that are connectable over empty vertecies are included (i.e. a
+ * player should have territory around opponent's dead stones).  This
+ * policy may need refinement.
+ */
+BoardPositionList *
+go_get_logically_dead_stones(Board *board, int x, int y)
+{
+  int pos = POSITION(x, y);
+
+  assert(board);
+  assert(board->game == GAME_GO);
+  assert(ON_BOARD(board, x, y));
+
+  if (IS_STONE(board->grid[POSITION(x, y)])) {
+    BoardPositionList *position_list;
+    const char *grid = board->grid;
+    int color = grid[pos];
+    int stones[BOARD_MAX_POSITIONS];
+    int empty_vertices[BOARD_MAX_POSITIONS];
+    int stones_queue_start = 0;
+    int stones_queue_end = 1;
+    int empty_vertices_queue_start = 0;
+    int empty_vertices_queue_end = 0;
+
+    board->data.go.position_mark++;
+
+    stones[0] = pos;
+    MARK_POSITION(board, pos);
+
+    do {
+      int k;
+
+      pos = (stones_queue_start < stones_queue_end
+	     ? stones[stones_queue_start++]
+	     : empty_vertices[empty_vertices_queue_start++]);
+
+      for (k = 0; k < 4; k++) {
+	int neighbor = pos + delta[k];
+
+	if ((grid[neighbor] == color || grid[neighbor] == EMPTY)
+	    && UNMARKED_POSITION(board, neighbor)) {
+	  if (grid[neighbor] == color)
+	    stones[stones_queue_end++] = neighbor;
+	  else
+	    empty_vertices[empty_vertices_queue_end++] = neighbor;
+
+	  MARK_POSITION(board, neighbor);
+	}
+      }
+    } while (stones_queue_start < stones_queue_end
+	     || empty_vertices_queue_start < empty_vertices_queue_end);
+
+    position_list = board_position_list_new(stones, stones_queue_end);
+    board_position_list_sort(position_list);
+
+    return position_list;
+  }
+  else
+    return NULL;
+}
+
+
+void
+go_score_game(Board *board, const char *dead_stones, double komi,
+	      double *score, char **detailed_score,
+	      BoardPositionList **black_territory,
+	      BoardPositionList **white_territory)
+{
+  char territory[BOARD_GRID_SIZE];
+  int num_territory_positions[NUM_COLORS] = { 0, 0 };
+  int territory_positions[NUM_COLORS][BOARD_MAX_POSITIONS];
+  int num_prisoners[NUM_COLORS];
+  int x;
+  int y;
+  int pos;
+  int black_score;
+  double white_score;
+
+  assert(board);
+
+  num_prisoners[BLACK_INDEX] = board->data.go.prisoners[BLACK_INDEX];
+  num_prisoners[WHITE_INDEX] = board->data.go.prisoners[WHITE_INDEX];
+
+  board_fill_grid(board, territory, EMPTY);
+  go_mark_territory_on_grid(board, territory, dead_stones, BLACK, WHITE);
+
+  for (y = 0, pos = POSITION(0, 0); y < board->height; y++) {
+    for (x = 0; x < board->width; x++, pos++) {
+      if (territory[pos] != EMPTY) {
+	int color_index = COLOR_INDEX(territory[pos]);
+
+	territory_positions[color_index]
+			   [num_territory_positions[color_index]++] = pos;
+	if (board->grid[pos] != EMPTY)
+	  num_prisoners[color_index]++;
+      }
+    }
+
+    pos += BOARD_MAX_WIDTH + 1 - board->width;
+  }
+
+  black_score = (num_territory_positions[BLACK_INDEX]
+		 + num_prisoners[BLACK_INDEX]);
+  white_score = (num_territory_positions[WHITE_INDEX]
+		 + num_prisoners[WHITE_INDEX] + komi);
+  if (score)
+    *score = black_score - white_score;
+
+  if (detailed_score) {
+    char *white_score_string
+      = utils_duplicate_string(format_double(white_score));
+
+    *detailed_score
+      = utils_printf(("White: %d territory + %d capture(s) %c %s komi = %s\n"
+		      "Black: %d territory + %d capture(s) = %d.0\n\n"),
+		     num_territory_positions[WHITE_INDEX],
+		     num_prisoners[WHITE_INDEX],
+		     (komi >= 0.0 ? '+' : '-'), format_double(fabs(komi)),
+		     white_score_string,
+		     num_territory_positions[BLACK_INDEX],
+		     num_prisoners[BLACK_INDEX],
+		     black_score);
+    utils_free(white_score_string);
+
+    if ((double) black_score != white_score) {
+      *detailed_score = utils_printf("%s%s wins by %s", *detailed_score,
+				     ((double) black_score > white_score
+				      ? "Black" : "White"),
+				     format_double(fabs(black_score
+							- white_score)));
+    }
+    else
+      *detailed_score = utils_cat_string(*detailed_score, "The game is draw");
+  }
+
+  if (black_territory) {
+    *black_territory
+      = board_position_list_new(territory_positions[BLACK_INDEX],
+				num_territory_positions[BLACK_INDEX]);
+  }
+
+  if (white_territory) {
+    *white_territory
+      = board_position_list_new(territory_positions[WHITE_INDEX],
+				num_territory_positions[WHITE_INDEX]);
+  }
+}
+
+
+/* Mark territory on given grid with specified marks.  Grid
+ * `dead_stones' should have non-zeros in positions of dead stones and
+ * zeros elsewhere.  It is assumed that `dead_stones' are filled
+ * sanely, i.e all stones of any string are either dead or alive.
+ *
+ * FIXME: Improve this function.  It doesn't detect sekis and false
+ *	  eyes.
+ */
+void
+go_mark_territory_on_grid(Board *board, char *grid, const char *dead_stones,
+			  char black_territory_mark, char white_territory_mark)
+{
+  int x;
+  int y;
+  int pos;
+
+  assert(board);
+  assert(board->game == GAME_GO);
+  assert(grid);
+  assert(dead_stones);
+
+  board->data.go.position_mark++;
+
+  for (y = 0, pos = POSITION(0, 0); y < board->height; y++) {
+    for (x = 0; x < board->width; x++, pos++) {
+      if (UNMARKED_POSITION(board, pos)
+	  && (board->grid[pos] == EMPTY || dead_stones[pos])) {
+	/* Found another connected set of empty vertices and/or dead
+	 * stones.  Loop over it marking positions and determine if it
+	 * is a proper territory, i.e. if it has adjacent living
+	 * stones of only one color.
+	 */
+	int queue[BOARD_MAX_POSITIONS];
+	int queue_start = 0;
+	int queue_end = 1;
+	char alive_neighbors = 0;
+
+	queue[0] = pos;
+	MARK_POSITION(board, pos);
+
+	do {
+	  int k;
+	  int pos2 = queue[queue_start++];
+
+	  for (k = 0; k < 4; k++) {
+	    int neighbor = pos2 + delta[k];
+
+	    if ((board->grid[neighbor] == EMPTY
+		 || (IS_STONE(board->grid[neighbor])
+		     && dead_stones[neighbor]))
+		&& UNMARKED_POSITION(board, neighbor)) {
+	      queue[queue_end++] = neighbor;
+	      MARK_POSITION(board, neighbor);
+	    }
+	    else if (IS_STONE(board->grid[neighbor]) && !dead_stones[neighbor])
+	      alive_neighbors |= board->grid[neighbor];
+	  }
+	} while (queue_start < queue_end);
+
+	if (IS_STONE(alive_neighbors)) {
+	  char mark = (alive_neighbors == BLACK
+		       ? black_territory_mark : white_territory_mark);
+
+	  for (queue_start = 0; queue_start < queue_end; queue_start++)
+	    grid[queue[queue_start]] = mark;
+	}
+      }
+    }
+
+    pos += BOARD_MAX_WIDTH + 1 - board->width;
+  }
 }
 
 
