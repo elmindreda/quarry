@@ -1,4 +1,25 @@
-2004-11-14  Paul Pogonyshev  <paul@localhost.localdomain>
+2004-11-24  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* gui-gtk/gtk-goban-window.c (play_resign): Bug-fix: don't stop
+	the clock if we don't have a time control in the first place.
+
+2004-11-15  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* gui-utils/configuration.c (configuration_read_from_file): Don't
+	segfault on certain malformed input.
+	(parse_string): Respect comments starting with '#' symbol (this
+	will break old configuration files with custom colors.)
+	(write_section): Write colors enclosed in quotes, because they
+	contain '#' symbol.
+
+	* sgf/sgf-tree.c (sgf_node_split): Bug-fix: set `node->move_color'
+	to `EMPTY' since the move is moved to the child node.
+
+	* sgf/sgf-parser.c (complete_node_and_update_board): Bug-fix:
+	remove `PL' properties that have no effect, not those changing
+	color to move.
+
+2004-11-14  Paul Pogonyshev  <pogonyshev@gmx.net>
 
 	* gui-gtk/gtk-goban-window.c (do_find_text): Scroll text view so
 	that the found text is always visible.
