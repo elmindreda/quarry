@@ -887,7 +887,7 @@ playing_mode_goban_clicked(GtkGobanWindow *goban_window,
 {
   switch (data->button) {
   case 1:
-    if (data->feedback_tile != TILE_NONE
+    if (data->feedback_tile != GOBAN_TILE_DONT_CHANGE
 	&& !(data->modifiers & GDK_SHIFT_MASK)) {
       int color_to_play = goban_window->sgf_board_state.color_to_play;
 
@@ -909,7 +909,7 @@ playing_mode_goban_clicked(GtkGobanWindow *goban_window,
 				     board_position_list_new(&pos, 1),
 				     (STONE_50_TRANSPARENT
 				      + COLOR_INDEX(color_to_play)),
-				     TILE_NONE);
+				     GOBAN_TILE_DONT_CHANGE);
 
 	  return;
 	}
@@ -920,7 +920,7 @@ playing_mode_goban_clicked(GtkGobanWindow *goban_window,
 				     board_position_list_new(&pos, 1),
 				     (STONE_25_TRANSPARENT
 				      + COLOR_INDEX(color_to_play)),
-				     TILE_NONE);
+				     GOBAN_TILE_DONT_CHANGE);
 
 	  return;
 	}
@@ -993,7 +993,7 @@ free_handicap_mode_goban_clicked(GtkGobanWindow *goban_window,
 				 GtkGobanClickData *data)
 {
   if (data->button == 1
-      && data->feedback_tile != TILE_NONE
+      && data->feedback_tile != GOBAN_TILE_DONT_CHANGE
       && !(data->modifiers & GDK_SHIFT_MASK)) {
     int contents = gtk_goban_get_grid_contents(goban_window->goban,
 					       data->x, data->y);
