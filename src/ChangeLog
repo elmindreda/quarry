@@ -1,3 +1,24 @@
+2004-12-24  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* gui-gtk/gtk-gtp-client-interface.c (gtk_create_gtp_client):
+	Handle GTP debugging options: hook up necessary callbacks, create
+	pipe and IO channel for child's stderr etc.
+	(handle_engine_stderr, log_gtp_stream, log_gtp_stream_error): New
+	functions.
+	(client_deleted): Close stderr channel and log file if necessary.
+
+	* gtp/gtp-client.c (gtp_client_grab_response): Report errors
+	before response lines.  Properly ignore empty lines between
+	responses.
+	(dispatch_response): Send an empty line to `line_callback' after
+	any potential error.
+	(store_protocol_version): Send a warning about future GTP version.
+
+	* quarry-main.h: New file.
+
+	* quarry.c (main): Parse command line.  Add `--gtp-log',
+	`--gtp-show-stderr', `--help', `--usage' and `--version' options.
+
 2004-12-23  Paul Pogonyshev  <pogonyshev@gmx.net>
 
 	* board/amazons.c (amazons_parse_move): Also parse moves in
