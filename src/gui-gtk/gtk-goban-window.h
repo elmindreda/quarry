@@ -69,14 +69,17 @@ struct _GtkGobanWindow {
   GtkWindow		   window;
 
   GtkItemFactory	  *item_factory;
+  GtkToolbar		  *main_toolbar;
+  GtkToolbar		  *navigation_toolbar;
   GtkGoban		  *goban;
-  GtkWidget		  *player_table_alignment;
+  GtkWidget		  *player_table_vbox;
   GtkLabel		  *player_labels[NUM_COLORS];
   GtkLabel		  *game_specific_info[NUM_COLORS];
   GtkClock		  *clocks[NUM_COLORS];
-  GtkWidget		  *players_information_hseparator;
   GtkLabel		  *move_information_label;
-  GtkWidget		  *mode_information_hseparator;
+  GtkWidget		  *pass_button;
+  GtkWidget		  *resign_button;
+  GtkWidget		  *mode_information_vbox;
   GtkLabel		  *mode_hint_label;
   GtkWidget		  *done_button;
   GtkWidget		  *cancel_button;

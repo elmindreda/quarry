@@ -78,6 +78,10 @@
 			    ->color_to_play)]))
 
 
+#define IS_IN_SPECIAL_MODE(goban_window)				\
+  GTK_WIDGET_VISIBLE ((goban_window)->mode_information_vbox)
+
+
 enum {
   INITIALIZATION_NOT_STARTED,
   INITIALIZATION_GAME_SET,
@@ -142,6 +146,13 @@ static void	 game_info_dialog_property_changed
 		   (GtkGobanWindow *goban_window, SgfType sgf_property_type);
 
 static void	 show_preferences_dialog (void);
+
+static void	 show_or_hide_main_toolbar (GtkGobanWindow *goban_window);
+static void	 show_or_hide_navigation_toolbar
+		   (GtkGobanWindow *goban_window);
+static void	 show_or_hide_game_action_buttons
+		   (GtkGobanWindow *goban_window);
+
 static void	 show_about_dialog (void);
 static void	 show_help_contents (void);
 
@@ -167,6 +178,7 @@ static void	 free_handicap_mode_done (GtkGobanWindow *goban_window);
 
 static void	 play_pass_move (GtkGobanWindow *goban_window);
 static void	 play_resign (GtkGobanWindow *goban_window);
+static void	 do_resign_game (GtkGobanWindow *goban_window);
 
 
 static void	 set_current_tree (GtkGobanWindow *goban_window,
@@ -238,6 +250,59 @@ static void	 move_has_been_generated (GtpClient *client, int successful,
 					  BoardAbstractMoveData *move_data);
 static void	 generate_move_via_gtp (GtkGobanWindow *goban_window);
 static void	 start_clock_if_needed (GtkGobanWindow *goban_window);
+
+
+static GtkUtilsToolbarEntry toolbar_open = {
+  N_("Open"),	N_("Open a game record"),		GTK_STOCK_OPEN,
+  (GtkUtilsToolbarEntryCallback)  gtk_parser_interface_present, 0
+};
+
+static GtkUtilsToolbarEntry toolbar_save = {
+  N_("Save"),	N_("Save the current file"),		GTK_STOCK_SAVE,
+  (GtkUtilsToolbarEntryCallback) gtk_goban_window_save, GTK_GOBAN_WINDOW_SAVE
+};
+
+static GtkUtilsToolbarEntry toolbar_find = {
+  N_("Find"),	N_("Search for a string in comments"),	GTK_STOCK_FIND,
+  (GtkUtilsToolbarEntryCallback) show_find_dialog, 0
+};
+
+static GtkUtilsToolbarEntry toolbar_game_information = {
+  N_("Info"),	N_("View and edit game information"),	GTK_STOCK_PROPERTIES,
+  (GtkUtilsToolbarEntryCallback) show_game_information_dialog, 0
+};
+
+
+static GtkUtilsToolbarEntry navigation_toolbar_root = {
+  NULL,		N_("Go to root node"),			GTK_STOCK_GOTO_FIRST,
+  (GtkUtilsToolbarEntryCallback) navigate_goban, GOBAN_NAVIGATE_ROOT
+};
+
+static GtkUtilsToolbarEntry navigation_toolbar_back = {
+  NULL,		N_("Go to previous node"),		GTK_STOCK_GO_BACK,
+  (GtkUtilsToolbarEntryCallback) navigate_goban, GOBAN_NAVIGATE_BACK
+};
+
+static GtkUtilsToolbarEntry navigation_toolbar_forward = {
+  NULL,		N_("Go to next node"),			GTK_STOCK_GO_FORWARD,
+  (GtkUtilsToolbarEntryCallback) navigate_goban, GOBAN_NAVIGATE_FORWARD
+};
+
+static GtkUtilsToolbarEntry navigation_toolbar_variation_end = {
+  NULL,		N_("Go to current variation's last node"), GTK_STOCK_GOTO_LAST,
+  (GtkUtilsToolbarEntryCallback) navigate_goban, GOBAN_NAVIGATE_VARIATION_END
+};
+
+static GtkUtilsToolbarEntry navigation_toolbar_previous_variation = {
+  NULL,		N_("Switch to previous variation"),	GTK_STOCK_GO_UP,
+  (GtkUtilsToolbarEntryCallback) navigate_goban,
+  GOBAN_NAVIGATE_PREVIOUS_VARIATION
+};
+
+static GtkUtilsToolbarEntry navigation_toolbar_next_variation = {
+  NULL,		N_("Switch to next variation"),		GTK_STOCK_GO_DOWN,
+  (GtkUtilsToolbarEntryCallback) navigate_goban, GOBAN_NAVIGATE_NEXT_VARIATION
+};
 
 
 static GtkWindowClass  *parent_class;
@@ -319,14 +384,28 @@ gtk_goban_window_init (GtkGobanWindow *goban_window)
       "<Item>" },
     { N_("/Edit/"), NULL, NULL, 0, "<Separator>" },
 
-    { N_("/Edit/Game _Information"),	NULL,
+    { N_("/Edit/Game _Information"),	"<alt>Return",
       show_game_information_dialog,	0,
-      "<Item>" },
+      "<StockItem>",			GTK_STOCK_PROPERTIES },
     { N_("/Edit/"), NULL, NULL, 0, "<Separator>" },
 
     { N_("/Edit/_Preferences"),		NULL,
       show_preferences_dialog,		0,
       "<StockItem>",			GTK_STOCK_PREFERENCES },
+
+
+    { N_("/_View"), NULL, NULL, 0, "<Branch>" },
+    { N_("/View/_Main Toolbar"),	NULL,
+      show_or_hide_main_toolbar,	0,
+      "<CheckItem>" },
+    { N_("/View/_Navigation Toolbar"),	NULL,
+      show_or_hide_navigation_toolbar,	0,
+      "<CheckItem>" },
+    { N_("/View/"), NULL, NULL, 0, "<Separator>" },
+
+    { N_("/View/_Game Action Buttons"),	NULL,
+      show_or_hide_game_action_buttons,	0,
+      "<CheckItem>" },
 
 
     { N_("/_Play"), NULL, NULL, 0, "<Branch>" },
@@ -341,17 +420,17 @@ gtk_goban_window_init (GtkGobanWindow *goban_window)
 
 
     { N_("/_Go"), NULL, NULL, 0, "<Branch>" },
-    { N_("/Go/_Next Node"),		"<alt>Right",
-      navigate_goban,			GOBAN_NAVIGATE_FORWARD,
-      "<StockItem>",			GTK_STOCK_GO_FORWARD },
     { N_("/Go/_Previous Node"),		"<alt>Left",
       navigate_goban,			GOBAN_NAVIGATE_BACK,
       "<StockItem>",			GTK_STOCK_GO_BACK },
-    { N_("/Go/Ten Nodes _Forward"),	"<alt>Page_Down",
-      navigate_goban,			GOBAN_NAVIGATE_FORWARD_FAST,
-      "<Item>" },
+    { N_("/Go/_Next Node"),		"<alt>Right",
+      navigate_goban,			GOBAN_NAVIGATE_FORWARD,
+      "<StockItem>",			GTK_STOCK_GO_FORWARD },
     { N_("/Go/Ten Nodes _Backward"),	"<alt>Page_Up",
       navigate_goban,			GOBAN_NAVIGATE_BACK_FAST,
+      "<Item>" },
+    { N_("/Go/Ten Nodes _Forward"),	"<alt>Page_Down",
+      navigate_goban,			GOBAN_NAVIGATE_FORWARD_FAST,
       "<Item>" },
     { N_("/Go/"), NULL, NULL, 0, "<Separator>" },
 
@@ -363,12 +442,12 @@ gtk_goban_window_init (GtkGobanWindow *goban_window)
       "<StockItem>",			GTK_STOCK_GOTO_LAST },
     { N_("/Go/"), NULL, NULL, 0, "<Separator>" },
 
-    { N_("/Go/Ne_xt Variation"),	"<alt>Down",
-      navigate_goban,			GOBAN_NAVIGATE_NEXT_VARIATION,
-      "<StockItem>",			GTK_STOCK_GO_DOWN },
     { N_("/Go/Pre_vious Variation"),	"<alt>Up",
       navigate_goban,			GOBAN_NAVIGATE_PREVIOUS_VARIATION,
       "<StockItem>",			GTK_STOCK_GO_UP },
+    { N_("/Go/Ne_xt Variation"),	"<alt>Down",
+      navigate_goban,			GOBAN_NAVIGATE_NEXT_VARIATION,
+      "<StockItem>",			GTK_STOCK_GO_DOWN },
 
 
     { N_("/_Help"), NULL, NULL, 0, "<Branch>" },
@@ -385,12 +464,17 @@ gtk_goban_window_init (GtkGobanWindow *goban_window)
   GtkWidget *table;
   GtkWidget *move_information_label;
   GtkWidget *mode_hint_label;
+  GtkWidget *game_action_buttons_hbox;
   GtkWidget *hbox;
   GtkWidget *text_view;
   GtkWidget *scrolled_window;
   GtkWidget *vbox;
   GtkWidget *qhbox;
   GtkWidget *menu_bar;
+  GtkWidget *main_toolbar;
+  GtkWidget *main_handle_box;
+  GtkWidget *navigation_toolbar;
+  GtkWidget *navigation_handle_box;
   GtkAccelGroup *accel_group;
   int k;
 
@@ -449,12 +533,14 @@ gtk_goban_window_init (GtkGobanWindow *goban_window)
     goban_window->clocks[k] = GTK_CLOCK (clock);
   }
 
-  /* Alignment widget to keep the table centered in sidebar. */
-  goban_window->player_table_alignment = gtk_utils_align_widget (table,
-								 0.5, 0.5);
-
-  /* Separate players' and move informations. */
-  goban_window->players_information_hseparator = gtk_hseparator_new ();
+  /* Pack the table together with a separator (which separates the
+   * table and move information below.)
+   */
+  goban_window->player_table_vbox
+    = gtk_utils_pack_in_box (GTK_TYPE_VBOX, QUARRY_SPACING_SMALL,
+			     gtk_utils_align_widget (table, 0.5, 0.5),
+			     GTK_UTILS_FILL,
+			     gtk_hseparator_new (), GTK_UTILS_FILL, NULL);
 
   /* Move information label. */
   move_information_label = gtk_label_new (NULL);
@@ -462,7 +548,25 @@ gtk_goban_window_init (GtkGobanWindow *goban_window)
   gtk_label_set_justify (goban_window->move_information_label,
 			 GTK_JUSTIFY_CENTER);
 
-  goban_window->mode_information_hseparator = gtk_hseparator_new ();
+  /* Game action buttons: "Pass" and "Resign". */
+  goban_window->pass_button = gtk_button_new_with_label ("Pass");
+  GTK_WIDGET_UNSET_FLAGS (goban_window->pass_button, GTK_CAN_FOCUS);
+
+  g_signal_connect_swapped (goban_window->pass_button, "clicked",
+			    G_CALLBACK (play_pass_move), goban_window);
+
+  goban_window->resign_button = gtk_button_new_with_label ("Resign");
+  GTK_WIDGET_UNSET_FLAGS (goban_window->resign_button, GTK_CAN_FOCUS);
+
+  g_signal_connect_swapped (goban_window->resign_button, "clicked",
+			    G_CALLBACK (play_resign), goban_window);
+
+  game_action_buttons_hbox
+    = gtk_utils_pack_in_box (GTK_TYPE_HBUTTON_BOX, QUARRY_SPACING_SMALL,
+			     goban_window->pass_button, 0,
+			     goban_window->resign_button, 0, NULL);
+  gtk_container_set_border_width (GTK_CONTAINER (game_action_buttons_hbox),
+				  QUARRY_SPACING_SMALL);
 
   /* A label with hints about special window modes. */
   mode_hint_label = gtk_label_new (NULL);
@@ -477,6 +581,16 @@ gtk_goban_window_init (GtkGobanWindow *goban_window)
   hbox = gtk_utils_pack_in_box (GTK_TYPE_HBUTTON_BOX, QUARRY_SPACING_SMALL,
 				goban_window->done_button, 0,
 				goban_window->cancel_button, 0, NULL);
+  gtk_container_set_border_width (GTK_CONTAINER (hbox), QUARRY_SPACING_SMALL);
+
+  /* Pack all mode information widgets together with a separator. */
+  goban_window->mode_information_vbox
+    = gtk_utils_pack_in_box (GTK_TYPE_VBOX, QUARRY_SPACING_SMALL,
+			     gtk_hseparator_new (), GTK_UTILS_FILL,
+			     mode_hint_label, GTK_UTILS_FILL,
+			     gtk_utils_align_widget (hbox, 0.5, 0.5),
+			     GTK_UTILS_FILL,
+			     NULL);
 
   /* Multipurpose text view. */
   text_view = gtk_text_view_new ();
@@ -495,17 +609,15 @@ gtk_goban_window_init (GtkGobanWindow *goban_window)
 						      GTK_POLICY_AUTOMATIC);
 
   /* Sidebar vertical box. */
-  vbox = gtk_utils_pack_in_box (GTK_TYPE_VBOX, QUARRY_SPACING_GOBAN_WINDOW,
-				goban_window->player_table_alignment,
+  vbox = gtk_utils_pack_in_box (GTK_TYPE_VBOX, 0,
+				goban_window->player_table_vbox,
 				GTK_UTILS_FILL,
-				goban_window->players_information_hseparator,
-				GTK_UTILS_FILL,
-				move_information_label, GTK_UTILS_FILL,
-				goban_window->mode_information_hseparator,
-				GTK_UTILS_FILL,
-				goban_window->mode_hint_label,
+				move_information_label,
 				GTK_UTILS_FILL | QUARRY_SPACING_SMALL,
-				gtk_utils_align_widget (hbox, 0.5, 0.5),
+				(gtk_utils_align_widget
+				 (game_action_buttons_hbox, 0.5, 0.5)),
+				GTK_UTILS_FILL,
+				goban_window->mode_information_vbox,
 				GTK_UTILS_FILL,
 				scrolled_window, GTK_UTILS_PACK_DEFAULT, NULL);
 
@@ -537,14 +649,85 @@ gtk_goban_window_init (GtkGobanWindow *goban_window)
 
   gtk_window_add_accel_group (GTK_WINDOW (goban_window), accel_group);
 
-  /* Vertical box with menu bar and actual window contents. */
+  /* Main toolbar and a handle box for it. */
+  main_toolbar = gtk_toolbar_new ();
+  goban_window->main_toolbar = GTK_TOOLBAR (main_toolbar);
+
+  gtk_utils_append_toolbar_button (goban_window->main_toolbar,
+				   &toolbar_open, goban_window);
+  gtk_utils_append_toolbar_button (goban_window->main_toolbar,
+				   &toolbar_save, goban_window);
+  gtk_toolbar_append_space (goban_window->main_toolbar);
+
+  gtk_utils_append_toolbar_button (goban_window->main_toolbar,
+				   &toolbar_find, goban_window);
+  gtk_toolbar_append_space (goban_window->main_toolbar);
+
+  gtk_utils_append_toolbar_button (goban_window->main_toolbar,
+				   &toolbar_game_information, goban_window);
+
+  main_handle_box = gtk_handle_box_new ();
+  gtk_container_add (GTK_CONTAINER (main_handle_box), main_toolbar);
+
+  /* Navigation toolbar and a handle box for it. */
+  navigation_toolbar = gtk_toolbar_new ();
+  goban_window->navigation_toolbar = GTK_TOOLBAR (navigation_toolbar);
+
+  gtk_utils_append_toolbar_button (goban_window->navigation_toolbar,
+				   &navigation_toolbar_root, goban_window);
+  gtk_utils_append_toolbar_button (goban_window->navigation_toolbar,
+				   &navigation_toolbar_back, goban_window);
+  gtk_toolbar_append_space (goban_window->navigation_toolbar);
+
+  gtk_utils_append_toolbar_button (goban_window->navigation_toolbar,
+				   &navigation_toolbar_forward, goban_window);
+  gtk_utils_append_toolbar_button (goban_window->navigation_toolbar,
+				   &navigation_toolbar_variation_end,
+				   goban_window);
+  gtk_toolbar_append_space (goban_window->navigation_toolbar);
+
+  gtk_utils_append_toolbar_button (goban_window->navigation_toolbar,
+				   &navigation_toolbar_previous_variation,
+				   goban_window);
+  gtk_utils_append_toolbar_button (goban_window->navigation_toolbar,
+				   &navigation_toolbar_next_variation,
+				   goban_window);
+
+  navigation_handle_box = gtk_handle_box_new ();
+  gtk_container_add (GTK_CONTAINER (navigation_handle_box),
+		     navigation_toolbar);
+
+  /* Horizontal box with the toolbars. */
+  hbox = gtk_utils_pack_in_box (GTK_TYPE_HBOX, 0,
+				main_handle_box, GTK_UTILS_FILL,
+				navigation_handle_box, GTK_UTILS_PACK_DEFAULT,
+				NULL);
+
+  /* Vertical box with menu bar, toolbars and actual window
+   * contents.
+   */
   vbox = gtk_utils_pack_in_box (GTK_TYPE_VBOX, 0,
 				menu_bar, GTK_UTILS_FILL,
+				hbox, GTK_UTILS_FILL,
 				qhbox, GTK_UTILS_PACK_DEFAULT, NULL);
   gtk_container_add (GTK_CONTAINER (goban_window), vbox);
 
-  /* Show everything but the window itself. */
+  /* Show everything but the window itself.  Show toolbars' handle
+   * boxes and game action buttons' box dependent on configuration.
+   */
   gtk_widget_show_all (vbox);
+
+  gtk_widget_hide (main_handle_box);
+  if (gtk_ui_configuration.show_main_toolbar)
+    show_or_hide_main_toolbar (goban_window);
+
+  gtk_widget_hide (navigation_handle_box);
+  if (gtk_ui_configuration.show_navigation_toolbar)
+    show_or_hide_navigation_toolbar (goban_window);
+
+  gtk_widget_hide (game_action_buttons_hbox);
+  if (gtk_ui_configuration.show_game_action_buttons)
+    show_or_hide_game_action_buttons (goban_window);
 
   /* Look up here when the classes are certainly loaded. */
   clicked_signal_id	  = g_signal_lookup ("clicked", GTK_TYPE_BUTTON);
@@ -665,6 +848,9 @@ gtk_goban_window_enter_game_mode (GtkGobanWindow *goban_window,
   else
     assert (!black_time_control && !white_time_control);
 
+  goban_window->last_displayed_node = NULL;
+  update_children_for_new_node (goban_window);
+
   black_clock_frame
     = gtk_widget_get_parent (GTK_WIDGET (goban_window->clocks[BLACK_INDEX]));
   white_clock_frame
@@ -673,7 +859,7 @@ gtk_goban_window_enter_game_mode (GtkGobanWindow *goban_window,
   gtk_utils_set_widgets_visible (black_time_control && white_time_control,
 				 black_clock_frame, white_clock_frame, NULL);
 
-  if (USER_IS_TO_PLAY (goban_window))
+  if (USER_IS_TO_PLAY (goban_window) && !goban_window->pending_free_handicap)
     start_clock_if_needed (goban_window);
 }
 
@@ -1283,7 +1469,8 @@ do_find_text (GtkGobanWindow *goban_window, guint callback_action)
 
     gtk_text_buffer_get_iter_at_offset (text_buffer, &selection_iterator,
 					base_offset + last_line_offset);
-    gtk_text_buffer_move_mark_by_name (text_buffer, "insert", &selection_iterator);
+    gtk_text_buffer_move_mark_by_name (text_buffer, "insert",
+				       &selection_iterator);
 
     last_line_offset
       = get_offset_in_original_text (last_line, remaining_text_length,
@@ -1537,6 +1724,62 @@ show_preferences_dialog (void)
 
 
 static void
+show_or_hide_main_toolbar (GtkGobanWindow *goban_window)
+{
+  GtkWidget *toolbar_handle_box
+    = gtk_widget_get_parent (GTK_WIDGET (goban_window->main_toolbar));
+  GtkWidget *menu_item
+    = gtk_item_factory_get_widget (goban_window->item_factory,
+				   _("/View/Main Toolbar"));
+
+  gtk_ui_configuration.show_main_toolbar
+    = !GTK_WIDGET_VISIBLE (toolbar_handle_box);
+  gtk_check_menu_item_set_active (GTK_CHECK_MENU_ITEM (menu_item),
+				  gtk_ui_configuration.show_main_toolbar);
+  gtk_utils_set_widgets_visible (gtk_ui_configuration.show_main_toolbar,
+				 toolbar_handle_box, NULL);
+}
+
+
+static void
+show_or_hide_navigation_toolbar (GtkGobanWindow *goban_window)
+{
+  GtkWidget *toolbar_handle_box
+    = gtk_widget_get_parent (GTK_WIDGET (goban_window->navigation_toolbar));
+  GtkWidget *menu_item
+    = gtk_item_factory_get_widget (goban_window->item_factory,
+				   _("/View/Navigation Toolbar"));
+
+  gtk_ui_configuration.show_navigation_toolbar
+    = !GTK_WIDGET_VISIBLE (toolbar_handle_box);
+  gtk_check_menu_item_set_active
+    (GTK_CHECK_MENU_ITEM (menu_item),
+     gtk_ui_configuration.show_navigation_toolbar);
+  gtk_utils_set_widgets_visible (gtk_ui_configuration.show_main_toolbar,
+				 toolbar_handle_box, NULL);
+}
+
+
+static void
+show_or_hide_game_action_buttons (GtkGobanWindow *goban_window)
+{
+  GtkWidget *game_action_buttons_box
+    = gtk_widget_get_parent (goban_window->pass_button);
+  GtkWidget *menu_item
+    = gtk_item_factory_get_widget (goban_window->item_factory,
+				   _("/View/Game Action Buttons"));
+
+  gtk_ui_configuration.show_game_action_buttons
+    = !GTK_WIDGET_VISIBLE (game_action_buttons_box);
+  gtk_check_menu_item_set_active
+    (GTK_CHECK_MENU_ITEM (menu_item),
+     gtk_ui_configuration.show_game_action_buttons);
+  gtk_utils_set_widgets_visible (gtk_ui_configuration.show_game_action_buttons,
+				 game_action_buttons_box, NULL);
+}
+
+
+static void
 show_about_dialog (void)
 {
   if (!about_dialog) {
@@ -1632,8 +1875,7 @@ enter_special_mode (GtkGobanWindow *goban_window, const gchar *hint,
 {
   gtk_label_set_text (goban_window->mode_hint_label, hint);
 
-  gtk_widget_show (goban_window->mode_information_hseparator);
-  gtk_widget_show (GTK_WIDGET (goban_window->mode_hint_label));
+  gtk_widget_show (goban_window->mode_information_vbox);
 
   gtk_widget_show (goban_window->done_button);
   g_signal_connect_swapped (goban_window->done_button, "clicked",
@@ -1644,6 +1886,8 @@ enter_special_mode (GtkGobanWindow *goban_window, const gchar *hint,
     g_signal_connect_swapped (goban_window->cancel_button, "clicked",
 			      G_CALLBACK (cancel_callback), goban_window);
   }
+  else
+    gtk_widget_hide (goban_window->cancel_button);
 }
 
 
@@ -1661,10 +1905,7 @@ leave_special_mode (GtkGobanWindow *goban_window)
 					clicked_signal_id, 0, NULL, NULL,
 					goban_window);
 
-  gtk_widget_hide (goban_window->mode_information_hseparator);
-  gtk_widget_hide (GTK_WIDGET (goban_window->mode_hint_label));
-  gtk_widget_hide (goban_window->done_button);
-  gtk_widget_hide (goban_window->cancel_button);
+  gtk_widget_hide (goban_window->mode_information_vbox);
 }
 
 
@@ -1747,6 +1988,8 @@ set_current_tree (GtkGobanWindow *goban_window, SgfGameTree *sgf_tree)
     gtk_utils_set_widgets_visible (goban_window->board->game != GAME_AMAZONS,
 				   game_specific_info[BLACK_INDEX],
 				   game_specific_info[WHITE_INDEX], NULL);
+    gtk_utils_set_widgets_visible (goban_window->board->game == GAME_GO,
+				   goban_window->pass_button, NULL);
   }
 
   /* Won't work from update_children_for_new_node() below, because the
@@ -1847,13 +2090,35 @@ play_pass_move (GtkGobanWindow *goban_window)
 }
 
 
-/* FIXME: Quite ad-hoc. */
 static void
 play_resign (GtkGobanWindow *goban_window)
+{
+  GtkWidget *question_dialog
+    = gtk_utils_create_message_dialog (GTK_WINDOW (goban_window),
+				       GTK_STOCK_DIALOG_QUESTION,
+				       (GTK_UTILS_NO_BUTTONS
+					| GTK_UTILS_DONT_SHOW),
+				       NULL, _("Really resign this game?"));
+  gtk_dialog_add_buttons (GTK_DIALOG (question_dialog),
+			  GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
+			  _("_Resign"), GTK_RESPONSE_OK, NULL);
+  gtk_dialog_set_default_response (GTK_DIALOG (question_dialog),
+				   GTK_RESPONSE_OK);
+  if (gtk_dialog_run (GTK_DIALOG (question_dialog)) == GTK_RESPONSE_OK)
+    do_resign_game (goban_window);
+
+  gtk_widget_destroy (question_dialog);
+}
+
+
+static void
+do_resign_game (GtkGobanWindow *goban_window)
 {
   int color = goban_window->sgf_board_state.color_to_play;
   char other_color_char = (color == BLACK ? 'W' : 'B');
   SgfNode *game_info_node = goban_window->sgf_board_state.game_info_node;
+
+  goban_window->in_game_mode = FALSE;
 
   sgf_node_add_text_property (game_info_node, goban_window->current_tree,
 			      SGF_RESULT,
@@ -1866,8 +2131,6 @@ play_resign (GtkGobanWindow *goban_window)
 
   if (goban_window->time_controls[COLOR_INDEX (color)])
     gtk_clock_stop (goban_window->clocks[COLOR_INDEX (color)]);
-
-  goban_window->in_game_mode = FALSE;
 }
 
 
@@ -2349,6 +2612,8 @@ update_children_for_new_node (GtkGobanWindow *goban_window)
   SgfNode *current_node = current_tree->current_node;
   char goban_markup[BOARD_GRID_SIZE];
   const char *comment;
+  int pass_sensitive;
+  int resign_sensitive;
 
   if (current_node == goban_window->last_displayed_node)
     return;
@@ -2397,34 +2662,62 @@ update_children_for_new_node (GtkGobanWindow *goban_window)
   comment = sgf_node_get_text_property_value (current_node, SGF_COMMENT);
   gtk_utils_set_text_buffer_text (goban_window->text_buffer, comment);
 
+  pass_sensitive = (goban_window->board->game == GAME_GO
+		    && USER_CAN_PLAY_MOVES (goban_window)
+		    && !IS_IN_SPECIAL_MODE (goban_window));
   gtk_utils_set_menu_items_sensitive (goban_window->item_factory,
-				      (goban_window->board->game == GAME_GO
-				       && USER_CAN_PLAY_MOVES (goban_window)),
+				      pass_sensitive,
 				      _("/Play/Pass"), NULL);
+  gtk_widget_set_sensitive (goban_window->pass_button, pass_sensitive);
+
+  resign_sensitive = (goban_window->in_game_mode
+		      && IS_DISPLAYING_GAME_NODE (goban_window)
+		      && USER_CAN_PLAY_MOVES (goban_window)
+		      && !IS_IN_SPECIAL_MODE (goban_window));
+  gtk_utils_set_menu_items_sensitive (goban_window->item_factory,
+				      resign_sensitive,
+				      _("/Play/Resign"), NULL);
+  gtk_widget_set_sensitive (goban_window->resign_button, resign_sensitive);
 
   gtk_utils_set_menu_items_sensitive (goban_window->item_factory,
-				      (IS_DISPLAYING_GAME_NODE (goban_window)
-				       && USER_CAN_PLAY_MOVES (goban_window)),
-				      _("/Play/Resign"), NULL);
+				      current_node->parent != NULL,
+				      _("/Go/Previous Node"),
+				      _("/Go/Ten Nodes Backward"),
+				      _("/Go/Root Node"), NULL);
+  gtk_utils_set_toolbar_buttons_sensitive (goban_window->navigation_toolbar,
+					   current_node->parent != NULL,
+					   &navigation_toolbar_back,
+					   &navigation_toolbar_root, NULL);
 
   gtk_utils_set_menu_items_sensitive (goban_window->item_factory,
 				      current_node->child != NULL,
 				      _("/Go/Next Node"),
 				      _("/Go/Ten Nodes Forward"),
 				      _("/Go/Variation Last Node"), NULL);
-  gtk_utils_set_menu_items_sensitive (goban_window->item_factory,
-				      current_node->parent != NULL,
-				      _("/Go/Previous Node"),
-				      _("/Go/Ten Nodes Backward"),
-				      _("/Go/Root Node"), NULL);
-  gtk_utils_set_menu_items_sensitive (goban_window->item_factory,
-				      current_node->next != NULL,
-				      _("/Go/Next Variation"), NULL);
+  gtk_utils_set_toolbar_buttons_sensitive (goban_window->navigation_toolbar,
+					   current_node->child != NULL,
+					   &navigation_toolbar_forward,
+					   &navigation_toolbar_variation_end,
+					   NULL);
+
   gtk_utils_set_menu_items_sensitive (goban_window->item_factory,
 				      (current_node->parent != NULL
 				       && (current_node->parent->child
 					   != current_node)),
 				      _("/Go/Previous Variation"), NULL);
+  gtk_utils_set_toolbar_buttons_sensitive
+    (goban_window->navigation_toolbar,
+     (current_node->parent != NULL
+      && current_node->parent->child != current_node),
+     &navigation_toolbar_previous_variation, NULL);
+
+  gtk_utils_set_menu_items_sensitive (goban_window->item_factory,
+				      current_node->next != NULL,
+				      _("/Go/Next Variation"), NULL);
+  gtk_utils_set_toolbar_buttons_sensitive (goban_window->navigation_toolbar,
+					   current_node->next != NULL,
+					   &navigation_toolbar_next_variation,
+					   NULL);
 
   goban_window->switching_x = NULL_X;
   goban_window->switching_y = NULL_Y;
@@ -2455,9 +2748,7 @@ update_game_information (GtkGobanWindow *goban_window)
     have_any_player_information = 1;
 
   gtk_utils_set_widgets_visible (have_any_player_information,
-				 goban_window->player_table_alignment,
-				 goban_window->players_information_hseparator,
-				 NULL);
+				 goban_window->player_table_vbox, NULL);
 
   goban_window->last_game_info_node = game_info_node;
 
@@ -3052,6 +3343,8 @@ move_has_been_played (GtkGobanWindow *goban_window)
     default:
       assert (0);
     }
+
+    goban_window->in_game_mode = FALSE;
   }
 }
 
@@ -3161,10 +3454,7 @@ move_has_been_generated (GtpClient *client, int successful,
     SgfGameTreeState tree_state;
 
     if (x == RESIGNATION_X && y == RESIGNATION_Y) {
-      /* FIXME: Probably should break a function out of play_resign()
-       *	and call it here.
-       */
-      play_resign (goban_window);
+      do_resign_game (goban_window);
       return;
     }
 
