@@ -160,6 +160,7 @@ PARSE_CONFIGURATION = \
 
 libguigtk_a_SOURCES = \
 	gtk-assistant.c			\
+	gtk-clock.c			\
 	gtk-color-button.c		\
 	gtk-configuration-structures.c	\
 	gtk-control-center.c		\
@@ -180,6 +181,7 @@ libguigtk_a_SOURCES = \
 	quarry-stock.c			\
 					\
 	gtk-assistant.h			\
+	gtk-clock.h			\
 	gtk-color-button.h		\
 	gtk-configuration-structures.h	\
 	gtk-control-center.h		\
@@ -223,7 +225,7 @@ LIBRARIES = $(noinst_LIBRARIES)
 
 libguigtk_a_AR = $(AR) cru
 libguigtk_a_DEPENDENCIES = $(top_srcdir)/src/gui-utils/libguiutils.a
-am_libguigtk_a_OBJECTS = gtk-assistant.$(OBJEXT) \
+am_libguigtk_a_OBJECTS = gtk-assistant.$(OBJEXT) gtk-clock.$(OBJEXT) \
 	gtk-color-button.$(OBJEXT) \
 	gtk-configuration-structures.$(OBJEXT) \
 	gtk-control-center.$(OBJEXT) gtk-games.$(OBJEXT) \
@@ -243,6 +245,7 @@ DEFAULT_INCLUDES =  -I. -I$(srcdir) -I$(top_builddir)
 depcomp = $(SHELL) $(top_srcdir)/depcomp
 am__depfiles_maybe = depfiles
 @AMDEP_TRUE@DEP_FILES = ./$(DEPDIR)/gtk-assistant.Po \
+@AMDEP_TRUE@	./$(DEPDIR)/gtk-clock.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/gtk-color-button.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/gtk-configuration-structures.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/gtk-configuration.Po \
@@ -296,6 +299,7 @@ distclean-compile:
 	-rm -f *.tab.c
 
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gtk-assistant.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gtk-clock.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gtk-color-button.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gtk-configuration-structures.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gtk-configuration.Po@am__quote@

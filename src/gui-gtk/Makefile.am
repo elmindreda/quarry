@@ -75,6 +75,7 @@ gtk-configuration.c gtk-configuration.h					\
 
 libguigtk_a_SOURCES =			\
 	gtk-assistant.c			\
+	gtk-clock.c			\
 	gtk-color-button.c		\
 	gtk-configuration-structures.c	\
 	gtk-control-center.c		\
@@ -95,6 +96,7 @@ libguigtk_a_SOURCES =			\
 	quarry-stock.c			\
 					\
 	gtk-assistant.h			\
+	gtk-clock.h			\
 	gtk-color-button.h		\
 	gtk-configuration-structures.h	\
 	gtk-control-center.h		\
