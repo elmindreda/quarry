@@ -25,6 +25,7 @@
 #include "gtk-color-button.h"
 #include "gtk-configuration.h"
 #include "gtk-control-center.h"
+#include "gtk-file-selector.h"
 #include "gtk-games.h"
 #include "gtk-goban-base.h"
 #include "gtk-help.h"
@@ -192,6 +193,12 @@ static void	    store_radio_button_setting (GtkRadioButton *radio_button,
 static gboolean	    update_board_background_texture (GtkEntry *entry,
 						     GdkEventFocus *event,
 						     gpointer game_index);
+
+#ifdef GTK_TYPE_FILE_SELECTOR
+static void	    board_background_texture_changed
+		      (GtkFileSelector *file_selector, gpointer game_index);
+#endif
+
 static void	    update_board_appearance (GtkWidget *widget,
 					     gpointer value_storage);
 static void	    update_board_markup_theme (GtkWidget *widget,
@@ -995,7 +1002,7 @@ create_background_table (GtkGameIndex game_index, gint num_table_rows)
   GdkColor color;
   GtkWidget *radio_buttons[2];
   GtkWidget *label;
-  GtkWidget *entry;
+  GtkWidget *file_selector;
   GtkWidget *button;
   GtkWidget *color_button;
 
@@ -1016,21 +1023,54 @@ create_background_table (GtkGameIndex game_index, gint num_table_rows)
   gtk_table_attach (table, radio_buttons[0], 0, 1, 0, 1, GTK_FILL, 0, 0, 0);
   gtk_table_attach (table, radio_buttons[1], 0, 1, 1, 2, GTK_FILL, 0, 0, 0);
 
-  entry = gtk_utils_create_entry (board_appearance->background_texture,
-				  RETURN_DEFAULT_MODE);
-  gtk_utils_set_sensitive_on_toggle (GTK_TOGGLE_BUTTON (radio_buttons[0]),
-				     entry, FALSE);
+#ifdef GTK_TYPE_FILE_SELECTOR
 
-  g_signal_connect (entry, "focus-out-event",
+  file_selector = gtk_file_selector_new ();
+  gtk_file_selector_set_glob_patterns (GTK_FILE_SELECTOR (file_selector),
+				       "*.jpg\0*.png\0");
+
+  if (board_appearance->background_texture) {
+    gtk_file_selector_set_text (GTK_FILE_SELECTOR (file_selector),
+				board_appearance->background_texture);
+  }
+
+#else /* not defined GTK_TYPE_FILE_SELECTOR */
+
+  file_selector = gtk_utils_create_entry (board_appearance->background_texture,
+					  RETURN_DEFAULT_MODE);
+
+#endif /* not defined GTK_TYPE_FILE_SELECTOR */
+
+  /* We use the name `file_selector' for the entry only to have fewer
+   * forks on whether GTK_TYPE_FILE_SELECTOR is defined.
+   */
+  gtk_utils_set_sensitive_on_toggle (GTK_TOGGLE_BUTTON (radio_buttons[0]),
+				     file_selector, FALSE);
+
+#ifdef GTK_TYPE_FILE_SELECTOR
+
+  g_signal_connect (GTK_BIN (file_selector)->child, "focus-out-event",
 		    G_CALLBACK (update_board_background_texture),
 		    GINT_TO_POINTER (game_index));
 
-  gtk_table_attach (table, entry, 1, 2, 0, 1, GTK_EXPAND | GTK_FILL, 0, 0, 0);
+  g_signal_connect (file_selector, "changed",
+		    G_CALLBACK (board_background_texture_changed),
+		    GINT_TO_POINTER (game_index));
 
-  button = gtk_utils_create_browse_button (FALSE, entry, FALSE,
+#else /* not defined GTK_TYPE_FILE_SELECTOR */
+
+  g_signal_connect (file_selector, "focus-out-event",
+		    G_CALLBACK (update_board_background_texture),
+		    GINT_TO_POINTER (game_index));
+
+#endif /* not defined GTK_TYPE_FILE_SELECTOR */
+
+  gtk_table_attach (table, file_selector,
+		    1, 2, 0, 1, GTK_EXPAND | GTK_FILL, 0, 0, 0);
+
+  button = gtk_utils_create_browse_button (FALSE, file_selector, FALSE,
 					   _("Choose a Background Texture..."),
-					   ((GtkUtilsBrowsingDoneCallback)
-					    update_board_background_texture),
+					   update_board_background_texture,
 					   GINT_TO_POINTER (game_index));
   gtk_utils_set_sensitive_on_toggle (GTK_TOGGLE_BUTTON (radio_buttons[0]),
 				     button, FALSE);
@@ -1965,6 +2005,26 @@ update_board_background_texture (GtkEntry *entry, GdkEventFocus *event,
 
   return FALSE;
 }
+
+
+#ifdef GTK_TYPE_FILE_SELECTOR
+
+static void
+board_background_texture_changed (GtkFileSelector *file_selector,
+				  gpointer game_index)
+{
+  /* This signal is also emitted when the entry is changed, in which
+   * case there is no active item.  Updating background texture after
+   * a symbol is typed is wrong.
+   */
+  if (gtk_combo_box_get_active (GTK_COMBO_BOX (file_selector)) != -1) {
+    GtkEntry *entry = GTK_ENTRY (GTK_BIN (file_selector)->child);
+
+    update_board_background_texture (entry, NULL, game_index);
+  }
+}
+
+#endif /* defined GTK_TYPE_FILE_SELECTOR */
 
 
 static void
