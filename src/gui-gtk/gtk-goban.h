@@ -181,6 +181,7 @@ struct _GtkGoban {
 
   TileSet		*main_tile_set;
   TileSet		*small_tile_set;
+  GObject		*checkerboard_pattern_object;
 
   int			 pointer_x;
   int			 pointer_y;
