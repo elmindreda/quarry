@@ -1,7 +1,7 @@
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 # This file is part of Quarry                                     #
 #                                                                 #
-# Copyright (C) 2003, 2004 Paul Pogonyshev.                       #
+# Copyright (C) 2003, 2004, 2005 Paul Pogonyshev.                 #
 #                                                                 #
 # This program is free software; you can redistribute it and/or   #
 # modify it under the terms of the GNU General Public License as  #
@@ -24,6 +24,10 @@ defaults  - gtp_engine_defaults {
   screen_name_format		string		"%n %v"
   name				string		NULL
   version			string		NULL
+
+  site_configuration_name	string		NULL
+  is_hidden			boolean_write_true_only  false
+
   command_line			string		NULL
   supported_games		string_list	-
 }

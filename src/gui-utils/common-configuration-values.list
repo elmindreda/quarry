@@ -1,7 +1,7 @@
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 # This file is part of Quarry                                     #
 #                                                                 #
-# Copyright (C) 2003, 2004 Paul Pogonyshev.                       #
+# Copyright (C) 2003, 2004, 2005 Paul Pogonyshev.                 #
 #                                                                 #
 # This program is free software; you can redistribute it and/or   #
 # modify it under the terms of the GNU General Public License as  #
@@ -24,6 +24,9 @@ values  - gtp_engine_section_values {
   "Screen name format"		screen_name_format		string
   "Name"			name				string
   "Version"			version				string
+
+  "Site configuration name"	site_configuration_name		string
+  "Hidden by user"		is_hidden			boolean_write_true_only
 
   "Command line"		command_line			string
 
