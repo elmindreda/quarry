@@ -155,6 +155,8 @@ static const SectionData  *current_defaults_data;
 
 static const char	  *current_defaults_list;
 
+static char		  *current_structure_field = NULL;
+
 static StringBuffer	   initialization_values;
 static StringBuffer	   dispose_function_prototypes;
 static StringBuffer	   dispose_functions;
@@ -448,11 +450,15 @@ configuration_parse_defaults2(StringBuffer *c_file_arrays,
 			      int *pending_linefeeds)
 {
   const char *field_name;
+  int field_name_is_very_long;
+  const char *first_subscription;
+  const char *first_array_subscription;
   const char *field_type;
-  char field_is_pointer;
+  char field_is_pointer = ' ';
   int type_is_string_list = 0;
   const char *dispose_field_function = NULL;
-  const char *default_value;
+  const char *dispose_field_prefix = "";
+  const char *default_value = NULL;
   char *multiline_string = NULL;
   const char *string_to_duplicate = NULL;
   char buffer[64];
@@ -463,11 +469,14 @@ configuration_parse_defaults2(StringBuffer *c_file_arrays,
   UNUSED(pending_linefeeds);
 
   PARSE_THING(field_name, FIELD_NAME, line, "field name");
-  if (current_defaults_data->new_structure
-      && (strchr(field_name, '.') || strchr(field_name, '['))) {
-    print_error("array index or subfield in a new structure (unsupported)");
-    return 1;
-  }
+  field_name_is_very_long = (13 + strlen(field_name) > 32);
+
+  first_subscription = strchr(field_name, '.');
+  first_array_subscription = strchr(field_name, '[');
+  if (!first_subscription
+      || (first_array_subscription
+	  && first_array_subscription < first_subscription))
+    first_subscription = first_array_subscription;
 
   if (looking_at("string", line)) {
     while (*line && ! **line)
@@ -477,7 +486,9 @@ configuration_parse_defaults2(StringBuffer *c_file_arrays,
       multiline_string
 	= parse_multiline_string(line,
 				 "string constant, `char *' variable or NULL",
-				 "\n\t\t\t\t\t\t\t ", 0);
+				 (field_name_is_very_long
+				  ? "\n\t\t\t     " : "\n\t\t\t\t\t\t\t "),
+				 0);
       string_to_duplicate = multiline_string;
     }
     else {
@@ -491,7 +502,7 @@ configuration_parse_defaults2(StringBuffer *c_file_arrays,
 
     field_type		   = "char";
     field_is_pointer	   = '*';
-    dispose_field_function = "  utils_free(%s->%s);\n";
+    dispose_field_function = "utils_free";
   }
   else if (looking_at("string_list", line)) {
     if (!looking_at("-", line)) {
@@ -501,8 +512,8 @@ configuration_parse_defaults2(StringBuffer *c_file_arrays,
     default_value = "STATIC_STRING_LIST";
 
     field_type		   = "StringList";
-    field_is_pointer	   = ' ';
-    dispose_field_function = "  string_list_empty(&%s->%s);\n";
+    dispose_field_function = "string_list_empty";
+    dispose_field_prefix   = "&";
     type_is_string_list	   = 1;
   }
   else if (looking_at("boolean", line)) {
@@ -515,20 +526,17 @@ configuration_parse_defaults2(StringBuffer *c_file_arrays,
       return 1;
     }
 
-    field_type	     = "int";
-    field_is_pointer = ' ';
+    field_type = "int";
   }
   else if (looking_at("int", line)) {
     PARSE_THING(default_value, INTEGER_NUMBER, line, "integer number");
 
-    field_type	     = "int";
-    field_is_pointer = ' ';
+    field_type = "int";
   }
   else if (looking_at("real", line)) {
     PARSE_THING(default_value, FLOATING_POINT_NUMBER, line, "real number");
 
-    field_type	     = "double";
-    field_is_pointer = ' ';
+    field_type = "double";
   }
   else if (looking_at("color", line)) {
     QuarryColor color;
@@ -539,15 +547,47 @@ configuration_parse_defaults2(StringBuffer *c_file_arrays,
     sprintf(buffer, "{ %d, %d, %d }", color.red, color.green, color.blue);
     default_value = buffer;
 
-    field_type	     = "QuarryColor";
-    field_is_pointer = ' ';
+    field_type = "QuarryColor";
+  }
+  else if (looking_at("structure", line)) {
+    if (!current_defaults_data->new_structure) {
+      print_error("structure fields are only meaningful when creating new structures");
+      return 1;
+    }
+
+    if (first_subscription) {
+      print_error("structure field name must not contain subscriptions");
+      return 1;
+    }
+
+    utils_free(current_structure_field);
+    current_structure_field = utils_duplicate_string(field_name);
+
+    PARSE_IDENTIFIER(field_type, line, "structure field type");
+
+    if (!looking_at("-", line)) {
+      PARSE_IDENTIFIER(dispose_field_function, line, "dispose function");
+      dispose_field_prefix = "&";
+    }
   }
   else {
     print_error("value/field type expected");
     return 1;
   }
 
-  if (current_defaults_data->is_repeatable || string_to_duplicate) {
+  if (current_defaults_data->new_structure && first_subscription) {
+    if (!current_structure_field
+	|| strncmp(field_name, current_structure_field,
+		   first_subscription - field_name) != 0) {
+      print_error("illegal subscription");
+      return 1;
+    }
+
+    dispose_field_function = NULL;
+  }
+
+  if ((current_defaults_data->is_repeatable || string_to_duplicate)
+      && default_value) {
     if (!any_fields_to_init) {
       const char *type_suffix = (current_defaults_data->is_repeatable
 				 ? "Item" : "");
@@ -566,7 +606,9 @@ configuration_parse_defaults2(StringBuffer *c_file_arrays,
 
     if (!type_is_string_list) {
       string_buffer_printf(&c_file_bottom, "  structure->%s%s= ",
-			   field_name, TABBING(4, 13 + strlen(field_name)));
+			   field_name,
+			   (field_name_is_very_long
+			    ? "\n    " : TABBING(4, 13 + strlen(field_name))));
 
       if (!string_to_duplicate)
 	string_buffer_cat_strings(&c_file_bottom, default_value, ";\n", NULL);
@@ -585,7 +627,7 @@ configuration_parse_defaults2(StringBuffer *c_file_arrays,
     }
   }
 
-  if (!current_defaults_data->is_repeatable) {
+  if (!current_defaults_data->is_repeatable && default_value) {
     int common_subscription_level = 0;
     const char *field_name_scan;
     const char *last_field_name_scan;
@@ -617,7 +659,7 @@ configuration_parse_defaults2(StringBuffer *c_file_arrays,
     string_buffer_cat_string(&initialization_values, default_value);
   }
 
-  if (current_defaults_data->new_structure) {
+  if (current_defaults_data->new_structure && !first_subscription) {
     if (dispose_field_function) {
       if (!any_fields_to_dispose) {
 	if (current_defaults_data->is_repeatable) {
@@ -640,7 +682,8 @@ configuration_parse_defaults2(StringBuffer *c_file_arrays,
 	any_fields_to_dispose = 1;
       }
 
-      string_buffer_printf(&dispose_functions, dispose_field_function,
+      string_buffer_printf(&dispose_functions, "  %s(%s%s->%s);\n",
+			   dispose_field_function, dispose_field_prefix,
 			   (current_defaults_data->is_repeatable
 			    ? "item" : "structure"),
 			   field_name);
@@ -659,7 +702,7 @@ configuration_parse_defaults2(StringBuffer *c_file_arrays,
 
 static int
 configuration_finalize_defaults(StringBuffer *c_file_arrays)
-{  
+{
   static int last_init_function_defined = 0;
   static int last_dispose_function_defined = 0;
 
@@ -831,6 +874,9 @@ configuration_finalize_defaults(StringBuffer *c_file_arrays)
 		      any_fields_to_dispose, &last_dispose_function_defined);
     }
   }
+
+  utils_free(current_structure_field);
+  current_structure_field = NULL;
 
   return 0;
 }
