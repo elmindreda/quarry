@@ -380,6 +380,8 @@ sgf_utils_append_variation (SgfGameTree *tree, SgfBoardState *board_state,
 
   tree->current_node->current_variation = node;
   descend_nodes (tree, 1, board_state);
+
+  sgf_game_tree_invalidate_map (tree);
 }
 
 
