@@ -283,7 +283,8 @@ buffered_writer_vprintf(BufferedWriter *writer,
 				   format_string, arguments_copy);
     va_end(arguments_copy);
 
-    if (characters_written < writer->buffer_end - writer->buffer_pointer) {
+    if (characters_written < writer->buffer_end - writer->buffer_pointer
+	&& characters_written != -1) {
       update_column(writer, writer->buffer_pointer, characters_written);
       writer->buffer_pointer += characters_written;
 
@@ -292,6 +293,56 @@ buffered_writer_vprintf(BufferedWriter *writer,
   }
 
   string = utils_vprintf(format_string, arguments);
+  buffered_writer_cat_string(writer, string);
+  utils_free(string);
+}
+
+
+void
+buffered_writer_cprintf(BufferedWriter *writer, const char *format_string, ...)
+{
+  va_list arguments;
+
+  va_start(arguments, format_string);
+  buffered_writer_vcprintf(writer, format_string, arguments);
+  va_end(arguments);
+}
+
+
+void
+buffered_writer_vcprintf(BufferedWriter *writer,
+			 const char *format_string, va_list arguments)
+{
+  char *string;
+
+  assert(writer);
+  assert(format_string);
+
+  if (!writer->iconv_handle
+      && (writer->buffer_end - writer->buffer_pointer
+	  >= strlen(format_string))) {
+    int characters_written;
+    va_list arguments_copy;
+    
+    /* No encoding conversion is requested.  Try to print the string
+     * directly in the buffer.
+     */
+    QUARRY_VA_COPY(arguments_copy, arguments);
+    characters_written = utils_vncprintf(writer->buffer_pointer,
+					 (writer->buffer_end
+					  - writer->buffer_pointer),
+					 format_string, arguments_copy);
+    va_end(arguments_copy);
+
+    if (characters_written < writer->buffer_end - writer->buffer_pointer) {
+      update_column(writer, writer->buffer_pointer, characters_written);
+      writer->buffer_pointer += characters_written;
+
+      return;
+    }
+  }
+
+  string = utils_vcprintf(format_string, arguments);
   buffered_writer_cat_string(writer, string);
   utils_free(string);
 }
