@@ -1,3 +1,7 @@
+2005-01-20  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* README-PACKAGERS: Fix the name of site configuration file.
+
 2005-01-19  Paul Pogonyshev  <pogonyshev@gmx.net>
 
 	* README-PACKAGERS: New file.
