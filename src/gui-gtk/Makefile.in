@@ -162,7 +162,6 @@ libguigtk_a_SOURCES = \
 	gtk-assistant.c			\
 	gtk-clock.c			\
 	gtk-color-button.c		\
-	gtk-configuration-structures.c	\
 	gtk-control-center.c		\
 	gtk-games.c			\
 	gtk-goban.c			\
@@ -183,7 +182,6 @@ libguigtk_a_SOURCES = \
 	gtk-assistant.h			\
 	gtk-clock.h			\
 	gtk-color-button.h		\
-	gtk-configuration-structures.h	\
 	gtk-control-center.h		\
 	gtk-games.h			\
 	gtk-goban.h			\
@@ -226,16 +224,14 @@ LIBRARIES = $(noinst_LIBRARIES)
 libguigtk_a_AR = $(AR) cru
 libguigtk_a_DEPENDENCIES = $(top_srcdir)/src/gui-utils/libguiutils.a
 am_libguigtk_a_OBJECTS = gtk-assistant.$(OBJEXT) gtk-clock.$(OBJEXT) \
-	gtk-color-button.$(OBJEXT) \
-	gtk-configuration-structures.$(OBJEXT) \
-	gtk-control-center.$(OBJEXT) gtk-games.$(OBJEXT) \
-	gtk-goban.$(OBJEXT) gtk-goban-window.$(OBJEXT) \
-	gtk-gtp-client-interface.$(OBJEXT) gtk-named-vbox.$(OBJEXT) \
-	gtk-new-game-dialog.$(OBJEXT) gtk-parser-interface.$(OBJEXT) \
-	gtk-preferences.$(OBJEXT) gtk-progress-dialog.$(OBJEXT) \
-	gtk-qbox.$(OBJEXT) gtk-qhbox.$(OBJEXT) gtk-qvbox.$(OBJEXT) \
-	gtk-utils.$(OBJEXT) gui-back-end.$(OBJEXT) \
-	quarry-stock.$(OBJEXT)
+	gtk-color-button.$(OBJEXT) gtk-control-center.$(OBJEXT) \
+	gtk-games.$(OBJEXT) gtk-goban.$(OBJEXT) \
+	gtk-goban-window.$(OBJEXT) gtk-gtp-client-interface.$(OBJEXT) \
+	gtk-named-vbox.$(OBJEXT) gtk-new-game-dialog.$(OBJEXT) \
+	gtk-parser-interface.$(OBJEXT) gtk-preferences.$(OBJEXT) \
+	gtk-progress-dialog.$(OBJEXT) gtk-qbox.$(OBJEXT) \
+	gtk-qhbox.$(OBJEXT) gtk-qvbox.$(OBJEXT) gtk-utils.$(OBJEXT) \
+	gui-back-end.$(OBJEXT) quarry-stock.$(OBJEXT)
 am__objects_1 = gtk-configuration.$(OBJEXT) quarry-marshal.$(OBJEXT)
 nodist_libguigtk_a_OBJECTS = $(am__objects_1)
 libguigtk_a_OBJECTS = $(am_libguigtk_a_OBJECTS) \
@@ -247,7 +243,6 @@ am__depfiles_maybe = depfiles
 @AMDEP_TRUE@DEP_FILES = ./$(DEPDIR)/gtk-assistant.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/gtk-clock.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/gtk-color-button.Po \
-@AMDEP_TRUE@	./$(DEPDIR)/gtk-configuration-structures.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/gtk-configuration.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/gtk-control-center.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/gtk-games.Po \
@@ -301,7 +296,6 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gtk-assistant.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gtk-clock.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gtk-color-button.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gtk-configuration-structures.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gtk-configuration.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gtk-control-center.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gtk-games.Po@am__quote@
