@@ -1,3 +1,16 @@
+2004-07-20  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* gui-gtk/gtk-goban-window.c: Make it safe to navigate to a
+	different node while a game (with GTP engines participating) is
+	going on.
+	(IS_DISPLAYING_GAME_NODE): New macro.
+	(navigate_goban): Handle special cases of navigating from/to the
+	current game node.
+	(move_has_been_generated): Take care to attach new moves to the
+	current game's node, not to the displayed node.
+
+	* board/board.c (board_duplicate_without_stacks): New function.
+
 2004-07-16  Paul Pogonyshev  <pogonyshev@gmx.net>
 
 	* sgf/sgf-tree.c (sgf_game_tree_set_state): New function.
