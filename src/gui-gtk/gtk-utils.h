@@ -173,6 +173,8 @@ GtkWidget *	gtk_utils_create_time_spin_button(GtkAdjustment *adjustment,
 						  gdouble climb_rate);
 GtkWidget *	gtk_utils_create_selector(const gchar **items, gint num_items,
 					  gint selected_item);
+GtkWidget *	gtk_utils_create_selector_from_string_list
+		  (void *abstract_list, const gchar *selected_item);
 GtkWidget *	gtk_utils_create_invisible_notebook(void);
 
 void		gtk_utils_create_radio_chain(GtkWidget **radio_buttons,

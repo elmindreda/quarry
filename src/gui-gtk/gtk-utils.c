@@ -708,7 +708,7 @@ gtk_utils_create_selector(const gchar **items, gint num_items,
 
     for (k = 0; k < num_items; k++) {
       gtk_menu_shell_append(menu_shell,
-			    gtk_menu_item_new_with_label(items[k]));
+			    gtk_menu_item_new_with_label(_(items[k])));
     }
 
     gtk_widget_show_all(menu);
@@ -717,6 +717,71 @@ gtk_utils_create_selector(const gchar **items, gint num_items,
 
   if (0 <= selected_item && selected_item < num_items)
     gtk_option_menu_set_history(GTK_OPTION_MENU(widget), selected_item);
+
+#endif /* not GTK_2_4_OR_LATER */
+
+  return widget;
+}
+
+
+GtkWidget *
+gtk_utils_create_selector_from_string_list(void *abstract_list,
+					   const gchar *selected_item)
+{
+  GtkWidget *widget;
+  StringList *string_list = (StringList *) abstract_list;
+  StringListItem *list_item;
+  int k;
+
+  assert(string_list);
+  assert(string_list->first);
+
+#if GTK_2_4_OR_LATER
+
+  widget = gtk_combo_box_new_text();
+
+  {
+    GtkComboBox *combo_box = GTK_COMBO_BOX(widget);
+
+    for (list_item = string_list->first, k = 0; list_item;
+	 list_item = list_item->next, k++) {
+      gtk_combo_box_append_text(combo_box, list_item->text);
+
+      if (selected_item && strcmp(list_item->text, selected_item) == 0) {
+	gtk_combo_box_set_active(combo_box, k);
+	selected_item = NULL;
+      }
+    }
+  }
+
+#else /* not GTK_2_4_OR_LATER */
+
+  widget = gtk_option_menu_new();
+
+  {
+    GtkWidget *menu = gtk_menu_new();
+    GtkMenuShell *menu_shell = GTK_MENU_SHELL(menu);
+    int selected_item_index = -1;
+
+    for (list_item = string_list->first, k = 0; list_item;
+	 list_item = list_item->next, k++) {
+      gtk_menu_shell_append(menu_shell,
+			    gtk_menu_item_new_with_label(list_item->text));
+
+      if (selected_item && strcmp(list_item->text, selected_item) == 0) {
+	selected_item_index = k;
+	selected_item = NULL;
+      }
+    }
+
+    gtk_widget_show_all(menu);
+    gtk_option_menu_set_menu(GTK_OPTION_MENU(widget), menu);
+
+    if (selected_item_index != -1) {
+      gtk_option_menu_set_history(GTK_OPTION_MENU(widget),
+				  selected_item_index);
+    }
+  }
 
 #endif /* not GTK_2_4_OR_LATER */
 
