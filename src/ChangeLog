@@ -1,3 +1,58 @@
+2004-10-14  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* (Quarry version 0.1.8.)
+
+2004-10-13  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* gui-gtk/gtk-goban-window.c (game_info_dialog_property_changed):
+	New function.
+	(update_player_information): Add a comma before ranks not starting
+	with a digit (i.e. "Honinbo".)
+
+	* gui-gtk/gtk-game-info-dialog.c: Enable editing of game
+	information.  Add `property-changed' signal.
+	(gtk_game_info_dialog_init): Remove temporary notice from dialog
+	title.  Make all controls save their values (i.e. editable.)  Use
+	GtkFreezableSpinButton for handicap, komi and main time entries.
+	Adjust some mnemonic keys to make space for not yet added "Help"
+	button.
+	(create_and_pack_game_info_entry): New function.
+	(gtk_game_info_dialog_set_node): Bug-fix: set `main_time'
+	adjustment for all games, not just for Go.  Freeze spin buttons
+	when properties have illegal (from SGF point of view) values.
+	(game_info_entry_focus_out_event, game_comment_focus_out_event)
+	(game_info_spin_button_value_changed)
+	(game_info_spin_button_focus_out_event)
+	(update_property_if_changed): New functions.
+
+	* gui-gtk/gtk-utils.c (gtk_utils_create_freezable_spin_button):
+	New function.
+	(gtk_utils_convert_to_time_spin_button): New function, break out
+	of gtk_utils_create_time_spin_button().
+	(gtk_utils_set_text_buffer_text): New function, break out of
+	update_children_for_new_node() (in `gui-gtk/gtk-goban-window.c'.)
+	(gtk_utils_freeze_on_empty_input, freeze_on_empty_input): New
+	functions.
+
+	* gui-gtk/gtk-freezable-spin-button.c
+	* gui-gtk/gtk-freezable-spin-button.h: New files.
+
+2004-10-12  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* sgf/sgf-utils.c (sgf_utils_normalize_text): Add `is_simple_text'
+	parameter.  Handle simple text.  Remove all occurences of '\r'
+	character.  Don't leak `buffer' if `text' contains whitespace
+	only.
+
+	* gui-gtk/gtk-utils.h (GtkUtilsBrowsingDoneCallback): Make really
+	the same as the prototype of the `focus-out-event' handler.
+	* gui-gtk/gtk-preferences.c (update_board_background_texture):
+	Likewise.
+
+	* (Globally: put a space before opening parenthesis in function
+	calls and so be closer to GNU coding standard.  Files will be
+	converted only when some other change is being commited.)
+
 2004-10-11  Paul Pogonyshev  <pogonyshev@gmx.net>
 
 	* gui-gtk/gtk-preferences.c (gtk_preferences_dialog_present): Add
