@@ -1,3 +1,8 @@
+2004-04-24  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* gui-utils/configuration.c (configuration_read_from_file): Close
+	configuration file.
+
 2004-04-23  Paul Pogonyshev  <pogonyshev@gmx.net>
 
 	* gui-gtk/gtk-configuration.list: Add configuration variables for
