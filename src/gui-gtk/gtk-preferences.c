@@ -341,12 +341,15 @@ handle_drag_and_drop(GtkTreeModel *gtp_engines_tree_model,
 
 
 void
-gtk_preferences_dialog_present(gint page_to_select)
+gtk_preferences_dialog_present(gpointer page_to_select)
 {
   int k;
   int category_to_select;
   int subcategory_to_select;
   GtkTreePath *tree_path;
+  gint page_to_select_gint = (GPOINTER_TO_INT(page_to_select) >= 0
+			      ? GPOINTER_TO_INT(page_to_select)
+			      : last_selected_page);
 
   if (!preferences_dialog) {
     GtkWidget *dialog = gtk_dialog_new_with_buttons(_("Preferences"), NULL, 0,
@@ -461,15 +464,12 @@ gtk_preferences_dialog_present(gint page_to_select)
     gtk_widget_show_all(hbox);
   }
 
-  if (page_to_select < 0)
-    page_to_select = last_selected_page;
-
-  assert(0 <= page_to_select && page_to_select < NUM_PREFERENCES_DIALOG_PAGES);
+  assert(page_to_select_gint < NUM_PREFERENCES_DIALOG_PAGES);
 
   for (category_to_select = -1, subcategory_to_select = -1, k = 0;
-       page_to_select >= 0; k++) {
+       page_to_select_gint >= 0; k++) {
     if (preferences_dialog_categories[k].create_page) {
-      page_to_select--;
+      page_to_select_gint--;
       subcategory_to_select++;
     }
     else {

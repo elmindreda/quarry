@@ -70,7 +70,7 @@ struct _GtkEngineChain {
 
 void		     gtk_preferences_init(void);
 
-void		     gtk_preferences_dialog_present(gint page_to_select);
+void		     gtk_preferences_dialog_present(gpointer page_to_select);
 
 BoardAppearance *    game_to_board_appearance_structure(Game game);
 
