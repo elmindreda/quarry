@@ -20,8 +20,9 @@
 \* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 
-#include "utils.h"
 #include "gui-back-end.h"
+#include "gui-utils.h"
+#include "utils.h"
 
 #include <signal.h>
 
@@ -30,26 +31,29 @@
 int
 main(int argc, char *argv[])
 {
-  int return_code;
+  int return_code = 255;
 
   utils_remember_program_name(argv[0]);
 
-  bindtextdomain(PACKAGE, LOCALE_DIR);
-  bind_textdomain_codeset(PACKAGE, "UTF-8");
-  textdomain(PACKAGE);
+  if (gui_utils_enumerate_themes()) {
+    bindtextdomain(PACKAGE, LOCALE_DIR);
+    bind_textdomain_codeset(PACKAGE, "UTF-8");
+    textdomain(PACKAGE);
 
-  if (!gui_back_end_init(&argc, &argv))
-    return_code = 255;
+    if (gui_back_end_init(&argc, &argv)) {
+      /* When a GTP engine crashes (or it is not a GTP engine to begin
+       * with), we receive this signal and better not abort on it.
+       */
+      signal(SIGPIPE, SIG_IGN);
 
-  /* When a GTP engine crashes (or it is not a GTP engine in the first
-   * place), we receive this signal and better not abort on it.
-   */
-  signal(SIGPIPE, SIG_IGN);
+      if (argc == 1)
+	return_code = gui_back_end_main_default();
+      else
+	return_code = gui_back_end_main_open_files(argc - 1, argv + 1);
+    }
+  }
 
-  if (argc == 1)
-    return_code = gui_back_end_main_default();
-  else
-    return_code = gui_back_end_main_open_files(argc - 1, argv + 1);
+  gui_utils_discard_theme_lists();
 
   utils_free_program_name_strings();
 
