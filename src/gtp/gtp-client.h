@@ -209,6 +209,18 @@ void		gtp_client_set_komi
 		   GtpClientResponseCallback response_callback,
 		   void *user_data, double komi);
 
+void		gtp_client_send_time_settings
+		  (GtpClient *client,
+		   GtpClientResponseCallback response_callback,
+		   void *user_data,
+		   int main_time, int byo_yomi_time,
+		   int moves_per_byo_yomi_period);
+void		gtp_client_send_time_left
+		  (GtpClient *client,
+		   GtpClientResponseCallback response_callback,
+		   void *user_data,
+		   int color, int seconds_left, int moves_left);
+
 void		gtp_client_play_move
 		  (GtpClient *client,
 		   GtpClientResponseCallback response_callback,

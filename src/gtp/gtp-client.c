@@ -39,6 +39,9 @@
 #include <string.h>
 
 
+#define COLOR_STRING(color)	(color == BLACK ? "black" : "white")
+
+
 typedef struct _GtpClientUserCallbackData	GtpClientUserCallbackData;
 
 struct _GtpClientUserCallbackData {
@@ -516,13 +519,49 @@ gtp_client_set_komi(GtpClient *client,
 
 
 void
+gtp_client_send_time_settings(GtpClient *client,
+			      GtpClientResponseCallback response_callback,
+			      void *user_data,
+			      int main_time, int byo_yomi_time,
+			      int moves_per_byo_yomi_period)
+{
+  assert(client);
+  assert(main_time >= 0 && byo_yomi_time >= 0 && moves_per_byo_yomi_period >= 0
+	 && (byo_yomi_time == 0 || moves_per_byo_yomi_period > 0));
+
+  /* GTP uses slightly different values for "no limit". */
+  if (main_time == 0 && byo_yomi_time == 0)
+    byo_yomi_time = 1;
+
+  send_command(client, response_callback, user_data,
+	       "time_settings %d %d %d",
+	       main_time, byo_yomi_time, moves_per_byo_yomi_period);
+}
+
+
+void
+gtp_client_send_time_left(GtpClient *client,
+			  GtpClientResponseCallback response_callback,
+			  void *user_data,
+			  int color, int seconds_left, int moves_left)
+{
+  assert(client);
+  assert(IS_STONE(color));
+  assert(seconds_left >= 0 && moves_left >= 0);
+
+  send_command(client, response_callback, user_data,
+	       "time_left %s %d %d",
+	       COLOR_STRING(color), seconds_left, moves_left);
+}
+
+
+void
 gtp_client_play_move(GtpClient *client,
 		     GtpClientResponseCallback response_callback,
 		     void *user_data, int color, ...)
 {
   va_list move;
   char move_buffer[32];
-  const char *color_string;
 
   assert(client);
   assert(IS_STONE(color));
@@ -532,10 +571,9 @@ gtp_client_play_move(GtpClient *client,
 			  move_buffer, move);
   va_end(move);
 
-  color_string = (color == BLACK ? "black" : "white");
   send_command(client, response_callback, user_data,
 	       client->protocol_version != 1 ? "play %s %s" : "%s %s",
-	       color_string, move_buffer);
+	       COLOR_STRING(color), move_buffer);
 }
 
 
@@ -580,7 +618,7 @@ gtp_client_generate_move(GtpClient *client,
 					 response_callback),
 					user_data, color, NULL),
 	       client->protocol_version != 1 ? "genmove %s" : "genmove_%s",
-	       color == BLACK ? "black" : "white");
+	       COLOR_STRING(color));
 }
 
 
