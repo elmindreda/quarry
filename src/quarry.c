@@ -34,6 +34,10 @@ main(int argc, char *argv[])
 
   utils_remember_program_name(argv[0]);
 
+  bindtextdomain(PACKAGE, LOCALE_DIR);
+  bind_textdomain_codeset(PACKAGE, "UTF-8");
+  textdomain(PACKAGE);
+
   if (!gui_back_end_init(&argc, &argv))
     return_code = 255;
 
