@@ -100,40 +100,10 @@ int		option_gtp_show_stderr = 0;
 int
 main (int argc, char *argv[])
 {
-  int return_code = 255;
+  int return_code = 0;
   int option;
 
   utils_remember_program_name (argv[0]);
-
-  while ((option = getopt_long (argc, argv, "", quarry_options, NULL)) != -1) {
-    switch (option) {
-    case OPTION_GTP_LOG:
-      option_gtp_log_base_name = optarg;
-      break;
-
-    case OPTION_GTP_SHOW_STDERR:
-      option_gtp_show_stderr = 1;
-      break;
-
-    case OPTION_USAGE:
-    case OPTION_HELP:
-      printf (usage_string, full_program_name);
-
-      if (option == OPTION_HELP)
-	fputs (help_string, stdout);
-
-      goto exit_quarry;
-
-    case OPTION_VERSION:
-      fputs (version_string, stdout);
-      goto exit_quarry;
-
-    default:
-      fprintf (stderr, "Try `%s --help' for more information.\n",
-	       full_program_name);
-      goto exit_quarry;
-    }
-  }
 
   /* As a side effect, gui_utils_enumerate_themes() determines if
    * Quarry is (supposedly properly) installed: it returns zero if no
@@ -145,6 +115,39 @@ main (int argc, char *argv[])
     textdomain (PACKAGE);
 
     if (gui_back_end_init (&argc, &argv)) {
+      while ((option = getopt_long (argc, argv, "", quarry_options, NULL))
+	     != -1) {
+	switch (option) {
+	case OPTION_GTP_LOG:
+	  option_gtp_log_base_name = optarg;
+	  break;
+
+	case OPTION_GTP_SHOW_STDERR:
+	  option_gtp_show_stderr = 1;
+	  break;
+
+	case OPTION_USAGE:
+	case OPTION_HELP:
+	  printf (usage_string, full_program_name);
+
+	  if (option == OPTION_HELP)
+	    fputs (help_string, stdout);
+
+	  goto exit_quarry;
+
+	case OPTION_VERSION:
+	  fputs (version_string, stdout);
+	  goto exit_quarry;
+
+	default:
+	  fprintf (stderr, "Try `%s --help' for more information.\n",
+		   full_program_name);
+
+	  return_code = 255;
+	  goto exit_quarry;
+	}
+      }
+
       /* When a GTP engine crashes (or it is not a GTP engine to begin
        * with), we receive this signal and better not abort on it.
        */
@@ -157,11 +160,15 @@ main (int argc, char *argv[])
 						    argv + optind);
       }
     }
+    else
+      return_code = 253;
   }
-
-  gui_utils_discard_theme_lists ();
+  else
+    return_code = 254;
 
  exit_quarry:
+
+  gui_utils_discard_theme_lists ();
 
   utils_free_program_name_strings ();
 
