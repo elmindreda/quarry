@@ -45,6 +45,36 @@
 #define QUARRY_STOCK_PREVIOUS		"quarry-previous"
 
 
+/* Backward-compatible wrappers around evolving GTK+ stock.  Fallbacks
+ * are either similar icons or no icons.
+ *
+ * A prefix `ICON' or `MENU_ITEM' is used to show that these are not
+ * real stock identifiers.
+ */
+
+#if GTK_2_6_OR_LATER
+
+
+#define QUARRY_STOCK_ICON_DIRECTORY	GTK_STOCK_DIRECTORY
+#define QUARRY_STOCK_ICON_FILE		GTK_STOCK_FILE
+
+#define QUARRY_STOCK_MENU_ITEM_ABOUT		\
+  "<StockItem>",	GTK_STOCK_ABOUT
+
+
+#else /* not GTK_2_6_OR_LATER */
+
+
+#define QUARRY_STOCK_ICON_DIRECTORY	GTK_STOCK_OPEN
+#define QUARRY_STOCK_ICON_FILE		GTK_STOCK_NEW
+
+#define QUARRY_STOCK_MENU_ITEM_ABOUT		\
+  "<Item>"
+
+
+#endif /* not GTK_2_6_OR_LATER */
+
+
 void		quarry_stock_init (void);
 
 
