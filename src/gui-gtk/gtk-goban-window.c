@@ -27,6 +27,7 @@
 #include "gtk-game-info-dialog.h"
 #include "gtk-goban.h"
 #include "gtk-gtp-client-interface.h"
+#include "gtk-help.h"
 #include "gtk-named-vbox.h"
 #include "gtk-parser-interface.h"
 #include "gtk-preferences.h"
@@ -119,6 +120,7 @@ static void	 game_info_dialog_destroyed(GtkGobanWindow *goban_window);
 static void	 show_preferences_dialog(void);
 static void	 show_about_dialog(void);
 static void	 about_dialog_destroy(GtkWindow *window);
+static void	 show_help_contents(void);
 
 static void	 update_territory_markup(GtkGobanWindow *goban_window);
 
@@ -310,6 +312,8 @@ gtk_goban_window_init(GtkGobanWindow *goban_window)
       GOBAN_NAVIGATE_PREVIOUS_VARIATION, "<StockItem>", GTK_STOCK_GO_UP },
 
     { N_("/_Help"),		NULL,		  NULL, 0, "<Branch>" },
+    { N_("/Help/_Contents"),	"F1",		  show_help_contents,
+      0,			    "<StockItem>",  GTK_STOCK_HELP },
     { N_("/Help/_About"),	NULL,		  show_about_dialog,
       0,			     "<Item>" }
   };
@@ -838,6 +842,13 @@ about_dialog_destroy(GtkWindow *window)
 {
   assert(window == about_dialog);
   about_dialog = NULL;
+}
+
+
+static void
+show_help_contents(void)
+{
+  gtk_help_display(NULL);
 }
 
 
