@@ -924,6 +924,14 @@ parse_generated_move(GtpClient *client, int successful,
 					   client->response.first->text,
 					   &x, &y, &move_data);
 
+    if (num_characters_eaten == 0
+	&& strcasecmp(client->response.first->text, "resign") == 0) {
+      x = RESIGNATION_X;
+      y = RESIGNATION_Y;
+
+      num_characters_eaten = 6;
+    }
+
     if (num_characters_eaten > 0
 	&& !client->response.first->text[num_characters_eaten]) {
       if (move_callback) {
