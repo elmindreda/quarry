@@ -22,10 +22,15 @@
 
 #include "utils.h"
 
-#include <stdlib.h>
-#include <stdio.h>
+#include <limits.h>
 #include <stdarg.h>
+#include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
+
+#ifdef HAVE_FLOAT_H
+#include <float.h>
+#endif
 
 #ifdef HAVE_MEMORY_H
 #include <memory.h>
@@ -223,12 +228,13 @@ utils_duplicate_as_string(const char *buffer, int length)
 
 /* Append second string to first.  The first string is reallocated to
  * fit the concatenation.  It must be a result of a previous heap
- * allocation.
+ * allocation or NULL.  In the latter case, this function behaves just
+ * like `utils_duplicate_string(to_cat)'.
  */
 char *
 utils_cat_string(char *string, const char *to_cat)
 {
-  int current_length = strlen(string);
+  int current_length = (string ? strlen(string) : 0);
   int to_cat_length = strlen(to_cat);
   char *new_string = utils_realloc(string, current_length + to_cat_length + 1);
 
@@ -298,11 +304,14 @@ utils_cat_strings(char *string, ...)
 /* Same as utils_cat_string(), but the second parameter is any buffer
  * and need not be a zero-terminated string.  Result is still a valid
  * string, of course.
+ *
+ * The `string' can be NULL, in which case calling this function is
+ * identical to calling `utils_duplicate_as_string(buffer, length)'.
  */
 char *
 utils_cat_as_string(char *string, const char *buffer, int length)
 {
-  int current_length = strlen(string);
+  int current_length = (string ? strlen(string) : 0);
   char *new_string = utils_realloc(string, current_length + length + 1);
 
   memcpy(new_string + current_length, buffer, length);
@@ -317,7 +326,7 @@ utils_cat_as_string(char *string, const char *buffer, int length)
  * ASCIIZ strings).  Each buffer parameter, except for terminating
  * NULL, must be followed by its length.
  *
- * As for utils_cat_strings(), `string' can be NULL.
+ * As for all other `utils_cat_*' functions, `string' can be NULL.
  */
 char *
 utils_cat_as_strings(char *string, ...)
@@ -558,6 +567,101 @@ int
 utils_compare_ints(const void *first_int, const void *second_int)
 {
   return * (const int *) first_int - * (const int *) second_int;
+}
+
+
+
+/* Format a double number, so that it doesn't have trailing zeros
+ * after decimal point (with the only exception of an integer number).
+ * So, 1.2 would get formatted as "1.2", not "1.20", but 1 would be
+ * represented as "1.0", not "1.".
+ *
+ * The function returns address of a static buffer, so if you need to
+ * save the value, copy it away.
+ */
+const char *
+utils_format_double(double value)
+{
+#ifdef DBL_MAX_10_EXP
+
+  /* 20 is a safety margin. */
+  static char buffer[1 + DBL_MAX_10_EXP + 1 + 6 + 20];
+  char *buffer_pointer = buffer + sprintf(buffer, "%f", value);
+
+#else
+
+  static char buffer[0x400];
+  char *buffer_pointer = buffer + snprintf(buffer, 0x400, "%f", value);
+
+#endif
+
+  while (buffer_pointer > buffer && *(buffer_pointer - 1) == '0')
+    buffer_pointer--;
+
+  if (buffer_pointer > buffer && *(buffer_pointer - 1) == '.')
+    buffer_pointer++;
+
+  *buffer_pointer = 0;
+  return buffer;
+}
+
+
+
+int
+utils_parse_time(const char *time_string)
+{
+  const char *scan;
+  int num_colons = 0;
+  int digits_and_colons_only = 1;
+
+  for (scan = time_string; *scan; scan++) {
+    if (*scan == ':') {
+      if (++num_colons > 2 || !digits_and_colons_only)
+	return -1;
+    }
+    else if (*scan < '0' || '9' < *scan) {
+      digits_and_colons_only = 0;
+      if (num_colons != 0)
+	return -1;
+    }
+  }
+
+  if (num_colons > 0) {
+    int hours = 0;
+    int minutes = 0;
+    int seconds = 0;
+    int num_chars_eaten;
+
+    if (num_colons == 2) {
+      if (*time_string != ':') {
+	sscanf(time_string, "%d:%n", &hours, &num_chars_eaten);
+	time_string += num_chars_eaten;
+      }
+      else
+	time_string++;
+    }
+
+    if (*time_string != ':') {
+      sscanf(time_string, "%d:%n", &minutes, &num_chars_eaten);
+      time_string += num_chars_eaten;
+    }
+    else
+      time_string++;
+
+    sscanf(time_string, "%d", &seconds);
+
+    return (hours * 60 + minutes) * 60 + seconds;
+  }
+  else {
+    char *minutes_end;
+    double minutes_double = strtod(time_string, &minutes_end);
+
+    if (minutes_end == time_string
+	|| minutes_double < 0.0 || minutes_double > (INT_MAX / 60.0) - 1.0)
+      return -1;
+
+    return (int) (60.0 * minutes_double + 0.5);
+  }
 }
 
 

@@ -514,7 +514,7 @@ gtp_client_set_komi(GtpClient *client,
   assert(client);
 
   send_command(client, response_callback, user_data,
-	       "komi %s", format_double(komi));
+	       "komi %s", utils_format_double(komi));
 }
 
 

@@ -1436,7 +1436,7 @@ update_game_specific_information(GtkGobanWindow *goban_window)
       white_string = g_strdup_printf("%d capture(s) %c %s komi",
 				     board->data.go.prisoners[WHITE_INDEX],
 				     (komi > 0.0 ? '+' : '-'),
-				     format_double(fabs(komi)));
+				     utils_format_double(fabs(komi)));
     }
     else {
       white_string = g_strdup_printf("%d capture(s)",

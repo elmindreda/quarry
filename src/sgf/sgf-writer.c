@@ -301,7 +301,7 @@ void
 sgf_write_real(SgfWritingData *data, SgfValue value)
 {
   buffered_writer_add_character(&data->writer, '[');
-  buffered_writer_cat_string(&data->writer, format_double(*value.real));
+  buffered_writer_cat_string(&data->writer, utils_format_double(*value.real));
   buffered_writer_add_character(&data->writer, ']');
 }
 

@@ -109,6 +109,10 @@ char *		utils_fgets(FILE *file, int *length);
 int		utils_compare_ints(const void *first_int,
 				   const void *second_int);
 
+const char *	utils_format_double(double value);
+
+int		utils_parse_time(const char *time_string);
+
 
 extern char    *full_program_name;
 extern char    *short_program_name;
@@ -492,12 +496,6 @@ void		buffered_writer_printf(BufferedWriter *writer,
 void		buffered_writer_vprintf(BufferedWriter *writer,
 					const char *format_string,
 					va_list arguments);
-
-
-
-/* `format.c' global function. */
-
-const char *	format_double(double value);
 
 
 #endif /* QUARRY_UTILS_H */
