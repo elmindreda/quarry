@@ -28,6 +28,7 @@
 #include "gtk-gtp-client-interface.h"
 #include "gtk-named-vbox.h"
 #include "gtk-parser-interface.h"
+#include "gtk-preferences.h"
 #include "gtk-qhbox.h"
 #include "gtk-qvbox.h"
 #include "gtk-utils.h"
@@ -104,6 +105,10 @@ static void	 save_file_as_response(GtkFileSelection *dialog,
 				       gint response_id,
 				       GtkGobanWindow *goban_window);
 static void	 save_file_as_destroy(GtkGobanWindow *goban_window);
+
+static void	 show_preferences_dialog(void);
+static void	 show_about_dialog(void);
+static void	 about_dialog_destroy(GtkWindow *window);
 
 static void	 update_territory_markup(GtkGobanWindow *goban_window);
 
@@ -204,6 +209,9 @@ static guint		pointer_moved_signal_id;
 static guint		goban_clicked_signal_id;
 
 
+static GtkWindow       *about_dialog = NULL;
+
+
 GtkType
 gtk_goban_window_get_type(void)
 {
@@ -256,6 +264,10 @@ gtk_goban_window_init(GtkGobanWindow *goban_window)
     { N_("/File/Save _As..."),	"<shift><ctrl>S", gtk_goban_window_save,
       GTK_GOBAN_WINDOW_SAVE_AS,	    "<StockItem>",  GTK_STOCK_SAVE_AS },
 
+    { N_("/_Edit"),		NULL,		  NULL, 0, "<Branch>" },
+    { N_("/Edit/_Preferences"),	NULL,		  show_preferences_dialog,
+      0,			    "<StockItem>",  GTK_STOCK_PREFERENCES },
+
     { N_("/_Play"),		NULL,		  NULL, 0, "<Branch>" },
     { N_("/Play/_Pass"),	NULL,		  play_pass_move,
       1,			    "<Item>" },
@@ -279,6 +291,10 @@ gtk_goban_window_init(GtkGobanWindow *goban_window)
       GOBAN_NAVIGATE_NEXT_VARIATION, "<StockItem>", GTK_STOCK_GO_DOWN },
     { N_("/Go/Pre_vious Variation"),  "<alt>Up",	navigate_goban,
       GOBAN_NAVIGATE_PREVIOUS_VARIATION, "<StockItem>", GTK_STOCK_GO_UP },
+
+    { N_("/_Help"),		NULL,		  NULL, 0, "<Branch>" },
+    { N_("/Help/_About"),	NULL,		  show_about_dialog,
+      0,			     "<Item>" }
   };
 
   GtkWidget *goban;
@@ -705,6 +721,68 @@ save_file_as_destroy(GtkGobanWindow *goban_window)
 {
   gtk_control_center_window_destroyed(goban_window->save_as_dialog);
   goban_window->save_as_dialog = NULL;
+}
+
+
+static void
+show_preferences_dialog(void)
+{
+  gtk_preferences_dialog_present(GINT_TO_POINTER(-1));
+}
+
+
+static void
+show_about_dialog(void)
+{
+  if (!about_dialog) {
+    GtkWidget *dialog = gtk_dialog_new_with_buttons(_("About Quarry"), NULL, 0,
+						    GTK_STOCK_CLOSE,
+						    GTK_RESPONSE_CLOSE, NULL);
+    GtkWidget *quarry_label;
+    GtkWidget *description_label;
+    GtkWidget *copyright_label;
+    GtkWidget *vbox;
+
+    about_dialog = GTK_WINDOW(dialog);
+
+    gtk_dialog_set_default_response(GTK_DIALOG(dialog), GTK_RESPONSE_CLOSE);
+
+    g_signal_connect(dialog, "destroy",
+		     G_CALLBACK(about_dialog_destroy), NULL);
+    g_signal_connect(dialog, "response",
+		     G_CALLBACK(gtk_widget_destroy), NULL);
+
+    quarry_label = gtk_label_new(NULL);
+    gtk_label_set_markup(GTK_LABEL(quarry_label),
+			 ("<span size=\"larger\" weight=\"bold\">"
+			  PACKAGE_STRING "</span>"));
+
+    description_label = gtk_label_new(_("A GUI program for Go, Amazons "
+					"and Othello board games"));
+
+    copyright_label = gtk_label_new(NULL);
+    gtk_label_set_markup(GTK_LABEL(copyright_label),
+			 _("<small>Copyright \xc2\xa9 2004 "
+			   "Paul Pogonyshev and Martin Holters</small>"));
+
+    vbox = gtk_utils_pack_in_box(GTK_TYPE_VBOX, QUARRY_SPACING,
+				 quarry_label, GTK_UTILS_FILL,
+				 description_label, GTK_UTILS_FILL,
+				 copyright_label, GTK_UTILS_FILL, NULL);
+
+    gtk_utils_standardize_dialog(GTK_DIALOG(dialog), vbox);
+    gtk_widget_show_all(vbox);
+  }
+
+  gtk_window_present(about_dialog);
+}
+
+
+static void
+about_dialog_destroy(GtkWindow *window)
+{
+  assert(window == about_dialog);
+  about_dialog = NULL;
 }
 
 
