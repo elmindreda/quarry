@@ -860,8 +860,10 @@ refresh_buffer (SgfParsingData *data)
   }
 
   /* FIXME: add less severe handling of errors. */
-  assert (fread ((data->buffer + 1) + unused_bytes,
-		 bytes_to_read, 1, data->file) == 1);
+  if (fread ((data->buffer + 1) + unused_bytes, bytes_to_read, 1,
+	     data->file)
+      != 1)
+    assert (0);
 
   data->buffer_pointer	       = data->buffer + 1;
   data->file_bytes_remaining  -= bytes_to_read;
@@ -890,8 +892,10 @@ expand_buffer (SgfParsingData *data)
   data->buffer_pointer = data->buffer + data->buffer_size;
 
   /* FIXME: add less severe handling of errors. */
-  assert (fread ((char *) data->buffer + data->buffer_size,
-		 buffer_increase, 1, data->file) == 1);
+  if (fread ((char *) data->buffer + data->buffer_size,
+	     buffer_increase, 1, data->file)
+      != 1)
+    assert (0);
 
   data->buffer_size		  += buffer_increase;
   data->buffer_end		   = data->buffer + data->buffer_size;

@@ -1,7 +1,7 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *\
  * This file is part of Quarry.                                    *
  *                                                                 *
- * Copyright (C) 2004 Paul Pogonyshev.                             *
+ * Copyright (C) 2004, 2005 Paul Pogonyshev.                       *
  *                                                                 *
  * This program is free software; you can redistribute it and/or   *
  * modify it under the terms of the GNU General Public License as  *
@@ -362,7 +362,8 @@ gtk_sgf_markup_tile_set_create (const GtkSgfMarkupTileSetKey *key)
       char *buffer = g_malloc (file_size);
 
       rewind (file);
-      assert (fread (buffer, file_size, 1, file) == 1);
+      if (fread (buffer, file_size, 1, file) != 1)
+	assert (0);
       fclose (file);
 
       for (i = 0; i < NUM_SGF_MARKUP_BACKGROUNDS; i++) {
@@ -501,29 +502,27 @@ scale_and_paint_svg_image (char *buffer, const char *buffer_end,
 	    while (scan < buffer_end && *scan != '"')
 	      scan++;
 
-	    assert (rsvg_handle_write (rsvg_handle,
-				       written_up_to, scan - written_up_to,
-				       NULL));
+	    rsvg_handle_write (rsvg_handle, written_up_to,
+			       scan - written_up_to, NULL);
 	    written_up_to = scan;
 
-	    assert (rsvg_handle_write (rsvg_handle, scale_string,
-				       strlen (scale_string), NULL));
+	    rsvg_handle_write (rsvg_handle, scale_string,
+			       strlen (scale_string), NULL);
 
 	    scale_this_tag = 0;
 	  }
 	  else if (blend_this_tag && scan - property_name == 7
 		   && memcmp (property_name, "opacity", 7) == 0) {
 	    scan += 2;
-	    assert (rsvg_handle_write (rsvg_handle,
-				       written_up_to, scan - written_up_to,
-				       NULL));
+	    rsvg_handle_write (rsvg_handle, written_up_to,
+			       scan - written_up_to, NULL);
 
 	    while (scan < buffer_end && *scan != '"')
 	      scan++;
 	    written_up_to = scan;
 
-	    assert (rsvg_handle_write (rsvg_handle, opacity_string,
-				       strlen (opacity_string), NULL));
+	    rsvg_handle_write (rsvg_handle, opacity_string,
+			       strlen (opacity_string), NULL);
 
 	    blend_this_tag = 0;
 	  }
@@ -539,11 +538,10 @@ scale_and_paint_svg_image (char *buffer, const char *buffer_end,
 	    if (color_property) {
 	      string_list_delete_item (&color_properties, color_property);
 
-	      assert (rsvg_handle_write (rsvg_handle,
-					 written_up_to, scan - written_up_to,
-					 NULL));
+	      rsvg_handle_write (rsvg_handle, written_up_to,
+				 scan - written_up_to, NULL);
 
-	      assert (rsvg_handle_write (rsvg_handle, color_string, 7, NULL));
+	      rsvg_handle_write (rsvg_handle, color_string, 7, NULL);
 
 	      while (scan < buffer_end && *scan != '"')
 		scan++;
@@ -560,19 +558,16 @@ scale_and_paint_svg_image (char *buffer, const char *buffer_end,
 	  if (scan < buffer_end
 	      && (*scan == '>' || *scan == '/')
 	      && (scale_this_tag || blend_this_tag)) {
-	    assert (rsvg_handle_write (rsvg_handle,
-				       written_up_to, scan - written_up_to,
-				       NULL));
+	    rsvg_handle_write (rsvg_handle, written_up_to,
+			       scan - written_up_to, NULL);
 	    written_up_to = scan;
 
 	    if (scale_this_tag) {
 	      char *scale_full_string = g_strdup_printf (" transform=\"%s\"",
 							 scale_string + 1);
 
-	      assert (rsvg_handle_write (rsvg_handle,
-					 scale_full_string,
-					 strlen (scale_full_string),
-					 NULL));
+	      rsvg_handle_write (rsvg_handle, scale_full_string,
+				 strlen (scale_full_string), NULL);
 
 	      g_free (scale_full_string);
 	    }
@@ -581,10 +576,8 @@ scale_and_paint_svg_image (char *buffer, const char *buffer_end,
 	      char *opacity_full_string = g_strdup_printf (" opacity=\"%s\"",
 							   opacity_string);
 
-	      assert (rsvg_handle_write (rsvg_handle,
-					 opacity_full_string,
-					 strlen (opacity_full_string),
-					 NULL));
+	      rsvg_handle_write (rsvg_handle, opacity_full_string,
+				 strlen (opacity_full_string), NULL);
 
 	      g_free (opacity_full_string);
 	    }
@@ -598,10 +591,10 @@ scale_and_paint_svg_image (char *buffer, const char *buffer_end,
     }
   }
 
-  assert (rsvg_handle_write (rsvg_handle,
-			     written_up_to, buffer_end - written_up_to, NULL));
+  rsvg_handle_write (rsvg_handle, written_up_to, buffer_end - written_up_to,
+		     NULL);
 
-  assert (rsvg_handle_close (rsvg_handle, NULL));
+  rsvg_handle_close (rsvg_handle, NULL);
 
   pixbuf = rsvg_handle_get_pixbuf (rsvg_handle);
 

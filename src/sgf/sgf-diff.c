@@ -28,50 +28,54 @@
 
 
 int
-main(int argc, char *argv[])
+main (int argc, char *argv[])
 {
   int result = 0;
   SgfErrorList *error_list;
 
-  utils_remember_program_name(argv[0]);
+  utils_remember_program_name (argv[0]);
 
   if (argc == 3) {
     SgfCollection *first_collection;
     SgfCollection *second_collection;
     SgfCollection *difference;
 
-    assert(sgf_parse_file(argv[1], &first_collection, &error_list,
-			  &sgf_parser_defaults, NULL, NULL, NULL)
-	   == SGF_PARSED);
+    if (sgf_parse_file (argv[1], &first_collection, &error_list,
+			&sgf_parser_defaults, NULL, NULL, NULL)
+	!= SGF_PARSED)
+      assert (0);
+
     if (error_list)
-      string_list_delete(error_list);
+      string_list_delete (error_list);
 
-    assert(sgf_parse_file(argv[2], &second_collection, &error_list,
-			  &sgf_parser_defaults, NULL, NULL, NULL)
-	   == SGF_PARSED);
+    if (sgf_parse_file (argv[2], &second_collection, &error_list,
+			&sgf_parser_defaults, NULL, NULL, NULL)
+	!= SGF_PARSED)
+      assert (0);
+
     if (error_list)
-      string_list_delete(error_list);
+      string_list_delete (error_list);
 
 
-    difference = sgf_diff(first_collection, second_collection);
+    difference = sgf_diff (first_collection, second_collection);
 
-    sgf_collection_delete(first_collection);
-    sgf_collection_delete(second_collection);
+    sgf_collection_delete (first_collection);
+    sgf_collection_delete (second_collection);
 
     if (difference) {
-      sgf_write_file(NULL, difference, 1);
-      sgf_collection_delete(difference);
+      sgf_write_file (NULL, difference, 1);
+      sgf_collection_delete (difference);
     }
   }
   else {
-    fprintf(stderr, "Usage: %s FROM-FILE TO-FILE\n", argv[0]);
+    fprintf (stderr, "Usage: %s FROM-FILE TO-FILE\n", argv[0]);
     result = 255;
   }
 
-  utils_free_program_name_strings();
+  utils_free_program_name_strings ();
 
 #if ENABLE_MEMORY_PROFILING
-  utils_print_memory_profiling_info();
+  utils_print_memory_profiling_info ();
 #endif
 
   return result;
