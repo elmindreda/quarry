@@ -13,11 +13,14 @@ noinst_LIBRARIES =	\
 libutils_a_SOURCES =		\
 	buffered-writer.c	\
 	format.c		\
+	getopt.c		\
+	getopt1.c		\
 	memory-pool.c		\
 	string-buffer.c		\
 	string-list.c		\
 	utils.c			\
 				\
+	getopt.h		\
 	utils.h
 
 libparselist_a_SOURCES =	\
