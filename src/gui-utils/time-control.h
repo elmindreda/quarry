@@ -31,8 +31,9 @@
 #define NO_TIME_LIMITS		  0.0
 
 
-#define TIME_CONTROL_CLOCK_RUNS_DOWN(time_control)			\
-  ((time_control)->main_time > 0 || (time_control)->overtime_length > 0)
+#define TIME_CONTROL_CLOCK_RUNS_DOWN(time_control)	\
+  ((time_control)->main_time > 0			\
+   || (time_control)->overtime_length > 0)
 
 
 typedef struct _TimeControl	TimeControl;
@@ -46,35 +47,40 @@ struct _TimeControl {
   int		moves_to_play;
 
   void	       *timer_object;
-  int		active;
+  int		is_active;
 };
 
 
-TimeControl *	time_control_new(int main_time,
-				 int overtime_length, int moves_per_overtime);
-void		time_control_init(TimeControl *time_control,
-				  int main_time,
+TimeControl *	time_control_new (int main_time,
 				  int overtime_length, int moves_per_overtime);
+void		time_control_init (TimeControl *time_control,
+				   int main_time,
+				   int overtime_length,
+				   int moves_per_overtime);
 
-void		time_control_delete(TimeControl *time_control);
-void		time_control_dispose(TimeControl *time_control);
+void		time_control_delete (TimeControl *time_control);
+void		time_control_dispose (TimeControl *time_control);
 
-double		time_control_start(TimeControl *time_control);
-double		time_control_get_clock_seconds(const TimeControl *time_control,
-					       int *moves_to_play);
-double		time_control_stop(TimeControl *time_control,
-				  int *moves_to_play);
+double		time_control_start (TimeControl *time_control);
+double		time_control_get_clock_seconds (const TimeControl *time_control,
+						int *moves_to_play);
+double		time_control_stop (TimeControl *time_control,
+				   int *moves_to_play);
 
-double		time_control_get_time_left(const TimeControl *time_control,
-					   int *moves_to_play);
+double		time_control_get_time_left (const TimeControl *time_control,
+					    int *moves_to_play);
+
+double		time_control_get_time_till_seconds_update
+		  (const TimeControl *time_control);
+
+int		time_control_is_short_on_time (const TimeControl *time_control);
 
 
+/* GUI back-end specific functions (don't belong to GUI utils.) */
+void *		gui_back_end_timer_restart (void *timer_object);
+void		gui_back_end_timer_delete (void *timer_object);
 
-/* GUI back-end specific functions (don't belong to GUI utils). */
-void *		gui_back_end_timer_restart(void *timer_object);
-void		gui_back_end_timer_delete(void *timer_object);
-
-double		gui_back_end_timer_get_seconds_elapsed(void *timer_object);
+double		gui_back_end_timer_get_seconds_elapsed (void *timer_object);
 
 
 #endif /* QUARRY_TIME_CONTROL_H */

@@ -24,56 +24,58 @@
 #include "utils.h"
 
 #include <assert.h>
+#include <float.h>
+#include <math.h>
 
 
 TimeControl *
-time_control_new(int main_time, int overtime_length, int moves_per_overtime)
+time_control_new (int main_time, int overtime_length, int moves_per_overtime)
 {
-  TimeControl *time_control = utils_malloc(sizeof(TimeControl));
+  TimeControl *time_control = utils_malloc (sizeof (TimeControl));
 
-  time_control_init(time_control,
-		    main_time, overtime_length, moves_per_overtime);
+  time_control_init (time_control,
+		     main_time, overtime_length, moves_per_overtime);
 
   return time_control;
 }
 
 
 void
-time_control_init(TimeControl *time_control,
-		  int main_time, int overtime_length, int moves_per_overtime)
+time_control_init (TimeControl *time_control,
+		   int main_time, int overtime_length, int moves_per_overtime)
 {
-  assert(time_control);
-  assert(main_time >= 0 && overtime_length >= 0 && moves_per_overtime >= 0
-	 && (overtime_length == 0 || moves_per_overtime > 0));
+  assert (time_control);
+  assert (main_time >= 0 && overtime_length >= 0 && moves_per_overtime >= 0
+	  && (overtime_length == 0 || moves_per_overtime > 0));
 
   time_control->main_time	   = main_time;
   time_control->overtime_length	   = overtime_length;
   time_control->moves_per_overtime = moves_per_overtime;
 
   time_control->seconds_elapsed	= 0.0;
-  time_control->moves_to_play = (main_time > 0 || overtime_length == 0
-				 ? 0 : moves_per_overtime);
+  time_control->moves_to_play	= (main_time > 0 || overtime_length == 0
+				   ? 0 : moves_per_overtime);
 
   time_control->timer_object = NULL;
-  time_control->active = 0;
+  time_control->is_active    = 0;
 }
 
 
 void
-time_control_delete(TimeControl *time_control)
+time_control_delete (TimeControl *time_control)
 {
-  time_control_dispose(time_control);
-  utils_free(time_control);
+  time_control_dispose (time_control);
+  utils_free (time_control);
 }
 
 
 void
-time_control_dispose(TimeControl *time_control)
+time_control_dispose (TimeControl *time_control)
 {
-  assert(time_control);
+  assert (time_control);
 
   if (time_control->timer_object)
-    gui_back_end_timer_delete(time_control->timer_object);
+    gui_back_end_timer_delete (time_control->timer_object);
 }
 
 
@@ -84,16 +86,16 @@ time_control_dispose(TimeControl *time_control)
  * limits, return `NO_TIME_LIMITS'.
  */
 double
-time_control_start(TimeControl *time_control)
+time_control_start (TimeControl *time_control)
 {
   double time_remaining;
 
-  assert(time_control);
-  assert(!time_control->active);
+  assert (time_control);
+  assert (!time_control->is_active);
 
   time_control->timer_object
-    = gui_back_end_timer_restart(time_control->timer_object);
-  time_control->active = 1;
+    = gui_back_end_timer_restart (time_control->timer_object);
+  time_control->is_active = 1;
 
   if (time_control->moves_to_play == 0) {
     if (time_control->main_time == 0)
@@ -119,17 +121,17 @@ time_control_start(TimeControl *time_control)
  * player is currently in main time, not in his overtime period.
  */
 double
-time_control_get_clock_seconds(const TimeControl *time_control,
-			       int *moves_to_play)
+time_control_get_clock_seconds (const TimeControl *time_control,
+				int *moves_to_play)
 {
   double seconds_elapsed;
 
-  assert(time_control);
+  assert (time_control);
 
   seconds_elapsed = time_control->seconds_elapsed;
-  if (time_control->active) {
+  if (time_control->is_active) {
     seconds_elapsed
-      += gui_back_end_timer_get_seconds_elapsed(time_control->timer_object);
+      += gui_back_end_timer_get_seconds_elapsed (time_control->timer_object);
   }
 
   if (moves_to_play)
@@ -161,15 +163,15 @@ time_control_get_clock_seconds(const TimeControl *time_control,
  * time_control_get_clock_seconds().
  */
 double
-time_control_stop(TimeControl *time_control, int *moves_to_play)
+time_control_stop (TimeControl *time_control, int *moves_to_play)
 {
-  assert(time_control);
-  assert(time_control->active);
+  assert (time_control);
+  assert (time_control->is_active);
 
   time_control->seconds_elapsed
-    += gui_back_end_timer_get_seconds_elapsed(time_control->timer_object);
+    += gui_back_end_timer_get_seconds_elapsed (time_control->timer_object);
 
-  time_control->active = 0;
+  time_control->is_active = 0;
 
   if (time_control->moves_to_play == 0) {
     if (time_control->seconds_elapsed < (double) time_control->main_time
@@ -206,13 +208,13 @@ time_control_stop(TimeControl *time_control, int *moves_to_play)
 
 
 double
-time_control_get_time_left(const TimeControl *time_control,
-			   int *moves_to_play)
+time_control_get_time_left (const TimeControl *time_control,
+			    int *moves_to_play)
 {
   double time_remaining;
 
-  assert(time_control);
-  assert(!time_control->active);
+  assert (time_control);
+  assert (!time_control->is_active);
 
   if (moves_to_play)
     *moves_to_play = time_control->moves_to_play;
@@ -230,6 +232,59 @@ time_control_get_time_left(const TimeControl *time_control,
   }
 
   return (time_remaining > 0.0 ? time_remaining : OUT_OF_TIME);
+}
+
+
+/* NOTE: this function assumes that seconds displayed are
+ *
+ *	ceil (time_control_get_clock_seconds (...))
+ */
+double
+time_control_get_time_till_seconds_update (const TimeControl *time_control)
+{
+  double seconds_elapsed;
+
+  assert (time_control);
+
+  seconds_elapsed = time_control->seconds_elapsed;
+  if (time_control->is_active) {
+    seconds_elapsed
+      += gui_back_end_timer_get_seconds_elapsed (time_control->timer_object);
+  }
+
+  return (ceil (seconds_elapsed
+		+ (TIME_CONTROL_CLOCK_RUNS_DOWN (time_control)
+		   ? DBL_EPSILON : 0.0))
+	  - seconds_elapsed);
+}
+
+
+int
+time_control_is_short_on_time (const TimeControl *time_control)
+{
+  double seconds_elapsed;
+  double seconds_left;
+
+  assert (time_control);
+
+  if (!TIME_CONTROL_CLOCK_RUNS_DOWN (time_control))
+    return 0;
+
+  seconds_elapsed = time_control->seconds_elapsed;
+  if (time_control->is_active) {
+    seconds_elapsed
+      += gui_back_end_timer_get_seconds_elapsed (time_control->timer_object);
+  }
+
+  if (time_control->moves_to_play == 0) {
+    seconds_left = (double) time_control->main_time - seconds_elapsed;
+    if (seconds_left <= 0.0)
+      seconds_left += (double) time_control->overtime_length;
+  }
+  else
+    seconds_left = (double) time_control->overtime_length - seconds_elapsed;
+
+  return 0.0 < seconds_left && seconds_left <= 30.0;
 }
 
 
