@@ -94,6 +94,7 @@ libguigtk_a_SOURCES =			\
 	gtk-qbox.c			\
 	gtk-qhbox.c			\
 	gtk-qvbox.c			\
+	gtk-resume-game-dialog.c	\
 	gtk-sgf-tree-view.c		\
 	gtk-tile-set.c			\
 	gtk-utils.c			\
@@ -120,6 +121,7 @@ libguigtk_a_SOURCES =			\
 	gtk-qbox.h			\
 	gtk-qhbox.h			\
 	gtk-qvbox.h			\
+	gtk-resume-game-dialog.h	\
 	gtk-sgf-tree-view.h		\
 	gtk-thread-interface.h		\
 	gtk-tile-set.h			\
