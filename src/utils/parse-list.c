@@ -54,40 +54,39 @@ struct _FileList {
 
 
 #define file_list_new()							\
-  ((FileList *) string_list_new_derived(sizeof(FileListItem),		\
-					((StringListItemDispose)	\
-					 file_list_item_dispose)))
+  ((FileList *) string_list_new_derived (sizeof (FileListItem),		\
+					 ((StringListItemDispose)	\
+					  file_list_item_dispose)))
 
 #define file_list_init(list)						\
-  string_list_init_derived((list), sizeof(FileListItem),		\
-			   ((StringListItemDispose)			\
-			    file_list_item_dispose))
+  string_list_init_derived ((list), sizeof (FileListItem),		\
+			    ((StringListItemDispose)			\
+			     file_list_item_dispose))
 
 #define STATIC_FILE_LIST						\
-  STATIC_STRING_LIST_DERIVED(FileListItem, file_list_item_dispose)
+  STATIC_STRING_LIST_DERIVED (FileListItem, file_list_item_dispose)
 
-static void	file_list_item_dispose(FileListItem *item);
+static void	    file_list_item_dispose (FileListItem *item);
 
 
 #define file_list_get_item(list, item_index)				\
-  ((FileListItem *) string_list_get_item((list), (item_index)))
+  ((FileListItem *) string_list_get_item ((list), (item_index)))
 
 #define file_list_find(list, filename)					\
-  ((FileListItem *) string_list_find((list), (filename)))
+  ((FileListItem *) string_list_find ((list), (filename)))
 
 #define file_list_find_after_notch(list, filename, notch)		\
   ((FileListItem *)							\
-   string_list_find_after_notch((list), (filename), (notch)))
+   string_list_find_after_notch ((list), (filename), (notch)))
 
 
-static void	print_usage(FILE *where,
-			    const ListDescriptionSet *list_sets, int num_sets);
+inline static void  print_usage (FILE *where);
 
-static FILE *	open_file(const char *filename, int for_writing);
+static FILE *	    open_file (const char *filename, int for_writing);
 
-static int	do_parse_lists(FILE *h_file, FILE *c_file,
-			       const ListDescription *lists);
-static void	reuse_last_line(char **current_line);
+static int	    do_parse_lists (FILE *h_file, FILE *c_file,
+				    const ListDescription *lists);
+static void	    reuse_last_line (char **current_line);
 
 
 const char		*tab_string = "\t\t\t\t\t\t\t\t\t\t\t\t";
@@ -123,186 +122,187 @@ static const char *help_string =
   "\n"
   "Options:\n"
   "  -D, --define SYMBOL=SUBSTITUTION\n"
-  "                          define a symbol for `substitute_value' command\n"
+  "                          define a symbol for `$...$'-style substitutions\n"
   "  --help                  display this help and exit\n";
 
 
 int
-parse_list_main(int argc, char *argv[],
-		const ListDescriptionSet *list_sets, int num_sets)
+parse_list_main (int argc, char *argv[],
+		 const ListDescriptionSet *list_sets, int num_sets)
 {
-  int k;
   int option;
   int result = 255;
-  const ListDescription *lists = NULL;
-  char *list_file_name = NULL;
-  char *h_file_name = NULL;
-  char *c_file_name = NULL;
 
-  utils_remember_program_name(argv[0]);
+  utils_remember_program_name (argv[0]);
 
-  while ((option = getopt_long(argc, argv, "D:", parse_list_options, NULL))
+  while ((option = getopt_long (argc, argv, "D:", parse_list_options, NULL))
 	 != -1) {
     switch (option) {
     case OPTION_HELP:
-      print_usage(stdout, list_sets, num_sets);
-      printf(help_string);
+      print_usage (stdout);
+      printf (help_string);
 
       result = 0;
       goto exit_parse_list_main;
 
     case 'D':
       {
-	const char *delimiter = strchr(optarg, '=');
+	const char *delimiter = strchr (optarg, '=');
 
 	if (delimiter) {
-	  string_list_add_from_buffer(&substitutions,
-				      optarg, delimiter - optarg);
+	  if (memchr (optarg, '$', delimiter - optarg)) {
+	    fprintf (stderr,
+		     ("%s: fatal: "
+		      "substitution name cannot contain dollar signs\n"),
+		     short_program_name);
+	    goto exit_parse_list_main;
+	  }
+
+	  string_list_add_from_buffer (&substitutions,
+				       optarg, delimiter - optarg);
 	  substitutions.last->association
-	    = utils_duplicate_string(delimiter + 1);
+	    = utils_duplicate_string (delimiter + 1);
 	}
 	else {
-	  string_list_add(&substitutions, optarg);
-	  substitutions.last->association = utils_duplicate_string("");
+	  string_list_add (&substitutions, optarg);
+	  substitutions.last->association = utils_duplicate_string ("");
 	}
       }
 
       break;
 
     default:
-      fprintf(stderr, "Try `%s --help' for more information.\n",
-	      full_program_name);
+      fprintf (stderr, "Try `%s --help' for more information.\n",
+	       full_program_name);
       goto exit_parse_list_main;
     }
   }
 
-  if (num_sets > 1 && argc - optind == 4) {
-    for (k = 0; k < num_sets; k++) {
-      if (strcmp(argv[optind], list_sets[k].command_line_name) == 0)
-	lists = list_sets[k].lists;
-    }
-
-    if (!lists) {
-      fprintf(stderr, "%s: fatal: unknown mode `%s'\n",
-	      short_program_name, argv[optind]);
-    }
-
-    optind++;
-  }
-  else if (num_sets == 1 && argc - optind == 3)
-    lists = list_sets[0].lists;
-  else
-    print_usage(stderr, list_sets, num_sets);
-
-  list_file_name = argv[optind];
-  h_file_name	 = argv[optind + 1];
-  c_file_name	 = argv[optind + 2];
-
-  if (lists) {
-    FILE *list_file = open_file(list_file_name, 0);
+  if (argc - optind == 3) {
+    char *list_file_name = argv[optind];
+    char *h_file_name	 = argv[optind + 1];
+    char *c_file_name	 = argv[optind + 2];
+    FILE *list_file	 = open_file (list_file_name, 0);
 
     if (list_file) {
-      FILE *h_file = open_file(h_file_name, 1);
+      char *line;
+      const ListDescription *lists = NULL;
+      int k;
 
-      string_list_prepend(&list_files, list_file_name);
+      string_list_prepend (&list_files, list_file_name);
       list_files.first->file = list_file;
       list_files.first->line_number = 0;
 
-      if (h_file) {
-	FILE *c_file = open_file(c_file_name, 1);
+      do
+	line = read_line ();
+      while (line && (! *line || *line == '#'));
 
-	if (c_file) {
-	  static const char *preamble =
-	    "/* This file is automatically generated by `%s'.\n"
-	    " * Do not modify it, edit `%s' instead.\n"
-	    " */\n";
+      if (looking_at ("mode", &line)) {
+	const char *mode = parse_thing (IDENTIFIER, &line, "mode name");
 
-	  int n;
-	  int h_file_name_length = strlen(h_file_name);
-
-	  fprintf(h_file, preamble, short_program_name, list_file_name);
-	  fprintf(c_file, preamble, short_program_name, list_file_name);
-
-	  for (k = h_file_name_length; k >= 1; k--) {
-	    if (h_file_name[k - 1] == DIRECTORY_SEPARATOR)
+	if (mode) {
+	  for (k = 0; k < num_sets; k++) {
+	    if (strcmp (mode, list_sets[k].mode_name) == 0) {
+	      lists = list_sets[k].lists;
 	      break;
+	    }
 	  }
 
-	  for (n = 0; k < h_file_name_length; k++) {
-	    if (isalnum(h_file_name[k]))
-	      h_file_name[n++] = toupper(h_file_name[k]);
-	    else if (h_file_name[k] == '.'
-		     || h_file_name[k] == '_'
-		     || h_file_name[k] == '-')
-	      h_file_name[n++] = '_';
-	  }
-
-	  h_file_name[n] = 0;
-	  fprintf(h_file, "\n\n#ifndef QUARRY_%s\n#define QUARRY_%s\n",
-		  h_file_name, h_file_name);
-
-	  result = do_parse_lists(h_file, c_file, lists);
-
-	  fprintf(h_file, "\n\n#endif /* QUARRY_%s */\n", h_file_name);
-
-	  fclose(c_file);
+	  if (!lists)
+	    print_error ("fatal: unknown mode `%s'", mode);
 	}
+      }
+      else
+	print_error ("fatal: `mode' expected");
 
-	fclose(h_file);
+      if (lists) {
+	FILE *h_file = open_file (h_file_name, 1);
+
+	if (h_file) {
+	  FILE *c_file = open_file (c_file_name, 1);
+
+	  if (c_file) {
+	    static const char *preamble =
+	      "/* This file is automatically generated by `%s'.\n"
+	      " * Do not modify it, edit `%s' instead.\n"
+	      " */\n";
+
+	    int n;
+	    int h_file_name_length = strlen (h_file_name);
+
+	    fprintf (h_file, preamble, short_program_name, list_file_name);
+	    fprintf (c_file, preamble, short_program_name, list_file_name);
+
+	    for (k = h_file_name_length; k >= 1; k--) {
+	      if (h_file_name[k - 1] == DIRECTORY_SEPARATOR)
+		break;
+	    }
+
+	    for (n = 0; k < h_file_name_length; k++) {
+	      if (isalnum (h_file_name[k]))
+		h_file_name[n++] = toupper (h_file_name[k]);
+	      else if (h_file_name[k] == '.'
+		       || h_file_name[k] == '_'
+		       || h_file_name[k] == '-')
+		h_file_name[n++] = '_';
+	    }
+
+	    h_file_name[n] = 0;
+	    fprintf (h_file, "\n\n#ifndef QUARRY_%s\n#define QUARRY_%s\n",
+		     h_file_name, h_file_name);
+
+	    result = do_parse_lists (h_file, c_file, lists);
+
+	    fprintf (h_file, "\n\n#endif /* QUARRY_%s */\n", h_file_name);
+
+	    fclose (c_file);
+	  }
+
+	  fclose (h_file);
+	}
       }
 
-      string_list_empty(&list_files);
+      string_list_empty (&list_files);
     }
   }
   else {
-    fprintf(stderr, "Try `%s --help' for more information.\n",
-	    full_program_name);
+    print_usage (stderr);
+    fprintf (stderr, "Try `%s --help' for more information.\n",
+	     full_program_name);
   }
 
  exit_parse_list_main:
-  string_list_empty(&substitutions);
-  utils_free_program_name_strings();
+  string_list_empty (&substitutions);
+  utils_free_program_name_strings ();
 
   return result;
 }
 
 
 static void
-print_usage(FILE *where, const ListDescriptionSet *list_sets, int num_sets)
+print_usage (FILE *where)
 {
-  fprintf(where, "Usage: %s [OPTION]... ", full_program_name);
-
-  if (num_sets > 1) {
-    int k;
-
-    for (k = 0; k < num_sets; k++) {
-      fprintf(where, "%c%s", k > 0 ? '|' : '{',
-	      list_sets[k].command_line_name);
-    }
-
-    fputs("} ", where);
-  }
-
-  fputs("LIST_FILE H_FILE C_FILE\n", where);
+  fprintf (where, "Usage: %s [OPTION]... LIST_FILE H_FILE C_FILE\n",
+	   full_program_name);
 }
 
 
 static void
-file_list_item_dispose(FileListItem *item)
+file_list_item_dispose (FileListItem *item)
 {
-  fclose(item->file);
+  fclose (item->file);
 }
 
 
 static FILE *
-open_file(const char *filename, int for_writing)
+open_file (const char *filename, int for_writing)
 {
-  FILE *file = fopen(filename, for_writing ? "w" : "r");
+  FILE *file = fopen (filename, for_writing ? "w" : "r");
 
   if (!file) {
-    fprintf(stderr, "%s: can't open file `%s' for %s\n",
-	    short_program_name, filename,
-	    for_writing ? "writing" : "reading");
+    fprintf (stderr, "%s: can't open file `%s' for %s\n",
+	     short_program_name, filename,
+	     for_writing ? "writing" : "reading");
   }
 
   return file;
@@ -310,7 +310,7 @@ open_file(const char *filename, int for_writing)
 
 
 static int
-do_parse_lists(FILE *h_file, FILE *c_file, const ListDescription *lists)
+do_parse_lists (FILE *h_file, FILE *c_file, const ListDescription *lists)
 {
   int k;
   int result = 1;
@@ -331,17 +331,17 @@ do_parse_lists(FILE *h_file, FILE *c_file, const ListDescription *lists)
   StringBuffer *list_c_file_array = NULL;
   StringBuffer h_file_enums;
 
-  string_buffer_init(&h_file_top, 0x2000, 0x1000);
-  string_buffer_init(&h_file_bottom, 0x2000, 0x1000);
-  string_buffer_init(&h_file_enums, 0x2000, 0x1000);
+  string_buffer_init (&h_file_top, 0x2000, 0x1000);
+  string_buffer_init (&h_file_bottom, 0x2000, 0x1000);
+  string_buffer_init (&h_file_enums, 0x2000, 0x1000);
 
-  string_buffer_init(&c_file_top, 0x2000, 0x1000);
-  string_buffer_init(&c_file_bottom, 0x2000, 0x1000);
+  string_buffer_init (&c_file_top, 0x2000, 0x1000);
+  string_buffer_init (&c_file_bottom, 0x2000, 0x1000);
   for (k = 0; k < NUM_LIST_SORT_ORDERS; k++)
-    string_buffer_init(&c_file_arrays[k], 0x2000, 0x1000);
+    string_buffer_init (&c_file_arrays[k], 0x2000, 0x1000);
 
   while (1) {
-    char *line = read_line();
+    char *line = read_line ();
 
     if (!line) {
       while (lists->name && lists->multiple_lists_allowed)
@@ -351,15 +351,15 @@ do_parse_lists(FILE *h_file, FILE *c_file, const ListDescription *lists)
 	result = 0;
 
 	if (lists->list_finalizer) {
-	  if (lists->list_finalizer(NULL))
+	  if (lists->list_finalizer (NULL))
 	    result = 1;
 	}
       }
       else {
-	fprintf(stderr,
-		"%s: unexpected end of file--list of type `%s' expected\n",
-		short_program_name,
-		lists->name);
+	fprintf (stderr,
+		 "%s: unexpected end of file---list of type `%s' expected\n",
+		 short_program_name,
+		 lists->name);
       }
 
       break;
@@ -371,14 +371,14 @@ do_parse_lists(FILE *h_file, FILE *c_file, const ListDescription *lists)
     if (line[0] == '#') {
       if (line[1] == '>') {
 	line = line + 2;
-	while (isspace(*line))
+	while (isspace (*line))
 	  line++;
 
-	utils_free(pending_h_comment);
-	pending_h_comment = utils_duplicate_string(line);
+	utils_free (pending_h_comment);
+	pending_h_comment = utils_duplicate_string (line);
 
-	utils_free(pending_c_comment);
-	pending_c_comment = utils_duplicate_string(line);
+	utils_free (pending_c_comment);
+	pending_c_comment = utils_duplicate_string (line);
       }
 
       continue;
@@ -391,95 +391,95 @@ do_parse_lists(FILE *h_file, FILE *c_file, const ListDescription *lists)
 
 	if (first_char != '=' && first_char != '+') {
 	  if (lists->line_parser1) {
-	    if (lists->line_parser1(&line))
+	    if (lists->line_parser1 (&line))
 	      break;
 
 	    if (!line)
 	      continue;
 
-	    while (*line && isspace(*line))
+	    while (*line && isspace (*line))
 	      line++;
 	  }
 	}
 	else {
 	  if (!h_file_enum_name) {
-	    print_error("`+' and `=' directives are not allowed "
-			"in lists that don't generate enumerations");
+	    print_error ("`+' and `=' directives are not allowed "
+			 "in lists that don't generate enumerations");
 	    break;
 	  }
 
 	  do
 	    line++;
-	  while (isspace(*line));
+	  while (isspace (*line));
 	}
 
 	if ((!pending_eol_comment || ! *pending_eol_comment)
 	    && last_identifier
 	    && h_file_enum_name)
-	  string_buffer_cat_string(&h_file_enums, ",\n");
+	  string_buffer_cat_string (&h_file_enums, ",\n");
 
 	if (pending_eol_comment) {
 	  if (*pending_eol_comment && h_file_enum_name) {
-	    string_buffer_cprintf(&h_file_enums, ",%s/* %s */\n",
-				  TABBING(7, h_file_line_length + 1),
-				  pending_eol_comment);
+	    string_buffer_cprintf (&h_file_enums, ",%s/* %s */\n",
+				   TABBING (7, h_file_line_length + 1),
+				   pending_eol_comment);
 	  }
 
-	  utils_free(pending_eol_comment);
+	  utils_free (pending_eol_comment);
 	  pending_eol_comment = NULL;
 	}
 
 	if (pending_h_comment) {
 	  if (*pending_h_comment && h_file_enum_name) {
 	    if (last_identifier)
-	      string_buffer_add_character(&h_file_enums, '\n');
-	    string_buffer_cat_strings(&h_file_enums,
-				      "  /* ", pending_h_comment, " */\n",
-				      NULL);
+	      string_buffer_add_character (&h_file_enums, '\n');
+	    string_buffer_cat_strings (&h_file_enums,
+				       "  /* ", pending_h_comment, " */\n",
+				       NULL);
 	  }
 
-	  utils_free(pending_h_comment);
+	  utils_free (pending_h_comment);
 	  pending_h_comment = NULL;
 	}
 
 	if (h_file_enum_name) {
-	  identifier = parse_thing(IDENTIFIER, &line, "identifier");
+	  identifier = parse_thing (IDENTIFIER, &line, "identifier");
 	  if (!identifier)
 	    break;
 
-	  string_buffer_cat_strings(&h_file_enums, "  ", identifier, NULL);
-	  h_file_line_length = 2 + strlen(identifier);
+	  string_buffer_cat_strings (&h_file_enums, "  ", identifier, NULL);
+	  h_file_line_length = 2 + strlen (identifier);
 
 	  if (first_char == '=' || equal_to_last) {
-	    string_buffer_cat_strings(&h_file_enums,
-				      " = ", last_identifier, NULL);
-	    h_file_line_length += 3 + strlen(last_identifier);
+	    string_buffer_cat_strings (&h_file_enums,
+				       " = ", last_identifier, NULL);
+	    h_file_line_length += 3 + strlen (last_identifier);
 	  }
 
-	  utils_free(last_identifier);
-	  last_identifier = utils_duplicate_string(identifier);
+	  utils_free (last_identifier);
+	  last_identifier = utils_duplicate_string (identifier);
 	}
 
 	if (first_char != '+') {
 	  if (first_char != '=') {
 	    if (c_file_array_name && *lists->c_file_array_type) {
 	      if (num_c_file_array_elements > 0) {
-		string_buffer_add_character(list_c_file_array, ',');
-		string_buffer_add_characters(list_c_file_array, '\n',
-					     1 + pending_linefeeds);
+		string_buffer_add_character (list_c_file_array, ',');
+		string_buffer_add_characters (list_c_file_array, '\n',
+					      1 + pending_linefeeds);
 	      }
 
 	      if (pending_c_comment) {
 		if (*pending_c_comment) {
 		  if (num_c_file_array_elements > 0)
-		    string_buffer_add_character(list_c_file_array, '\n');
+		    string_buffer_add_character (list_c_file_array, '\n');
 
-		  string_buffer_cat_strings(list_c_file_array,
-					    "  /* ", pending_c_comment, " */\n",
-					    NULL);
+		  string_buffer_cat_strings (list_c_file_array,
+					     "  /* ", pending_c_comment,
+					     " */\n", NULL);
 		}
 
-		utils_free(pending_c_comment);
+		utils_free (pending_c_comment);
 		pending_c_comment = NULL;
 	      }
 	    }
@@ -488,12 +488,12 @@ do_parse_lists(FILE *h_file, FILE *c_file, const ListDescription *lists)
 	      num_c_file_array_elements++;
 
 	    pending_linefeeds = 0;
-	    if (lists->line_parser2(list_c_file_array, &line, identifier,
-				    &pending_eol_comment, &pending_linefeeds))
+	    if (lists->line_parser2 (list_c_file_array, &line, identifier,
+				     &pending_eol_comment, &pending_linefeeds))
 	      break;
 
 	    if (*line) {
-	      print_error("unexpected characters at the end of line");
+	      print_error ("unexpected characters at the end of line");
 	      break;
 	    }
 
@@ -501,12 +501,12 @@ do_parse_lists(FILE *h_file, FILE *c_file, const ListDescription *lists)
 	      pending_linefeeds = 0;
 	      if (! *line) {
 		while (1) {
-		  line = read_line();
+		  line = read_line ();
 
 		  if (line && ! *line)
 		    pending_linefeeds++;
 		  else {
-		    reuse_last_line(&line);
+		    reuse_last_line (&line);
 		    break;
 		  }
 		}
@@ -518,7 +518,8 @@ do_parse_lists(FILE *h_file, FILE *c_file, const ListDescription *lists)
 	}
 	else {
 	  if (equal_to_last) {
-	    print_error("second inserted identifier in a row; did you mean `='?");
+	    print_error ("second inserted identifier in a row; "
+			 "did you mean `='?");
 	    break;
 	  }
 
@@ -527,37 +528,37 @@ do_parse_lists(FILE *h_file, FILE *c_file, const ListDescription *lists)
       }
       else {
 	if (!last_identifier && num_c_file_array_elements == 0) {
-	  print_error("empty list `%s'", lists->name);
+	  print_error ("empty list `%s'", lists->name);
 	  break;
 	}
 
 	if (pending_eol_comment) {
 	  if (*pending_eol_comment && h_file_enum_name) {
-	    string_buffer_cprintf(&h_file_enums, "%s/* %s */",
-				  TABBING(7, h_file_line_length),
-				  pending_eol_comment);
+	    string_buffer_cprintf (&h_file_enums, "%s/* %s */",
+				   TABBING (7, h_file_line_length),
+				   pending_eol_comment);
 	  }
 
-	  utils_free(pending_eol_comment);
+	  utils_free (pending_eol_comment);
 	  pending_eol_comment = NULL;
 	}
 
 	if (lists->list_finalizer) {
-	  if (lists->list_finalizer(list_c_file_array))
+	  if (lists->list_finalizer (list_c_file_array))
 	    break;
 	}
 
 	if (h_file_enum_name) {
-	  if (strcmp(h_file_enum_name, "unnamed") != 0) {
-	    string_buffer_cat_strings(&h_file_enums,
-				      "\n} ", h_file_enum_name, ";\n", NULL);
+	  if (strcmp (h_file_enum_name, "unnamed") != 0) {
+	    string_buffer_cat_strings (&h_file_enums,
+				       "\n} ", h_file_enum_name, ";\n", NULL);
 	  }
 	  else
-	    string_buffer_cat_string(&h_file_enums, "\n};\n");
+	    string_buffer_cat_string (&h_file_enums, "\n};\n");
 	}
 
 	if (c_file_array_name && *lists->c_file_array_type)
-	  string_buffer_cat_string(list_c_file_array, "\n};\n");
+	  string_buffer_cat_string (list_c_file_array, "\n};\n");
 
 	if (!lists->multiple_lists_allowed)
 	  lists++;
@@ -566,127 +567,127 @@ do_parse_lists(FILE *h_file, FILE *c_file, const ListDescription *lists)
       }
     }
     else {
-      const char *identifier = parse_thing(IDENTIFIER, &line,
-					   "list name or `include'");
+      const char *identifier = parse_thing (IDENTIFIER, &line,
+					    "list name or `include'");
 
       if (!identifier)
 	break;
 
-      if (strcmp(identifier, "include") == 0
-	  || strcmp(identifier, "c_include") == 0) {
+      if (strcmp (identifier, "include") == 0
+	  || strcmp (identifier, "c_include") == 0) {
 	if (! *line) {
-	  print_error("filename expected");
+	  print_error ("filename expected");
 	  break;
 	}
 
 	if (!had_c_includes) {
-	  fputs("\n\n", c_file);
+	  fputs ("\n\n", c_file);
 	  had_c_includes = 1;
 	}
 
-	fprintf(c_file, "#include %s\n", line);
+	fprintf (c_file, "#include %s\n", line);
       }
-      else if (strcmp(identifier, "h_include") == 0) {
+      else if (strcmp (identifier, "h_include") == 0) {
 	if (! *line) {
-	  print_error("filename expected");
+	  print_error ("filename expected");
 	  break;
 	}
 
 	if (!had_h_includes) {
-	  fputs("\n\n", h_file);
+	  fputs ("\n\n", h_file);
 	  had_h_includes = 1;
 	}
 
-	fprintf(h_file, "#include %s\n", line);
+	fprintf (h_file, "#include %s\n", line);
       }
       else {
 	if (!lists->name) {
-	  print_error("unexpected list beginning");
+	  print_error ("unexpected list beginning");
 	  break;
 	}
 
 	if (lists->multiple_lists_allowed
-	    && strcmp(identifier, lists->name) != 0
+	    && strcmp (identifier, lists->name) != 0
 	    && (lists + 1)->name)
 	  lists++;
 
-	if (strcmp(identifier, lists->name) == 0) {
-	  if (looking_at("-", &line)) {
+	if (strcmp (identifier, lists->name) == 0) {
+	  if (looking_at ("-", &line)) {
 	    if (lists->enumeration_required) {
-	      print_error("enumeration name expected");
+	      print_error ("enumeration name expected");
 	      break;
 	    }
 
 	    h_file_enum_name = NULL;
 	  }
 	  else {
-	    h_file_enum_name = parse_thing(IDENTIFIER, &line,
-					   "enumeration name");
+	    h_file_enum_name = parse_thing (IDENTIFIER, &line,
+					    "enumeration name");
 	    if (!h_file_enum_name)
 	      break;
 	  }
 
 	  if (!lists->c_file_array_type) {
-	    if (!looking_at("-", &line)) {
-	      print_error("unexpected array name");
+	    if (!looking_at ("-", &line)) {
+	      print_error ("unexpected array name");
 	      break;
 	    }
 
 	    c_file_array_name = NULL;
 	  }
 	  else {
-	    if (looking_at("-", &line)) {
-	      print_error("array name expected");
+	    if (looking_at ("-", &line)) {
+	      print_error ("array name expected");
 	      break;
 	    }
 
-	    c_file_array_name = parse_thing(IDENTIFIER, &line,
-					    "array name");
+	    c_file_array_name = parse_thing (IDENTIFIER, &line,
+					     "array name");
 	    if (!c_file_array_name)
 	      break;
 	  }
 
 	  if (*line != '{') {
-	    print_error("list opening brace expected");
+	    print_error ("list opening brace expected");
 	    break;
 	  }
 
 	  if (*(line + 1)) {
-	    print_error("unexpected characters at the end of line");
+	    print_error ("unexpected characters at the end of line");
 	    break;
 	  }
 
 	  if (pending_h_comment) {
 	    if (*pending_h_comment && h_file_enum_name) {
-	      string_buffer_cat_strings(&h_file_enums,
-					"/* ", pending_h_comment, " */\n",
-					NULL);
+	      string_buffer_cat_strings (&h_file_enums,
+					 "/* ", pending_h_comment, " */\n",
+					 NULL);
 	    }
 
-	    utils_free(pending_h_comment);
+	    utils_free (pending_h_comment);
 	    pending_h_comment = NULL;
 	  }
 
-	  assert(0 <= lists->sort_order
-		 && lists->sort_order <= NUM_LIST_SORT_ORDERS);
+	  assert (0 <= lists->sort_order
+		  && lists->sort_order <= NUM_LIST_SORT_ORDERS);
 	  list_c_file_array = &c_file_arrays[lists->sort_order];
 
 	  if (h_file_enum_name) {
-	    if (strcmp(h_file_enum_name, "unnamed") != 0)
-	      string_buffer_cat_string(&h_file_enums, "\n\ntypedef enum {\n");
+	    if (strcmp (h_file_enum_name, "unnamed") != 0)
+	      string_buffer_cat_string (&h_file_enums, "\n\ntypedef enum {\n");
 	    else
-	      string_buffer_cat_string(&h_file_enums, "\n\nenum {\n");
+	      string_buffer_cat_string (&h_file_enums, "\n\nenum {\n");
 	  }
 
 	  if (c_file_array_name && *lists->c_file_array_type) {
-	    string_buffer_cat_strings(list_c_file_array,
-				      "\n\n", lists->c_file_array_type,
-				      c_file_array_name, "[] = {\n", NULL);
+	    string_buffer_cat_strings (list_c_file_array,
+				       "\n\n", lists->c_file_array_type,
+				       c_file_array_name, "[] = {\n", NULL);
 	  }
 
 	  if (lists->list_initializer) {
-	    if (lists->list_initializer(list_c_file_array,
-					h_file_enum_name, c_file_array_name))
+	    if (lists->list_initializer (list_c_file_array,
+					 h_file_enum_name, c_file_array_name))
 	      break;
 	  }
 
@@ -695,12 +696,12 @@ do_parse_lists(FILE *h_file, FILE *c_file, const ListDescription *lists)
 	  num_c_file_array_elements = 0;
 	  pending_linefeeds	    = 1;
 
-	  utils_free(last_identifier);
+	  utils_free (last_identifier);
 	  last_identifier = NULL;
 	}
 	else {
-	  print_error("list name `%s' expected, got `%s'",
-		      lists->name, identifier);
+	  print_error ("list name `%s' expected, got `%s'",
+		       lists->name, identifier);
 	  break;
 	}
       }
@@ -708,49 +709,49 @@ do_parse_lists(FILE *h_file, FILE *c_file, const ListDescription *lists)
   }
 
   if (h_file_top.length > 0)
-    fwrite(h_file_top.string, h_file_top.length, 1, h_file);
+    fwrite (h_file_top.string, h_file_top.length, 1, h_file);
 
   if (h_file_enums.length > 0)
-    fwrite(h_file_enums.string, h_file_enums.length, 1, h_file);
+    fwrite (h_file_enums.string, h_file_enums.length, 1, h_file);
 
   if (h_file_bottom.length > 0)
-    fwrite(h_file_bottom.string, h_file_bottom.length, 1, h_file);
+    fwrite (h_file_bottom.string, h_file_bottom.length, 1, h_file);
 
-  string_buffer_dispose(&h_file_top);
-  string_buffer_dispose(&h_file_bottom);
-  string_buffer_dispose(&h_file_enums);
+  string_buffer_dispose (&h_file_top);
+  string_buffer_dispose (&h_file_bottom);
+  string_buffer_dispose (&h_file_enums);
 
   if (c_file_top.length > 0)
-    fwrite(c_file_top.string, c_file_top.length, 1, c_file);
+    fwrite (c_file_top.string, c_file_top.length, 1, c_file);
 
   for (k = 0; k < NUM_LIST_SORT_ORDERS; k++) {
-    fwrite(c_file_arrays[k].string, c_file_arrays[k].length, 1, c_file);
-    string_buffer_dispose(&c_file_arrays[k]);
+    fwrite (c_file_arrays[k].string, c_file_arrays[k].length, 1, c_file);
+    string_buffer_dispose (&c_file_arrays[k]);
   }
 
   if (c_file_bottom.length > 0)
-    fwrite(c_file_bottom.string, c_file_bottom.length, 1, c_file);
+    fwrite (c_file_bottom.string, c_file_bottom.length, 1, c_file);
 
-  string_buffer_dispose(&c_file_top);
-  string_buffer_dispose(&c_file_bottom);
+  string_buffer_dispose (&c_file_top);
+  string_buffer_dispose (&c_file_bottom);
 
-  utils_free(last_identifier);
-  utils_free(pending_h_comment);
-  utils_free(pending_c_comment);
-  utils_free(pending_eol_comment);
+  utils_free (last_identifier);
+  utils_free (pending_h_comment);
+  utils_free (pending_c_comment);
+  utils_free (pending_eol_comment);
 
-  string_list_empty(&lines);
+  string_list_empty (&lines);
 
   return result;
 }
 
 
 void
-reuse_last_line(char **current_line)
+reuse_last_line (char **current_line)
 {
   static char empty_line[] = "";
 
-  assert(!last_line_reusable);
+  assert (!last_line_reusable);
   last_line_reusable = 1;
 
   *current_line = empty_line;
@@ -758,25 +759,25 @@ reuse_last_line(char **current_line)
 
 
 void
-print_error(const char *format_string, ...)
+print_error (const char *format_string, ...)
 {
   va_list arguments;
 
-  if (!string_list_is_empty(&list_files)) {
-    fprintf(stderr, "%s:%d: ",
-	    list_files.first->filename, list_files.first->line_number);
+  if (!string_list_is_empty (&list_files)) {
+    fprintf (stderr, "%s:%d: ",
+	     list_files.first->filename, list_files.first->line_number);
   }
 
-  va_start(arguments, format_string);
-  vfprintf(stderr, format_string, arguments);
-  va_end(arguments);
+  va_start (arguments, format_string);
+  vfprintf (stderr, format_string, arguments);
+  va_end (arguments);
 
-  fputc('\n', stderr);
+  fputc ('\n', stderr);
 }
 
 
 char *
-read_line(void)
+read_line (void)
 {
   if (!last_line_reusable) {
     int length;
@@ -784,10 +785,10 @@ read_line(void)
     char *beginning;
     char *end;
 
-    while (!line && !string_list_is_empty(&list_files)) {
-      line = utils_fgets(list_files.first->file, &length);
+    while (!line && !string_list_is_empty (&list_files)) {
+      line = utils_fgets (list_files.first->file, &length);
       if (!line)
-	string_list_delete_first_item(&list_files);
+	string_list_delete_first_item (&list_files);
     }
 
     if (!line)
@@ -796,69 +797,106 @@ read_line(void)
     list_files.first->line_number++;
 
     for (beginning = line; *beginning; beginning++) {
-      if (!isspace(*beginning))
+      if (!isspace (*beginning))
 	break;
     }
 
     for (end = line + length; end > beginning; end--) {
-      if (!isspace(*(end - 1)))
+      if (!isspace (*(end - 1)))
 	break;
     }
 
     *end = 0;
     if (*beginning) {
-      if (looking_at("include_list", &beginning)) {
+      char *scan;
+
+      for (scan = beginning; scan < end; scan++) {
+	if (*scan == '$') {
+	  if (* ++scan == '$') {
+	    char *copy_scan;
+
+	    for (copy_scan = scan; copy_scan < end; copy_scan++)
+	      *copy_scan = *(copy_scan + 1);
+
+	    end--;
+	  }
+	  else {
+	    char *second_delimiter_scan;
+
+	    for (second_delimiter_scan = scan + 1;
+		 second_delimiter_scan < end; second_delimiter_scan++) {
+	      if (*second_delimiter_scan == '$')
+		break;
+	    }
+
+	    if (second_delimiter_scan < end) {
+	      const char *substitution;
+	      int substitution_length;
+	      char *new_line;
+
+	      *second_delimiter_scan = 0;
+
+	      substitution = association_list_find_association (&substitutions,
+								scan);
+	      if (!substitution) {
+		print_error ("undefined substitution symbol `%s'", scan);
+		string_list_empty (&list_files);
+		utils_free (line);
+
+		return NULL;
+	      }
+
+	      substitution_length = strlen (substitution);
+	      new_line
+		= utils_cat_as_strings (NULL,
+					beginning, (scan - 1) - beginning,
+					substitution, substitution_length,
+					second_delimiter_scan + 1,
+					end - (second_delimiter_scan + 1),
+					NULL);
+	      scan	= new_line + (((scan - 1) - beginning)
+				      + substitution_length);
+	      beginning = new_line;
+	      end	= scan + (end - (second_delimiter_scan + 1));
+
+	      utils_free (line);
+	      line = new_line;
+	    }
+	    else {
+	      print_error ("warning: possible unterminated substitution");
+	      break;
+	    }
+	  }
+	}
+      }
+
+      if (looking_at ("include_list", &beginning)) {
 	if (*beginning) {
-	  FILE *new_list_file = fopen(beginning, "r");
+	  FILE *new_list_file = fopen (beginning, "r");
 
 	  if (new_list_file) {
-	    string_list_prepend_from_buffer(&list_files,
-					    beginning, end - beginning);
+	    string_list_prepend_from_buffer (&list_files,
+					     beginning, end - beginning);
 	    list_files.first->file = new_list_file;
 	    list_files.first->line_number = 0;
 	  }
 	  else {
-	    print_error("can't open file %s for reading", beginning);
-	    string_list_empty(&list_files);
+	    print_error ("can't open file %s for reading", beginning);
+	    string_list_empty (&list_files);
 	  }
 	}
 	else {
-	print_error("name of file to include is missing");
-	string_list_empty(&list_files);
-      }
-
-	utils_free(line);
-	return read_line();
-      }
-
-      if (looking_at("substitute_value", &beginning)) {
-	if (*beginning) {
-	  char *substitution
-	    = association_list_find_association(&substitutions, beginning);
-
-	  if (!substitution) {
-	    print_error("undefined substitution symbol `%s'", beginning);
-	    string_list_empty(&list_files);
-	    utils_free(line);
-
-	    return NULL;
-	  }
-
-	  beginning = substitution;
-	  end = substitution + strlen(substitution);
+	  print_error ("name of file to include is missing");
+	  string_list_empty (&list_files);
 	}
-	else {
-	  print_error("substitution symbol expected");
-	  string_list_empty(&list_files);
-	  utils_free(line);
 
-	  return NULL;
-	}
+	utils_free (line);
+	return read_line ();
       }
     }
 
-    string_list_add_from_buffer(&lines, beginning, end - beginning);
-    utils_free(line);
+    string_list_add_from_buffer (&lines, beginning, end - beginning);
+    utils_free (line);
   }
 
   last_line_reusable = 0;
@@ -867,15 +905,15 @@ read_line(void)
 
 
 const char *
-parse_thing(Thing thing, char **line, const char *type)
+parse_thing (Thing thing, char **line, const char *type)
 {
   const char *value;
 
   while (*line && ! **line)
-    *line = read_line();
+    *line = read_line ();
 
   if (! *line) {
-    print_error("%s expected", type);
+    print_error ("%s expected", type);
     return NULL;
   }
 
@@ -889,60 +927,61 @@ parse_thing(Thing thing, char **line, const char *type)
       switch (thing) {
       case IDENTIFIER:
       case STRING_OR_IDENTIFIER:
-	expected_character = (isalpha(**line) || **line == '_'
-			      || (*line != value && isdigit(**line)));
+	expected_character = (isalpha (**line) || **line == '_'
+			      || (*line != value && isdigit (**line)));
 	break;
 
       case PROPERTY_IDENTIFIER:
-	expected_character = isupper(**line);
+	expected_character = isupper (**line);
 	break;
 
       case FIELD_NAME:
-	expected_character = (isalpha(**line)
+	expected_character = (isalpha (**line)
 			      || **line == '_' || ** line == '['
-			      || (*line != value && (isdigit(**line)
+			      || (*line != value && (isdigit (**line)
 						     || **line == '.'
 						     || **line == ']')));
 	break;
 
       case INTEGER_NUMBER:
-	expected_character = isdigit(**line);
+	expected_character = isdigit (**line);
 	break;
 
       case FLOATING_POINT_NUMBER:
-	expected_character = isdigit(**line) || **line == '.';
+	expected_character = isdigit (**line) || **line == '.';
 	break;
 
       case TIME_VALUE:
-	expected_character = isdigit(**line) || **line == ':' || **line == '.';
+	expected_character = (isdigit (**line)
+			      || **line == ':' || **line == '.');
 	break;
 
       default:
-	assert(0);
+	assert (0);
       }
 
       if (!expected_character) {
-	print_error("unexpected character '%c' in %s", **line, type);
+	print_error ("unexpected character '%c' in %s", **line, type);
 	return NULL;
       }
 
       (*line)++;
-    } while (**line && !isspace(**line));
+    } while (**line && !isspace (**line));
   }
   else {
     if (thing == STRING_OR_NULL) {
       char *possible_null = *line;
 
-      if (looking_at("NULL", line)) {
+      if (looking_at ("NULL", line)) {
 	*(possible_null + 4) = 0;
 	return possible_null;
       }
     }
 
     if (**line != '"') {
-      print_error("string%s expected",
-		  (thing == STRING ? "" : (thing == STRING_OR_NULL
-					   ? " or NULL" : "or identifier")));
+      print_error ("string%s expected",
+		   (thing == STRING ? "" : (thing == STRING_OR_NULL
+					    ? " or NULL" : "or identifier")));
       return NULL;
     }
 
@@ -950,7 +989,7 @@ parse_thing(Thing thing, char **line, const char *type)
       (*line)++;
 
       if (! **line || (**line == '\\' && ! *(*line + 1))) {
-	print_error("unterminated string");
+	print_error ("unterminated string");
 	return NULL;
       }
 
@@ -968,7 +1007,7 @@ parse_thing(Thing thing, char **line, const char *type)
     **line = 0;
     do
       (*line)++;
-    while (isspace(**line));
+    while (isspace (**line));
   }
 
   return value;
@@ -976,40 +1015,40 @@ parse_thing(Thing thing, char **line, const char *type)
 
 
 char *
-parse_multiline_string(char **line, const char *type,
-		       const char *line_separator, int null_allowed)
+parse_multiline_string (char **line, const char *type,
+			const char *line_separator, int null_allowed)
 {
   const char *string_chunk;
   char *string;
 
-  string_chunk = parse_thing(null_allowed ? STRING_OR_NULL : STRING,
-			     line, type);
+  string_chunk = parse_thing (null_allowed ? STRING_OR_NULL : STRING,
+			      line, type);
   if (!string_chunk)
     return NULL;
 
-  string = utils_duplicate_string(string_chunk);
+  string = utils_duplicate_string (string_chunk);
   if (*string != '"')
     return string;
 
   while (! **line) {
-    *line = read_line();
+    *line = read_line ();
 
     if (! *line) {
-      utils_free(string);
+      utils_free (string);
       return NULL;
     }
 
     if (**line == '"') {
-      string_chunk = parse_thing(STRING, line, type);
+      string_chunk = parse_thing (STRING, line, type);
       if (!string_chunk) {
-	utils_free(string);
+	utils_free (string);
 	return NULL;
       }
 
-      string = utils_cat_strings(string, line_separator, string_chunk, NULL);
+      string = utils_cat_strings (string, line_separator, string_chunk, NULL);
     }
     else {
-      reuse_last_line(line);
+      reuse_last_line (line);
       break;
     }
   }
@@ -1019,7 +1058,7 @@ parse_multiline_string(char **line, const char *type,
 
 
 int
-parse_color(char **line, QuarryColor *color, const char *type)
+parse_color (char **line, QuarryColor *color, const char *type)
 {
   int num_digits;
   int red;
@@ -1027,31 +1066,31 @@ parse_color(char **line, QuarryColor *color, const char *type)
   int blue;
 
   while (*line && ! **line)
-    *line = read_line();
+    *line = read_line ();
 
   if (! *line || * (*line)++ != '#') {
-    print_error("%s expected", type);
+    print_error ("%s expected", type);
     return 0;
   }
 
-  for (num_digits = 0; isxdigit(**line) && num_digits <= 6; num_digits++)
+  for (num_digits = 0; isxdigit (**line) && num_digits <= 6; num_digits++)
     (*line)++;
 
-  if ((num_digits != 6 && num_digits != 3) || (**line && !isspace(**line))) {
-    print_error("%s expected", type);
+  if ((num_digits != 6 && num_digits != 3) || (**line && !isspace (**line))) {
+    print_error ("%s expected", type);
     return 0;
   }
 
   if (num_digits == 6)
-    sscanf((*line) - 6, "%2x%2x%2x", &red, &green, &blue);
+    sscanf ((*line) - 6, "%2x%2x%2x", &red, &green, &blue);
   else {
-    sscanf((*line) - 3, "%1x%1x%1x", &red, &green, &blue);
+    sscanf ((*line) - 3, "%1x%1x%1x", &red, &green, &blue);
     red   *= 0x11;
     green *= 0x11;
     blue  *= 0x11;
   }
 
-  while (isspace(**line))
+  while (isspace (**line))
     (*line)++;
 
   color->red   = red;
@@ -1063,17 +1102,17 @@ parse_color(char **line, QuarryColor *color, const char *type)
 
 
 int
-looking_at(const char *what, char **line)
+looking_at (const char *what, char **line)
 {
-  int length = strlen(what);
+  int length = strlen (what);
 
   while (*line && ! **line)
-    *line = read_line();
+    *line = read_line ();
 
-  if (*line && strncmp(*line, what, length) == 0
-      && (!(*line) [length] || isspace((*line) [length]))) {
+  if (*line && strncmp (*line, what, length) == 0
+      && (!(*line) [length] || isspace ((*line) [length]))) {
     *line += length;
-    while (isspace(**line))
+    while (isspace (**line))
       (*line)++;
 
     return 1;

@@ -68,7 +68,7 @@ struct _ListDescription {
 };
 
 struct _ListDescriptionSet {
-  const char		 *command_line_name;
+  const char		 *mode_name;
   const ListDescription	 *lists;
 };
 
@@ -86,32 +86,33 @@ typedef enum {
 } Thing;
 
 
-int		parse_list_main(int argc, char *argv[],
-				const ListDescriptionSet *list_sets,
-				int num_sets);
+int		parse_list_main (int argc, char *argv[],
+				 const ListDescriptionSet *list_sets,
+				 int num_sets);
 
-void		print_error(const char *format_string, ...);
+void		print_error (const char *format_string, ...);
 
-char *		read_line(void);
+char *		read_line (void);
 
-const char *	parse_thing(Thing thing, char **line, const char *type);
-char *		parse_multiline_string(char **line, const char *type,
-				       const char *line_separator,
-				       int null_allowed);
-int		parse_color(char **line, QuarryColor *color, const char *type);
+const char *	parse_thing (Thing thing, char **line, const char *type);
+char *		parse_multiline_string (char **line, const char *type,
+					const char *line_separator,
+					int null_allowed);
+int		parse_color (char **line, QuarryColor *color,
+			     const char *type);
 
 #define PARSE_THING(store_in, thing, line, type)		\
   do {								\
-    (store_in) = parse_thing((thing), (line), (type));		\
+    (store_in) = parse_thing ((thing), (line), (type));		\
     if (!(store_in))						\
       return 1;							\
   } while (0)
 
 #define PARSE_IDENTIFIER(store_in, line, type)	\
-  PARSE_THING((store_in), IDENTIFIER, (line), (type))
+  PARSE_THING ((store_in), IDENTIFIER, (line), (type))
 
 
-int		looking_at(const char *what, char **line);
+int		looking_at (const char *what, char **line);
 
 
 extern StringBuffer   h_file_top;
