@@ -35,10 +35,10 @@ static void	    write_game_tree(SgfWritingData *data, SgfGameTree *tree);
 static void	    write_node_sequence(SgfWritingData *data, SgfNode *node);
 
 
-static inline void  do_write_point(SgfWritingData *data, SgfPoint point);
+static inline void  do_write_point(SgfWritingData *data, BoardPoint point);
 static void	    do_write_point_or_rectangle(SgfWritingData *data,
-						SgfPoint left_top,
-						SgfPoint right_bottom);
+						BoardPoint left_top,
+						BoardPoint right_bottom);
 
 static void	    do_write_go_move(SgfWritingData *data, SgfNode *node);
 static void	    do_write_othello_move(SgfWritingData *data, SgfNode *node);
@@ -80,10 +80,10 @@ static void
 write_game_tree(SgfWritingData *data, SgfGameTree *tree)
 {
   SgfNode *root = tree->root;
-  const SgfPositionList *root_black_stones;
-  const SgfPositionList *root_white_stones;
-  SgfPositionList *black_stones;
-  SgfPositionList *white_stones;
+  const BoardPositionList *root_black_stones;
+  const BoardPositionList *root_white_stones;
+  BoardPositionList *black_stones;
+  BoardPositionList *white_stones;
   int default_setup_hidden = 0;
 
   buffered_writer_printf(&data->writer,
@@ -109,16 +109,16 @@ write_game_tree(SgfWritingData *data, SgfGameTree *tree)
     if (game_get_default_setup(tree->game,
 			       tree->board_width, tree->board_height,
 			       &black_stones, &white_stones)) {
-      if (sgf_position_lists_are_equal(root_black_stones, black_stones)
-	  && sgf_position_lists_are_equal(root_white_stones, white_stones)) {
+      if (board_position_lists_are_equal(root_black_stones, black_stones)
+	  && board_position_lists_are_equal(root_white_stones, white_stones)) {
 	sgf_node_delete_property(root, tree, SGF_ADD_BLACK);
 	sgf_node_delete_property(root, tree, SGF_ADD_WHITE);
 
 	default_setup_hidden = 1;
       }
       else {
-	sgf_position_list_delete(black_stones);
-	sgf_position_list_delete(white_stones);
+	board_position_list_delete(black_stones);
+	board_position_list_delete(white_stones);
       }
     }
   }
@@ -217,7 +217,7 @@ write_node_sequence(SgfWritingData *data, SgfNode *node)
 
 
 static inline void
-do_write_point(SgfWritingData *data, SgfPoint point)
+do_write_point(SgfWritingData *data, BoardPoint point)
 {
   buffered_writer_add_character(&data->writer,
 				(point.x < 'z' - 'a' + 1
@@ -232,7 +232,7 @@ do_write_point(SgfWritingData *data, SgfPoint point)
 
 static void
 do_write_point_or_rectangle(SgfWritingData *data,
-			    SgfPoint left_top, SgfPoint right_bottom)
+			    BoardPoint left_top, BoardPoint right_bottom)
 {
   buffered_writer_add_character(&data->writer, '[');
 
@@ -466,8 +466,8 @@ sgf_write_list_of_point(SgfWritingData *data, SgfValue value)
     int k;
     int x;
     int width = data->tree->board_width;
-    SgfPoint left_top[BOARD_MAX_WIDTH];
-    SgfPoint right_bottom;
+    BoardPoint left_top[BOARD_MAX_WIDTH];
+    BoardPoint right_bottom;
 
     for (x = 0; x < width; x++)
       left_top[x].x = NULL_X;
@@ -538,7 +538,7 @@ sgf_write_list_of_point(SgfWritingData *data, SgfValue value)
     buffered_writer_add_character(&data->writer, '[');
 
     if (num_positions == 1) {
-      SgfPoint point;
+      BoardPoint point;
 
       point.x = POSITION_X(positions[0]);
       point.y = POSITION_Y(positions[0]);

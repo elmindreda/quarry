@@ -344,7 +344,7 @@ sgf_utils_append_move_variation(SgfGameTree *tree, SgfBoardState *board_state,
   node->move_point.y = va_arg(arguments, int);
 
   if (tree->game == GAME_AMAZONS)
-    node->data.amazons = va_arg(arguments, SgfAmazonsMoveData);
+    node->data.amazons = va_arg(arguments, BoardAmazonsMoveData);
 
   va_end(arguments);
 
@@ -357,7 +357,7 @@ void
 sgf_utils_get_markup(const SgfGameTree *tree, char markup[BOARD_GRID_SIZE])
 {
   SgfNode *node;
-  const SgfPositionList *position_list;
+  const BoardPositionList *position_list;
   int k;
 
   assert(tree);
@@ -414,7 +414,7 @@ sgf_utils_mark_territory_on_grid(const SgfGameTree *tree,
   assert(grid);
 
   if (tree->game == GAME_GO) {
-    const SgfPositionList *territory_list;
+    const BoardPositionList *territory_list;
     int k;
 
     territory_list
@@ -457,7 +457,7 @@ sgf_utils_set_handicap(SgfGameTree *tree, int handicap, int is_fixed)
 
   if (is_fixed) {
     if (handicap != 0) {
-      SgfPositionList *handicap_stones
+      BoardPositionList *handicap_stones
 	= go_get_fixed_handicap_stones(tree->board_width, tree->board_height,
 				       handicap);
 
@@ -478,7 +478,7 @@ sgf_utils_set_handicap(SgfGameTree *tree, int handicap, int is_fixed)
 
 void
 sgf_utils_add_free_handicap_stones(SgfGameTree *tree,
-				   SgfPositionList *handicap_stones)
+				   BoardPositionList *handicap_stones)
 {
   int handicap;
 
@@ -555,7 +555,7 @@ descend_nodes(SgfGameTree *tree, int num_nodes, SgfBoardState *board_state)
       int color;
 
       if (node->move_color == SETUP_NODE) {
-	const SgfPositionList *position_lists[NUM_ON_GRID_VALUES];
+	const BoardPositionList *position_lists[NUM_ON_GRID_VALUES];
 
 	position_lists[BLACK]
 	  = sgf_node_get_list_of_point_property_value(node, SGF_ADD_BLACK);

@@ -131,7 +131,7 @@ static int	    complete_node_and_update_board(SgfParsingData *data,
 						   int is_leaf_node);
 static void	    create_position_lists
 		      (SgfParsingData *data,
-		       SgfPositionList **position_list,
+		       BoardPositionList **position_list,
 		       const SgfType *property_types, int num_properties,
 		       const unsigned int marked_positions[BOARD_GRID_SIZE],
 		       unsigned int current_mark);
@@ -146,15 +146,15 @@ static int	    do_parse_real(SgfParsingData *data, double *real);
 static char *	    do_parse_simple_text(SgfParsingData *data,
 					 char extra_stop_character);
 static char *	    do_parse_text(SgfParsingData *data, char *existing_text);
-static int	    do_parse_point(SgfParsingData *data, SgfPoint *point);
+static int	    do_parse_point(SgfParsingData *data, BoardPoint *point);
 
 static SgfError	    do_parse_go_move(SgfParsingData *data);
 static SgfError	    do_parse_othello_move(SgfParsingData *data);
 static SgfError	    do_parse_amazons_move(SgfParsingData *data);
 
 static inline int   do_parse_point_or_rectangle(SgfParsingData *data,
-						  SgfPoint *left_top,
-						  SgfPoint *right_bottom);
+						  BoardPoint *left_top,
+						  BoardPoint *right_bottom);
 static int	    do_parse_list_of_point
 		      (SgfParsingData *data,
 		       unsigned int marked_positions[BOARD_GRID_SIZE],
@@ -870,7 +870,7 @@ complete_node_and_update_board(SgfParsingData *data, int is_leaf_node)
 {
   int num_undos = 0;
   int has_setup_add_properties = 0;
-  SgfPositionList *position_lists[NUM_ON_GRID_VALUES];
+  BoardPositionList *position_lists[NUM_ON_GRID_VALUES];
 
   if (!data->first_setup_add_property
       && (data->has_setup_add_properties[BLACK]
@@ -898,7 +898,7 @@ complete_node_and_update_board(SgfParsingData *data, int is_leaf_node)
 
   if (has_setup_add_properties && data->use_board) {
     board_apply_changes(data->board,
-			(const SgfPositionList **) position_lists);
+			(const BoardPositionList **) position_lists);
     num_undos++;
   }
 
@@ -1004,7 +1004,7 @@ complete_node_and_update_board(SgfParsingData *data, int is_leaf_node)
 
 static void
 create_position_lists(SgfParsingData *data,
-		      SgfPositionList **position_lists,
+		      BoardPositionList **position_lists,
 		      const SgfType *property_types, int num_properties,
 		      const unsigned int marked_positions[BOARD_GRID_SIZE],
 		      unsigned int current_mark)
@@ -1031,8 +1031,8 @@ create_position_lists(SgfParsingData *data,
 
   for (value = 0; value < num_properties; value++) {
     if (num_positions[value] > 0) {
-      SgfPositionList *position_list
-	= sgf_position_list_new(positions[value], num_positions[value]);
+      BoardPositionList *position_list
+	= board_position_list_new(positions[value], num_positions[value]);
 
       if (position_lists)
 	position_lists[value] = position_list;
@@ -1516,7 +1516,7 @@ sgf_parse_text(SgfParsingData *data)
 
 
 static int
-do_parse_point(SgfParsingData *data, SgfPoint *point)
+do_parse_point(SgfParsingData *data, BoardPoint *point)
 {
   if (('a' <= data->token && data->token <= 'z')
       || ('A' <= data->token && data->token <= 'Z')) {
@@ -1576,7 +1576,7 @@ do_parse_point(SgfParsingData *data, SgfPoint *point)
 static SgfError
 do_parse_go_move(SgfParsingData *data)
 {
-  SgfPoint *move_point = &data->node->move_point;
+  BoardPoint *move_point = &data->node->move_point;
 
   if (data->token != ']') {
     BufferPositionStorage storage;
@@ -1729,7 +1729,7 @@ sgf_parse_move(SgfParsingData *data)
 
 static int
 do_parse_point_or_rectangle(SgfParsingData *data,
-			    SgfPoint *left_top, SgfPoint *right_bottom)
+			    BoardPoint *left_top, BoardPoint *right_bottom)
 {
   int point_parsing_error;
   BufferPositionStorage storage;
@@ -1808,8 +1808,8 @@ do_parse_list_of_point(SgfParsingData *data,
   int num_parsed_positions = 0;
 
   do {
-    SgfPoint left_top;
-    SgfPoint right_bottom;
+    BoardPoint left_top;
+    BoardPoint right_bottom;
 
     if (do_parse_point_or_rectangle(data, &left_top, &right_bottom)) {
       int x;
@@ -1857,7 +1857,7 @@ sgf_parse_list_of_point(SgfParsingData *data)
   data->board_common_mark++;
   if (sgf_node_find_property(data->node, data->property_type, &link)) {
     int k;
-    SgfPositionList *position_list = (*link)->value.position_list;
+    BoardPositionList *position_list = (*link)->value.position_list;
 
     num_positions = position_list->num_positions;
     for (k = 0; k < num_positions; k++) {
@@ -1899,7 +1899,8 @@ sgf_parse_list_of_point(SgfParsingData *data)
     int y;
 
     *link = sgf_property_new(data->tree, data->property_type, *link);
-    (*link)->value.position_list = sgf_position_list_new_empty(num_positions);
+    (*link)->value.position_list
+      = board_position_list_new_empty(num_positions);
 
     for (y = 0, k = 0; k < num_positions; y++) {
       for (x = 0; x < data->board_width; x++) {
@@ -1952,7 +1953,7 @@ sgf_parse_list_of_label(SgfParsingData *data)
     begin_parsing_value(data);
     if (data->token != ']') {
       BufferPositionStorage storage;
-      SgfPoint point;
+      BoardPoint point;
       int pos;
 
       STORE_BUFFER_POSITION(data, 0, storage);

@@ -129,8 +129,8 @@ sgf_game_tree_new_with_root(Game game, int board_width, int board_height,
 			    int provide_default_setup)
 {
   SgfGameTree *tree = sgf_game_tree_new();
-  SgfPositionList *black_stones;
-  SgfPositionList *white_stones;
+  BoardPositionList *black_stones;
+  BoardPositionList *white_stones;
 
   assert(SGF_MIN_BOARD_SIZE <= board_width
 	 && board_width <= SGF_MAX_BOARD_SIZE);
@@ -682,7 +682,7 @@ sgf_node_get_text_property_value(const SgfNode *node, SgfType type)
 }
 
 
-const SgfPositionList *
+const BoardPositionList *
 sgf_node_get_list_of_point_property_value(const SgfNode *node, SgfType type)
 {
   GET_PROPERTY_VALUE((property_info[type].value_type == SGF_LIST_OF_POINT
@@ -962,7 +962,7 @@ sgf_property_duplicate(const SgfProperty *property, SgfGameTree *tree,
   case SGF_LIST_OF_POINT:
   case SGF_ELIST_OF_POINT:
     property_copy->value.position_list
-      = sgf_position_list_duplicate(property->value.position_list);
+      = board_position_list_duplicate(property->value.position_list);
     break;
 
   case SGF_LIST_OF_VECTOR:
@@ -1005,7 +1005,7 @@ free_property_value(SgfProperty *property)
 
 
 SgfLabelList *
-sgf_label_list_new(int num_labels, SgfPoint *points, char **labels)
+sgf_label_list_new(int num_labels, BoardPoint *points, char **labels)
 {
   SgfLabelList *list;
   int k;

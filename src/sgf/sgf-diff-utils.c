@@ -585,14 +585,14 @@ node_position_lists_are_equal(const SgfNode *first_node,
 			      const SgfNode *second_node,
 			      SgfType type)
 {
-  const SgfPositionList *first_position_list
+  const BoardPositionList *first_position_list
     = sgf_node_get_list_of_point_property_value(first_node, type);
-  const SgfPositionList *second_position_list
+  const BoardPositionList *second_position_list
     = sgf_node_get_list_of_point_property_value(second_node, type);
 
   if (first_position_list && second_position_list) {
-    return sgf_position_lists_are_equal(first_position_list,
-					second_position_list);
+    return board_position_lists_are_equal(first_position_list,
+					  second_position_list);
   }
 
   return first_position_list == NULL && second_position_list == NULL;

@@ -48,14 +48,8 @@ enum {
 };
 
 
-typedef BoardPoint		SgfPoint;
-typedef BoardPositionList	SgfPositionList;
-
 typedef struct _SgfLabel	SgfLabel;
 typedef struct _SgfLabelList	SgfLabelList;
-
-typedef BoardAmazonsMoveData	SgfAmazonsMoveData;
-typedef BoardAbstractMoveData	SgfAbstractMoveData;
 
 typedef union  _SgfValue	SgfValue;
 typedef struct _SgfProperty	SgfProperty;
@@ -71,13 +65,13 @@ typedef struct _SgfGameTree	SgfGameTree;
 typedef struct _SgfCollection	SgfCollection;
 
 struct _SgfLabel {
-  SgfPoint		 point;
-  char			*text;
+  BoardPoint		  point;
+  char			 *text;
 };
 
 struct _SgfLabelList {
-  int			 num_labels;
-  SgfLabel		 labels[1];
+  int			  num_labels;
+  SgfLabel		  labels[1];
 };
 
 /* Union is a very handy thing, but unfortunately, standard C doesn't
@@ -87,20 +81,20 @@ struct _SgfLabelList {
  * pointer to union (which is allowed by compiler) is a no-no thing.
  */
 union _SgfValue {
-  int			 number;
+  int			  number;
 
   /* Floats have so low precision, that there will be problems with
    * storing fractional number of seconds in it.  Will have to
    * allocate doubles on heap :(
    */
-  double		*real;
+  double		 *real;
 
-  int			 emphasized;
-  int			 color;
-  void			*memory_block;
-  char			*text;
-  SgfPositionList	*position_list;
-  SgfLabelList		*label_list;
+  int			  emphasized;
+  int			  color;
+  void			 *memory_block;
+  char			 *text;
+  BoardPositionList	 *position_list;
+  SgfLabelList		 *label_list;
 };
 
 
@@ -116,9 +110,9 @@ union _SgfValue {
 struct _SgfProperty {
   MEMORY_POOL_ITEM_INDEX;
 
-  SgfType		 type : SGF_TYPE_STORAGE_BITS;
-  SgfProperty		*next;
-  SgfValue		 value;
+  SgfType		  type : SGF_TYPE_STORAGE_BITS;
+  SgfProperty		 *next;
+  SgfValue		  value;
 };
 
 
@@ -131,29 +125,29 @@ struct _SgfProperty {
 struct _SgfNode {
   MEMORY_POOL_ITEM_INDEX;
 
-  char			 move_color;
-  SgfPoint		 move_point;
+  char			  move_color;
+  BoardPoint		  move_point;
 
-  SgfNode		*parent;
-  SgfNode		*child;
-  SgfNode		*next;
-  SgfNode		*current_variation;
+  SgfNode		 *parent;
+  SgfNode		 *child;
+  SgfNode		 *next;
+  SgfNode		 *current_variation;
 
-  SgfProperty		*properties;
+  SgfProperty		 *properties;
 
-  SgfAbstractMoveData	data;
+  BoardAbstractMoveData	  data;
 };
 
 /* These two structure are only used in sgf_game_tree_set_game() to
  * determine the size of node required for given game.  For huge SGF
- * trees four bytes wasted on SgfAmazonsMoveData when it is not
+ * trees four bytes wasted on BoardAmazonsMoveData when it is not
  * required might lead to significant memory footprint increase.
  */
 struct _SgfNodeGeneric {
   MEMORY_POOL_ITEM_INDEX;
 
   char			 move_color;
-  SgfPoint		 move_point;
+  BoardPoint		 move_point;
 
   SgfNode		*parent;
   SgfNode		*child;
@@ -166,17 +160,17 @@ struct _SgfNodeGeneric {
 struct _SgfNodeAmazons {
   MEMORY_POOL_ITEM_INDEX;
 
-  char			 move_color;
-  SgfPoint		 move_point;
+  char			  move_color;
+  BoardPoint		  move_point;
 
-  SgfNode		*parent;
-  SgfNode		*child;
-  SgfNode		*next;
-  SgfNode		*current_variation;
+  SgfNode		 *parent;
+  SgfNode		 *child;
+  SgfNode		 *next;
+  SgfNode		 *current_variation;
 
-  SgfProperty		*properties;
+  SgfProperty		 *properties;
 
-  SgfAmazonsMoveData	 amazons;
+  BoardAmazonsMoveData	  amazons;
 };
 
 
@@ -267,7 +261,7 @@ int		 sgf_node_get_real_property_value(const SgfNode *node,
 
 const char *	 sgf_node_get_text_property_value(const SgfNode *node,
 						       SgfType type);
-const SgfPositionList *
+const BoardPositionList *
 		 sgf_node_get_list_of_point_property_value(const SgfNode *node,
 							   SgfType type);
 const SgfLabelList *
@@ -322,26 +316,8 @@ SgfProperty *	 sgf_property_duplicate(const SgfProperty *property,
 					SgfGameTree *tree, SgfProperty *next);
 
 
-#define sgf_position_list_new(positions, num_positions)			\
-  ((SgfPositionList *) board_position_list_new((positions),		\
-					       (num_positions)))
-
-#define sgf_position_list_new_empty(num_positions)			\
-  ((SgfPositionList *) board_position_list_new_empty((num_positions)))
-
-#define sgf_position_list_delete(list)					\
-  board_position_list_delete(list)
-
-#define sgf_position_list_duplicate(position_list)			\
-  ((SgfPositionList *) board_position_list_duplicate(position_list))
-
-
-#define sgf_position_lists_are_equal(list1, list2)			\
-  board_position_lists_are_equal((list1), (list2))
-
-
 SgfLabelList *	 sgf_label_list_new(int num_labels,
-				    SgfPoint *points, char **labels);
+				    BoardPoint *points, char **labels);
 SgfLabelList *	 sgf_label_list_new_empty(int num_labels);
 void		 sgf_label_list_delete(SgfLabelList *list);
 
@@ -512,7 +488,7 @@ void	      sgf_utils_mark_territory_on_grid(const SgfGameTree *tree,
 void	      sgf_utils_set_handicap(SgfGameTree *tree,
 				     int handicap, int is_fixed);
 void	      sgf_utils_add_free_handicap_stones
-		(SgfGameTree *tree, SgfPositionList *handicap_stones);
+		(SgfGameTree *tree, BoardPositionList *handicap_stones);
 
 
 
