@@ -6600,7 +6600,7 @@ GLIB_GENMARSHAL=`$PKG_CONFIG --variable=glib_genmarshal glib-2.0`
 
 
 # Write `Makefile's.
-                                                                                                                                                                ac_config_files="$ac_config_files Makefile data/Makefile data/markup-themes/Makefile data/markup-themes/default/Makefile data/markup-themes/bold/Makefile data/textures/Makefile help/Makefile help/C/Makefile po/Makefile.in src/Makefile src/board/Makefile src/gtp/Makefile src/gui-gtk/Makefile src/gui-utils/Makefile src/sgf/Makefile src/utils/Makefile"
+                                                                                                                                            ac_config_files="$ac_config_files Makefile data/Makefile data/markup-themes/Makefile data/textures/Makefile help/Makefile help/C/Makefile po/Makefile.in src/Makefile src/board/Makefile src/gtp/Makefile src/gui-gtk/Makefile src/gui-utils/Makefile src/sgf/Makefile src/utils/Makefile"
 
 
 # The end.
@@ -7184,8 +7184,6 @@ do
   "Makefile" ) CONFIG_FILES="$CONFIG_FILES Makefile" ;;
   "data/Makefile" ) CONFIG_FILES="$CONFIG_FILES data/Makefile" ;;
   "data/markup-themes/Makefile" ) CONFIG_FILES="$CONFIG_FILES data/markup-themes/Makefile" ;;
-  "data/markup-themes/default/Makefile" ) CONFIG_FILES="$CONFIG_FILES data/markup-themes/default/Makefile" ;;
-  "data/markup-themes/bold/Makefile" ) CONFIG_FILES="$CONFIG_FILES data/markup-themes/bold/Makefile" ;;
   "data/textures/Makefile" ) CONFIG_FILES="$CONFIG_FILES data/textures/Makefile" ;;
   "help/Makefile" ) CONFIG_FILES="$CONFIG_FILES help/Makefile" ;;
   "help/C/Makefile" ) CONFIG_FILES="$CONFIG_FILES help/C/Makefile" ;;

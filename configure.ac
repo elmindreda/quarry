@@ -131,8 +131,6 @@ AC_SUBST(GLIB_GENMARSHAL, [`$PKG_CONFIG --variable=glib_genmarshal glib-2.0`])
 AC_CONFIG_FILES(Makefile
 		data/Makefile
 		data/markup-themes/Makefile
-		data/markup-themes/default/Makefile
-		data/markup-themes/bold/Makefile
 		data/textures/Makefile
 		help/Makefile
 		help/C/Makefile
