@@ -49,7 +49,7 @@ else
   QUARRY_WARNINGS_GTK=''
 fi
 
-# Optionally disable deprecated GTK+ code (for maintainers--to check
+# Optionally disable deprecated GTK+ code (for maintainers---to check
 # if some code should be replaced with newer).
 AC_ARG_ENABLE(gtk-deprecated,
 	      AC_HELP_STRING([--disable-gtk-deprecated],
@@ -93,14 +93,29 @@ AC_SEARCH_LIBS(floor, m)
 
 
 # Require GTK+ 2.0.0 or later.
-#
-# FIXME: since threads are optional in Quarry, the below call is
-#	 probably too restrictive.
-PKG_CHECK_MODULES(QUARRY_GTK, gtk+-2.0 >= 2.0.0 gthread-2.0 >= 2.0.0)
+PKG_CHECK_MODULES(QUARRY_GTK, gtk+-2.0 >= 2.0.0)
 AC_SUBST(QUARRY_GTK_CFLAGS)
 AC_SUBST(QUARRY_GTK_LIBS)
 
+# Threads are not required for Quarry.  While Glib is probably always
+# compiled with thread support, let's not insist anyway.
+PKG_CHECK_MODULES(QUARRY_GTHREAD, gthread-2.0 >= 2.0.0, :, :)
+AC_SUBST(QUARRY_GTHREAD_CFLAGS)
+AC_SUBST(QUARRY_GTHREAD_LIBS)
+
+# Needed to generate Quarry-specific marshallers (see
+# `src/gui-gtk/Makefile.am').
 AC_SUBST(GLIB_GENMARSHAL, [`$PKG_CONFIG --variable=glib_genmarshal glib-2.0`])
+
+# Check for librsvg 2.0.0 or later.  However, since it is optional,
+# don't abort if the check fails.
+AH_TEMPLATE(HAVE_LIBRSVG,
+	    [Define to 1 if you have librsvg 2.0.0 or newer installed.])
+
+PKG_CHECK_MODULES(QUARRY_RSVG, librsvg-2.0 >= 2.0.0,
+		  AC_DEFINE(HAVE_LIBRSVG), :)
+AC_SUBST(QUARRY_RSVG_CFLAGS)
+AC_SUBST(QUARRY_RSVG_LIBS)
 
 # Write `Makefile's.
 AC_CONFIG_FILES(Makefile

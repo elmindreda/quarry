@@ -310,7 +310,7 @@ ac_includes_default="\
 # include <unistd.h>
 #endif"
 
-ac_subst_vars='SHELL PATH_SEPARATOR PACKAGE_NAME PACKAGE_TARNAME PACKAGE_VERSION PACKAGE_STRING PACKAGE_BUGREPORT exec_prefix prefix program_transform_name bindir sbindir libexecdir datadir sysconfdir sharedstatedir localstatedir libdir includedir oldincludedir infodir mandir build_alias host_alias target_alias DEFS ECHO_C ECHO_N ECHO_T LIBS INSTALL_PROGRAM INSTALL_SCRIPT INSTALL_DATA CYGPATH_W PACKAGE VERSION ACLOCAL AUTOCONF AUTOMAKE AUTOHEADER MAKEINFO AMTAR install_sh STRIP ac_ct_STRIP INSTALL_STRIP_PROGRAM AWK SET_MAKE MAINTAINER_MODE_TRUE MAINTAINER_MODE_FALSE MAINT CC CFLAGS LDFLAGS CPPFLAGS ac_ct_CC EXEEXT OBJEXT DEPDIR am__include am__quote AMDEP_TRUE AMDEP_FALSE AMDEPBACKSLASH CCDEPMODE am__fastdepCC_TRUE am__fastdepCC_FALSE RANLIB ac_ct_RANLIB QUARRY_WARNINGS QUARRY_WARNINGS_GTK QUARRY_GTK_DEPRECATED_FLAGS BUILD_SGF_UTILS_TRUE BUILD_SGF_UTILS_FALSE CPP EGREP LIBOBJS PKG_CONFIG QUARRY_GTK_CFLAGS QUARRY_GTK_LIBS GLIB_GENMARSHAL LTLIBOBJS'
+ac_subst_vars='SHELL PATH_SEPARATOR PACKAGE_NAME PACKAGE_TARNAME PACKAGE_VERSION PACKAGE_STRING PACKAGE_BUGREPORT exec_prefix prefix program_transform_name bindir sbindir libexecdir datadir sysconfdir sharedstatedir localstatedir libdir includedir oldincludedir infodir mandir build_alias host_alias target_alias DEFS ECHO_C ECHO_N ECHO_T LIBS INSTALL_PROGRAM INSTALL_SCRIPT INSTALL_DATA CYGPATH_W PACKAGE VERSION ACLOCAL AUTOCONF AUTOMAKE AUTOHEADER MAKEINFO AMTAR install_sh STRIP ac_ct_STRIP INSTALL_STRIP_PROGRAM AWK SET_MAKE MAINTAINER_MODE_TRUE MAINTAINER_MODE_FALSE MAINT CC CFLAGS LDFLAGS CPPFLAGS ac_ct_CC EXEEXT OBJEXT DEPDIR am__include am__quote AMDEP_TRUE AMDEP_FALSE AMDEPBACKSLASH CCDEPMODE am__fastdepCC_TRUE am__fastdepCC_FALSE RANLIB ac_ct_RANLIB QUARRY_WARNINGS QUARRY_WARNINGS_GTK QUARRY_GTK_DEPRECATED_FLAGS BUILD_SGF_UTILS_TRUE BUILD_SGF_UTILS_FALSE CPP EGREP LIBOBJS PKG_CONFIG QUARRY_GTK_CFLAGS QUARRY_GTK_LIBS QUARRY_GTHREAD_CFLAGS QUARRY_GTHREAD_LIBS GLIB_GENMARSHAL QUARRY_RSVG_CFLAGS QUARRY_RSVG_LIBS LTLIBOBJS'
 ac_subst_files=''
 
 # Initialize some variables set by options.
@@ -2846,7 +2846,7 @@ else
   QUARRY_WARNINGS_GTK=''
 fi
 
-# Optionally disable deprecated GTK+ code (for maintainers--to check
+# Optionally disable deprecated GTK+ code (for maintainers---to check
 # if some code should be replaced with newer).
 # Check whether --enable-gtk-deprecated or --disable-gtk-deprecated was given.
 if test "${enable_gtk_deprecated+set}" = set; then
@@ -4154,9 +4154,6 @@ fi
 
 
 # Require GTK+ 2.0.0 or later.
-#
-# FIXME: since threads are optional in Quarry, the below call is
-#	 probably too restrictive.
 
   succeeded=no
 
@@ -4211,23 +4208,23 @@ fi
   else
      PKG_CONFIG_MIN_VERSION=0.9.0
      if $PKG_CONFIG --atleast-pkgconfig-version $PKG_CONFIG_MIN_VERSION; then
-        echo "$as_me:$LINENO: checking for gtk+-2.0 >= 2.0.0 gthread-2.0 >= 2.0.0" >&5
-echo $ECHO_N "checking for gtk+-2.0 >= 2.0.0 gthread-2.0 >= 2.0.0... $ECHO_C" >&6
+        echo "$as_me:$LINENO: checking for gtk+-2.0 >= 2.0.0" >&5
+echo $ECHO_N "checking for gtk+-2.0 >= 2.0.0... $ECHO_C" >&6
 
-        if $PKG_CONFIG --exists "gtk+-2.0 >= 2.0.0 gthread-2.0 >= 2.0.0" ; then
+        if $PKG_CONFIG --exists "gtk+-2.0 >= 2.0.0" ; then
             echo "$as_me:$LINENO: result: yes" >&5
 echo "${ECHO_T}yes" >&6
             succeeded=yes
 
             echo "$as_me:$LINENO: checking QUARRY_GTK_CFLAGS" >&5
 echo $ECHO_N "checking QUARRY_GTK_CFLAGS... $ECHO_C" >&6
-            QUARRY_GTK_CFLAGS=`$PKG_CONFIG --cflags "gtk+-2.0 >= 2.0.0 gthread-2.0 >= 2.0.0"`
+            QUARRY_GTK_CFLAGS=`$PKG_CONFIG --cflags "gtk+-2.0 >= 2.0.0"`
             echo "$as_me:$LINENO: result: $QUARRY_GTK_CFLAGS" >&5
 echo "${ECHO_T}$QUARRY_GTK_CFLAGS" >&6
 
             echo "$as_me:$LINENO: checking QUARRY_GTK_LIBS" >&5
 echo $ECHO_N "checking QUARRY_GTK_LIBS... $ECHO_C" >&6
-            QUARRY_GTK_LIBS=`$PKG_CONFIG --libs "gtk+-2.0 >= 2.0.0 gthread-2.0 >= 2.0.0"`
+            QUARRY_GTK_LIBS=`$PKG_CONFIG --libs "gtk+-2.0 >= 2.0.0"`
             echo "$as_me:$LINENO: result: $QUARRY_GTK_LIBS" >&5
 echo "${ECHO_T}$QUARRY_GTK_LIBS" >&6
         else
@@ -4235,7 +4232,7 @@ echo "${ECHO_T}$QUARRY_GTK_LIBS" >&6
             QUARRY_GTK_LIBS=""
             ## If we have a custom action on failure, don't print errors, but
             ## do set a variable so people can do so.
-            QUARRY_GTK_PKG_ERRORS=`$PKG_CONFIG --errors-to-stdout --print-errors "gtk+-2.0 >= 2.0.0 gthread-2.0 >= 2.0.0"`
+            QUARRY_GTK_PKG_ERRORS=`$PKG_CONFIG --errors-to-stdout --print-errors "gtk+-2.0 >= 2.0.0"`
             echo $QUARRY_GTK_PKG_ERRORS
         fi
 
@@ -4250,15 +4247,225 @@ echo "${ECHO_T}$QUARRY_GTK_LIBS" >&6
   if test $succeeded = yes; then
      :
   else
-     { { echo "$as_me:$LINENO: error: Library requirements (gtk+-2.0 >= 2.0.0 gthread-2.0 >= 2.0.0) not met; consider adjusting the PKG_CONFIG_PATH environment variable if your libraries are in a nonstandard prefix so pkg-config can find them." >&5
-echo "$as_me: error: Library requirements (gtk+-2.0 >= 2.0.0 gthread-2.0 >= 2.0.0) not met; consider adjusting the PKG_CONFIG_PATH environment variable if your libraries are in a nonstandard prefix so pkg-config can find them." >&2;}
+     { { echo "$as_me:$LINENO: error: Library requirements (gtk+-2.0 >= 2.0.0) not met; consider adjusting the PKG_CONFIG_PATH environment variable if your libraries are in a nonstandard prefix so pkg-config can find them." >&5
+echo "$as_me: error: Library requirements (gtk+-2.0 >= 2.0.0) not met; consider adjusting the PKG_CONFIG_PATH environment variable if your libraries are in a nonstandard prefix so pkg-config can find them." >&2;}
    { (exit 1); exit 1; }; }
   fi
 
 
 
 
+# Threads are not required for Quarry.  While Glib is probably always
+# compiled with thread support, let's not insist anyway.
+
+  succeeded=no
+
+  if test -z "$PKG_CONFIG"; then
+    # Extract the first word of "pkg-config", so it can be a program name with args.
+set dummy pkg-config; ac_word=$2
+echo "$as_me:$LINENO: checking for $ac_word" >&5
+echo $ECHO_N "checking for $ac_word... $ECHO_C" >&6
+if test "${ac_cv_path_PKG_CONFIG+set}" = set; then
+  echo $ECHO_N "(cached) $ECHO_C" >&6
+else
+  case $PKG_CONFIG in
+  [\\/]* | ?:[\\/]*)
+  ac_cv_path_PKG_CONFIG="$PKG_CONFIG" # Let the user override the test with a path.
+  ;;
+  *)
+  as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+for as_dir in $PATH
+do
+  IFS=$as_save_IFS
+  test -z "$as_dir" && as_dir=.
+  for ac_exec_ext in '' $ac_executable_extensions; do
+  if $as_executable_p "$as_dir/$ac_word$ac_exec_ext"; then
+    ac_cv_path_PKG_CONFIG="$as_dir/$ac_word$ac_exec_ext"
+    echo "$as_me:$LINENO: found $as_dir/$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+done
+
+  test -z "$ac_cv_path_PKG_CONFIG" && ac_cv_path_PKG_CONFIG="no"
+  ;;
+esac
+fi
+PKG_CONFIG=$ac_cv_path_PKG_CONFIG
+
+if test -n "$PKG_CONFIG"; then
+  echo "$as_me:$LINENO: result: $PKG_CONFIG" >&5
+echo "${ECHO_T}$PKG_CONFIG" >&6
+else
+  echo "$as_me:$LINENO: result: no" >&5
+echo "${ECHO_T}no" >&6
+fi
+
+  fi
+
+  if test "$PKG_CONFIG" = "no" ; then
+     echo "*** The pkg-config script could not be found. Make sure it is"
+     echo "*** in your path, or set the PKG_CONFIG environment variable"
+     echo "*** to the full path to pkg-config."
+     echo "*** Or see http://www.freedesktop.org/software/pkgconfig to get pkg-config."
+  else
+     PKG_CONFIG_MIN_VERSION=0.9.0
+     if $PKG_CONFIG --atleast-pkgconfig-version $PKG_CONFIG_MIN_VERSION; then
+        echo "$as_me:$LINENO: checking for gthread-2.0 >= 2.0.0" >&5
+echo $ECHO_N "checking for gthread-2.0 >= 2.0.0... $ECHO_C" >&6
+
+        if $PKG_CONFIG --exists "gthread-2.0 >= 2.0.0" ; then
+            echo "$as_me:$LINENO: result: yes" >&5
+echo "${ECHO_T}yes" >&6
+            succeeded=yes
+
+            echo "$as_me:$LINENO: checking QUARRY_GTHREAD_CFLAGS" >&5
+echo $ECHO_N "checking QUARRY_GTHREAD_CFLAGS... $ECHO_C" >&6
+            QUARRY_GTHREAD_CFLAGS=`$PKG_CONFIG --cflags "gthread-2.0 >= 2.0.0"`
+            echo "$as_me:$LINENO: result: $QUARRY_GTHREAD_CFLAGS" >&5
+echo "${ECHO_T}$QUARRY_GTHREAD_CFLAGS" >&6
+
+            echo "$as_me:$LINENO: checking QUARRY_GTHREAD_LIBS" >&5
+echo $ECHO_N "checking QUARRY_GTHREAD_LIBS... $ECHO_C" >&6
+            QUARRY_GTHREAD_LIBS=`$PKG_CONFIG --libs "gthread-2.0 >= 2.0.0"`
+            echo "$as_me:$LINENO: result: $QUARRY_GTHREAD_LIBS" >&5
+echo "${ECHO_T}$QUARRY_GTHREAD_LIBS" >&6
+        else
+            QUARRY_GTHREAD_CFLAGS=""
+            QUARRY_GTHREAD_LIBS=""
+            ## If we have a custom action on failure, don't print errors, but
+            ## do set a variable so people can do so.
+            QUARRY_GTHREAD_PKG_ERRORS=`$PKG_CONFIG --errors-to-stdout --print-errors "gthread-2.0 >= 2.0.0"`
+
+        fi
+
+
+
+     else
+        echo "*** Your version of pkg-config is too old. You need version $PKG_CONFIG_MIN_VERSION or newer."
+        echo "*** See http://www.freedesktop.org/software/pkgconfig"
+     fi
+  fi
+
+  if test $succeeded = yes; then
+     :
+  else
+     :
+  fi
+
+
+
+
+# Needed to generate Quarry-specific marshallers (see
+# `src/gui-gtk/Makefile.am').
 GLIB_GENMARSHAL=`$PKG_CONFIG --variable=glib_genmarshal glib-2.0`
+
+
+# Check for librsvg 2.0.0 or later.  However, since it is optional,
+# don't abort if the check fails.
+
+
+
+
+  succeeded=no
+
+  if test -z "$PKG_CONFIG"; then
+    # Extract the first word of "pkg-config", so it can be a program name with args.
+set dummy pkg-config; ac_word=$2
+echo "$as_me:$LINENO: checking for $ac_word" >&5
+echo $ECHO_N "checking for $ac_word... $ECHO_C" >&6
+if test "${ac_cv_path_PKG_CONFIG+set}" = set; then
+  echo $ECHO_N "(cached) $ECHO_C" >&6
+else
+  case $PKG_CONFIG in
+  [\\/]* | ?:[\\/]*)
+  ac_cv_path_PKG_CONFIG="$PKG_CONFIG" # Let the user override the test with a path.
+  ;;
+  *)
+  as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+for as_dir in $PATH
+do
+  IFS=$as_save_IFS
+  test -z "$as_dir" && as_dir=.
+  for ac_exec_ext in '' $ac_executable_extensions; do
+  if $as_executable_p "$as_dir/$ac_word$ac_exec_ext"; then
+    ac_cv_path_PKG_CONFIG="$as_dir/$ac_word$ac_exec_ext"
+    echo "$as_me:$LINENO: found $as_dir/$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+done
+
+  test -z "$ac_cv_path_PKG_CONFIG" && ac_cv_path_PKG_CONFIG="no"
+  ;;
+esac
+fi
+PKG_CONFIG=$ac_cv_path_PKG_CONFIG
+
+if test -n "$PKG_CONFIG"; then
+  echo "$as_me:$LINENO: result: $PKG_CONFIG" >&5
+echo "${ECHO_T}$PKG_CONFIG" >&6
+else
+  echo "$as_me:$LINENO: result: no" >&5
+echo "${ECHO_T}no" >&6
+fi
+
+  fi
+
+  if test "$PKG_CONFIG" = "no" ; then
+     echo "*** The pkg-config script could not be found. Make sure it is"
+     echo "*** in your path, or set the PKG_CONFIG environment variable"
+     echo "*** to the full path to pkg-config."
+     echo "*** Or see http://www.freedesktop.org/software/pkgconfig to get pkg-config."
+  else
+     PKG_CONFIG_MIN_VERSION=0.9.0
+     if $PKG_CONFIG --atleast-pkgconfig-version $PKG_CONFIG_MIN_VERSION; then
+        echo "$as_me:$LINENO: checking for librsvg-2.0 >= 2.0.0" >&5
+echo $ECHO_N "checking for librsvg-2.0 >= 2.0.0... $ECHO_C" >&6
+
+        if $PKG_CONFIG --exists "librsvg-2.0 >= 2.0.0" ; then
+            echo "$as_me:$LINENO: result: yes" >&5
+echo "${ECHO_T}yes" >&6
+            succeeded=yes
+
+            echo "$as_me:$LINENO: checking QUARRY_RSVG_CFLAGS" >&5
+echo $ECHO_N "checking QUARRY_RSVG_CFLAGS... $ECHO_C" >&6
+            QUARRY_RSVG_CFLAGS=`$PKG_CONFIG --cflags "librsvg-2.0 >= 2.0.0"`
+            echo "$as_me:$LINENO: result: $QUARRY_RSVG_CFLAGS" >&5
+echo "${ECHO_T}$QUARRY_RSVG_CFLAGS" >&6
+
+            echo "$as_me:$LINENO: checking QUARRY_RSVG_LIBS" >&5
+echo $ECHO_N "checking QUARRY_RSVG_LIBS... $ECHO_C" >&6
+            QUARRY_RSVG_LIBS=`$PKG_CONFIG --libs "librsvg-2.0 >= 2.0.0"`
+            echo "$as_me:$LINENO: result: $QUARRY_RSVG_LIBS" >&5
+echo "${ECHO_T}$QUARRY_RSVG_LIBS" >&6
+        else
+            QUARRY_RSVG_CFLAGS=""
+            QUARRY_RSVG_LIBS=""
+            ## If we have a custom action on failure, don't print errors, but
+            ## do set a variable so people can do so.
+            QUARRY_RSVG_PKG_ERRORS=`$PKG_CONFIG --errors-to-stdout --print-errors "librsvg-2.0 >= 2.0.0"`
+
+        fi
+
+
+
+     else
+        echo "*** Your version of pkg-config is too old. You need version $PKG_CONFIG_MIN_VERSION or newer."
+        echo "*** See http://www.freedesktop.org/software/pkgconfig"
+     fi
+  fi
+
+  if test $succeeded = yes; then
+     cat >>confdefs.h <<\_ACEOF
+#define HAVE_LIBRSVG 1
+_ACEOF
+
+  else
+     :
+  fi
+
+
 
 
 # Write `Makefile's.
@@ -4975,7 +5182,11 @@ s,@LIBOBJS@,$LIBOBJS,;t t
 s,@PKG_CONFIG@,$PKG_CONFIG,;t t
 s,@QUARRY_GTK_CFLAGS@,$QUARRY_GTK_CFLAGS,;t t
 s,@QUARRY_GTK_LIBS@,$QUARRY_GTK_LIBS,;t t
+s,@QUARRY_GTHREAD_CFLAGS@,$QUARRY_GTHREAD_CFLAGS,;t t
+s,@QUARRY_GTHREAD_LIBS@,$QUARRY_GTHREAD_LIBS,;t t
 s,@GLIB_GENMARSHAL@,$GLIB_GENMARSHAL,;t t
+s,@QUARRY_RSVG_CFLAGS@,$QUARRY_RSVG_CFLAGS,;t t
+s,@QUARRY_RSVG_LIBS@,$QUARRY_RSVG_LIBS,;t t
 s,@LTLIBOBJS@,$LTLIBOBJS,;t t
 CEOF
 
