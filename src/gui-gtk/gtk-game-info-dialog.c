@@ -270,11 +270,11 @@ gtk_game_info_dialog_init (GtkGameInfoDialog *dialog)
   main_time_spin_button
     = gtk_utils_create_freezable_spin_button (dialog->main_time, 0.0,
 					      0, FALSE);
-  gtk_utils_convert_to_time_spin_button
-    (GTK_SPIN_BUTTON (main_time_spin_button));
   dialog->main_time_spin_button
     = GTK_FREEZABLE_SPIN_BUTTON (main_time_spin_button);
   gtk_utils_freeze_on_empty_input (dialog->main_time_spin_button);
+  gtk_utils_convert_to_time_spin_button
+    (GTK_SPIN_BUTTON (main_time_spin_button));
 
   g_signal_connect (main_time_spin_button, "value-changed",
 		    G_CALLBACK (game_info_spin_button_value_changed), dialog);
