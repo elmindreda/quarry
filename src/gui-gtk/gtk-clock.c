@@ -239,8 +239,8 @@ gtk_clock_expose(GtkWidget *widget, GdkEventExpose *event)
   gdk_gc_set_line_attributes(gc, 0, GDK_LINE_SOLID, GDK_CAP_NOT_LAST, GDK_JOIN_ROUND);
 
   for (pass = 0; pass < 2; pass++) {
-    static const GdkColor black_color = { 0, 0, 0, 0 };
-    static const GdkColor gray_color = { 0, 0x8000, 0x8000, 0x8000 };
+    static GdkColor black_color = { 0, 0, 0, 0 };
+    static GdkColor gray_color = { 0, 0x8000, 0x8000, 0x8000 };
     int x = (widget->allocation.width + 1
 	     - clock->normal_symbol_parameters.segment_thickness);
     int y = clock->normal_symbol_parameters.segment_thickness + 1;
