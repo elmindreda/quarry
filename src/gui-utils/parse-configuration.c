@@ -24,6 +24,7 @@
 #include "parse-list.h"
 #include "utils.h"
 
+#include <ctype.h>
 #include <stdio.h>
 #include <string.h>
 
@@ -266,12 +267,14 @@ configuration_parse_sections2(StringBuffer *c_file_arrays,
     string_list_add(&value_arrays, section_values_array);
     value_arrays.last->section_data = section_data;
   }
-  else if (!section_datum_equal(&section_data,
-				&existing_section_array->section_data)) {
-    print_error("sections %s and %s values arrays match, but not structures",
-		existing_section_array->section_data.section_name,
-		section_data.section_name);
-    return 1;
+  else {
+    if (!section_datum_equal(&section_data,
+			     &existing_section_array->section_data)) {
+      print_error("sections %s and %s values arrays match, but not structures",
+		  existing_section_array->section_data.section_name,
+		  section_data.section_name);
+      return 1;
+    }
 
     section_data.new_structure = 0;
   }
@@ -355,6 +358,8 @@ configuration_parse_values2(StringBuffer *c_file_arrays,
     value_type = "VALUE_TYPE_INT";
   else if (looking_at("real", line))
     value_type = "VALUE_TYPE_REAL";
+  else if (looking_at("color", line))
+    value_type = "VALUE_TYPE_COLOR";
   else {
     print_error("value/field type expected");
     return 1;
@@ -448,7 +453,9 @@ configuration_parse_defaults2(StringBuffer *c_file_arrays,
   int type_is_string_list = 0;
   const char *dispose_field_function = NULL;
   const char *default_value;
+  char *multiline_string = NULL;
   const char *string_to_duplicate = NULL;
+  char buffer[64];
 
   UNUSED(c_file_arrays);
   UNUSED(identifier);
@@ -463,9 +470,22 @@ configuration_parse_defaults2(StringBuffer *c_file_arrays,
   }
 
   if (looking_at("string", line)) {
-    PARSE_THING(string_to_duplicate, STRING_OR_IDENTIFIER, line, "string");
-    if (strcmp(string_to_duplicate, "NULL") == 0)
-      string_to_duplicate = NULL;
+    while (*line && ! **line)
+      *line = read_line();
+
+    if (*line && **line == '"') {
+      multiline_string
+	= parse_multiline_string(line,
+				 "string constant, `char *' variable or NULL",
+				 "\n\t\t\t\t\t\t\t ", 0);
+      string_to_duplicate = multiline_string;
+    }
+    else {
+      PARSE_IDENTIFIER(string_to_duplicate, line,
+		       "string constant, `char *' variable or NULL");
+      if (strcmp(string_to_duplicate, "NULL") == 0)
+	string_to_duplicate = NULL;
+    }
 
     default_value = "NULL";
 
@@ -508,6 +528,18 @@ configuration_parse_defaults2(StringBuffer *c_file_arrays,
     PARSE_THING(default_value, FLOATING_POINT_NUMBER, line, "real number");
 
     field_type	     = "double";
+    field_is_pointer = ' ';
+  }
+  else if (looking_at("color", line)) {
+    QuarryColor color;
+
+    if (!parse_color(line, &color, "color"))
+      return 1;
+
+    sprintf(buffer, "{ %d, %d, %d }", color.red, color.green, color.blue);
+    default_value = buffer;
+
+    field_type	     = "QuarryColor";
     field_is_pointer = ' ';
   }
   else {
@@ -618,6 +650,8 @@ configuration_parse_defaults2(StringBuffer *c_file_arrays,
 			 field_type, TABBING(4, 2 + strlen(field_type)),
 			 field_is_pointer, field_name);
   }
+
+  utils_free(multiline_string);
 
   return 0;
 }
