@@ -326,6 +326,24 @@ sgf_utils_switch_to_given_variation (SgfGameTree *tree, SgfNode *node,
 }
 
 
+void
+sgf_utils_switch_to_given_node (SgfGameTree *tree, SgfNode *node,
+				SgfBoardState *board_state)
+{
+  SgfNode *path_scan;
+
+  assert (tree);
+  assert (tree->current_node);
+  assert (node);
+  assert (board_state);
+
+  for (path_scan = node; path_scan->parent; path_scan = path_scan->parent)
+    path_scan->parent->current_variation = path_scan;
+
+  do_enter_tree (tree, node, board_state);
+}
+
+
 /* Append a variation to the current node.  The new variation may
  * contain a move or it may not.  If `color' is either `BLACK' or
  * `WHITE', arguments after it should specify a move according to
