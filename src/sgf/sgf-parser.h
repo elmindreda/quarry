@@ -102,6 +102,8 @@ struct _SgfParsingData {
 
   SgfErrorPosition     node_error_position;
 
+  SgfErrorPosition     ko_property_error_position;
+
   SgfErrorPosition     non_sgf_point_error_position;
   char		       non_sgf_point_x;
   int		       non_sgf_point_y;
@@ -134,43 +136,42 @@ struct _SgfParsingData {
 };
 
 
-#define DECLARE_VALUE_PARSER(name)			  \
-  SgfError	name(SgfParsingData *data)
+#define DECLARE_VALUE_PARSER(name)		\
+  SgfError	name (SgfParsingData *data)
 
 
-DECLARE_VALUE_PARSER(sgf_parse_none);
-DECLARE_VALUE_PARSER(sgf_parse_real);
-DECLARE_VALUE_PARSER(sgf_parse_double);
-DECLARE_VALUE_PARSER(sgf_parse_color);
-DECLARE_VALUE_PARSER(sgf_parse_simple_text);
-DECLARE_VALUE_PARSER(sgf_parse_text);
-DECLARE_VALUE_PARSER(sgf_parse_move);
+DECLARE_VALUE_PARSER (sgf_parse_none);
+DECLARE_VALUE_PARSER (sgf_parse_real);
+DECLARE_VALUE_PARSER (sgf_parse_constrained_number);
+DECLARE_VALUE_PARSER (sgf_parse_double);
+DECLARE_VALUE_PARSER (sgf_parse_color);
+DECLARE_VALUE_PARSER (sgf_parse_simple_text);
+DECLARE_VALUE_PARSER (sgf_parse_text);
+DECLARE_VALUE_PARSER (sgf_parse_move);
 
-DECLARE_VALUE_PARSER(sgf_parse_list_of_point);
-DECLARE_VALUE_PARSER(sgf_parse_list_of_vector);
-DECLARE_VALUE_PARSER(sgf_parse_list_of_label);
+DECLARE_VALUE_PARSER (sgf_parse_list_of_point);
+DECLARE_VALUE_PARSER (sgf_parse_list_of_vector);
+DECLARE_VALUE_PARSER (sgf_parse_list_of_label);
 
-DECLARE_VALUE_PARSER(sgf_parse_application);
-DECLARE_VALUE_PARSER(sgf_parse_board_size);
-DECLARE_VALUE_PARSER(sgf_parse_char_set);
-DECLARE_VALUE_PARSER(sgf_parse_date);
-DECLARE_VALUE_PARSER(sgf_parse_figure);
-DECLARE_VALUE_PARSER(sgf_parse_file_format);
-DECLARE_VALUE_PARSER(sgf_parse_game_type);
-DECLARE_VALUE_PARSER(sgf_parse_handicap);
-DECLARE_VALUE_PARSER(sgf_parse_komi);
-DECLARE_VALUE_PARSER(sgf_parse_markup_property);
-DECLARE_VALUE_PARSER(sgf_parse_move_number);
-DECLARE_VALUE_PARSER(sgf_parse_moves_left);
-DECLARE_VALUE_PARSER(sgf_parse_print_mode);
-DECLARE_VALUE_PARSER(sgf_parse_result);
-DECLARE_VALUE_PARSER(sgf_parse_setup_property);
-DECLARE_VALUE_PARSER(sgf_parse_style);
-DECLARE_VALUE_PARSER(sgf_parse_territory);
-DECLARE_VALUE_PARSER(sgf_parse_time_limit);
+DECLARE_VALUE_PARSER (sgf_parse_application);
+DECLARE_VALUE_PARSER (sgf_parse_board_size);
+DECLARE_VALUE_PARSER (sgf_parse_char_set);
+DECLARE_VALUE_PARSER (sgf_parse_date);
+DECLARE_VALUE_PARSER (sgf_parse_figure);
+DECLARE_VALUE_PARSER (sgf_parse_file_format);
+DECLARE_VALUE_PARSER (sgf_parse_game_type);
+DECLARE_VALUE_PARSER (sgf_parse_handicap);
+DECLARE_VALUE_PARSER (sgf_parse_komi);
+DECLARE_VALUE_PARSER (sgf_parse_markup_property);
+DECLARE_VALUE_PARSER (sgf_parse_print_mode);
+DECLARE_VALUE_PARSER (sgf_parse_result);
+DECLARE_VALUE_PARSER (sgf_parse_setup_property);
+DECLARE_VALUE_PARSER (sgf_parse_style);
+DECLARE_VALUE_PARSER (sgf_parse_territory);
+DECLARE_VALUE_PARSER (sgf_parse_time_limit);
 
-DECLARE_VALUE_PARSER(sgf_parse_letters);
-DECLARE_VALUE_PARSER(sgf_parse_simple_markup);
+DECLARE_VALUE_PARSER (sgf_parse_letters);
+DECLARE_VALUE_PARSER (sgf_parse_simple_markup);
 
 
 /* Tree structure used by parse_properties() for very quick property

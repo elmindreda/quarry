@@ -369,8 +369,9 @@ parse_buffer (SgfParsingData *data,
   data->line				  = 0;
   data->pending_column			  = 0;
   data->first_column			  = parameters->first_column;
-  data->zero_byte_error_position.line	  = 0;
+  data->ko_property_error_position.line	  = 0;
   data->non_sgf_point_error_position.line = 0;
+  data->zero_byte_error_position.line	  = 0;
 
   data->board = NULL;
   data->error_list = *error_list;
@@ -409,26 +410,19 @@ parse_buffer (SgfParsingData *data,
 
   iconv_close (data->latin1_to_utf8);
 
-  if (data->cancelled) {
+  if (data->cancelled || (*collection)->num_trees == 0) {
     string_list_delete (*error_list);
     *error_list = NULL;
 
     sgf_collection_delete (*collection);
     *collection = NULL;
 
-    return SGF_PARSING_CANCELLED;
+    return data->cancelled ? SGF_PARSING_CANCELLED : SGF_INVALID_FILE;
   }
 
   if (string_list_is_empty (*error_list)) {
     string_list_delete (*error_list);
     *error_list = NULL;
-  }
-
-  if ((*collection)->num_trees == 0) {
-    sgf_collection_delete (*collection);
-    *collection = NULL;
-
-    return SGF_INVALID_FILE;
   }
 
   return SGF_PARSED;
@@ -970,12 +964,22 @@ complete_node_and_update_board (SgfParsingData *data, int is_leaf_node)
     data->node->move_color = EMPTY;
   }
 
+  if (data->ko_property_error_position.line) {
+    if (data->node->move_color == EMPTY) {
+      insert_error (data, SGF_ERROR_KO_PROPERTY_WITHOUT_MOVE,
+		    &data->ko_property_error_position);
+    }
+
+    data->ko_property_error_position.line = 0;
+  }
+
   if (data->has_any_setup_property) {
     data->has_any_setup_property = 0;
     data->first_setup_add_property = 1;
 
     /* Nodes with both setup and move properties have to be split. */
-    if (data->node->move_color != EMPTY) {
+    if (data->node->move_color != EMPTY
+	|| sgf_node_find_property (data->node, SGF_MOVE_NUMBER, NULL)) {
       if (has_setup_add_properties
 	  || (sgf_node_get_color_property_value (data->node, SGF_TO_PLAY)
 	      == data->node->move_color)) {
@@ -1175,6 +1179,9 @@ sgf_parse_none (SgfParsingData *data)
   if (sgf_node_find_property (data->node, data->property_type, &link))
     return SGF_FATAL_DUPLICATE_PROPERTY;
 
+  if (data->property_type == SGF_KO)
+    data->ko_property_error_position = data->property_name_error_position;
+
   *link = sgf_property_new (data->tree, data->property_type, *link);
 
   next_character (data);
@@ -1237,6 +1244,38 @@ do_parse_number (SgfParsingData *data, int *number)
   }
 
   return 0;
+}
+
+
+/* Parse a number, but discard it as illegal if negative, or
+ * non-positive (for `MN' property.)
+ */
+SgfError
+sgf_parse_constrained_number (SgfParsingData *data)
+{
+  SgfProperty **link;
+  BufferPositionStorage storage;
+  int number;
+
+  if (sgf_node_find_property (data->node, data->property_type, &link))
+    return SGF_FATAL_DUPLICATE_PROPERTY;
+
+  begin_parsing_value (data);
+  if (data->token == ']')
+    return SGF_FATAL_EMPTY_VALUE;
+
+  STORE_BUFFER_POSITION (data, 0, storage);
+
+  if (do_parse_number (data, &number)
+      && number >= (data->property_type != SGF_MOVE_NUMBER ? 0 : 1)) {
+    *link = sgf_property_new (data->tree, data->property_type, *link);
+    (*link)->value.number = number;
+
+    return end_parsing_value (data);
+  }
+
+  RESTORE_BUFFER_POSITION (data, 0, storage);
+  return SGF_FATAL_INVALID_VALUE;
 }
 
 
@@ -2455,26 +2494,6 @@ sgf_parse_markup_property (SgfParsingData *data)
 
 /* FIXME: write this function. */
 SgfError
-sgf_parse_move_number (SgfParsingData *data)
-{
-  begin_parsing_value (data);
-  while (data->token != ']') next_token (data);
-  return end_parsing_value (data);
-}
-
-
-/* FIXME: write this function. */
-SgfError
-sgf_parse_moves_left (SgfParsingData *data)
-{
-  begin_parsing_value (data);
-  while (data->token != ']') next_token (data);
-  return end_parsing_value (data);
-}
-
-
-/* FIXME: write this function. */
-SgfError
 sgf_parse_print_mode (SgfParsingData *data)
 {
   begin_parsing_value (data);
@@ -2780,6 +2799,7 @@ static void
 insert_error_valist (SgfParsingData *data, SgfError error,
 		     SgfErrorPosition *error_position, va_list arguments)
 {
+  SgfErrorListItem *error_item;
   char buffer[MAX_ERROR_LENGTH];
   int length;
 
@@ -2789,10 +2809,11 @@ insert_error_valist (SgfParsingData *data, SgfError error,
 
   length = format_error_valist (data, buffer, error, arguments);
 
-  string_list_insert_from_buffer (data->error_list, error_position->notch,
-				  buffer, length);
-  data->error_list->last->line = error_position->line;
-  data->error_list->last->column = error_position->column + data->first_column;
+  error_item = string_list_insert_from_buffer (data->error_list,
+					       error_position->notch,
+					       buffer, length);
+  error_item->line   = error_position->line;
+  error_item->column = error_position->column + data->first_column;
 
   if (error != SGF_WARNING_ERROR_SUPPRESSED
       && ++data->times_error_reported[error] == MAX_TIMES_TO_REPORT_ERROR) {
