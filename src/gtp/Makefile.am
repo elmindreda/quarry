@@ -5,7 +5,9 @@ AM_CPPFLAGS =				\
 					\
 	-I $(top_srcdir)/src		\
 	-I $(top_srcdir)/src/board	\
+	-I $(top_builddir)/src/board	\
 	-I $(top_srcdir)/src/sgf	\
+	-I $(top_builddir)/src/sgf	\
 	-I $(top_srcdir)/src/utils
 
 
@@ -23,10 +25,10 @@ gtp_test_SOURCES = gtp-test.c
 
 gtp_test_LDADD =				\
 	libgtp.a				\
-	$(top_srcdir)/src/board/libboard.a	\
-	$(top_srcdir)/src/utils/libutils.a
+	$(top_builddir)/src/board/libboard.a	\
+	$(top_builddir)/src/utils/libutils.a
 
 
 DISTCLEANFILES = *~
 
-MOSTLYCLEANFILES = $(EXTRA_PROGRAMS)
+CLEANFILES = $(EXTRA_PROGRAMS)

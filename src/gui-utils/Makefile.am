@@ -7,26 +7,25 @@ AM_CPPFLAGS =						\
 							\
 	-I $(top_srcdir)/src				\
 	-I $(top_srcdir)/src/board			\
+	-I $(top_builddir)/src/board			\
 	-I $(top_srcdir)/src/utils
 
 
 noinst_LIBRARIES = libguiutils.a
 
-BUILT_SOURCES =				\
+LIST_FILES = markup-theme-configuration.list
+
+LIST_STAMP_FILES = markup-theme-configuration.stamp
+
+LIST_GENERATED_FILES =			\
 	markup-theme-configuration.c	\
 					\
 	markup-theme-configuration.h
 
+PARSE_LIST_COMMAND = ./parse-configuration$(EXEEXT)
+PARSE_LIST_FLAGS   =
 
-markup-theme-configuration.c markup-theme-configuration.h		\
-  : markup-theme-configuration.list parse-configuration$(EXEEXT)
-	./parse-configuration$(EXEEXT)					\
-	    markup-theme-configuration.list				\
-	    markup-theme-configuration.h markup-theme-configuration.c	\
-	  || (rm -f markup-theme-configuration.c			\
-		    markup-theme-configuration.h ;			\
-	      exit 1)
-
+include $(top_srcdir)/aux/list.make
 
 libguiutils_a_SOURCES =			\
 	configuration.c			\
@@ -38,24 +37,31 @@ libguiutils_a_SOURCES =			\
 	configuration-internals.h	\
 	gui-utils.h			\
 	tile-renderer.h			\
-	time-control.h
+	time-control.h			\
+					\
+	$(LIST_FILES)
 
-nodist_libguiutils_a_SOURCES = $(BUILT_SOURCES)
+nodist_libguiutils_a_SOURCES = $(LIST_GENERATED_FILES)
+
+BUILT_SOURCES = $(LIST_STAMP_FILES)
 
 
 noinst_PROGRAMS = parse-configuration
 
 parse_configuration_SOURCES = parse-configuration.c
 
-parse_configuration_LDADD =			\
-	$(top_srcdir)/src/utils/libparselist.a	\
-	$(top_srcdir)/src/utils/libutils.a
+parse_configuration_LDADD =				\
+	$(top_builddir)/src/utils/libparselist.a	\
+	$(top_builddir)/src/utils/libutils.a
 
 
 EXTRA_DIST = 					\
 	common-configuration-sections.list	\
 	common-configuration-values.list	\
-	common-configuration-defaults.list	\
-	markup-theme-configuration.list
+	common-configuration-defaults.list
 
 DISTCLEANFILES = *~
+
+MOSTLYCLEANFILES =		\
+	$(LIST_STAMP_FILES)	\
+	$(LIST_GENERATED_FILES)

@@ -9,14 +9,19 @@ AM_CPPFLAGS =				\
 
 noinst_LIBRARIES = libboard.a
 
-BUILT_SOURCES =		\
+LIST_FILES = games.list
+
+LIST_STAMP_FILES = games.stamp
+
+LIST_GENERATED_FILES =	\
 	games.c		\
 			\
 	games.h
 
-games.c games.h : games.list parse-game-list$(EXEEXT)
-	./parse-game-list$(EXEEXT) games.list games.h games.c	\
-	  || (rm -f games.c games.h ; exit 1)
+PARSE_LIST_COMMAND = ./parse-game-list$(EXEEXT)
+PARSE_LIST_FLAGS   =
+
+include $(top_srcdir)/aux/list.make
 
 libboard_a_SOURCES =		\
 	amazons.c		\
@@ -30,23 +35,26 @@ libboard_a_SOURCES =		\
 	board-internals.h	\
 	game-info.h		\
 	go.h			\
-	othello.h
+	othello.h		\
+				\
+	$(LIST_FILES)
 
-nodist_libboard_a_SOURCES = $(BUILT_SOURCES)
+nodist_libboard_a_SOURCES = $(LIST_GENERATED_FILES)
+
+BUILT_SOURCES =	$(LIST_STAMP_FILES)
 
 
 noinst_PROGRAMS = parse-game-list
 
 parse_game_list_SOURCES = parse-game-list.c
 
-parse_game_list_LDADD =				\
-	$(top_srcdir)/src/utils/libparselist.a	\
-	$(top_srcdir)/src/utils/libutils.a
+parse_game_list_LDADD =					\
+	$(top_builddir)/src/utils/libparselist.a	\
+	$(top_builddir)/src/utils/libutils.a
 
-
-EXTRA_DIST = 		\
-	games.list
 
 DISTCLEANFILES = *~
 
-MOSTLYCLEANFILES = $(BUILT_SOURCES)
+MOSTLYCLEANFILES =		\
+	$(LIST_STAMP_FILES)	\
+	$(LIST_GENERATED_FILES)

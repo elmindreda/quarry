@@ -5,45 +5,55 @@ QUARRY_FULL_GTK_CFLAGS = 		\
 	$(QUARRY_GTK_DEPRECATED_FLAGS)	\
 	$(QUARRY_GTHREAD_CFLAGS)
 
-I_CPPFLAGS =				\
-	-I $(top_srcdir)/src		\
-	-I $(top_srcdir)/src/board	\
-	-I $(top_srcdir)/src/gtp	\
-	-I $(top_srcdir)/src/gui-utils	\
-	-I $(top_srcdir)/src/sgf	\
-	-I $(top_srcdir)/src/utils
-
-AM_CPPFLAGS = 							\
-	-D PACKAGE_DATA_DIR=\"$(datadir)/quarry\"		\
-								\
-	$(QUARRY_WARNINGS_GTK)					\
-								\
-	$(I_CPPFLAGS)						\
-								\
+AM_CPPFLAGS = 						\
+	-D PACKAGE_DATA_DIR=\"$(datadir)/quarry\"	\
+							\
+	$(QUARRY_WARNINGS_GTK)				\
+							\
+	-I $(top_srcdir)/src				\
+	-I $(top_srcdir)/src/board			\
+	-I $(top_builddir)/src/board			\
+	-I $(top_srcdir)/src/gtp			\
+	-I $(top_srcdir)/src/gui-utils			\
+	-I $(top_builddir)/src/gui-utils		\
+	-I $(top_srcdir)/src/sgf			\
+	-I $(top_builddir)/src/sgf			\
+	-I $(top_srcdir)/src/utils			\
+							\
 	$(QUARRY_FULL_GTK_CFLAGS)
 
 
 noinst_LIBRARIES = libguigtk.a
 
-BUILT_SOURCES =			\
+
+LIST_FILES = gtk-configuration.list
+
+LIST_STAMP_FILES = gtk-configuration.stamp
+
+LIST_GENERATED_FILES =		\
 	gtk-configuration.c	\
-	quarry-marshal.c	\
 				\
-	gtk-configuration.h	\
-	quarry-marshal.h
+	gtk-configuration.h
+
+PARSE_LIST_COMMAND =							\
+	$(top_builddir)/src/gui-utils/parse-configuration$(EXEEXT)
+
+PARSE_LIST_FLAGS =						\
+	-D top_srcdir="$(top_srcdir)"				\
+	-D PACKAGE_TEXTURES_DIR="$(datadir)/quarry/textures"
+
+include $(top_srcdir)/aux/list.make
 
 
-quarry-marshal.c : quarry-marshal.list
-	@GLIB_GENMARSHAL@ quarry-marshal.list --stdinc	\
-			  --prefix=quarry_marshal	\
-			  --body > quarry-marshal.c	\
-	  || (rm -f quarry-marshal.c ; exit 1)
+quarry-marshal.c : $(srcdir)/quarry-marshal.glist
+	$(GLIB_GENMARSHAL) --stdinc --prefix=quarry_marshal --body	\
+			   `test -f '$<' || echo '$(srcdir)/'`$< > $@	\
+	|| (rm -f $@; exit 1)
 
-quarry-marshal.h : quarry-marshal.list
-	@GLIB_GENMARSHAL@ quarry-marshal.list --stdinc	\
-			  --prefix=quarry_marshal	\
-			  --header > quarry-marshal.h	\
-	  || (rm -f quarry-marshal.h ; exit 1)
+quarry-marshal.h : $(srcdir)/quarry-marshal.glist
+	$(GLIB_GENMARSHAL) --stdinc --prefix=quarry_marshal --header	\
+			   `test -f '$<' || echo '$(srcdir)/'`$< > $@	\
+	|| (rm -f $@; exit 1)
 
 # FIXME: find a nicer way to avoid warnings in `quarry-marshal.c'
 #	 (missing prototypes are easy; the trick is to cope with
@@ -57,27 +67,12 @@ quarry-marshal.$(OBJEXT) : quarry-marshal.c quarry-marshal.h
 	  || (rm -f quarry-marshal.$(OBJEXT) ; exit 1)
 
 
-PARSE_CONFIGURATION =							\
-	$(top_srcdir)/src/gui-utils/parse-configuration$(EXEEXT)
-
-gtk-configuration.c gtk-configuration.h					\
-  : gtk-configuration.list						\
-    $(top_srcdir)/src/gui-utils/common-configuration-sections.list	\
-    $(top_srcdir)/src/gui-utils/common-configuration-values.list	\
-    $(top_srcdir)/src/gui-utils/common-configuration-defaults.list	\
-    $(PARSE_CONFIGURATION)
-	$(PARSE_CONFIGURATION)						\
-	    -D PACKAGE_TEXTURES_DIR="\"$(datadir)/quarry/textures\""	\
-	    gtk-configuration.list					\
-	    gtk-configuration.h gtk-configuration.c			\
-	  || (rm -f gtk-configuration.c gtk-configuration.h ; exit 1)
-
-
 libguigtk_a_SOURCES =			\
 	gtk-assistant.c			\
 	gtk-clock.c			\
 	gtk-color-button.c		\
 	gtk-control-center.c		\
+	gtk-file-selector.c		\
 	gtk-freezable-spin-button.c	\
 	gtk-game-info-dialog.c		\
 	gtk-games.c			\
@@ -106,6 +101,7 @@ libguigtk_a_SOURCES =			\
 	gtk-clock.h			\
 	gtk-color-button.h		\
 	gtk-control-center.h		\
+	gtk-file-selector.h		\
 	gtk-freezable-spin-button.h	\
 	gtk-game-info-dialog.h		\
 	gtk-games.h			\
@@ -129,19 +125,35 @@ libguigtk_a_SOURCES =			\
 	gtk-tile-set.h			\
 	gtk-utils.h			\
 	gui-back-end.h			\
-	quarry-stock.h
+	quarry-stock.h			\
+					\
+	$(LIST_FILES)
 
-nodist_libguigtk_a_SOURCES = $(BUILT_SOURCES)
+nodist_libguigtk_a_SOURCES =	\
+	$(LIST_GENERATED_FILES) \
+				\
+	quarry-marshal.c	\
+				\
+	quarry-marshal.h
+
+BUILT_SOURCES =			\
+	$(LIST_STAMP_FILES)	\
+				\
+	quarry-marshal.h
 
 
 # This seems to be the best way of solving circular references.
-libguigtk_a_LIBADD = $(top_srcdir)/src/gui-utils/libguiutils.a
+libguigtk_a_LIBADD = $(top_builddir)/src/gui-utils/libguiutils.a
 
 
-EXTRA_DIST =			\
-	gtk-configuration.list	\
-	quarry-marshal.list
+EXTRA_DIST = quarry-marshal.list
 
 DISTCLEANFILES = *~
 
-MOSTLYCLEANFILES = $(BUILT_SOURCES)
+MOSTLYCLEANFILES =		\
+	$(LIST_STAMP_FILES)	\
+	$(LIST_GENERATED_FILES)	\
+				\
+	quarry-marshal.c	\
+				\
+	quarry-marshal.h

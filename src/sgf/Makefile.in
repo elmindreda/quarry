@@ -151,17 +151,52 @@ AM_CPPFLAGS = \
 					\
 	-I $(top_srcdir)/src		\
 	-I $(top_srcdir)/src/board	\
+	-I $(top_builddir)/src/board	\
 	-I $(top_srcdir)/src/utils
 
 
 noinst_LIBRARIES = libsgf.a
 
-BUILT_SOURCES = \
+LIST_FILES = \
+	sgf-errors.list		\
+	sgf-properties.list
+
+
+LIST_STAMP_FILES = \
+	sgf-errors.stamp	\
+	sgf-properties.stamp
+
+
+LIST_GENERATED_FILES = \
 	sgf-errors.c		\
 	sgf-properties.c	\
 				\
 	sgf-errors.h		\
 	sgf-properties.h
+
+
+PARSE_LIST_COMMAND = ./parse-sgf-list$(EXEEXT)
+PARSE_LIST_FLAGS = 
+SUFFIXES = .list
+
+# `PARSE_LIST_COMMAND' and `PARSE_LIST_FLAGS' should be set by the
+# includer.
+#
+PARSE_LIST = $(PARSE_LIST_COMMAND) $(PARSE_LIST_FLAGS)
+
+PARSE_LIST_BUILD_RULE = \
+	if $(PARSE_LIST) `test -f '$<' || echo '$(srcdir)/'`$<	\
+			 $*.h.new $*.c.new; then		\
+	  if cmp -s $*.c.new $*.c;				\
+	    then rm -f $*.c.new; else mv -f $*.c.new $*.c;	\
+	  fi;							\
+	  if cmp -s $*.h.new $*.h;				\
+	    then rm -f $*.h.new; else mv -f $*.h.new $*.h;	\
+	  fi;							\
+	  echo timestamp > $@;					\
+	else							\
+	  (rm -f $*.c $*.c.new $*.h $*.h.new ; exit 1)		\
+	fi
 
 
 libsgf_a_SOURCES = \
@@ -175,18 +210,22 @@ libsgf_a_SOURCES = \
 	sgf.h			\
 	sgf-parser.h		\
 	sgf-privates.h		\
-	sgf-writer.h
+	sgf-writer.h		\
+				\
+	$(LIST_FILES)
 
 
-nodist_libsgf_a_SOURCES = $(BUILT_SOURCES)
+nodist_libsgf_a_SOURCES = $(LIST_GENERATED_FILES)
+
+BUILT_SOURCES = $(LIST_STAMP_FILES)
 
 noinst_PROGRAMS = parse-sgf-list
 
 parse_sgf_list_SOURCES = parse-sgf-list.c
 
 parse_sgf_list_LDADD = \
-	$(top_srcdir)/src/utils/libparselist.a	\
-	$(top_srcdir)/src/utils/libutils.a
+	$(top_builddir)/src/utils/libparselist.a	\
+	$(top_builddir)/src/utils/libutils.a
 
 
 # `sgf-diff' can be made optional with `configure'.
@@ -202,28 +241,26 @@ sgf_diff_SOURCES = sgf-diff.c
 
 sgf_diff_LDADD = \
 	libsgf.a				\
-	$(top_srcdir)/src/board/libboard.a	\
-	$(top_srcdir)/src/utils/libutils.a
+	$(top_builddir)/src/board/libboard.a	\
+	$(top_builddir)/src/utils/libutils.a
 
 
 sgf_test_SOURCES = sgf-test.c
 
 sgf_test_LDADD = \
 	libsgf.a				\
-	$(top_srcdir)/src/board/libboard.a	\
-	$(top_srcdir)/src/utils/libutils.a
-
-
-EXTRA_DIST = \
-	sgf-errors.list		\
-	sgf-properties.list	\
-				\
-	$(sgf_test_SOURCES)
+	$(top_builddir)/src/board/libboard.a	\
+	$(top_builddir)/src/utils/libutils.a
 
 
 DISTCLEANFILES = *~
 
-MOSTLYCLEANFILES = $(BUILT_SOURCES) $(EXTRA_PROGRAMS)
+CLEANFILES = $(EXTRA_PROGRAMS)
+
+MOSTLYCLEANFILES = \
+	$(LIST_STAMP_FILES)	\
+	$(LIST_GENERATED_FILES)
+
 subdir = src/sgf
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 mkinstalldirs = $(SHELL) $(top_srcdir)/aux/mkinstalldirs
@@ -233,11 +270,12 @@ LIBRARIES = $(noinst_LIBRARIES)
 
 libsgf_a_AR = $(AR) cru
 libsgf_a_LIBADD =
+am__objects_1 =
 am_libsgf_a_OBJECTS = sgf-diff-utils.$(OBJEXT) sgf-parser.$(OBJEXT) \
 	sgf-tree.$(OBJEXT) sgf-tree-map.$(OBJEXT) sgf-utils.$(OBJEXT) \
-	sgf-writer.$(OBJEXT)
-am__objects_1 = sgf-errors.$(OBJEXT) sgf-properties.$(OBJEXT)
-nodist_libsgf_a_OBJECTS = $(am__objects_1)
+	sgf-writer.$(OBJEXT) $(am__objects_1)
+am__objects_2 = sgf-errors.$(OBJEXT) sgf-properties.$(OBJEXT)
+nodist_libsgf_a_OBJECTS = $(am__objects_2)
 libsgf_a_OBJECTS = $(am_libsgf_a_OBJECTS) $(nodist_libsgf_a_OBJECTS)
 EXTRA_PROGRAMS = sgf-diff$(EXEEXT) sgf-test$(EXEEXT)
 @BUILD_SGF_UTILS_TRUE@bin_PROGRAMS = sgf-diff$(EXEEXT)
@@ -247,18 +285,18 @@ PROGRAMS = $(bin_PROGRAMS) $(noinst_PROGRAMS)
 
 am_parse_sgf_list_OBJECTS = parse-sgf-list.$(OBJEXT)
 parse_sgf_list_OBJECTS = $(am_parse_sgf_list_OBJECTS)
-parse_sgf_list_DEPENDENCIES = $(top_srcdir)/src/utils/libparselist.a \
-	$(top_srcdir)/src/utils/libutils.a
+parse_sgf_list_DEPENDENCIES = $(top_builddir)/src/utils/libparselist.a \
+	$(top_builddir)/src/utils/libutils.a
 parse_sgf_list_LDFLAGS =
 am_sgf_diff_OBJECTS = sgf-diff.$(OBJEXT)
 sgf_diff_OBJECTS = $(am_sgf_diff_OBJECTS)
-sgf_diff_DEPENDENCIES = libsgf.a $(top_srcdir)/src/board/libboard.a \
-	$(top_srcdir)/src/utils/libutils.a
+sgf_diff_DEPENDENCIES = libsgf.a $(top_builddir)/src/board/libboard.a \
+	$(top_builddir)/src/utils/libutils.a
 sgf_diff_LDFLAGS =
 am_sgf_test_OBJECTS = sgf-test.$(OBJEXT)
 sgf_test_OBJECTS = $(am_sgf_test_OBJECTS)
-sgf_test_DEPENDENCIES = libsgf.a $(top_srcdir)/src/board/libboard.a \
-	$(top_srcdir)/src/utils/libutils.a
+sgf_test_DEPENDENCIES = libsgf.a $(top_builddir)/src/board/libboard.a \
+	$(top_builddir)/src/utils/libutils.a
 sgf_test_LDFLAGS =
 
 DEFAULT_INCLUDES =  -I. -I$(srcdir) -I$(top_builddir)
@@ -278,15 +316,16 @@ CCLD = $(CC)
 LINK = $(CCLD) $(AM_CFLAGS) $(CFLAGS) $(AM_LDFLAGS) $(LDFLAGS) -o $@
 DIST_SOURCES = $(libsgf_a_SOURCES) $(parse_sgf_list_SOURCES) \
 	$(sgf_diff_SOURCES) $(sgf_test_SOURCES)
-DIST_COMMON = $(srcdir)/Makefile.in Makefile.am
+DIST_COMMON = $(srcdir)/Makefile.in $(top_srcdir)/aux/list.make \
+	Makefile.am
 SOURCES = $(libsgf_a_SOURCES) $(nodist_libsgf_a_SOURCES) $(parse_sgf_list_SOURCES) $(sgf_diff_SOURCES) $(sgf_test_SOURCES)
 
 all: $(BUILT_SOURCES)
 	$(MAKE) $(AM_MAKEFLAGS) all-am
 
 .SUFFIXES:
-.SUFFIXES: .c .o .obj
-$(srcdir)/Makefile.in: @MAINTAINER_MODE_TRUE@ Makefile.am  $(top_srcdir)/configure.ac $(ACLOCAL_M4)
+.SUFFIXES: .list .c .o .obj .stamp
+$(srcdir)/Makefile.in: @MAINTAINER_MODE_TRUE@ Makefile.am $(top_srcdir)/aux/list.make $(top_srcdir)/configure.ac $(ACLOCAL_M4)
 	cd $(top_srcdir) && \
 	  $(AUTOMAKE) --foreign  src/sgf/Makefile
 Makefile: @MAINTAINER_MODE_TRUE@ $(srcdir)/Makefile.in  $(top_builddir)/config.status
@@ -437,6 +476,7 @@ top_distdir = ../..
 distdir = $(top_distdir)/$(PACKAGE)-$(VERSION)
 
 distdir: $(DISTFILES)
+	$(mkinstalldirs) $(distdir)/../../aux
 	@srcdirstrip=`echo "$(srcdir)" | sed 's|.|.|g'`; \
 	topsrcdirstrip=`echo "$(top_srcdir)" | sed 's|.|.|g'`; \
 	list='$(DISTFILES)'; for file in $$list; do \
@@ -489,6 +529,7 @@ mostlyclean-generic:
 	-test -z "$(MOSTLYCLEANFILES)" || rm -f $(MOSTLYCLEANFILES)
 
 clean-generic:
+	-test -z "$(CLEANFILES)" || rm -f $(CLEANFILES)
 
 distclean-generic:
 	-rm -f $(CONFIG_CLEAN_FILES)
@@ -559,15 +600,23 @@ uninstall-am: uninstall-binPROGRAMS uninstall-info-am
 	uninstall-info-am
 
 
-sgf-errors.c sgf-errors.h : sgf-errors.list parse-sgf-list$(EXEEXT)
-	./parse-sgf-list$(EXEEXT) errors sgf-errors.list	\
-				  sgf-errors.h sgf-errors.c	\
-	  || (rm -f sgf-errors.c sgf-errors.h ; exit 1)
+$(LIST_STAMP_FILES) : Makefile $(PARSE_LIST_COMMAND)
 
-sgf-properties.c sgf-properties.h : sgf-properties.list parse-sgf-list$(EXEEXT)
-	./parse-sgf-list$(EXEEXT) properties sgf-properties.list	\
-				  sgf-properties.h sgf-properties.c	\
-	  || (rm -f sgf-properties.c sgf-properties.h ; exit 1)
+# We use `cmp' here to avoid unneeded recompilations of files that
+# depend on generated ones (only really useful for `.h' files.)
+#
+.list.stamp:
+	$(PARSE_LIST_BUILD_RULE)
+
+# Since these don't (at least shouldn't) have any dependencies, if
+# this rule is being executed, it probably means that one of the
+# files was removed.  Then all we can do is to force rebuilding of
+# corresponding stamp file, which builds the required sources
+# ``by side-effect.''
+#
+$(LIST_GENERATED_FILES):
+	rm -f $*.stamp;
+	$(MAKE) $(AM_MAKEFLAGS) $*.stamp
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.
 .NOEXPORT:

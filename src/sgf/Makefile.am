@@ -5,27 +5,31 @@ AM_CPPFLAGS = 				\
 					\
 	-I $(top_srcdir)/src		\
 	-I $(top_srcdir)/src/board	\
+	-I $(top_builddir)/src/board	\
 	-I $(top_srcdir)/src/utils
 
 
 noinst_LIBRARIES = libsgf.a
 
-BUILT_SOURCES =			\
+LIST_FILES =			\
+	sgf-errors.list		\
+	sgf-properties.list
+
+LIST_STAMP_FILES =		\
+	sgf-errors.stamp	\
+	sgf-properties.stamp
+
+LIST_GENERATED_FILES =		\
 	sgf-errors.c		\
 	sgf-properties.c	\
 				\
 	sgf-errors.h		\
 	sgf-properties.h
 
-sgf-errors.c sgf-errors.h : sgf-errors.list parse-sgf-list$(EXEEXT)
-	./parse-sgf-list$(EXEEXT) errors sgf-errors.list	\
-				  sgf-errors.h sgf-errors.c	\
-	  || (rm -f sgf-errors.c sgf-errors.h ; exit 1)
+PARSE_LIST_COMMAND = ./parse-sgf-list$(EXEEXT)
+PARSE_LIST_FLAGS   =
 
-sgf-properties.c sgf-properties.h : sgf-properties.list parse-sgf-list$(EXEEXT)
-	./parse-sgf-list$(EXEEXT) properties sgf-properties.list	\
-				  sgf-properties.h sgf-properties.c	\
-	  || (rm -f sgf-properties.c sgf-properties.h ; exit 1)
+include $(top_srcdir)/aux/list.make
 
 libsgf_a_SOURCES =		\
 	sgf-diff-utils.c	\
@@ -38,18 +42,22 @@ libsgf_a_SOURCES =		\
 	sgf.h			\
 	sgf-parser.h		\
 	sgf-privates.h		\
-	sgf-writer.h
+	sgf-writer.h		\
+				\
+	$(LIST_FILES)
 
-nodist_libsgf_a_SOURCES = $(BUILT_SOURCES)
+nodist_libsgf_a_SOURCES = $(LIST_GENERATED_FILES)
+
+BUILT_SOURCES = $(LIST_STAMP_FILES)
 
 
 noinst_PROGRAMS = parse-sgf-list
 
 parse_sgf_list_SOURCES = parse-sgf-list.c
 
-parse_sgf_list_LDADD =				\
-	$(top_srcdir)/src/utils/libparselist.a	\
-	$(top_srcdir)/src/utils/libutils.a
+parse_sgf_list_LDADD =					\
+	$(top_builddir)/src/utils/libparselist.a	\
+	$(top_builddir)/src/utils/libutils.a
 
 
 # `sgf-diff' can be made optional with `configure'.
@@ -68,24 +76,22 @@ sgf_diff_SOURCES = sgf-diff.c
 
 sgf_diff_LDADD =				\
 	libsgf.a				\
-	$(top_srcdir)/src/board/libboard.a	\
-	$(top_srcdir)/src/utils/libutils.a
+	$(top_builddir)/src/board/libboard.a	\
+	$(top_builddir)/src/utils/libutils.a
 
 
 sgf_test_SOURCES = sgf-test.c
 
 sgf_test_LDADD =				\
 	libsgf.a				\
-	$(top_srcdir)/src/board/libboard.a	\
-	$(top_srcdir)/src/utils/libutils.a
+	$(top_builddir)/src/board/libboard.a	\
+	$(top_builddir)/src/utils/libutils.a
 
-
-EXTRA_DIST =			\
-	sgf-errors.list		\
-	sgf-properties.list	\
-				\
-	$(sgf_test_SOURCES)
 
 DISTCLEANFILES = *~
 
-MOSTLYCLEANFILES = $(BUILT_SOURCES) $(EXTRA_PROGRAMS)
+CLEANFILES = $(EXTRA_PROGRAMS)
+
+MOSTLYCLEANFILES =		\
+	$(LIST_STAMP_FILES)	\
+	$(LIST_GENERATED_FILES)

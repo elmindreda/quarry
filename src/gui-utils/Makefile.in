@@ -153,15 +153,44 @@ AM_CPPFLAGS = \
 							\
 	-I $(top_srcdir)/src				\
 	-I $(top_srcdir)/src/board			\
+	-I $(top_builddir)/src/board			\
 	-I $(top_srcdir)/src/utils
 
 
 noinst_LIBRARIES = libguiutils.a
 
-BUILT_SOURCES = \
+LIST_FILES = markup-theme-configuration.list
+
+LIST_STAMP_FILES = markup-theme-configuration.stamp
+
+LIST_GENERATED_FILES = \
 	markup-theme-configuration.c	\
 					\
 	markup-theme-configuration.h
+
+
+PARSE_LIST_COMMAND = ./parse-configuration$(EXEEXT)
+PARSE_LIST_FLAGS = 
+SUFFIXES = .list
+
+# `PARSE_LIST_COMMAND' and `PARSE_LIST_FLAGS' should be set by the
+# includer.
+#
+PARSE_LIST = $(PARSE_LIST_COMMAND) $(PARSE_LIST_FLAGS)
+
+PARSE_LIST_BUILD_RULE = \
+	if $(PARSE_LIST) `test -f '$<' || echo '$(srcdir)/'`$<	\
+			 $*.h.new $*.c.new; then		\
+	  if cmp -s $*.c.new $*.c;				\
+	    then rm -f $*.c.new; else mv -f $*.c.new $*.c;	\
+	  fi;							\
+	  if cmp -s $*.h.new $*.h;				\
+	    then rm -f $*.h.new; else mv -f $*.h.new $*.h;	\
+	  fi;							\
+	  echo timestamp > $@;					\
+	else							\
+	  (rm -f $*.c $*.c.new $*.h $*.h.new ; exit 1)		\
+	fi
 
 
 libguiutils_a_SOURCES = \
@@ -174,28 +203,36 @@ libguiutils_a_SOURCES = \
 	configuration-internals.h	\
 	gui-utils.h			\
 	tile-renderer.h			\
-	time-control.h
+	time-control.h			\
+					\
+	$(LIST_FILES)
 
 
-nodist_libguiutils_a_SOURCES = $(BUILT_SOURCES)
+nodist_libguiutils_a_SOURCES = $(LIST_GENERATED_FILES)
+
+BUILT_SOURCES = $(LIST_STAMP_FILES)
 
 noinst_PROGRAMS = parse-configuration
 
 parse_configuration_SOURCES = parse-configuration.c
 
 parse_configuration_LDADD = \
-	$(top_srcdir)/src/utils/libparselist.a	\
-	$(top_srcdir)/src/utils/libutils.a
+	$(top_builddir)/src/utils/libparselist.a	\
+	$(top_builddir)/src/utils/libutils.a
 
 
 EXTRA_DIST = \
 	common-configuration-sections.list	\
 	common-configuration-values.list	\
-	common-configuration-defaults.list	\
-	markup-theme-configuration.list
+	common-configuration-defaults.list
 
 
 DISTCLEANFILES = *~
+
+MOSTLYCLEANFILES = \
+	$(LIST_STAMP_FILES)	\
+	$(LIST_GENERATED_FILES)
+
 subdir = src/gui-utils
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 mkinstalldirs = $(SHELL) $(top_srcdir)/aux/mkinstalldirs
@@ -205,10 +242,11 @@ LIBRARIES = $(noinst_LIBRARIES)
 
 libguiutils_a_AR = $(AR) cru
 libguiutils_a_LIBADD =
+am__objects_1 =
 am_libguiutils_a_OBJECTS = configuration.$(OBJEXT) gui-utils.$(OBJEXT) \
-	tile-renderer.$(OBJEXT) time-control.$(OBJEXT)
-am__objects_1 = markup-theme-configuration.$(OBJEXT)
-nodist_libguiutils_a_OBJECTS = $(am__objects_1)
+	tile-renderer.$(OBJEXT) time-control.$(OBJEXT) $(am__objects_1)
+am__objects_2 = markup-theme-configuration.$(OBJEXT)
+nodist_libguiutils_a_OBJECTS = $(am__objects_2)
 libguiutils_a_OBJECTS = $(am_libguiutils_a_OBJECTS) \
 	$(nodist_libguiutils_a_OBJECTS)
 noinst_PROGRAMS = parse-configuration$(EXEEXT)
@@ -217,8 +255,8 @@ PROGRAMS = $(noinst_PROGRAMS)
 am_parse_configuration_OBJECTS = parse-configuration.$(OBJEXT)
 parse_configuration_OBJECTS = $(am_parse_configuration_OBJECTS)
 parse_configuration_DEPENDENCIES = \
-	$(top_srcdir)/src/utils/libparselist.a \
-	$(top_srcdir)/src/utils/libutils.a
+	$(top_builddir)/src/utils/libparselist.a \
+	$(top_builddir)/src/utils/libutils.a
 parse_configuration_LDFLAGS =
 
 DEFAULT_INCLUDES =  -I. -I$(srcdir) -I$(top_builddir)
@@ -235,15 +273,16 @@ COMPILE = $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) \
 CCLD = $(CC)
 LINK = $(CCLD) $(AM_CFLAGS) $(CFLAGS) $(AM_LDFLAGS) $(LDFLAGS) -o $@
 DIST_SOURCES = $(libguiutils_a_SOURCES) $(parse_configuration_SOURCES)
-DIST_COMMON = $(srcdir)/Makefile.in Makefile.am
+DIST_COMMON = $(srcdir)/Makefile.in $(top_srcdir)/aux/list.make \
+	Makefile.am
 SOURCES = $(libguiutils_a_SOURCES) $(nodist_libguiutils_a_SOURCES) $(parse_configuration_SOURCES)
 
 all: $(BUILT_SOURCES)
 	$(MAKE) $(AM_MAKEFLAGS) all-am
 
 .SUFFIXES:
-.SUFFIXES: .c .o .obj
-$(srcdir)/Makefile.in: @MAINTAINER_MODE_TRUE@ Makefile.am  $(top_srcdir)/configure.ac $(ACLOCAL_M4)
+.SUFFIXES: .list .c .o .obj .stamp
+$(srcdir)/Makefile.in: @MAINTAINER_MODE_TRUE@ Makefile.am $(top_srcdir)/aux/list.make $(top_srcdir)/configure.ac $(ACLOCAL_M4)
 	cd $(top_srcdir) && \
 	  $(AUTOMAKE) --foreign  src/gui-utils/Makefile
 Makefile: @MAINTAINER_MODE_TRUE@ $(srcdir)/Makefile.in  $(top_builddir)/config.status
@@ -359,6 +398,7 @@ top_distdir = ../..
 distdir = $(top_distdir)/$(PACKAGE)-$(VERSION)
 
 distdir: $(DISTFILES)
+	$(mkinstalldirs) $(distdir)/../../aux
 	@srcdirstrip=`echo "$(srcdir)" | sed 's|.|.|g'`; \
 	topsrcdirstrip=`echo "$(top_srcdir)" | sed 's|.|.|g'`; \
 	list='$(DISTFILES)'; for file in $$list; do \
@@ -407,6 +447,7 @@ install-strip:
 	  `test -z '$(STRIP)' || \
 	    echo "INSTALL_PROGRAM_ENV=STRIPPROG='$(STRIP)'"` install
 mostlyclean-generic:
+	-test -z "$(MOSTLYCLEANFILES)" || rm -f $(MOSTLYCLEANFILES)
 
 clean-generic:
 
@@ -478,14 +519,23 @@ uninstall-am: uninstall-info-am
 	uninstall-am uninstall-info-am
 
 
-markup-theme-configuration.c markup-theme-configuration.h		\
-  : markup-theme-configuration.list parse-configuration$(EXEEXT)
-	./parse-configuration$(EXEEXT)					\
-	    markup-theme-configuration.list				\
-	    markup-theme-configuration.h markup-theme-configuration.c	\
-	  || (rm -f markup-theme-configuration.c			\
-		    markup-theme-configuration.h ;			\
-	      exit 1)
+$(LIST_STAMP_FILES) : Makefile $(PARSE_LIST_COMMAND)
+
+# We use `cmp' here to avoid unneeded recompilations of files that
+# depend on generated ones (only really useful for `.h' files.)
+#
+.list.stamp:
+	$(PARSE_LIST_BUILD_RULE)
+
+# Since these don't (at least shouldn't) have any dependencies, if
+# this rule is being executed, it probably means that one of the
+# files was removed.  Then all we can do is to force rebuilding of
+# corresponding stamp file, which builds the required sources
+# ``by side-effect.''
+#
+$(LIST_GENERATED_FILES):
+	rm -f $*.stamp;
+	$(MAKE) $(AM_MAKEFLAGS) $*.stamp
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.
 .NOEXPORT:
