@@ -167,6 +167,8 @@ GtkType		gtk_goban_window_get_type(void);
 GtkWidget *	gtk_goban_window_new(SgfCollection *sgf_collection,
 				     const char *filename);
 
+void		gtk_goban_window_enter_game_record_mode
+		  (GtkGobanWindow *goban_window);
 void		gtk_goban_window_enter_game_mode
 		  (GtkGobanWindow *goban_window,
 		   GtpClient *black_player, GtpClient *white_player,

@@ -293,6 +293,12 @@ static void	 start_clock_if_needed (GtkGobanWindow *goban_window);
 static void	 player_is_out_of_time (GtkClock *clock,
 					GtkGobanWindow *goban_window);
 
+static void	 undo_operation (GtkGobanWindow *goban_window);
+static void	 redo_operation (GtkGobanWindow *goban_window);
+
+static void	 delete_current_node (GtkGobanWindow *goban_window);
+static void	 delete_current_node_children (GtkGobanWindow *goban_window);
+
 
 static GtkUtilsToolbarEntry toolbar_open = {
   N_("Open"),	N_("Open a game record"),		GTK_STOCK_OPEN,
@@ -316,33 +322,33 @@ static GtkUtilsToolbarEntry toolbar_game_information = {
 
 
 static GtkUtilsToolbarEntry navigation_toolbar_root = {
-  NULL,		N_("Go to root node"),			GTK_STOCK_GOTO_FIRST,
+  N_("Root"),	N_("Go to root node"),			GTK_STOCK_GOTO_FIRST,
   (GtkUtilsToolbarEntryCallback) navigate_goban, GOBAN_NAVIGATE_ROOT
 };
 
 static GtkUtilsToolbarEntry navigation_toolbar_back = {
-  NULL,		N_("Go to previous node"),		GTK_STOCK_GO_BACK,
+  N_("Back"),	N_("Go to previous node"),		GTK_STOCK_GO_BACK,
   (GtkUtilsToolbarEntryCallback) navigate_goban, GOBAN_NAVIGATE_BACK
 };
 
 static GtkUtilsToolbarEntry navigation_toolbar_forward = {
-  NULL,		N_("Go to next node"),			GTK_STOCK_GO_FORWARD,
+  N_("Forward"), N_("Go to next node"),			GTK_STOCK_GO_FORWARD,
   (GtkUtilsToolbarEntryCallback) navigate_goban, GOBAN_NAVIGATE_FORWARD
 };
 
 static GtkUtilsToolbarEntry navigation_toolbar_variation_end = {
-  NULL,		N_("Go to current variation's last node"), GTK_STOCK_GOTO_LAST,
+  N_("End"),	N_("Go to current variation's last node"), GTK_STOCK_GOTO_LAST,
   (GtkUtilsToolbarEntryCallback) navigate_goban, GOBAN_NAVIGATE_VARIATION_END
 };
 
 static GtkUtilsToolbarEntry navigation_toolbar_previous_variation = {
-  NULL,		N_("Switch to previous variation"),	GTK_STOCK_GO_UP,
+  N_("Previous"), N_("Switch to previous variation"),	GTK_STOCK_GO_UP,
   (GtkUtilsToolbarEntryCallback) navigate_goban,
   GOBAN_NAVIGATE_PREVIOUS_VARIATION
 };
 
 static GtkUtilsToolbarEntry navigation_toolbar_next_variation = {
-  NULL,		N_("Switch to next variation"),		GTK_STOCK_GO_DOWN,
+  N_("Next"),	N_("Switch to next variation"),		GTK_STOCK_GO_DOWN,
   (GtkUtilsToolbarEntryCallback) navigate_goban, GOBAN_NAVIGATE_NEXT_VARIATION
 };
 
@@ -428,6 +434,22 @@ gtk_goban_window_init (GtkGobanWindow *goban_window)
 
 
     { N_("/_Edit"), NULL, NULL, 0, "<Branch>" },
+    { N_("/Edit/_Undo"),		"<ctrl>Z",
+      undo_operation,			0,
+      "<StockItem>",			GTK_STOCK_UNDO },
+    { N_("/Edit/_Redo"),		"<shift><ctrl>Z",
+      redo_operation,			0,
+      "<StockItem>",			GTK_STOCK_REDO },
+    { N_("/Edit/"), NULL, NULL, 0, "<Separator>" },
+
+    { N_("/Edit/_Delete Node"),		"<alt>Delete",
+      delete_current_node,		0,
+      "<StockItem>",			GTK_STOCK_DELETE },
+    { N_("/Edit/Delete Node's _Children"), "<shift><alt>Delete",
+      delete_current_node_children,	0,
+      "<Item>" },
+    { N_("/Edit/"), NULL, NULL, 0, "<Separator>" },
+
     { N_("/Edit/_Find"),		"<ctrl>F",
       show_find_dialog,			0,
       "<StockItem>",			GTK_STOCK_FIND },
@@ -815,6 +837,11 @@ gtk_goban_window_init (GtkGobanWindow *goban_window)
 				qhbox, GTK_UTILS_PACK_DEFAULT, NULL);
   gtk_container_add (GTK_CONTAINER (goban_window), vbox);
 
+  /* Starting with GTK+ 2.4 toolbars can grab focus, so we need to
+   * explicitly transfer it to `goban'.
+   */
+  gtk_widget_grab_focus (goban);
+
   /* Show everything but the window itself.  Show toolbars' handle
    * boxes and game action buttons' box dependent on configuration.
    */
@@ -979,6 +1006,16 @@ force_minimal_width (GtkWidget *widget, GtkRequisition *requisition)
 
 
 void
+gtk_goban_window_enter_game_record_mode (GtkGobanWindow *goban_window)
+{
+  assert (GTK_IS_GOBAN_WINDOW (goban_window));
+
+  if (!goban_window->current_tree->undo_history)
+    goban_window->current_tree->undo_history = sgf_undo_history_new ();
+}
+
+
+void
 gtk_goban_window_enter_game_mode (GtkGobanWindow *goban_window,
 				  GtpClient *black_player,
 				  GtpClient *white_player,
@@ -1121,6 +1158,8 @@ leave_game_mode (GtkGobanWindow *goban_window)
     gtk_clock_use_time_control (goban_window->clocks[WHITE_INDEX], NULL,
 				NULL, NULL);
   }
+
+  gtk_goban_window_enter_game_record_mode (goban_window);
 }
 
 
@@ -1960,6 +1999,9 @@ show_game_information_dialog (GtkGobanWindow *goban_window)
     gtk_utils_null_pointer_on_destroy (((GtkWindow **)
 					&goban_window->game_info_dialog),
 				       FALSE);
+
+    gtk_window_set_transient_for (GTK_WINDOW (goban_window->game_info_dialog),
+				  GTK_WINDOW (goban_window));
 
     g_signal_connect_swapped (goban_window->game_info_dialog,
 			      "property-changed",
@@ -3071,7 +3113,8 @@ update_children_for_new_node (GtkGobanWindow *goban_window)
   if (current_node == goban_window->last_displayed_node)
     return;
 
-  fetch_comment_if_changed (goban_window, FALSE);
+  if (goban_window->last_displayed_node)
+    fetch_comment_if_changed (goban_window, FALSE);
 
   reset_amazons_move_data (goban_window);
 
@@ -3441,7 +3484,9 @@ update_move_information (const GtkGobanWindow *goban_window)
 static void
 update_commands_sensitivity (const GtkGobanWindow *goban_window)
 {
-  const SgfNode *current_node = goban_window->current_tree->current_node;
+  const SgfGameTree *current_tree = goban_window->current_tree;
+  const SgfNode *current_node	  = current_tree->current_node;
+
   gboolean pass_sensitive   = (goban_window->board->game == GAME_GO
 			       && USER_CAN_PLAY_MOVES (goban_window)
 			       && !IS_IN_SPECIAL_MODE (goban_window));
@@ -3459,6 +3504,23 @@ update_commands_sensitivity (const GtkGobanWindow *goban_window)
        && !IS_IN_SPECIAL_MODE (goban_window));
   gboolean next_variation_sensitive = (current_node->next != NULL
 				       && !IS_IN_SPECIAL_MODE (goban_window));
+
+  /* "Edit" submenu. */
+  gtk_utils_set_menu_items_sensitive (goban_window->item_factory,
+				      sgf_utils_can_undo (current_tree),
+				      _("/Edit/Undo"), NULL);
+  gtk_utils_set_menu_items_sensitive (goban_window->item_factory,
+				      sgf_utils_can_redo (current_tree),
+				      _("/Edit/Redo"), NULL);
+
+  gtk_utils_set_menu_items_sensitive (goban_window->item_factory,
+				      (!goban_window->in_game_mode
+				       && current_node->parent != NULL),
+				      _("/Edit/Delete Node"), NULL);
+  gtk_utils_set_menu_items_sensitive (goban_window->item_factory,
+				      (!goban_window->in_game_mode
+				       && current_node->child != NULL),
+				      _("/Edit/Delete Node's Children"), NULL);
 
   /* "Play" submenu. */
   gtk_utils_set_menu_items_sensitive (goban_window->item_factory,
@@ -4093,6 +4155,47 @@ player_is_out_of_time (GtkClock *clock, GtkGobanWindow *goban_window)
   sgf_utils_append_variation (goban_window->current_tree, EMPTY);
   set_sgf_collection_is_modified (goban_window, TRUE);
   update_children_for_new_node (goban_window);
+}
+
+
+static void
+undo_operation (GtkGobanWindow *goban_window)
+{
+  sgf_utils_undo (goban_window->current_tree);
+
+  goban_window->last_displayed_node = NULL;
+  update_children_for_new_node (goban_window);
+}
+
+
+static void
+redo_operation (GtkGobanWindow *goban_window)
+{
+  sgf_utils_redo (goban_window->current_tree);
+
+  goban_window->last_displayed_node = NULL;
+  update_children_for_new_node (goban_window);
+}
+
+
+static void
+delete_current_node (GtkGobanWindow *goban_window)
+{
+  sgf_utils_delete_current_node (goban_window->current_tree);
+  set_sgf_collection_is_modified (goban_window, TRUE);
+
+  goban_window->last_displayed_node = NULL;
+  update_children_for_new_node (goban_window);
+}
+
+
+static void
+delete_current_node_children (GtkGobanWindow *goban_window)
+{
+  sgf_utils_delete_current_node_children (goban_window->current_tree);
+  set_sgf_collection_is_modified (goban_window, TRUE);
+
+  update_commands_sensitivity (goban_window);
 }
 
 
