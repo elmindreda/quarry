@@ -48,8 +48,8 @@
 #define NUM_VALID_BOARD_VALUES	5
 
 #define COLOR_INDEX(color)	((color) - FIRST_COLOR)
-#define BLACK_INDEX		COLOR_INDEX(BLACK)
-#define WHITE_INDEX		COLOR_INDEX(WHITE)
+#define BLACK_INDEX		COLOR_INDEX (BLACK)
+#define WHITE_INDEX		COLOR_INDEX (WHITE)
 
 /* "Stone" is Go terminology. */
 #define IS_STONE(color)		((color) == BLACK || (color) == WHITE)
@@ -75,7 +75,7 @@ struct _BoardPoint {
 #define PASS_X			NULL_X
 #define PASS_Y			NULL_Y
 #define PASS_MOVE		NULL_POSITION
-#define IS_PASS(x, y)		IS_NULL_POINT((x), (y))
+#define IS_PASS(x, y)		IS_NULL_POINT ((x), (y))
 
 
 typedef struct _GoBoardData	GoBoardData;
@@ -180,61 +180,61 @@ struct _BoardPositionList {
 };
 
 
-Board *		board_new(Game game, int width, int height);
-void		board_delete(Board *board);
+Board *		board_new (Game game, int width, int height);
+void		board_delete (Board *board);
 
-Board *		board_duplicate_without_stacks(const Board *board);
+Board *		board_duplicate_without_stacks (const Board *board);
 
-void		board_set_parameters(Board *board, Game game,
-				     int width, int height);
+void		board_set_parameters (Board *board, Game game,
+				      int width, int height);
 #define board_clear(board)						\
-  board_set_parameters((board), (board)->game,				\
-		       (board)->width, (board)->height)
+  board_set_parameters ((board), (board)->game,				\
+			(board)->width, (board)->height)
 
-int		board_adjust_color_to_play(const Board *board,
-					   BoardRuleSet rule_set, int color);
-int		board_is_game_over(const Board *board, BoardRuleSet rule_set,
-				   int color_to_play);
+int		board_adjust_color_to_play (const Board *board,
+					    BoardRuleSet rule_set, int color);
+int		board_is_game_over (const Board *board, BoardRuleSet rule_set,
+				    int color_to_play);
 
-inline int	board_is_legal_move(const Board *board, BoardRuleSet rule_set,
-				    int color, ...);
+inline int	board_is_legal_move (const Board *board, BoardRuleSet rule_set,
+				     int color, ...);
 
-inline void	board_play_move(Board *board, int color, ...);
+inline void	board_play_move (Board *board, int color, ...);
 void		board_apply_changes
 		  (Board *board,
 		   const BoardPositionList *const
 		     change_lists[NUM_ON_GRID_VALUES]);
-inline void	board_add_dummy_move_entry(Board *board);
+inline void	board_add_dummy_move_entry (Board *board);
 
-inline int	board_undo(Board *board, int num_moves);
-
-
-inline void	board_dump(const Board *board);
-inline void	board_validate(const Board *board);
+inline int	board_undo (Board *board, int num_moves);
 
 
-BoardPositionList *  board_position_list_new(const int *positions,
-					     int num_positions);
-BoardPositionList *  board_position_list_new_empty(int num_positions);
+inline void	board_dump (const Board *board);
+inline void	board_validate (const Board *board);
+
+
+BoardPositionList *  board_position_list_new (const int *positions,
+					      int num_positions);
+BoardPositionList *  board_position_list_new_empty (int num_positions);
 
 #define board_position_list_delete(position_list)			\
   do {									\
-    assert(position_list);						\
-    utils_free(position_list);						\
+    assert (position_list);						\
+    utils_free (position_list);						\
   } while (0)
 
 #define board_position_list_duplicate(position_list)			\
   ((BoardPositionList *)						\
-   utils_duplicate_buffer((position_list),				\
-			  (sizeof(BoardPositionList)			\
-			   - ((BOARD_MAX_POSITIONS -			\
-			       (position_list)->num_positions)		\
-			      * sizeof(int)))))
+   utils_duplicate_buffer ((position_list),				\
+			   (sizeof (BoardPositionList)			\
+			    - ((BOARD_MAX_POSITIONS -			\
+				(position_list)->num_positions)		\
+			       * sizeof (int)))))
 
-BoardPositionList *  board_position_list_union(BoardPositionList *list1,
-					       BoardPositionList *list2);
+BoardPositionList *  board_position_list_union (BoardPositionList *list1,
+						BoardPositionList *list2);
 
-void		     board_position_list_sort(BoardPositionList *list);
+void		     board_position_list_sort (BoardPositionList *list);
 
 int		     board_position_lists_are_equal
 		       (const BoardPositionList *first_list,
@@ -253,100 +253,104 @@ void		     board_position_list_mark_on_grid
 #define SUGGESTED_POSITION_LIST_BUFFER_SIZE	(4 * BOARD_MAX_POSITIONS)
 
 
-int		game_format_point(Game game, int board_width, int board_height,
-				  char *buffer, int x, int y);
+int		game_format_point (Game game,
+				   int board_width, int board_height,
+				   char *buffer, int x, int y);
 int		game_format_position_list
 		  (Game game, int board_width, int board_height,
 		   char *buffer, const BoardPositionList *position_list);
-int		game_format_move(Game game, int board_width, int board_height,
-				 char *buffer, ...);
-int		game_format_move_valist(Game game,
-					int board_width, int board_height,
-					char *buffer, va_list move);
-
-int		game_parse_point(Game game, int board_width, int board_height,
-				 const char *point_string, int *x, int *y);
-BoardPositionList *
-		game_parse_position_list(Game game,
+int		game_format_move (Game game, int board_width, int board_height,
+				  char *buffer, ...);
+int		game_format_move_valist (Game game,
 					 int board_width, int board_height,
-					 const char *positions_string);
-int		game_parse_move(Game game, int board_width, int board_height,
-				const char *move_string,
-				int *x, int *y,
-				BoardAbstractMoveData *move_data);
+					 char *buffer, va_list move);
+
+int		game_parse_point (Game game, int board_width, int board_height,
+				  const char *point_string, int *x, int *y);
+BoardPositionList *
+		game_parse_position_list (Game game,
+					  int board_width, int board_height,
+					  const char *positions_string);
+int		game_parse_move (Game game, int board_width, int board_height,
+				 const char *move_string,
+				 int *x, int *y,
+				 BoardAbstractMoveData *move_data);
 
 
-inline int	game_get_default_setup(Game game, int width, int height,
-				       BoardPositionList **black_stones,
-				       BoardPositionList **white_stones);
+inline int	game_get_default_setup (Game game, int width, int height,
+					BoardPositionList **black_stones,
+					BoardPositionList **white_stones);
 
 
-void		grid_fill(char grid[BOARD_GRID_SIZE],
-			  int width, int height, char value);
-void		int_grid_fill(int grid[BOARD_GRID_SIZE],
-			      int width, int height, int value);
-void		pointer_grid_fill(void *grid[BOARD_GRID_SIZE],
-				  int width, int height, void *value);
+void		grid_fill (char grid[BOARD_GRID_SIZE],
+			   int width, int height, char value);
+void		int_grid_fill (int grid[BOARD_GRID_SIZE],
+			       int width, int height, int value);
+void		pointer_grid_fill (void *grid[BOARD_GRID_SIZE],
+				   int width, int height, void *value);
 
-void		grid_copy(char destination[BOARD_GRID_SIZE],
-			  const char source[BOARD_GRID_SIZE],
-			  int width, int height);
-void		int_grid_copy(int destination[BOARD_GRID_SIZE],
-			      const int source[BOARD_GRID_SIZE],
-			      int width, int height);
-void		pointer_grid_copy(void *destination[BOARD_GRID_SIZE],
-				  const void *source[BOARD_GRID_SIZE],
-				  int width, int height);
+void		grid_copy (char destination[BOARD_GRID_SIZE],
+			   const char source[BOARD_GRID_SIZE],
+			   int width, int height);
+void		int_grid_copy (int destination[BOARD_GRID_SIZE],
+			       const int source[BOARD_GRID_SIZE],
+			       int width, int height);
+void		pointer_grid_copy (void *destination[BOARD_GRID_SIZE],
+				   const void *source[BOARD_GRID_SIZE],
+				   int width, int height);
 
 #define uint_grid_fill(grid, width, height, value)			\
-  int_grid_fill((int *) (grid), (width), (height), (value))
+  int_grid_fill ((int *) (grid), (width), (height), (value))
 
 
 #define board_fill_grid(board, grid, value)				\
-  grid_fill((grid), (board)->width, (board)->height, (value))
+  grid_fill ((grid), (board)->width, (board)->height, (value))
 
 #define board_fill_int_grid(board, grid, value)				\
-  int_grid_fill((grid), (board)->width, (board)->height, (value))
+  int_grid_fill ((grid), (board)->width, (board)->height, (value))
 
 #define board_fill_uint_grid(board, grid, value)			\
-  board_fill_int_grid((board), (int *) (grid), (value))
+  board_fill_int_grid ((board), (int *) (grid), (value))
 
 #define board_fill_pointer_grid(board, grid, value)			\
-  pointer_grid_fill((grid), (board)->width, (board)->height, (value))
+  pointer_grid_fill ((grid), (board)->width, (board)->height, (value))
 
 
 #define uint_grid_copy(destination, source, width, height)		\
-  int_grid_copy((int *) (destination), (int *) source, (width), (height))
+  int_grid_copy ((int *) (destination), (int *) source,			\
+		 (width), (height))
 
 
 
 /* Go-specific functions. */
 
-int		     go_get_max_fixed_handicap(int board_width,
-					       int board_height);
-BoardPositionList *  go_get_fixed_handicap_stones(int board_width,
-						  int board_height,
-						  int num_stones);
+int		     go_get_max_fixed_handicap (int board_width,
+						int board_height);
+BoardPositionList *  go_get_fixed_handicap_stones (int board_width,
+						   int board_height,
+						   int num_stones);
+int		     go_get_hoshi_points (int board_width, int board_height,
+					  BoardPoint hoshi_points[9]);
 
-BoardPositionList *  go_get_string_stones(Board *board, int x, int y);
-BoardPositionList *  go_get_logically_dead_stones(Board *board, int x, int y);
+BoardPositionList *  go_get_string_stones (Board *board, int x, int y);
+BoardPositionList *  go_get_logically_dead_stones (Board *board, int x, int y);
 
-void		     go_score_game(Board *board, const char *dead_stones,
-				   double komi,
-				   double *score, char **detailed_score,
-				   BoardPositionList **black_territory,
-				   BoardPositionList **white_territory);
-void		     go_mark_territory_on_grid(Board *board, char *grid,
-					       const char *dead_stones,
-					       char black_territory_mark,
-					       char white_territory_mark);
+void		     go_score_game (Board *board, const char *dead_stones,
+				    double komi,
+				    double *score, char **detailed_score,
+				    BoardPositionList **black_territory,
+				    BoardPositionList **white_territory);
+void		     go_mark_territory_on_grid (Board *board, char *grid,
+						const char *dead_stones,
+						char black_territory_mark,
+						char white_territory_mark);
 
 
 
 /* Othello-specific function. */
-void		     othello_count_disks(const Board *board,
-					 int *num_black_disks,
-					 int *num_white_disks);
+void		     othello_count_disks (const Board *board,
+					  int *num_black_disks,
+					  int *num_white_disks);
 
 
 #endif /* QUARRY_BOARD_H */
