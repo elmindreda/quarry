@@ -1,5 +1,33 @@
 2004-10-14  Paul Pogonyshev  <pogonyshev@gmx.net>
 
+	* (Quarry version 0.1.9.)
+
+	* gui-gtk/gtk-utils.c (freeze_on_empty_input): Use
+	gtk_freezable_spin_button_freeze_and_stop_input().
+
+	* gui-gtk/gtk-freezable-spin-button.c
+	(gtk_freezable_spin_button_init): Reset new `is_in_output' field.
+	(gtk_freezable_spin_button_new): Connect also to `input' signal.
+	(gtk_freezable_spin_button_output): Set `is_in_output' while
+	changing entry's text.
+	(gtk_freezable_spin_button_input): New function.
+	(gtk_freezable_spin_button_changed): Bug-fix: only unfreeze when
+	changed not from our own `output' signal handler.
+	(gtk_freezable_spin_button_freeze_and_stop_input): New function.
+
+	* gui-gtk/gtk-game-info-dialog.c (gtk_game_info_dialog_init):
+	Bug-fix: Call gtk_utils_convert_to_time_spin_button() after
+	gtk_utils_freeze_on_empty_input(), so that
+	time_spin_button_input() is the last handler.
+
+2004-10-14  anonymous  <mateusz@kaduk.net>
+
+	* gui-gtk/gtk-preferences.c (prepare_to_rebuild_menus)
+	(rebuild_all_menus): Fix macro definition for GTK+ 2.4 broken by
+	extra spaces (bug #898.)
+
+2004-10-14  Paul Pogonyshev  <pogonyshev@gmx.net>
+
 	* (Quarry version 0.1.8.)
 
 2004-10-13  Paul Pogonyshev  <pogonyshev@gmx.net>
