@@ -25,6 +25,8 @@
 
 
 #include "gtk-configuration.h"
+#include "gtp-client.h"
+#include "board.h"
 #include "game-info.h"
 #include "quarry.h"
 
