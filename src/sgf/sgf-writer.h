@@ -48,23 +48,25 @@ struct _SgfWritingData {
 
 
 #define DECLARE_VALUE_WRITER(name)				\
-  void		name(SgfWritingData *data, SgfValue value)
+  void		name (SgfWritingData *data, SgfValue value)
 
 
-DECLARE_VALUE_WRITER(sgf_write_none);
-DECLARE_VALUE_WRITER(sgf_write_number);
-DECLARE_VALUE_WRITER(sgf_write_real);
-DECLARE_VALUE_WRITER(sgf_write_double);
-DECLARE_VALUE_WRITER(sgf_write_color);
-DECLARE_VALUE_WRITER(sgf_write_simple_text);
-DECLARE_VALUE_WRITER(sgf_write_fake_simple_text);
-DECLARE_VALUE_WRITER(sgf_write_text);
+DECLARE_VALUE_WRITER (sgf_write_none);
+DECLARE_VALUE_WRITER (sgf_write_number);
+DECLARE_VALUE_WRITER (sgf_write_real);
+DECLARE_VALUE_WRITER (sgf_write_double);
+DECLARE_VALUE_WRITER (sgf_write_color);
+DECLARE_VALUE_WRITER (sgf_write_simple_text);
+DECLARE_VALUE_WRITER (sgf_write_fake_simple_text);
+DECLARE_VALUE_WRITER (sgf_write_text);
 
-DECLARE_VALUE_WRITER(sgf_write_list_of_point);
-DECLARE_VALUE_WRITER(sgf_write_list_of_vector);
-DECLARE_VALUE_WRITER(sgf_write_list_of_label);
+DECLARE_VALUE_WRITER (sgf_write_list_of_point);
+DECLARE_VALUE_WRITER (sgf_write_list_of_vector);
+DECLARE_VALUE_WRITER (sgf_write_list_of_label);
 
-DECLARE_VALUE_WRITER(sgf_write_unknown);
+DECLARE_VALUE_WRITER (sgf_write_figure_description);
+
+DECLARE_VALUE_WRITER (sgf_write_unknown);
 
 
 #endif /* QUARRY_SGF_WRITER_H */
