@@ -307,9 +307,9 @@ gtk_resume_game_dialog_present (SgfCollection *sgf_collection,
     GtkWidget *hbox3;
     const gchar *player_name
       = sgf_node_get_text_property_value (sgf_tree->root,
-					  k == WHITE_INDEX
-					  ? SGF_PLAYER_WHITE
-					  : SGF_PLAYER_BLACK);
+					  (k == WHITE_INDEX
+					   ? SGF_PLAYER_WHITE
+					   : SGF_PLAYER_BLACK));
     const GtpEngineListItem *engine_data
       = guess_engine_by_player_name (player_name, game_index);
 
@@ -384,18 +384,20 @@ guess_engine_by_player_name (const gchar *player_name, GtkGameIndex game_index)
 {
   GtpEngineListItem *engine_data;
 
-  for (engine_data = gtp_engines.first; engine_data;
-       engine_data = engine_data->next) {
-    if (!engine_data->is_hidden
-	&& gtk_games_engine_supports_game (engine_data, game_index)) {
-      if (strcmp (engine_data->screen_name, player_name) == 0) {
-	/* Exact match. */
-	return engine_data;
-      }
+  if (player_name) {
+    for (engine_data = gtp_engines.first; engine_data;
+	 engine_data = engine_data->next) {
+      if (!engine_data->is_hidden
+	  && gtk_games_engine_supports_game (engine_data, game_index)) {
+	if (strcmp (engine_data->screen_name, player_name) == 0) {
+	  /* Exact match. */
+	  return engine_data;
+	}
 
-      if (strstr (player_name, engine_data->name)) {
-	/* Engine base name is a substring of player name. */
-	return engine_data;
+	if (strstr (player_name, engine_data->name)) {
+	  /* Engine base name is a substring of player name. */
+	  return engine_data;
+	}
       }
     }
   }
