@@ -49,24 +49,32 @@ typedef struct _GtkGobanPointerData	GtkGobanPointerData;
 typedef struct _GtkGobanClickData	GtkGobanClickData;
 
 struct _GtkGobanPointerData {
-  gint		   x;
-  gint		   y;
-  GdkModifierType  modifiers;
-  gint		   button;
-  gint		   press_x;
-  gint		   press_y;
+  gint		      x;
+  gint		      y;
+  BoardPositionList  *feedback_position_list;
+
+  GdkModifierType     modifiers;
+  gint		      button;
+  gint		      press_x;
+  gint		      press_y;
 };
 
 struct _GtkGobanClickData {
-  gint		   x;
-  gint		   y;
-  gint		   feedback_tile;
-  GdkModifierType  modifiers;
-  gint		   button;
+  gint		      x;
+  gint		      y;
+  gint		      feedback_tile;
+  GdkModifierType     modifiers;
+  gint		      button;
 };
 
 typedef enum {
   GOBAN_FEEDBACK_NONE,
+
+  GOBAN_FEEDBACK_FORCE_TILE_NONE,
+
+  GOBAN_FEEDBACK_OPAQUE,
+  GOBAN_FEEDBACK_BLACK_OPAQUE = GOBAN_FEEDBACK_OPAQUE + BLACK_INDEX,
+  GOBAN_FEEDBACK_WHITE_OPAQUE = GOBAN_FEEDBACK_OPAQUE + WHITE_INDEX,
 
   GOBAN_FEEDBACK_GHOST,
   GOBAN_FEEDBACK_BLACK_GHOST = GOBAN_FEEDBACK_GHOST + BLACK_INDEX,
@@ -89,7 +97,9 @@ typedef enum {
 					+ WHITE_INDEX),
   GOBAN_FEEDBACK_SPECIAL,
 
-  NUM_GOBAN_FEEDBACKS
+  /* Must be more than enough. */
+  GOBAN_FEEDBACK_MARKUP_FACTOR = 1 << 8,
+  GOBAN_FEEDBACK_GRID_MASK = GOBAN_FEEDBACK_MARKUP_FACTOR - 1
 } GtkGobanPointerFeedback;
 
 /* Note that there _must not_ be zero enumeration element.  These
@@ -116,6 +126,8 @@ typedef enum {
 #endif
 
 enum {
+  GOBAN_TILE_DONT_CHANGE = NUM_TILES,
+
   GOBAN_MARKUP_GHOSTIFY = 1 << 4,
   GOBAN_MARKUP_GHOSTIFY_SLIGHTLY = 1 << 5,
 
@@ -143,8 +155,8 @@ struct _GtkGoban {
   char			 goban_markup[BOARD_GRID_SIZE];
   char			 sgf_markup[BOARD_GRID_SIZE];
 
-  int			 overlay_pos[NUM_OVERLAYS];
-  char			 overlay_contents[NUM_OVERLAYS];
+  BoardPositionList	*overlay_positon_lists[NUM_OVERLAYS];
+  char			*overlay_contents[NUM_OVERLAYS];
 
   int			 last_move_x;
   int			 last_move_y;
@@ -221,10 +233,13 @@ void		gtk_goban_update(GtkGoban *goban,
 void		gtk_goban_force_feedback_poll(GtkGoban *goban);
 
 void		gtk_goban_set_overlay_data(GtkGoban *goban, int overlay_index,
-					   int x, int y, int tile);
+					   BoardPositionList *position_list,
+					   int tile, int goban_markup_tile);
 
-void		gtk_goban_set_grid_contents(GtkGoban *goban,
-					    int x, int y, int contents);
+void		gtk_goban_set_contents(GtkGoban *goban,
+				       BoardPositionList *position_list,
+				       int grid_contents,
+				       int goban_markup_contents);
 int		gtk_goban_get_grid_contents(GtkGoban *goban, int x, int y);
 void		gtk_goban_diff_against_grid
 		  (GtkGoban *goban, const char *grid,

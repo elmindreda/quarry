@@ -93,10 +93,12 @@ static void	 find_hoshi_points(GtkGoban *goban);
 static void	 emit_pointer_moved(GtkGoban *goban, int x, int y,
 				    GdkModifierType modifiers);
 static void	 set_feedback_data(GtkGoban *goban, int x, int y,
+				   BoardPositionList *position_list,
 				   GtkGobanPointerFeedback feedback);
 
 static void	 set_overlay_data(GtkGoban *goban, int overlay_index,
-				  int x, int y, int tile);
+				  BoardPositionList *position_list,
+				  int tile, int goban_markup_tile);
 
 static void	 widget_coordinates_to_board(GtkGoban *goban,
 					     int window_x, int window_y,
@@ -240,10 +242,12 @@ gtk_goban_init(GtkGoban *goban)
   goban->last_move_x = NULL_X;
   goban->last_move_y = NULL_Y;
 
-  for (k = 0; k < NUM_OVERLAYS; k++)
-    goban->overlay_pos[k] = NULL_POSITION;
+  for (k = 0; k < NUM_OVERLAYS; k++) {
+    goban->overlay_positon_lists[k] = NULL;
+    goban->overlay_contents[k] = NULL;
+  }
 
-  set_feedback_data(goban, NULL_X, NULL_Y, GOBAN_FEEDBACK_NONE);
+  set_feedback_data(goban, NULL_X, NULL_Y, NULL, GOBAN_FEEDBACK_NONE);
 
   all_gobans = g_slist_prepend(all_gobans, goban);
 }
@@ -870,7 +874,7 @@ gtk_goban_leave_notify_event(GtkWidget *widget, GdkEventCrossing *event)
   if (goban->button_pressed)
     goban->button_pressed = 0;
 
-  set_feedback_data(goban, NULL_X, NULL_Y, GOBAN_FEEDBACK_NONE);
+  set_feedback_data(goban, NULL_X, NULL_Y, NULL, GOBAN_FEEDBACK_NONE);
 
   return FALSE;
 }
@@ -1056,18 +1060,15 @@ gtk_goban_update(GtkGoban *goban,
 {
   GtkWidget *widget;
   int cell_size;
+  int k;
 
   assert(GTK_IS_GOBAN(goban));
 
-  if (grid) {
-    int k;
+  for (k = NUM_OVERLAYS; --k >= 0;)
+    set_overlay_data(goban, k, NULL, TILE_NONE, TILE_NONE);
 
-    for (k = 0; k < NUM_OVERLAYS; k++)
-      goban->overlay_pos[k] = NULL_POSITION;
-  }
-  else
+  if (!grid)
     grid = goban->grid;
-
   if (!goban_markup)
     goban_markup = goban->goban_markup;
   if (!sgf_markup)
@@ -1162,20 +1163,29 @@ gtk_goban_force_feedback_poll(GtkGoban *goban)
 
 void
 gtk_goban_set_overlay_data(GtkGoban *goban, int overlay_index,
-			   int x, int y, int tile)
+			   BoardPositionList *position_list,
+			   int tile, int goban_markup_tile)
 {
-  int need_feedback_poll = (goban->overlay_pos[FEEDBACK_OVERLAY]
-			    == POSITION(x, y));
+  const BoardPositionList *feedback_position_list
+    = goban->overlay_positon_lists[FEEDBACK_OVERLAY];
+  int need_feedback_poll
+    = (position_list && feedback_position_list
+       && board_position_lists_overlap(feedback_position_list, position_list));
 
   assert(goban);
-  assert(0 <= overlay_index && overlay_index <= NUM_OVERLAYS
+  assert(0 <= overlay_index && overlay_index < NUM_OVERLAYS
 	 && overlay_index != FEEDBACK_OVERLAY);
-  assert(0 <= tile && tile <= NUM_TILES);
+  assert((0 <= tile && tile < NUM_TILES) || tile == GOBAN_TILE_DONT_CHANGE);
+  assert((0 <= goban_markup_tile && goban_markup_tile < NUM_TILES)
+	 || goban_markup_tile == GOBAN_TILE_DONT_CHANGE);
+  assert(tile != GOBAN_TILE_DONT_CHANGE
+	 || goban_markup_tile != GOBAN_TILE_DONT_CHANGE);
 
   if (need_feedback_poll)
-    set_overlay_data(goban, FEEDBACK_OVERLAY, NULL_X, NULL_Y, TILE_NONE);
+    set_overlay_data(goban, FEEDBACK_OVERLAY, NULL, TILE_NONE, TILE_NONE);
 
-  set_overlay_data(goban, overlay_index, x, y, tile);
+  set_overlay_data(goban, overlay_index, position_list,
+		   tile, goban_markup_tile);
 
   if (need_feedback_poll) {
     emit_pointer_moved(goban, goban->pointer_x, goban->pointer_y,
@@ -1186,19 +1196,20 @@ gtk_goban_set_overlay_data(GtkGoban *goban, int overlay_index,
 
 
 void
-gtk_goban_set_grid_contents(GtkGoban *goban, int x, int y, int contents)
+gtk_goban_set_contents(GtkGoban *goban, BoardPositionList *position_list,
+		       int grid_contents, int goban_markup_contents)
 {
   int k;
 
   assert(GTK_IS_GOBAN(goban));
   assert(goban->game != GAME_DUMMY);
-  assert(ON_SIZED_GRID(goban->width, goban->height, x, y));
 
-  for (k = 0; k < NUM_OVERLAYS; k++)
-    set_overlay_data(goban, k, NULL_X, NULL_Y, TILE_NONE);
+  for (k = NUM_OVERLAYS; --k >= 0;)
+    set_overlay_data(goban, k, NULL, TILE_NONE, TILE_NONE);
 
-  set_overlay_data(goban, 0, x, y, contents);
-  goban->overlay_pos[0] = NULL_POSITION;
+  set_overlay_data(goban, 0, position_list,
+		   grid_contents, goban_markup_contents);
+  goban->overlay_positon_lists[0] = NULL;
 }
 
 
@@ -1212,9 +1223,15 @@ gtk_goban_get_grid_contents(GtkGoban *goban, int x, int y)
   assert(goban->game != GAME_DUMMY);
   assert(ON_SIZED_GRID(goban->width, goban->height, x, y));
 
-  for (k = 0; k < NUM_OVERLAYS; k++) {
-    if (goban->overlay_pos[k] == pos)
-      return goban->overlay_contents[k];
+  for (k = NUM_OVERLAYS; --k >= 0;) {
+    if (goban->overlay_positon_lists[k]) {
+      int position_index
+	= board_position_list_find_position(goban->overlay_positon_lists[k],
+					    pos);
+
+      if (position_index != -1)
+	return goban->overlay_contents[k][position_index];
+    }
   }
 
   return goban->grid[pos];
@@ -1288,48 +1305,72 @@ emit_pointer_moved(GtkGoban *goban, int x, int y, GdkModifierType modifiers)
     GtkGobanPointerData data;
     GtkGobanPointerFeedback feedback;
 
-    data.x	   = x;
-    data.y	   = y;
-    data.modifiers = modifiers;
-    data.button    = goban->button_pressed;
-    data.press_x   = goban->press_x;
-    data.press_y   = goban->press_y;
+    data.x			= x;
+    data.y			= y;
+    data.feedback_position_list = NULL;
+
+    data.modifiers		= modifiers;
+    data.button			= goban->button_pressed;
+    data.press_x		= goban->press_x;
+    data.press_y		= goban->press_y;
 
     g_signal_emit(G_OBJECT(goban), goban_signals[POINTER_MOVED], 0,
 		  &data, &feedback);
 
-    assert(GOBAN_FEEDBACK_NONE <= feedback && feedback < NUM_GOBAN_FEEDBACKS);
-    assert(feedback != GOBAN_FEEDBACK_PRESS_DEFAULT || data.button);
+    assert(data.button
+	   || ((feedback & GOBAN_FEEDBACK_GRID_MASK)
+	       != GOBAN_FEEDBACK_PRESS_DEFAULT));
 
-    set_feedback_data(goban, x, y, feedback);
+    if (data.feedback_position_list)
+      set_feedback_data(goban, x, y, data.feedback_position_list, feedback);
+    else {
+      int pos = POSITION(x, y);
+
+      set_feedback_data(goban, x, y, board_position_list_new(&pos, 1),
+			feedback);
+    }
   }
   else
-    set_feedback_data(goban, NULL_X, NULL_Y, GOBAN_FEEDBACK_NONE);
+    set_feedback_data(goban, NULL_X, NULL_Y, NULL, GOBAN_FEEDBACK_NONE);
 
   goban->modifiers = modifiers;
 }
 
 
 static void
-set_feedback_data(GtkGoban *goban, int x, int y,
+set_feedback_data(GtkGoban *goban,
+		  int x, int y, BoardPositionList *position_list,
 		  GtkGobanPointerFeedback feedback)
 {
+  int feedback_grid = feedback & GOBAN_FEEDBACK_GRID_MASK;
+  int feedback_goban_markup = feedback / GOBAN_FEEDBACK_MARKUP_FACTOR;
   int feedback_tile;
+  int goban_markup_feedback_tile;
 
-  switch (feedback) {
+  switch (feedback_grid) {
+  case GOBAN_FEEDBACK_FORCE_TILE_NONE:
+    feedback_tile = TILE_NONE;
+    break;
+
+  case GOBAN_FEEDBACK_BLACK_OPAQUE:
+  case GOBAN_FEEDBACK_WHITE_OPAQUE:
+    feedback_tile = (STONE_OPAQUE + (feedback_grid - GOBAN_FEEDBACK_OPAQUE));
+    break;
+
   case GOBAN_FEEDBACK_BLACK_GHOST:
   case GOBAN_FEEDBACK_WHITE_GHOST:
-    feedback_tile = (STONE_50_TRANSPARENT + (feedback - GOBAN_FEEDBACK_GHOST));
+    feedback_tile = (STONE_50_TRANSPARENT
+		     + (feedback_grid - GOBAN_FEEDBACK_GHOST));
     break;
 
   case GOBAN_FEEDBACK_THICK_BLACK_GHOST:
   case GOBAN_FEEDBACK_THICK_WHITE_GHOST:
     feedback_tile = (STONE_25_TRANSPARENT
-		     + (feedback - GOBAN_FEEDBACK_THICK_GHOST));
+		     + (feedback_grid - GOBAN_FEEDBACK_THICK_GHOST));
     break;
 
   case GOBAN_FEEDBACK_PRESS_DEFAULT:
-    feedback_tile = TILE_NONE;
+    feedback_tile = GOBAN_TILE_DONT_CHANGE;
 
     if (x == goban->press_x && y == goban->press_y) {
       switch (goban->feedback_tile_at_press) {
@@ -1356,7 +1397,9 @@ set_feedback_data(GtkGoban *goban, int x, int y,
   case GOBAN_FEEDBACK_BLACK_MOVE:
   case GOBAN_FEEDBACK_WHITE_MOVE:
     {
-      int color_index = feedback - GOBAN_FEEDBACK_MOVE;
+      int color_index = feedback_grid - GOBAN_FEEDBACK_MOVE;
+
+      assert(position_list->num_positions == 1);
 
       if (COLOR_INDEX(goban->grid[POSITION(x, y)]) != color_index)
 	feedback_tile = STONE_50_TRANSPARENT + color_index;
@@ -1373,12 +1416,12 @@ set_feedback_data(GtkGoban *goban, int x, int y,
 
       if (contents == EMPTY) {
 	feedback_tile = (STONE_50_TRANSPARENT
-			 + (feedback - GOBAN_FEEDBACK_ADD_OR_REMOVE));
+			 + (feedback_grid - GOBAN_FEEDBACK_ADD_OR_REMOVE));
       }
       else if (IS_STONE(contents))
 	feedback_tile = STONE_25_TRANSPARENT + COLOR_INDEX(contents);
       else
-	feedback_tile = TILE_NONE;
+	feedback_tile = GOBAN_TILE_DONT_CHANGE;
     }
 
     break;
@@ -1388,13 +1431,50 @@ set_feedback_data(GtkGoban *goban, int x, int y,
     break;
 
   default:
-    feedback_tile = TILE_NONE;
+    feedback_tile = GOBAN_TILE_DONT_CHANGE;
   }
 
-  if (feedback_tile != TILE_NONE)
-    set_overlay_data(goban, FEEDBACK_OVERLAY, x, y, feedback_tile);
-  else
-    set_overlay_data(goban, FEEDBACK_OVERLAY, NULL_X, NULL_Y, TILE_NONE);
+  switch (feedback_goban_markup) {
+  case GOBAN_FEEDBACK_FORCE_TILE_NONE:
+    goban_markup_feedback_tile = TILE_NONE;
+    break;
+
+  case GOBAN_FEEDBACK_BLACK_OPAQUE:
+  case GOBAN_FEEDBACK_WHITE_OPAQUE:
+    goban_markup_feedback_tile = (STONE_OPAQUE
+				  + (feedback_goban_markup
+				     - GOBAN_FEEDBACK_OPAQUE));
+    break;
+
+  case GOBAN_FEEDBACK_BLACK_GHOST:
+  case GOBAN_FEEDBACK_WHITE_GHOST:
+    goban_markup_feedback_tile = (STONE_50_TRANSPARENT
+				  + (feedback_goban_markup
+				     - GOBAN_FEEDBACK_GHOST));
+    break;
+
+  case GOBAN_FEEDBACK_THICK_BLACK_GHOST:
+  case GOBAN_FEEDBACK_THICK_WHITE_GHOST:
+    goban_markup_feedback_tile = (STONE_25_TRANSPARENT
+				  + (feedback_goban_markup
+				     - GOBAN_FEEDBACK_THICK_GHOST));
+    break;
+
+  default:
+    goban_markup_feedback_tile = GOBAN_TILE_DONT_CHANGE;
+  }
+
+  if (feedback_tile != GOBAN_TILE_DONT_CHANGE
+      || goban_markup_feedback_tile != GOBAN_TILE_DONT_CHANGE) {
+    set_overlay_data(goban, FEEDBACK_OVERLAY,
+		     position_list, feedback_tile, goban_markup_feedback_tile);
+  }
+  else {
+    if (position_list)
+      board_position_list_delete(position_list);
+
+    set_overlay_data(goban, FEEDBACK_OVERLAY, NULL, TILE_NONE, TILE_NONE);
+  }
 
   goban->pointer_x     = x;
   goban->pointer_y     = y;
@@ -1403,42 +1483,130 @@ set_feedback_data(GtkGoban *goban, int x, int y,
 
 
 static void
-set_overlay_data(GtkGoban *goban, int overlay_index, int x, int y, int tile)
+set_overlay_data(GtkGoban *goban, int overlay_index,
+		 BoardPositionList *position_list,
+		 int tile, int goban_markup_tile)
 {
   GtkWidget *widget = GTK_WIDGET(goban);
-  int new_pos = POSITION(x, y);
-  int old_pos = goban->overlay_pos[overlay_index];
+  BoardPositionList *old_position_list
+    = goban->overlay_positon_lists[overlay_index];
+  int num_new_positions = (position_list ? position_list->num_positions : -1);
+  int num_old_positions = (old_position_list
+			   ? old_position_list->num_positions : -1);
+  char *old_overlay_contents = goban->overlay_contents[overlay_index];
+  char *grid = goban->grid;
+  char *goban_markup = goban->goban_markup;
+  int i;
+  int j;
 
-  if (old_pos == new_pos
-      && (new_pos == NULL_POSITION || goban->grid[new_pos] == tile))
+  if (position_list == NULL && old_position_list == NULL)
     return;
 
   if (GTK_WIDGET_REALIZED(widget)) {
     int cell_size = goban->cell_size;
-    GdkRectangle rectangle;
+    GdkRectangle rectangle_stone;
+    GdkRectangle rectangle_markup;
 
-    rectangle.width = cell_size;
-    rectangle.height = cell_size;
+    rectangle_stone.width   = cell_size;
+    rectangle_stone.height  = cell_size;
+    rectangle_markup.width  = goban->small_cell_size;
+    rectangle_markup.height = goban->small_cell_size;
 
-    if (old_pos != NULL_POSITION) {
-      rectangle.x = goban->stones_left_margin + POSITION_X(old_pos) * cell_size;
-      rectangle.y = goban->stones_top_margin + POSITION_Y(old_pos) * cell_size;
-      gdk_window_invalidate_rect(widget->window, &rectangle, FALSE);
-    }
+    for (i = 0, j = 0; i < num_new_positions || j < num_old_positions;) {
+      int pos;
+      char new_tile;
+      char new_goban_markup_tile;
 
-    if (new_pos != NULL_POSITION && new_pos != old_pos) {
-      rectangle.x = goban->stones_left_margin + x * cell_size;
-      rectangle.y = goban->stones_top_margin + y * cell_size;
-      gdk_window_invalidate_rect(widget->window, &rectangle, FALSE);
+      if (i < num_new_positions
+	  && (j >= num_old_positions
+	      || (position_list->positions[i]
+		  <= old_position_list->positions[j]))) {
+	int same_positions;
+
+	pos = position_list->positions[i++];
+	same_positions = (j < num_old_positions
+			  && pos == old_position_list->positions[j]);
+
+	if (tile != GOBAN_TILE_DONT_CHANGE)
+	  new_tile = tile;
+	else {
+	  if (same_positions)
+	    new_tile = old_overlay_contents[j];
+	  else
+	    new_tile = grid[pos];
+	}
+
+	if (goban_markup_tile != GOBAN_TILE_DONT_CHANGE)
+	  new_goban_markup_tile = goban_markup_tile;
+	else {
+	  if (same_positions) {
+	    new_goban_markup_tile = old_overlay_contents[num_old_positions
+							 + j];
+	  }
+	  else
+	    new_goban_markup_tile = goban_markup[pos];
+	}
+
+	if (same_positions)
+	  j++;
+      }
+      else {
+	pos = old_position_list->positions[j];
+
+	new_tile = old_overlay_contents[j];
+	new_goban_markup_tile = old_overlay_contents[num_old_positions + j];
+	j++;
+      }
+
+      if (new_tile != grid[pos] || new_goban_markup_tile != goban_markup[pos]) {
+	int x = POSITION_X(pos);
+	int y = POSITION_Y(pos);
+
+	if (new_tile != grid[pos]
+	    || (new_goban_markup_tile & GOBAN_MARKUP_FLAGS_MASK)
+	    || (goban_markup[pos] & GOBAN_MARKUP_FLAGS_MASK)) {
+	  rectangle_stone.x = goban->stones_left_margin + x * cell_size;
+	  rectangle_stone.y = goban->stones_top_margin + y * cell_size;
+	  gdk_window_invalidate_rect(widget->window, &rectangle_stone, FALSE);
+	}
+	else {
+	  rectangle_markup.x = goban->small_stones_left_margin + x * cell_size;
+	  rectangle_markup.y = goban->small_stones_top_margin + y * cell_size;
+	  gdk_window_invalidate_rect(widget->window, &rectangle_markup, FALSE);
+	}
+      }
     }
   }
 
-  if (old_pos != NULL_POSITION)
-    goban->grid[old_pos] = goban->overlay_contents[overlay_index];
+  if (old_position_list) {
+    for (j = 0; j < num_old_positions; j++) {
+      grid[old_position_list->positions[j]] = old_overlay_contents[j];
+      goban_markup[old_position_list->positions[j]]
+	= old_overlay_contents[num_old_positions + j];
+    }
 
-  goban->overlay_pos[overlay_index]	 = new_pos;
-  goban->overlay_contents[overlay_index] = goban->grid[new_pos];
-  goban->grid[new_pos]			 = tile;
+    board_position_list_delete(old_position_list);
+    g_free(old_overlay_contents);
+  }
+
+  goban->overlay_positon_lists[overlay_index] = position_list;
+  if (position_list) {
+    goban->overlay_contents[overlay_index] = g_malloc((2 * num_new_positions)
+						      * sizeof(char));
+
+    for (i = 0; i < num_new_positions; i++) {
+      int pos = position_list->positions[i];
+
+      goban->overlay_contents[overlay_index][i] = grid[pos];
+      if (tile != GOBAN_TILE_DONT_CHANGE)
+	grid[pos] = tile;
+
+      goban->overlay_contents[overlay_index][num_new_positions + i]
+	= goban_markup[pos];
+      if (goban_markup_tile != GOBAN_TILE_DONT_CHANGE)
+	goban_markup[pos] = goban_markup_tile;
+    }
+  }
 }
 
 
