@@ -36,18 +36,30 @@ defaults  - go_board_appearance_defaults {
 					"/wood1.jpg"
 
   background_color		color		#dbb665
-  foreground_color		color		#000000
+  grid_and_labels_color		color		#000000
 }
 
 
 defaults  - amazons_board_appearance_defaults {
-  use_background_texture	boolean		true
-  background_texture		string
+  board_appearance		structure	BoardAppearance
+						board_appearance_dispose
+
+  board_appearance.use_background_texture
+				boolean		true
+  board_appearance.background_texture
+				string
 					substitute_value PACKAGE_TEXTURES_DIR
 					"/wood1.jpg"
 
-  background_color		color		#dbb665
-  foreground_color		color		#000000
+  board_appearance.background_color
+				color		#dbb665
+
+  board_appearance.grid_and_labels_color
+				color		#000000
+
+  # Force some brownish tint.
+  checkerboard_pattern_color	color		#604000
+  checkerboard_pattern_opacity	real		0.4
 }
 
 
@@ -55,5 +67,5 @@ defaults  - othello_board_appearance_defaults {
   use_background_texture	boolean		false
   background_texture		string		NULL
   background_color		color		#087834
-  foreground_color		color		#cceebb
+  grid_and_labels_color		color		#cceebb
 }
