@@ -548,8 +548,10 @@ sgf_utils_normalize_text(const char *text)
 
   /* Trim end whitespace. */
   for (scan = buffer.string + buffer.length; ; scan--) {
-    if (scan == buffer.string
-	|| (*(scan - 1) != ' ' && *(scan - 1) != '\n'))
+    if (scan == buffer.string)
+      return NULL;
+
+    if (*(scan - 1) != ' ' && *(scan - 1) != '\n')
       break;
   }
 
