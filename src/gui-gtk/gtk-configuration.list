@@ -69,6 +69,15 @@ section_list  unnamed gtk_configuration_sections {
 		new_othello_game_section_values
 		new_othello_game_defaults
 
+  SECTION_FIND_DIALOG		"Find Dialog Parameters"
+		single
+		new		FindDialogConfiguration
+				find_dialog_configuration_dispose
+
+		find_dialog_configuration
+		find_dialog_section_values
+		find_dialog_defaults
+
   + NUM_GTK_CONFIGURATION_SECTIONS
 }
 
@@ -134,6 +143,17 @@ values  - new_othello_game_section_values {
   "Overtime period length"	time_control.overtime_period_length
 								time
   "Moves per overtime"		time_control.moves_per_overtime	int
+}
+
+
+values  - find_dialog_section_values {
+  "Latest search strings"	latest_search_strings		string_list
+  "Case sensitive"		case_sensitive			boolean
+  "Whole words only"		whole_words_only		boolean
+  "Wrap around"			wrap_around			boolean
+  "Search whole game tree"	search_whole_game_tree		boolean
+
+  "Close dialog automatically"	close_automatically		boolean
 }
 
 
@@ -220,4 +240,15 @@ defaults  - new_othello_game_defaults {
     overtime_period_length		time		05:00
     moves_per_overtime			int		10
   end
+}
+
+
+defaults  - find_dialog_defaults {
+  latest_search_strings			string_list	-
+  case_sensitive			boolean		false
+  whole_words_only			boolean		false
+  wrap_around				boolean		true
+  search_whole_game_tree		boolean		true
+
+  close_automatically			boolean		false
 }
