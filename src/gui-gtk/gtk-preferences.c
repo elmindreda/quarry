@@ -98,8 +98,6 @@ struct _GtkEngineDialogData {
   GtkEntry	     *command_line_entry;
   GtkEntry	     *name_entry;
 
-  GtkWindow	     *browsing_dialog;
-
   GtpClient	     *client;
   GtkWidget	     *progress_dialog;
 };
@@ -151,11 +149,6 @@ static void	    gtk_gtp_engine_dialog_response(GtkWindow *window,
 						   gint response_id,
 						   GtkEngineDialogData *data);
 
-static void	    browse_for_gtp_engine(GtkEngineDialogData *data);
-static void	    browsing_dialog_response(GtkFileSelection *file_selection,
-					     gint response_id,
-					     GtkEngineDialogData *data);
-
 static void	    client_initialized(GtpClient *client, void *user_data);
 static void	    client_deleted(GtpClient *client, GError *shutdown_reason,
 				   void *user_data);
@@ -206,6 +199,10 @@ static void	    build_and_attach_menu(GtkWidget *option_menu,
 
 static void	    chain_client_initialized(GtpClient *client,
 					     void *user_data);
+static void	    update_engine_screen_name(GtpEngineListItem *engine_data);
+static void	    find_gtp_tree_model_iterator_by_engines_data
+		      (const GtpEngineListItem *engine_data,
+		       GtkTreeIter *iterator);
 
 
 static const PreferencesDialogCategory preferences_dialog_categories[] = {
@@ -325,6 +322,8 @@ void
 gtk_preferences_dialog_present(gint page_to_select)
 {
   int k;
+  int category_to_select;
+  int subcategory_to_select;
   GtkTreePath *tree_path;
 
   if (!preferences_dialog) {
@@ -445,17 +444,31 @@ gtk_preferences_dialog_present(gint page_to_select)
     gtk_widget_show_all(hbox);
   }
 
-  if (page_to_select < 0 && !GTK_WIDGET_VISIBLE(preferences_dialog))
+  if (page_to_select < 0)
     page_to_select = last_selected_page;
 
   assert(0 <= page_to_select && page_to_select < NUM_PREFERENCES_DIALOG_PAGES);
 
+  for (category_to_select = -1, subcategory_to_select = -1, k = 0;
+       page_to_select >= 0; k++) {
+    if (preferences_dialog_categories[k].create_page) {
+      page_to_select--;
+      subcategory_to_select++;
+    }
+    else {
+      category_to_select++;
+      subcategory_to_select = -1;
+    }
+  }
+
 #if GTK_2_2_OR_LATER
-  tree_path = gtk_tree_path_new_from_indices(page_to_select, -1);
+  tree_path = gtk_tree_path_new_from_indices(category_to_select,
+					     subcategory_to_select, -1);
 #else
   tree_path = gtk_tree_path_new();
 
-  gtk_tree_path_append_index(tree_path, page_to_select);
+  gtk_tree_path_append_index(tree_path, category_to_select);
+  gtk_tree_path_append_index(tree_path, subcategory_to_select);
 #endif
 
   gtk_tree_view_set_cursor(category_tree_view, tree_path, NULL, FALSE);
@@ -510,7 +523,7 @@ create_gtp_engines_page(void)
 			   G_CALLBACK(gtk_gtp_engine_dialog_present),
 			   GINT_TO_POINTER(TRUE));
 
-  modify_gtp_engine = gtk_button_new_with_mnemonic("_Modify");
+  modify_gtp_engine = gtk_button_new_from_stock(QUARRY_STOCK_MODIFY);
   g_signal_connect_swapped(modify_gtp_engine, "clicked",
 			   G_CALLBACK(gtk_gtp_engine_dialog_present),
 			   GINT_TO_POINTER(FALSE));
@@ -700,6 +713,7 @@ create_background_table(GtkGameIndex game_index, gint num_table_rows)
   GtkWidget *radio_buttons[2];
   GtkWidget *label;
   GtkWidget *entry;
+  GtkWidget *button;
   GtkWidget *color_button;
 
   gtk_table_set_row_spacings(table, QUARRY_SPACING_SMALL);
@@ -728,6 +742,16 @@ create_background_table(GtkGameIndex game_index, gint num_table_rows)
 		   GINT_TO_POINTER(game_index));
 
   gtk_table_attach(table, entry, 1, 2, 0, 1, GTK_EXPAND | GTK_FILL, 0, 0, 0);
+
+  button = gtk_utils_create_browse_button(FALSE, entry, FALSE,
+					  "Choose a Background Texture...",
+					  ((GtkUtilsBrowsingDoneCallback)
+					   update_board_background_texture),
+					  GINT_TO_POINTER(game_index));
+  gtk_utils_set_sensitive_on_toggle(GTK_TOGGLE_BUTTON(radio_buttons[0]),
+				    button);
+
+  gtk_table_attach(table, button, 2, 3, 0, 1, GTK_FILL, 0, GTK_FILL, 0);
 
   gtk_utils_set_gdk_color(&color, board_appearance->background_color);
   color_button = gtk_color_button_new_with_color(&color);
@@ -994,6 +1018,9 @@ gtk_gtp_engine_dialog_present(gpointer new_engine)
 
   GtpEngineListItem *engine_data = NULL;
   GtkEngineDialogData *data;
+  GtkTreeModel *gtp_engines_tree_model
+    = GTK_TREE_MODEL(gtp_engines_list_store);
+  GtkTreeIter iterator;
   GSList *item;
 
   GtkWidget *dialog;
@@ -1004,8 +1031,10 @@ gtk_gtp_engine_dialog_present(gpointer new_engine)
   GtkWidget *label;
 
   if (!GPOINTER_TO_INT(new_engine)) {
-    /* FIXME */
-    assert(0);
+    assert(gtk_tree_selection_get_selected(gtp_engines_tree_selection,
+					   NULL, &iterator));
+    gtk_tree_model_get(gtp_engines_tree_model, &iterator,
+		       ENGINES_DATA, &engine_data, -1);
   }
 
   item = find_gtp_engine_dialog_by_engine_data(engine_data);
@@ -1022,14 +1051,13 @@ gtk_gtp_engine_dialog_present(gpointer new_engine)
   data = g_malloc(sizeof(GtkEngineDialogData));
   data->engine_data	= engine_data;
   data->engine_deleted	= FALSE;
-  data->browsing_dialog = NULL;
   data->progress_dialog = NULL;
 
   gtp_engine_dialogs = g_slist_prepend(gtp_engine_dialogs, data);
 
-  dialog = gtk_dialog_new_with_buttons((GPOINTER_TO_INT(new_engine)
-					? "New GTP Engine"
-					: "Modify GTP Engine Information"),
+  dialog = gtk_dialog_new_with_buttons((engine_data
+					? "Modify GTP Engine Information"
+					: "New GTP Engine"),
 				       NULL, 0,
 				       GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
 				       NULL);
@@ -1039,8 +1067,7 @@ gtk_gtp_engine_dialog_present(gpointer new_engine)
   gtk_utils_make_window_only_horizontally_resizable(data->window);
 
   button = gtk_dialog_add_button(GTK_DIALOG(dialog),
-				 (GPOINTER_TO_INT(new_engine)
-				  ? GTK_STOCK_ADD : "_Modify"),
+				 (engine_data ? GTK_STOCK_OK : GTK_STOCK_ADD),
 				 GTK_RESPONSE_OK);
   gtk_dialog_set_default_response(GTK_DIALOG(dialog), GTK_RESPONSE_OK);
 
@@ -1058,18 +1085,17 @@ gtk_gtp_engine_dialog_present(gpointer new_engine)
 
 #if GTK_2_4_OR_LATER
 
-  {
-    GtkTreeModel *gtp_engines_tree_model
-      = GTK_TREE_MODEL(gtp_engines_list_store);
+  entry = gtk_combo_box_entry_new_with_model(gtp_engines_tree_model,
+					     ENGINES_COMMAND_LINE);
+  if (engine_data)
+    gtk_combo_box_set_active_iter(GTK_COMBO_BOX(entry), &iterator);
 
-    entry = gtk_combo_box_entry_new_with_model(gtp_engines_tree_model,
-					       ENGINES_COMMAND_LINE);
-    data->command_line_entry = GTK_ENTRY(GTK_BIN(entry)->child);
-    gtk_entry_set_activates_default(data->command_line_entry, TRUE);
-  }
+  data->command_line_entry = GTK_ENTRY(GTK_BIN(entry)->child);
+  gtk_entry_set_activates_default(data->command_line_entry, TRUE);
 
 #else
-  entry = gtk_utils_create_entry(NULL);
+  entry = gtk_utils_create_entry(engine_data
+				 ? engine_data->command_line : NULL);
   data->command_line_entry = GTK_ENTRY(entry);
 #endif
 
@@ -1079,13 +1105,14 @@ gtk_gtp_engine_dialog_present(gpointer new_engine)
   label = gtk_utils_create_mnemonic_label("Command _line:", entry);
   gtk_table_attach(table, label, 0, 1, 0, 1, GTK_FILL, 0, 0, 0);
 
-  button = gtk_button_new_from_stock(QUARRY_STOCK_BROWSE);
+  button = gtk_utils_create_browse_button(TRUE,
+					  GTK_WIDGET(data->command_line_entry),
+					  TRUE, "Choose GTP Engine...",
+					  NULL, NULL);
   gtk_table_attach(table, button, 2, 3, 0, 1, GTK_FILL, 0, 0, 0);
 
-  g_signal_connect_swapped(button, "clicked",
-			   G_CALLBACK(browse_for_gtp_engine), data);
-
-  entry = gtk_utils_create_entry("%n %v");
+  entry = gtk_utils_create_entry(engine_data && engine_data->screen_name_format
+				 ? engine_data->screen_name_format : "%n %v");
   data->name_entry = GTK_ENTRY(entry);
   gtk_table_attach(table, entry, 1, 2, 1, 2, GTK_EXPAND | GTK_FILL, 0, 0, 0);
 
@@ -1121,84 +1148,57 @@ gtk_gtp_engine_dialog_response(GtkWindow *window, gint response_id,
 			       GtkEngineDialogData *data)
 {
   if (response_id == GTK_RESPONSE_OK) {
-    const gchar *command_line;
-    GError *error = NULL;
+    const gchar *command_line = gtk_entry_get_text(data->command_line_entry);
 
-    command_line = gtk_entry_get_text(data->command_line_entry);
+    if (!data->engine_data
+	|| !data->engine_data->command_line
+	|| strcmp(data->engine_data->command_line, command_line) != 0) {
+      GError *error = NULL;
 
-    data->client
-      = gtk_create_gtp_client(command_line, client_initialized, client_deleted,
-			      data, &error);
-    if (data->client) {
-      data->progress_dialog
-	= gtk_progress_dialog_new(window, "Quarry",
-				  ("Querying engine's "
-				   "name, version and known commands..."),
-				  show_progress_dialog,
-				  ((GtkProgressDialogCallback)
-				   cancel_engine_query),
-				  data);
-      g_object_ref(data->progress_dialog);
+      data->client = gtk_create_gtp_client(command_line,
+					   client_initialized, client_deleted,
+					   data, &error);
+      if (data->client) {
+	data->progress_dialog
+	  = gtk_progress_dialog_new(window, "Quarry",
+				    ("Querying engine's "
+				     "name, version and known commands..."),
+				    show_progress_dialog,
+				    ((GtkProgressDialogCallback)
+				     cancel_engine_query),
+				    data);
+	g_object_ref(data->progress_dialog);
 
-      gtp_client_setup_connection(data->client);
+	gtp_client_setup_connection(data->client);
+      }
+      else {
+	gtk_utils_create_message_dialog(window, GTK_STOCK_DIALOG_ERROR,
+					(GTK_UTILS_BUTTONS_OK
+					 | GTK_UTILS_DESTROY_ON_RESPONSE),
+					("Please make sure you typed engine's "
+					 "filename correctly and that you "
+					 "have permission to execute it."),
+					error->message);
+	g_error_free(error);
+
+	gtk_widget_grab_focus(GTK_WIDGET(data->command_line_entry));
+      }
     }
     else {
-      gtk_utils_create_message_dialog(window, GTK_STOCK_DIALOG_ERROR,
-				      (GTK_UTILS_BUTTONS_OK
-				       | GTK_UTILS_DESTROY_ON_RESPONSE),
-				      ("Please make sure you typed engine's "
-				       "filename correctly and that you have "
-				       "permission to execute it."),
-				      error->message);
-      g_error_free(error);
+      const gchar *name = gtk_entry_get_text(data->name_entry);
 
-      gtk_widget_grab_focus(GTK_WIDGET(data->command_line_entry));
+      if (! *name)
+	name = "%n %v";
+
+      configuration_set_string_value(&data->engine_data->screen_name_format,
+				     name);
+      update_engine_screen_name(data->engine_data);
+
+      gtk_widget_destroy(GTK_WIDGET(window));
     }
   }
   else if (response_id == GTK_RESPONSE_CANCEL)
     gtk_widget_destroy(GTK_WIDGET(window));
-}
-
-
-static void
-browse_for_gtp_engine(GtkEngineDialogData *data)
-{
-  if (!data->browsing_dialog) {
-    GtkWidget *file_selection = gtk_file_selection_new("Choose GTP Engine...");
-    const gchar *command_line;
-    gchar **argv;
-
-    data->browsing_dialog = GTK_WINDOW(file_selection);
-    gtk_window_set_transient_for(data->browsing_dialog, data->window);
-    gtk_window_set_destroy_with_parent(data->browsing_dialog, TRUE);
-
-    command_line = gtk_entry_get_text(data->command_line_entry);
-    if (*command_line && g_shell_parse_argv(command_line, NULL, &argv, NULL)) {
-      gtk_file_selection_set_filename(GTK_FILE_SELECTION(data->browsing_dialog),
-				      argv[0]);
-      g_strfreev(argv);
-    }
-
-    gtk_utils_add_file_selection_response_handlers
-      (file_selection, FALSE, G_CALLBACK(browsing_dialog_response), data);
-  }
-
-  gtk_window_present(data->browsing_dialog);
-}
-
-
-static void
-browsing_dialog_response(GtkFileSelection *file_selection, gint response_id,
-			 GtkEngineDialogData *data)
-{
-  if (response_id == GTK_RESPONSE_OK) {
-    gtk_entry_set_text(data->command_line_entry,
-		       gtk_file_selection_get_filename(file_selection));
-    gtk_widget_grab_focus(GTK_WIDGET(data->command_line_entry));
-  }
-
-  gtk_widget_destroy(GTK_WIDGET(file_selection));
-  data->browsing_dialog = NULL;
 }
 
 
@@ -1225,10 +1225,12 @@ client_deleted(GtpClient *client, GError *shutdown_reason, void *user_data)
       static const ConfigurationSection *gtp_engines_section
 	= &gtk_configuration_sections[SECTION_GTP_ENGINES];
 
+      GtpEngineListItem *engine_data = data->engine_data;
       const gchar *command_line;
       const gchar *name;
       char *screen_name;
       GtkTreeIter iterator;
+      GtkTreePath *tree_path;
       GSList *item;
 
       command_line = gtk_entry_get_text(data->command_line_entry);
@@ -1239,59 +1241,76 @@ client_deleted(GtpClient *client, GError *shutdown_reason, void *user_data)
       screen_name = utils_special_printf(name,
 					 'n', client->engine_name,
 					 'v', client->engine_version, 0);
-      string_list_add_ready(&gtp_engines, screen_name);
 
-      configuration_init_repeatable_section(gtp_engines_section,
-					    gtp_engines.last);
-      configuration_set_string_value(&gtp_engines.last->screen_name_format,
-				     name);
-      configuration_set_string_value(&gtp_engines.last->name,
-				     client->engine_name);
-      configuration_set_string_value(&gtp_engines.last->version,
+      if (engine_data) {
+	utils_free(engine_data->screen_name);
+	engine_data->screen_name = screen_name;
+      }
+      else {
+	string_list_add_ready(&gtp_engines, screen_name);
+	configuration_init_repeatable_section(gtp_engines_section,
+					      gtp_engines.last);
+
+	engine_data = gtp_engines.last;
+      }
+
+      configuration_set_string_value(&engine_data->screen_name_format, name);
+      configuration_set_string_value(&engine_data->name, client->engine_name);
+      configuration_set_string_value(&engine_data->version,
 				     client->engine_version);
-      configuration_set_string_value(&gtp_engines.last->command_line,
-				     command_line);
-      configuration_set_string_list_value_steal_strings
-	(&gtp_engines.last->supported_games, &client->supported_games);
+      configuration_set_string_value(&engine_data->command_line, command_line);
 
-      g_signal_handlers_block_by_func(gtp_engines_list_store,
-				      handle_drag_and_drop, NULL);
+      configuration_set_string_list_value_steal_strings
+	(&engine_data->supported_games, &client->supported_games);
+
+      if (data->engine_data)
+	find_gtp_tree_model_iterator_by_engines_data(engine_data, &iterator);
+      else {
+	g_signal_handlers_block_by_func(gtp_engines_list_store,
+					handle_drag_and_drop, NULL);
+	gtk_list_store_append(gtp_engines_list_store, &iterator);
+      }
 
 #if GTK_2_4_OR_LATER
-
-      gtk_list_store_append(gtp_engines_list_store, &iterator);
       gtk_list_store_set(gtp_engines_list_store, &iterator,
-			 ENGINES_DATA, gtp_engines.last,
+			 ENGINES_DATA, engine_data,
 			 ENGINES_NAME, screen_name,
-			 ENGINES_COMMAND_LINE, gtp_engines.last->command_line,
+			 ENGINES_COMMAND_LINE, engine_data->command_line,
 			 -1);
-
 #else
-
-      gtk_list_store_append(gtp_engines_list_store, &iterator);
       gtk_list_store_set(gtp_engines_list_store, &iterator,
-			 ENGINES_DATA, gtp_engines.last,
+			 ENGINES_DATA, engine_data,
 			 ENGINES_NAME, screen_name, -1);
-
 #endif
-
-      g_signal_handlers_unblock_by_func(gtp_engines_list_store,
-					handle_drag_and_drop, NULL);
 
       prepare_to_rebuild_menus();
       rebuild_all_menus();
 
-      if (string_list_is_single_string(&gtp_engines)) {
-	for (item = gtp_engine_selectors; item; item = item->next) {
-	  GtkEngineSelectorData *data = (GtkEngineSelectorData *) (item->data);
+      if (!data->engine_data) {
+	g_signal_handlers_unblock_by_func(gtp_engines_list_store,
+					  handle_drag_and_drop, NULL);
 
-	  data->callback(data->selector, data->user_data);
+	if (string_list_is_single_string(&gtp_engines)) {
+	  for (item = gtp_engine_selectors; item; item = item->next) {
+	    GtkEngineSelectorData *data = ((GtkEngineSelectorData *)
+					   (item->data));
+
+	    data->callback(data->selector, data->user_data);
 
 #if GTK_2_4_OR_LATER
-	  gtk_combo_box_set_active(GTK_COMBO_BOX(data->selector), 0);
+	    gtk_combo_box_set_active(GTK_COMBO_BOX(data->selector), 0);
 #endif
+	  }
 	}
       }
+
+      tree_path
+	= gtk_tree_model_get_path(GTK_TREE_MODEL(gtp_engines_list_store),
+				  &iterator);
+      gtk_tree_view_set_cursor(gtp_engines_tree_view, tree_path, NULL, FALSE);
+      gtk_tree_path_free(tree_path);
+
+      gtk_preferences_dialog_update_gtp_engine_info(gtp_engines_tree_selection);
 
       gtk_widget_destroy(GTK_WIDGET(data->window));
     }
@@ -1790,32 +1809,12 @@ chain_client_initialized(GtpClient *client, void *user_data)
   GtkChainEngineData *chain_engine_data = (GtkChainEngineData *) user_data;
   GtkEngineChain *engine_chain = chain_engine_data->engine_chain;
   GtpEngineListItem *engine_data = chain_engine_data->engine_data;
-  char *new_screen_name = utils_special_printf(engine_data->screen_name_format,
-					       'n', client->engine_name,
-					       'v', client->engine_version, 0);
 
   configuration_set_string_value(&engine_data->name, client->engine_name);
   configuration_set_string_value(&engine_data->version,
 				 client->engine_version);
 
-  if (strcmp(engine_data->screen_name, new_screen_name) != 0) {
-    GtkTreeModel *gtp_engines_tree_model
-      = GTK_TREE_MODEL(gtp_engines_list_store);
-    GtkTreeIter iterator;
-    GtpEngineListItem *this_engine_data;
-
-    utils_free(engine_data->screen_name);
-    engine_data->screen_name = new_screen_name;
-
-    gtk_tree_model_get_iter_first(gtp_engines_tree_model, &iterator);
-    while (gtk_tree_model_get(gtp_engines_tree_model, &iterator,
-			      ENGINES_DATA, &this_engine_data, -1),
-	   this_engine_data != engine_data)
-      gtk_tree_model_iter_next(gtp_engines_tree_model, &iterator);
-
-    gtk_list_store_set(gtp_engines_list_store, &iterator,
-		       ENGINES_NAME, new_screen_name, -1);
-  }
+  update_engine_screen_name(engine_data);
 
   configuration_set_string_list_value(&engine_data->supported_games,
 				      &client->supported_games);
@@ -1832,6 +1831,45 @@ chain_client_initialized(GtpClient *client, void *user_data)
 
     g_free(engine_chain);
   }
+}
+
+
+static void
+update_engine_screen_name(GtpEngineListItem *engine_data)
+{
+  char *new_screen_name = utils_special_printf(engine_data->screen_name_format,
+					       'n', engine_data->name,
+					       'v', engine_data->version, 0);
+
+  if (strcmp(engine_data->screen_name, new_screen_name) != 0) {
+    GtkTreeIter iterator;
+
+    utils_free(engine_data->screen_name);
+    engine_data->screen_name = new_screen_name;
+
+    find_gtp_tree_model_iterator_by_engines_data(engine_data, &iterator);
+    gtk_list_store_set(gtp_engines_list_store, &iterator,
+		       ENGINES_NAME, new_screen_name, -1);
+  }
+  else
+    utils_free(new_screen_name);
+}
+
+
+static void
+find_gtp_tree_model_iterator_by_engines_data
+		(const GtpEngineListItem *engine_data,
+		 GtkTreeIter *iterator)
+{
+  GtkTreeModel *gtp_engines_tree_model
+    = GTK_TREE_MODEL(gtp_engines_list_store);
+  GtpEngineListItem *this_engine_data;
+
+  gtk_tree_model_get_iter_first(gtp_engines_tree_model, iterator);
+  while (gtk_tree_model_get(gtp_engines_tree_model, iterator,
+			    ENGINES_DATA, &this_engine_data, -1),
+	 this_engine_data != engine_data)
+    gtk_tree_model_iter_next(gtp_engines_tree_model, iterator);
 }
 
 
