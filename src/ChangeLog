@@ -1,3 +1,8 @@
+2004-11-14  Paul Pogonyshev  <paul@localhost.localdomain>
+
+	* gui-gtk/gtk-goban-window.c (do_find_text): Scroll text view so
+	that the found text is always visible.
+
 2004-10-20  Paul Pogonyshev  <pogonyshev@gmx.net>
 
 	* gui-gtk/gtk-goban.c (gtk_goban_expose): Only use
