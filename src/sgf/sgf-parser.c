@@ -170,6 +170,9 @@ static int	    do_parse_list_of_point
 static int	    do_parse_board_size(SgfParsingData *data, int *width,
 					int *height, int add_errors);
 
+static int	    looking_at(SgfParsingData *data,
+			       const char **strings, int num_strings);
+
 
 static void	    add_error(SgfParsingData *data, SgfError error, ...);
 static void	    insert_error(SgfParsingData *data, SgfError error,
@@ -177,6 +180,10 @@ static void	    insert_error(SgfParsingData *data, SgfError error,
 static void	    insert_error_valist(SgfParsingData *data, SgfError error,
 					SgfErrorPosition *error_position,
 					va_list arguments);
+
+static SgfError	    invalid_game_info_property(SgfParsingData *data,
+					       SgfProperty *property,
+					       BufferPositionStorage *storage);
 
 static inline void  begin_parsing_value(SgfParsingData *data);
 static int	    is_composed_value(SgfParsingData *data,
@@ -2010,9 +2017,8 @@ sgf_parse_list_of_point(SgfParsingData *data)
 SgfError
 sgf_parse_list_of_vector(SgfParsingData *data)
 {
-  begin_parsing_value(data);
-  while (data->token != ']') next_token(data);
-  return end_parsing_value(data);
+  discard_values(data);
+  return SGF_SUCCESS;
 }
 
 
@@ -2241,9 +2247,7 @@ sgf_parse_char_set(SgfParsingData *data)
 SgfError
 sgf_parse_date(SgfParsingData *data)
 {
-  begin_parsing_value(data);
-  while (data->token != ']') next_token(data);
-  return end_parsing_value(data);
+  return sgf_parse_simple_text(data);
 }
 
 
@@ -2329,9 +2333,7 @@ sgf_parse_handicap(SgfParsingData *data)
 {
   SgfProperty **link;
   BufferPositionStorage storage;
-  char *text;
   int handicap;
-  SgfError result;
 
   if (data->game != GAME_GO) {
     add_error(data, SGF_ERROR_WRONG_GAME,
@@ -2347,6 +2349,8 @@ sgf_parse_handicap(SgfParsingData *data)
   begin_parsing_value(data);
   if (data->token == ']')
     return SGF_FATAL_EMPTY_VALUE;
+
+  *link = sgf_property_new(data->tree, data->property_type, *link);
 
   if (do_parse_number(data, &handicap) && data->token == ']') {
     if (handicap > data->board_width * data->board_height) {
@@ -2358,22 +2362,11 @@ sgf_parse_handicap(SgfParsingData *data)
       add_error(data, SGF_ERROR_INVALID_HANDICAP);
     }
 
-    text = utils_cprintf("%d", handicap);
-    result = end_parsing_value(data);
-  }
-  else {
-    RESTORE_BUFFER_POSITION(data, 0, storage);
-    text = do_parse_simple_text(data, SGF_END);
-
-    RESTORE_BUFFER_POSITION(data, 0, storage);
-    next_character(data);
-    result = SGF_ERROR_INVALID_GAME_INFO_PROPERTY;
+    (*link)->value.text = utils_cprintf("%d", handicap);
+    return end_parsing_value(data);
   }
 
-  *link = sgf_property_new(data->tree, data->property_type, *link);
-  (*link)->value.text = text;
-
-  return result;
+  return invalid_game_info_property(data, *link, &storage);
 }
 
 
@@ -2382,9 +2375,7 @@ sgf_parse_komi(SgfParsingData *data)
 {
   SgfProperty **link;
   BufferPositionStorage storage;
-  char *text;
   double komi;
-  SgfError result;
 
   if (data->game != GAME_GO) {
     add_error(data, SGF_ERROR_WRONG_GAME,
@@ -2401,23 +2392,14 @@ sgf_parse_komi(SgfParsingData *data)
   if (data->token == ']')
     return SGF_FATAL_EMPTY_VALUE;
 
+  *link = sgf_property_new(data->tree, data->property_type, *link);  
+
   if (do_parse_real(data, &komi) && data->token == ']') {
-    text = utils_cprintf("%.f", komi);
-    result = end_parsing_value(data);
-  }
-  else {
-    RESTORE_BUFFER_POSITION(data, 0, storage);
-    text = do_parse_simple_text(data, SGF_END);
-
-    RESTORE_BUFFER_POSITION(data, 0, storage);
-    next_character(data);
-    result = SGF_ERROR_INVALID_GAME_INFO_PROPERTY;
+    (*link)->value.text = utils_cprintf("%.f", komi);
+    return end_parsing_value(data);
   }
 
-  *link = sgf_property_new(data->tree, data->property_type, *link);
-  (*link)->value.text = text;
-
-  return result;
+  return invalid_game_info_property(data, *link, &storage);
 }
 
 
@@ -2491,13 +2473,68 @@ sgf_parse_print_mode(SgfParsingData *data)
 }
 
 
-/* FIXME: write this function. */
 SgfError
 sgf_parse_result(SgfParsingData *data)
 {
+  SgfProperty **link;
+  BufferPositionStorage storage;
+
+  if (sgf_node_find_property(data->node, data->property_type, &link))
+    return SGF_FATAL_DUPLICATE_PROPERTY;
+
+  STORE_BUFFER_POSITION(data, 0, storage);
+
   begin_parsing_value(data);
-  while (data->token != ']') next_token(data);
-  return end_parsing_value(data);
+  if (data->token == ']')
+    return SGF_FATAL_EMPTY_VALUE;
+
+  *link = sgf_property_new(data->tree, data->property_type, *link);
+
+  if (data->token == 'B' || data->token == 'W') {
+    char color = data->token;
+
+    next_token_in_value(data);
+    if (data->token == '+') {
+      next_token_in_value(data);
+      if (('0' <= data->token && data->token <= '9') || data->token == '.') {
+	double score;
+
+	if (do_parse_real(data, &score) && data->token == ']') {
+	  (*link)->value.text = utils_cprintf("%c+%.f", color, score);
+	  return end_parsing_value(data);
+	}
+      }
+      else {
+	static const char *non_score_results[6]
+	  = { "F", "Forfeit", "R", "Resign", "T", "Time" };
+	int result_index = looking_at(data, non_score_results, 6);
+
+	if (result_index != -1) {
+	  /* Use full-word reasons internally. */
+	  (*link)->value.text
+	    = utils_cprintf("%c+%s",
+			    color, non_score_results[result_index | 1]);
+
+	  return end_parsing_value(data);
+	}
+      }
+    }
+  }
+  else {
+    static const char *no_winner_results[4] = { "0", "?", "Draw", "Void" };
+    int result_index = looking_at(data, no_winner_results, 4);
+
+    if (result_index != -1) {
+      /* Prefer "Draw" to "0". */
+      (*link)->value.text
+	= utils_duplicate_string(no_winner_results[result_index != 0
+						   ? result_index : 2]);
+
+      return end_parsing_value(data);
+    }
+  }
+
+  return invalid_game_info_property(data, *link, &storage);
 }
 
 
@@ -2601,9 +2638,7 @@ sgf_parse_time_limit(SgfParsingData *data)
 {
   SgfProperty **link;
   BufferPositionStorage storage;
-  char *text;
   double time_limit;
-  SgfError result;
 
   if (sgf_node_find_property(data->node, data->property_type, &link))
     return SGF_FATAL_DUPLICATE_PROPERTY;
@@ -2622,22 +2657,14 @@ sgf_parse_time_limit(SgfParsingData *data)
       return SGF_FATAL_NEGATIVE_TIME_LIMIT;
     }
 
-    text = utils_cprintf("%.f", time_limit);
-    result = end_parsing_value(data);
-  }
-  else {
-    RESTORE_BUFFER_POSITION(data, 0, storage);
-    text = do_parse_simple_text(data, SGF_END);
+    *link = sgf_property_new(data->tree, data->property_type, *link);
+    (*link)->value.text = utils_cprintf("%.f", time_limit);
 
-    RESTORE_BUFFER_POSITION(data, 0, storage);
-    next_character(data);
-    result = SGF_ERROR_INVALID_GAME_INFO_PROPERTY;
+    return end_parsing_value(data);
   }
 
   *link = sgf_property_new(data->tree, data->property_type, *link);
-  (*link)->value.text = text;
-
-  return result;
+  return invalid_game_info_property(data, *link, &storage);
 }
 
 
@@ -2658,6 +2685,36 @@ sgf_parse_simple_markup(SgfParsingData *data)
   begin_parsing_value(data);
   while (data->token != ']') next_token(data);
   return end_parsing_value(data);
+}
+
+
+static int
+looking_at(SgfParsingData *data, const char **strings, int num_strings)
+{
+  int first_candidate = 0;
+  int last_candidate = num_strings;
+  int character_index;
+
+  for (character_index = 0; first_candidate < last_candidate;
+       character_index++) {
+    int k;
+
+    if (data->token == ']')
+      return strings[first_candidate][character_index] ? -1 : first_candidate;
+
+    for (k = first_candidate; k < last_candidate; k++) {
+      if (strings[k][character_index] < data->token)
+	first_candidate++;
+      else if (strings[k][character_index] > data->token) {
+	last_candidate = k;
+	break;
+      }
+    }
+
+    next_token_in_value(data);
+  }
+
+  return -1;
 }
 
 
@@ -2732,6 +2789,20 @@ insert_error_valist(SgfParsingData *data, SgfError error,
     error_position->notch = error_position->notch->next;
     insert_error(data, SGF_WARNING_ERROR_SUPPRESSED, error_position);
   }
+}
+
+
+static SgfError
+invalid_game_info_property(SgfParsingData *data, SgfProperty *property,
+			   BufferPositionStorage *storage)
+{
+  RESTORE_BUFFER_POSITION(data, 0, *storage);
+  property->value.text = do_parse_simple_text(data, SGF_END);
+
+  RESTORE_BUFFER_POSITION(data, 0, *storage);
+  next_character(data);
+
+  return SGF_ERROR_INVALID_GAME_INFO_PROPERTY;
 }
 
 
