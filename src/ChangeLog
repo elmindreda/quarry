@@ -1,8 +1,48 @@
+2004-05-12  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* gui-gtk/gtk-goban-window.c: Add support for user scoring of Go
+	games.  Cope with the changes in goban's feedback handling.
+	(update_territory_markup, go_scoring_mode_done)
+	(reenter_current_node, go_scoring_mode_pointer_moved)
+	(go_scoring_mode_goban_clicked): New functions.
+	(play_pass_move): Call move_has_been_played() after updating
+	controls for new SGF node so that the former function can change
+	goban's contents.
+	(playing_mode_goban_clicked): Likewise.
+	(update_children_for_new_node): Make dead stones more transparent.
+	(free_handicap_has_been_placed): Use reenter_current_node().
+
+	* gui-gtk/gtk-goban.c: Add possibility for overlays to span
+	several positions by using position lists.  Make overlays
+	overwrite goban markup as well as the main grid.
+	(gtk_goban_set_contents): Rename from
+	gtk_goban_set_grid_contents().
+	(set_feedback_data): Handle more feedback types, including goban
+	markup overwriting feedbacks.
+
+	* board/go.c (go_get_string_stones)
+	(go_get_logically_dead_stones, go_score_game)
+	(go_mark_territory_on_grid): New functions.
+
+2004-05-10  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* board/board.c (board_position_list_sort)
+	(board_position_lists_overlap)
+	(board_position_list_find_position)
+	(board_position_list_mark_on_grid): New functions.
+
+	* utils/utils.c (utils_compare_ints): New function.
+
+2004-05-09  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* gui-gtk/gtk-new-game-dialog.c (set_handicap_adjustment_limits):
+	Don't use adjustment properties: they only appeared in GTK+ 2.4.
+
 2004-05-01  Paul Pogonyshev  <pogonyshev@gmx.net>
 
 	* gui-gtk/gtk-preferences.c (create_board_appearance_page): Add
 	controls for configuring Amazons' checkerboard pattern.  Change
-	control layout: consider grid and labels a part of background.
+	controls layout: consider grid and labels a part of background.
 	(update_board_grid_and_labels_color): Rename from
 	update_board_foreground().
 	(update_checkerboard_pattern): New function.
