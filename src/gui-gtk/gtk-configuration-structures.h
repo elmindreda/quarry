@@ -36,6 +36,16 @@ struct _NewGameConfiguration {
   char	       *player_names[NUM_COLORS];
   int		player_is_computer[NUM_COLORS];
   char	       *engine_names[NUM_COLORS];
+
+  int		go_board_size;
+  int		amazons_board_size;
+  int		othello_board_size;
+
+  int		handicap_is_fixed;
+  int		fixed_handicap;
+  int		free_handicap;
+
+  double	komi;
 };
 
 

@@ -26,6 +26,7 @@ h_include "utils.h"
 
 c_include "gtk-configuration.h"
 c_include "gtk-configuration-structures.h"
+c_include "gtk-games.h"
 c_include "gui-back-end.h"
 c_include "utils.h"
 
@@ -70,6 +71,27 @@ values  unnamed new_game_section_values {
 
   NEW_GAME_DIALOG_ENGINE_BLACK
   "Engine playing black"	engine_names[BLACK_INDEX]	string
+
+  NEW_GAME_DIALOG_GO_BOARD_SIZE
+  "Go board size"		go_board_size			int
+
+  NEW_GAME_DIALOG_HANDICAP_IS_FIXED
+  "Handicap is fixed"		handicap_is_fixed		boolean
+
+  NEW_GAME_DIALOG_FIXED_HANDICAP
+  "Fixed handicap"		fixed_handicap			int
+
+  NEW_GAME_DIALOG_FREE_HANDICAP
+  "Free handicap"		free_handicap			int
+
+  NEW_GAME_DIALOG_KOMI
+  "Komi"			komi				real
+
+  NEW_GAME_DIALOG_AMAZONS_BOARD_SIZE
+  "Amazons board size"		amazons_board_size		int
+
+  NEW_GAME_DIALOG_OTHELLO_BOARD_SIZE
+  "Othello board size"		othello_board_size		int
 }
 
 
@@ -87,4 +109,14 @@ defaults  - new_game_defaults {
 
   engine_names[BLACK_INDEX]		string		NULL
   engine_names[WHITE_INDEX]		string		NULL
+
+  go_board_size				int		19
+  amazons_board_size			int		10
+  othello_board_size			int		8
+
+  handicap_is_fixed			boolean		true
+  fixed_handicap			int		0
+  free_handicap				int		0
+
+  komi					real		6.5
 }
