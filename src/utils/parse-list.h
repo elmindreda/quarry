@@ -97,6 +97,7 @@ const char *	parse_thing(Thing thing, char **line, const char *type);
 char *		parse_multiline_string(char **line, const char *type,
 				       const char *line_separator,
 				       int null_allowed);
+int		parse_color(char **line, QuarryColor *color, const char *type);
 
 #define PARSE_THING(store_in, thing, line, type)		\
   do {								\

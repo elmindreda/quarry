@@ -23,12 +23,14 @@
 #include "parse-list.h"
 #include "utils.h"
 
-#include <stdlib.h>
-#include <stdio.h>
-#include <stdarg.h>
-#include <string.h>
-#include <ctype.h>
 #include <assert.h>
+#include <ctype.h>
+#include <getopt.h>
+#include <limits.h>
+#include <stdarg.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
 
 typedef struct _FileListItem	FileListItem;
@@ -51,7 +53,7 @@ struct _FileList {
 };
 
 
-#define file_list_list_new()						\
+#define file_list_new()							\
   ((FileList *) string_list_new_derived(sizeof(FileListItem),		\
 					((StringListItemDispose)	\
 					 file_list_item_dispose)))
@@ -78,6 +80,9 @@ static void	file_list_item_dispose(FileListItem *item);
    string_list_find_after_notch((list), (filename), (notch)))
 
 
+static void	print_usage(FILE *where,
+			    const ListDescriptionSet *list_sets, int num_sets);
+
 static FILE *	open_file(const char *filename, int for_writing);
 
 static int	do_parse_lists(FILE *h_file, FILE *c_file,
@@ -85,20 +90,41 @@ static int	do_parse_lists(FILE *h_file, FILE *c_file,
 static void	reuse_last_line(char **current_line);
 
 
-const char	   *tab_string = "\t\t\t\t\t\t\t\t\t\t\t\t";
+const char		*tab_string = "\t\t\t\t\t\t\t\t\t\t\t\t";
 
 
-StringBuffer	    h_file_top;
-StringBuffer	    h_file_bottom;
+StringBuffer		 h_file_top;
+StringBuffer		 h_file_bottom;
 
-StringBuffer	    c_file_top;
-StringBuffer	    c_file_bottom;
+StringBuffer		 c_file_top;
+StringBuffer		 c_file_bottom;
 
 
-static FileList	    list_files = STATIC_FILE_LIST;
+static AssociationList   substitutions = STATIC_ASSOCIATION_LIST;
 
-static StringList   lines = STATIC_STRING_LIST;
-static int	    last_line_reusable = 0;
+static FileList		 list_files = STATIC_FILE_LIST;
+
+static StringList	 lines = STATIC_STRING_LIST;
+static int		 last_line_reusable = 0;
+
+
+enum {
+  OPTION_HELP = UCHAR_MAX + 1
+};
+
+static const struct option parse_list_options[] = {
+  { "help",		no_argument,		NULL, OPTION_HELP },
+  { "define",		required_argument,	NULL, 'D' },
+  { "substitute",	required_argument,	NULL, 'D' },
+  { NULL,		no_argument,		NULL, 0 }
+};
+
+static const char *help_string =
+  "\n"
+  "Options:\n"
+  "  -D, --define SYMBOL=SUBSTITUTION\n"
+  "                          define a symbol for `substitute_value' command\n"
+  "  --help                  display this help and exit\n";
 
 
 int
@@ -106,6 +132,7 @@ parse_list_main(int argc, char *argv[],
 		const ListDescriptionSet *list_sets, int num_sets)
 {
   int k;
+  int option;
   int result = 255;
   const ListDescription *lists = NULL;
   char *list_file_name = NULL;
@@ -114,45 +141,66 @@ parse_list_main(int argc, char *argv[],
 
   utils_remember_program_name(argv[0]);
 
-  if (num_sets > 1 && argc == 5) {
+  while ((option = getopt_long(argc, argv, "D:", parse_list_options, NULL))
+	 != -1) {
+    switch (option) {
+    case OPTION_HELP:
+      print_usage(stdout, list_sets, num_sets);
+      printf(help_string);
+
+      result = 0;
+      goto exit_parse_list_main;
+
+    case 'D':
+      {
+	const char *delimiter = strchr(optarg, '=');
+
+	if (delimiter) {
+	  string_list_add_from_buffer(&substitutions,
+				      optarg, delimiter - optarg);
+	  substitutions.last->association
+	    = utils_duplicate_string(delimiter + 1);
+	}
+	else {
+	  string_list_add(&substitutions, optarg);
+	  substitutions.last->association = utils_duplicate_string("");
+	}
+      }
+
+      break;
+
+    default:
+      fprintf(stderr, "Try `%s --help' for more information.\n",
+	      full_program_name);
+      goto exit_parse_list_main;
+    }
+  }
+
+  if (num_sets > 1 && argc - optind == 4) {
     for (k = 0; k < num_sets; k++) {
-      if (strcmp(argv[1], list_sets[k].command_line_name) == 0)
+      if (strcmp(argv[optind], list_sets[k].command_line_name) == 0)
 	lists = list_sets[k].lists;
     }
 
     if (!lists) {
       fprintf(stderr, "%s: fatal: unknown mode `%s'\n",
-	      short_program_name, argv[1]);
+	      short_program_name, argv[optind]);
     }
 
-    list_file_name = argv[2];
-    h_file_name	   = argv[3];
-    c_file_name	   = argv[4];
+    optind++;
   }
-  else if (num_sets == 1 && argc == 4) {
+  else if (num_sets == 1 && argc - optind == 3)
     lists = list_sets[0].lists;
+  else
+    print_usage(stderr, list_sets, num_sets);
 
-    list_file_name = argv[1];
-    h_file_name	   = argv[2];
-    c_file_name	   = argv[3];
-  }
-  else {
-    fprintf(stderr, "Usage: %s ", full_program_name);
-
-    if (num_sets > 1) {
-      for (k = 0; k < num_sets; k++) {
-	fprintf(stderr, "%c%s",
-		k > 0 ? '|' : '{', list_sets[k].command_line_name);
-      }
-
-      fputs("} ", stderr);
-    }
-
-    fputs("LIST_FILE H_FILE C_FILE\n", stderr);
-  }
+  list_file_name = argv[optind];
+  h_file_name	 = argv[optind + 1];
+  c_file_name	 = argv[optind + 2];
 
   if (lists) {
     FILE *list_file = open_file(list_file_name, 0);
+
     if (list_file) {
       FILE *h_file = open_file(h_file_name, 1);
 
@@ -206,12 +254,37 @@ parse_list_main(int argc, char *argv[],
       string_list_empty(&list_files);
     }
   }
+  else {
+    fprintf(stderr, "Try `%s --help' for more information.\n",
+	    full_program_name);
+  }
 
+ exit_parse_list_main:
+  string_list_empty(&substitutions);
   utils_free_program_name_strings();
 
   return result;
 }
 
+
+static void
+print_usage(FILE *where, const ListDescriptionSet *list_sets, int num_sets)
+{
+  fprintf(where, "Usage: %s [OPTION]... ", full_program_name);
+
+  if (num_sets > 1) {
+    int k;
+
+    for (k = 0; k < num_sets; k++) {
+      fprintf(where, "%c%s", k > 0 ? '|' : '{',
+	      list_sets[k].command_line_name);
+    }
+
+    fputs("} ", where);
+  }
+
+  fputs("LIST_FILE H_FILE C_FILE\n", where);
+}
 
 
 static void
@@ -689,8 +762,10 @@ print_error(const char *format_string, ...)
 {
   va_list arguments;
 
-  fprintf(stderr, "%s:%d: ",
-	  list_files.first->filename, list_files.first->line_number);
+  if (!string_list_is_empty(&list_files)) {
+    fprintf(stderr, "%s:%d: ",
+	    list_files.first->filename, list_files.first->line_number);
+  }
 
   va_start(arguments, format_string);
   vfprintf(stderr, format_string, arguments);
@@ -730,29 +805,56 @@ read_line(void)
 	break;
     }
 
-    if (*beginning && looking_at("include_list", &beginning)) {
-      *end = 0;
-      if (*beginning) {
-	FILE *new_list_file = fopen(beginning, "r");
+    *end = 0;
+    if (*beginning) {
+      if (looking_at("include_list", &beginning)) {
+	if (*beginning) {
+	  FILE *new_list_file = fopen(beginning, "r");
 
-	if (new_list_file) {
-	  string_list_prepend_from_buffer(&list_files,
-					  beginning, end - beginning);
-	  list_files.first->file = new_list_file;
-	  list_files.first->line_number = 0;
+	  if (new_list_file) {
+	    string_list_prepend_from_buffer(&list_files,
+					    beginning, end - beginning);
+	    list_files.first->file = new_list_file;
+	    list_files.first->line_number = 0;
+	  }
+	  else {
+	    print_error("can't open file %s for reading", beginning);
+	    string_list_empty(&list_files);
+	  }
 	}
 	else {
-	  print_error("can't open file %s for reading", beginning);
-	  string_list_empty(&list_files);
-	}
-      }
-      else {
 	print_error("name of file to include is missing");
 	string_list_empty(&list_files);
       }
 
-      utils_free(line);
-      return read_line();
+	utils_free(line);
+	return read_line();
+      }
+
+      if (looking_at("substitute_value", &beginning)) {
+	if (*beginning) {
+	  char *substitution
+	    = association_list_find_association(&substitutions, beginning);
+
+	  if (!substitution) {
+	    print_error("undefined substitution symbol `%s'", beginning);
+	    string_list_empty(&list_files);
+	    utils_free(line);
+
+	    return NULL;
+	  }
+
+	  beginning = substitution;
+	  end = substitution + strlen(substitution);
+	}
+	else {
+	  print_error("substitution symbol expected");
+	  string_list_empty(&list_files);
+	  utils_free(line);
+
+	  return NULL;
+	}
+      }
     }
 
     string_list_add_from_buffer(&lines, beginning, end - beginning);
@@ -760,7 +862,6 @@ read_line(void)
   }
 
   last_line_reusable = 0;
-
   return lines.last->text;
 }
 
@@ -774,8 +875,8 @@ parse_thing(Thing thing, char **line, const char *type)
     *line = read_line();
 
   if (! *line) {
-    print_error("%s expected");
-    return "NULL";
+    print_error("%s expected", type);
+    return NULL;
   }
 
   value = *line;
@@ -910,6 +1011,50 @@ parse_multiline_string(char **line, const char *type,
   }
 
   return string;
+}
+
+
+int
+parse_color(char **line, QuarryColor *color, const char *type)
+{
+  int num_digits;
+  int red;
+  int green;
+  int blue;
+
+  while (*line && ! **line)
+    *line = read_line();
+
+  if (! *line || * (*line)++ != '#') {
+    print_error("%s expected", type);
+    return 0;
+  }
+
+  for (num_digits = 0; isxdigit(**line) && num_digits <= 6; num_digits++)
+    (*line)++;
+
+  if ((num_digits != 6 && num_digits != 3) || (**line && !isspace(**line))) {
+    print_error("%s expected", type);
+    return 0;
+  }
+
+  if (num_digits == 6)
+    sscanf((*line) - 6, "%2x%2x%2x", &red, &green, &blue);
+  else {
+    sscanf((*line) - 3, "%1x%1x%1x", &red, &green, &blue);
+    red   *= 0x11;
+    green *= 0x11;
+    blue  *= 0x11;
+  }
+
+  while (isspace(**line))
+    (*line)++;
+
+  color->red   = red;
+  color->green = green;
+  color->blue  = blue;
+
+  return 1;
 }
 
 
