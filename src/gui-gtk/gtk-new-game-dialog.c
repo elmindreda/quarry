@@ -299,21 +299,22 @@ gtk_new_game_dialog_present(void)
   /* Board size adjustments for each of the games. */
   data->board_sizes[GTK_GAME_GO]
     = ((GtkAdjustment *)
-       gtk_adjustment_new(new_game_configuration.go_board_size,
+       gtk_adjustment_new(new_go_game_configuration.board_size,
 			  GTK_MIN_BOARD_SIZE, GTK_MAX_BOARD_SIZE, 1, 2, 0));
   data->board_sizes[GTK_GAME_AMAZONS]
     = ((GtkAdjustment *)
-       gtk_adjustment_new(new_game_configuration.amazons_board_size,
+       gtk_adjustment_new(new_amazons_game_configuration.board_size,
 			  GTK_MIN_BOARD_SIZE, GTK_MAX_BOARD_SIZE, 1, 2, 0));
   data->board_sizes[GTK_GAME_OTHELLO]
     = ((GtkAdjustment *)
-       gtk_adjustment_new(new_game_configuration.othello_board_size,
+       gtk_adjustment_new(new_othello_game_configuration.board_size,
 			  ROUND_UP(GTK_MIN_BOARD_SIZE, 2),
 			  ROUND_DOWN(GTK_MAX_BOARD_SIZE, 2),
 			  2, 4, 0));
 
   for (k = 0; k < NUM_SUPPORTED_GAMES; k++) {
     TimeControlData *const time_control_data = data->time_control_data + k;
+    const TimeControlConfiguration *time_control_configuration;
 
     GtkWidget *rules_vbox_widget;
     GtkBox *rules_vbox;
@@ -337,6 +338,17 @@ gtk_new_game_dialog_present(void)
     GtkSizeGroup *labels_size_group;
     GtkSizeGroup *spin_buttons_size_group;
     char rules_vbox_title[64];
+
+    if (k == GTK_GAME_GO)
+      time_control_configuration = &new_go_game_configuration.time_control;
+    else if (k == GTK_GAME_AMAZONS) {
+      time_control_configuration
+	= &new_amazons_game_configuration.time_control;
+    }
+    else if (k == GTK_GAME_OTHELLO) {
+      time_control_configuration
+	= &new_othello_game_configuration.time_control;
+    }
 
     /* "Game Rules" named vertical box. */
     sprintf(rules_vbox_title, "%s Rules", game_info[index_to_game[k]].name);
@@ -392,14 +404,19 @@ gtk_new_game_dialog_present(void)
       = gtk_check_button_new_with_mnemonic("K_eep track of total time");
     time_control_data->track_total_time_button
       = GTK_TOGGLE_BUTTON(check_button);
+    if (time_control_configuration->track_total_time) {
+      gtk_toggle_button_set_active(time_control_data->track_total_time_button,
+				   TRUE);
+    }
 
     gtk_notebook_append_page(time_control_data->notebook,
 			     gtk_utils_align_widget(check_button, 0.0, 0.0),
 			     NULL);
 
     time_control_data->game_time_limit
-      = ((GtkAdjustment *) gtk_adjustment_new(1800.0, 1.0, 3600000.0 - 1.0,
-					      60.0, 300.0, 0.0));
+      = ((GtkAdjustment *)
+	 gtk_adjustment_new(time_control_configuration->game_time_limit,
+			    1.0, 3600000.0 - 1.0, 60.0, 300.0, 0.0));
 
     game_time_limit_spin_button
       = gtk_utils_create_time_spin_button(time_control_data->game_time_limit,
@@ -417,8 +434,9 @@ gtk_new_game_dialog_present(void)
 			     gtk_utils_align_widget(hbox, 0.0, 0.0), NULL);
 
     time_control_data->move_time_limit
-      = ((GtkAdjustment *) gtk_adjustment_new(30.0, 1.0, 360000.0 - 1.0,
-					      5.0, 30.0, 0.0));
+      = ((GtkAdjustment *)
+	 gtk_adjustment_new(time_control_configuration->move_time_limit,
+			    1.0, 360000.0 - 1.0, 5.0, 30.0, 0.0));
 
     move_time_limit_spin_button
       = gtk_utils_create_time_spin_button(time_control_data->move_time_limit,
@@ -435,8 +453,9 @@ gtk_new_game_dialog_present(void)
 			     gtk_utils_align_widget(hbox, 0.0, 0.0), NULL);
 
     time_control_data->main_time
-      = ((GtkAdjustment *) gtk_adjustment_new(600.0, 0.0, 3600000.0 - 1.0,
-					      60.0, 300.0, 0.0));
+      = ((GtkAdjustment *)
+	 gtk_adjustment_new(time_control_configuration->main_time,
+			    0.0, 3600000.0 - 1.0, 60.0, 300.0, 0.0));
 
     main_time_spin_button
       = gtk_utils_create_time_spin_button(time_control_data->main_time, 60.0);
@@ -449,8 +468,9 @@ gtk_new_game_dialog_present(void)
 				      NULL);
 
     time_control_data->overtime_period
-      = ((GtkAdjustment *) gtk_adjustment_new(600.0, 1.0, 3600000.0 - 1.0,
-					      60.0, 300.0, 0.0));
+      = ((GtkAdjustment *)
+	 gtk_adjustment_new(time_control_configuration->overtime_period_length,
+			    1.0, 3600000.0 - 1.0, 60.0, 300.0, 0.0));
 
     overtime_period_spin_button
       = gtk_utils_create_time_spin_button(time_control_data->overtime_period,
@@ -466,7 +486,9 @@ gtk_new_game_dialog_present(void)
 				      NULL);
 
     time_control_data->moves_per_overtime
-      = (GtkAdjustment *) gtk_adjustment_new(25.0, 1.0, 999.0, 1.0, 5.0, 0.0);
+      = ((GtkAdjustment *)
+	 gtk_adjustment_new(time_control_configuration->moves_per_overtime,
+			    1.0, 999.0, 1.0, 5.0, 0.0));
 
     moves_per_overtime_spin_button
       = gtk_utils_create_spin_button(time_control_data->moves_per_overtime,
@@ -486,6 +508,16 @@ gtk_new_game_dialog_present(void)
 				  hboxes[1], GTK_UTILS_FILL,
 				  hboxes[2], GTK_UTILS_FILL, NULL);
     gtk_notebook_append_page(time_control_data->notebook, vbox1, NULL);
+
+    /* Select the last used time control type. */
+    if (0 <= time_control_configuration->type
+	&& time_control_configuration->type <= (sizeof(time_control_types)
+						/ sizeof(const gchar *))) {
+      gtk_widget_show_all(time_control_notebook);
+      gtk_utils_set_selector_active_item_index(time_control_type,
+					       (time_control_configuration
+						->type));
+    }
 
     /* Align everything nicely with size groups. */
     labels_size_group
@@ -515,7 +547,7 @@ gtk_new_game_dialog_present(void)
       radio_buttons = (GtkWidget **) data->handicap_toggle_buttons;
       gtk_utils_create_radio_chain(radio_buttons, handicap_radio_button_labels,
 				   2);
-      if (!new_game_configuration.handicap_is_fixed)
+      if (!new_go_game_configuration.handicap_is_fixed)
 	gtk_toggle_button_set_active(data->handicap_toggle_buttons[1], TRUE);
 
       /* Handicap spin buttons and boxes to pack them together with
@@ -525,8 +557,8 @@ gtk_new_game_dialog_present(void)
 	data->handicaps[i]
 	  = ((GtkAdjustment *)
 	     gtk_adjustment_new((i == 0
-				 ? new_game_configuration.fixed_handicap
-				 : new_game_configuration.free_handicap),
+				 ? new_go_game_configuration.fixed_handicap
+				 : new_go_game_configuration.free_handicap),
 				0, GTK_MAX_BOARD_SIZE * GTK_MAX_BOARD_SIZE,
 				1, 2, 0));
 
@@ -561,7 +593,7 @@ gtk_new_game_dialog_present(void)
 
       /* Komi spin button and label. */
       data->komi = ((GtkAdjustment *)
-		    gtk_adjustment_new(new_game_configuration.komi,
+		    gtk_adjustment_new(new_go_game_configuration.komi,
 				       -999.5, 999.5, 1.0, 5.0, 0.0));
       komi_spin_button = gtk_utils_create_spin_button(data->komi,
 						      0.0, 1, FALSE);
@@ -767,6 +799,7 @@ begin_game(GtkEnginesInstantiationStatus status, gpointer user_data)
   const char *engine_screen_names[NUM_COLORS];
   TimeControlData *const time_control_data = (data->time_control_data
 					      + game_index);
+  TimeControlConfiguration *time_control_configuration;
   TimeControl *black_time_control = NULL;
   TimeControl *white_time_control = NULL;
   SgfGameTree *game_tree;
@@ -794,13 +827,57 @@ begin_game(GtkEnginesInstantiationStatus status, gpointer user_data)
 						      : human_names[k]));
   }
 
-  switch (gtk_notebook_get_current_page(time_control_data->notebook)) {
+  if (game == GAME_GO) {
+    gboolean handicap_is_fixed
+      = gtk_toggle_button_get_active(data->handicap_toggle_buttons[0]);
+    gint handicap = gtk_adjustment_get_value(data->handicaps[handicap_is_fixed
+							     ? 0 : 1]);
+    gdouble komi = gtk_adjustment_get_value(data->komi);
+    char *komi_string = utils_duplicate_string(utils_format_double(komi));
+
+    /* Don't bother user with handicap subtleties. */
+    if (handicap == 1)
+      handicap = 0;
+
+    sgf_utils_set_handicap(game_tree, handicap, handicap_is_fixed);
+    sgf_node_add_text_property(game_tree->current_node, game_tree, SGF_KOMI,
+			       komi_string);
+
+    new_go_game_configuration.board_size	= board_size;
+    new_go_game_configuration.handicap_is_fixed = handicap_is_fixed;
+
+    if (handicap_is_fixed)
+      new_go_game_configuration.fixed_handicap	= handicap;
+    else
+      new_go_game_configuration.free_handicap	= handicap;
+
+    new_go_game_configuration.komi		= komi;
+
+    time_control_configuration = &new_go_game_configuration.time_control;
+  }
+  else if (game == GAME_AMAZONS) {
+    new_amazons_game_configuration.board_size	= board_size;
+
+    time_control_configuration = &new_amazons_game_configuration.time_control;
+  }
+  else if (game == GAME_OTHELLO) {
+    new_othello_game_configuration.board_size	= board_size;
+
+    time_control_configuration = &new_othello_game_configuration.time_control;
+  }
+
+  time_control_configuration->type
+    = gtk_notebook_get_current_page(time_control_data->notebook);
+
+  switch (time_control_configuration->type) {
   case 0:
     {
       GtkToggleButton *track_total_time_button =
 	time_control_data->track_total_time_button;
 
-      if (gtk_toggle_button_get_active(track_total_time_button)) {
+      time_control_configuration->track_total_time
+	= gtk_toggle_button_get_active(track_total_time_button);
+      if (time_control_configuration->track_total_time) {
 	black_time_control = time_control_new(0, 0, 0);
 	white_time_control = time_control_new(0, 0, 0);
       }
@@ -809,76 +886,49 @@ begin_game(GtkEnginesInstantiationStatus status, gpointer user_data)
     break;
 
   case 1:
-    {
-      int game_time_limit
-	= gtk_adjustment_get_value(time_control_data->game_time_limit);
+    time_control_configuration->game_time_limit
+      = gtk_adjustment_get_value(time_control_data->game_time_limit);
 
-      black_time_control = time_control_new(game_time_limit, 0, 0);
-      white_time_control = time_control_new(game_time_limit, 0, 0);
-    }
+    black_time_control
+      = time_control_new(time_control_configuration->game_time_limit, 0, 0);
+    white_time_control
+      = time_control_new(time_control_configuration->game_time_limit, 0, 0);
 
     break;
 
   case 2:
-    {
-      int move_time_limit
-	= gtk_adjustment_get_value(time_control_data->move_time_limit);
+    time_control_configuration->move_time_limit
+      = gtk_adjustment_get_value(time_control_data->move_time_limit);
 
-      black_time_control = time_control_new(0, move_time_limit, 1);
-      white_time_control = time_control_new(0, move_time_limit, 1);
-    }
+    black_time_control
+      = time_control_new(0, time_control_configuration->move_time_limit, 1);
+    white_time_control
+      = time_control_new(0, time_control_configuration->move_time_limit, 1);
 
     break;
 
   case 3:
-    {
-      int main_time = gtk_adjustment_get_value(time_control_data->main_time);
-      int overtime_length
-	= gtk_adjustment_get_value(time_control_data->overtime_period);
-      int moves_per_overtime
-	= gtk_adjustment_get_value(time_control_data->moves_per_overtime);
+    time_control_configuration->main_time
+      = gtk_adjustment_get_value(time_control_data->main_time);
+    time_control_configuration->overtime_period_length
+      = gtk_adjustment_get_value(time_control_data->overtime_period);
+    time_control_configuration->moves_per_overtime
+      = gtk_adjustment_get_value(time_control_data->moves_per_overtime);
 
-      black_time_control = time_control_new(main_time, overtime_length,
-					    moves_per_overtime);
-      white_time_control = time_control_new(main_time, overtime_length,
-					    moves_per_overtime);
-    }
+    black_time_control
+      = time_control_new(time_control_configuration->main_time,
+			 time_control_configuration->overtime_period_length,
+			 time_control_configuration->moves_per_overtime);
+    white_time_control
+      = time_control_new(time_control_configuration->main_time,
+			 time_control_configuration->overtime_period_length,
+			 time_control_configuration->moves_per_overtime);
 
     break;
 
   default:
     assert(0);
   }
-
-  if (game == GAME_GO) {
-    gboolean handicap_is_fixed
-      = gtk_toggle_button_get_active(data->handicap_toggle_buttons[0]);
-    gint handicap = gtk_adjustment_get_value(data->handicaps[handicap_is_fixed
-							     ? 0 : 1]);
-    gdouble komi = gtk_adjustment_get_value(data->komi);
-
-    /* Don't bother user with handicap subtleties. */
-    if (handicap == 1)
-      handicap = 0;
-
-    sgf_utils_set_handicap(game_tree, handicap, handicap_is_fixed);
-    sgf_node_add_text_property(game_tree->current_node, game_tree, SGF_KOMI,
-			       utils_duplicate_string(format_double(komi)));
-
-    new_game_configuration.go_board_size      = board_size;
-    new_game_configuration.handicap_is_fixed  = handicap_is_fixed;
-
-    if (handicap_is_fixed)
-      new_game_configuration.fixed_handicap   = handicap;
-    else
-      new_game_configuration.free_handicap    = handicap;
-
-    new_game_configuration.komi = komi;
-  }
-  else if (game == GAME_AMAZONS)
-    new_game_configuration.amazons_board_size = board_size;
-  else if (game == GAME_OTHELLO)
-    new_game_configuration.othello_board_size = board_size;
 
   sgf_collection = sgf_collection_new();
   sgf_collection_add_game_tree(sgf_collection, game_tree);
