@@ -955,6 +955,84 @@ gtk_goban_set_overlay_data(GtkGoban *goban, int overlay_index,
 }
 
 
+
+void
+gtk_goban_set_grid_contents(GtkGoban *goban, int x, int y, int contents)
+{
+  int k;
+
+  assert(GTK_IS_GOBAN(goban));
+  assert(goban->game != GAME_DUMMY);
+  assert(ON_SIZED_GRID(goban->width, goban->height, x, y));
+
+  for (k = 0; k < NUM_OVERLAYS; k++)
+    set_overlay_data(goban, k, NULL_X, NULL_Y, TILE_NONE);
+
+  set_overlay_data(goban, 0, x, y, contents);
+  goban->overlay_pos[0] = NULL_POSITION;
+}
+
+
+int
+gtk_goban_get_grid_contents(GtkGoban *goban, int x, int y)
+{
+  int k;
+  int pos = POSITION(x, y);
+
+  assert(GTK_IS_GOBAN(goban));
+  assert(goban->game != GAME_DUMMY);
+  assert(ON_SIZED_GRID(goban->width, goban->height, x, y));
+
+  for (k = 0; k < NUM_OVERLAYS; k++) {
+    if (goban->overlay_pos[k] == pos)
+      return goban->overlay_contents[k];
+  }
+
+  return goban->grid[pos];
+}
+
+
+void
+gtk_goban_diff_against_grid
+		(GtkGoban *goban, const char *grid,
+		 BoardPositionList *position_lists[NUM_ON_GRID_VALUES])
+{
+  int k;
+  int x;
+  int y;
+  int num_positions[NUM_ON_GRID_VALUES];
+  int positions[NUM_ON_GRID_VALUES][BOARD_MAX_POSITIONS];
+
+  assert(GTK_IS_GOBAN(goban));
+  assert(grid);
+
+  for (k = 0; k < NUM_ON_GRID_VALUES; k++)
+    num_positions[k] = 0;
+
+  for (y = 0; y < goban->height; y++) {
+    for (x = 0; x < goban->width; x++) {
+      int pos = POSITION(x, y);
+      int contents = goban->grid[pos];
+
+      if (contents != grid[pos]) {
+	assert(0 <= contents && contents < NUM_ON_GRID_VALUES);
+
+	positions[contents][num_positions[contents]++] = pos;
+      }
+    }
+  }
+
+  for (k = 0; k < NUM_ON_GRID_VALUES; k++) {
+    if (num_positions[k] > 0) {
+      position_lists[k] = board_position_list_new(positions[k],
+						  num_positions[k]);
+    }
+    else
+      position_lists[k] = NULL;
+  }
+}
+
+
 void
 gtk_goban_update_appearance(Game game)
 {
@@ -1044,15 +1122,32 @@ set_feedback_data(GtkGoban *goban, int x, int y,
 
     break;
 
-  case GOBAN_FEEDBACK_BLACK_MOVE_DEFAULT:
-  case GOBAN_FEEDBACK_WHITE_MOVE_DEFAULT:
+  case GOBAN_FEEDBACK_BLACK_MOVE:
+  case GOBAN_FEEDBACK_WHITE_MOVE:
     {
-      int color_index = feedback - GOBAN_FEEDBACK_MOVE_DEFAULT;
+      int color_index = feedback - GOBAN_FEEDBACK_MOVE;
 
       if (COLOR_INDEX(goban->grid[POSITION(x, y)]) != color_index)
 	feedback_tile = STONE_50_TRANSPARENT + color_index;
       else
 	feedback_tile = STONE_25_TRANSPARENT + color_index;
+    }
+
+    break;
+
+  case GOBAN_FEEDBACK_ADD_BLACK_OR_REMOVE:
+  case GOBAN_FEEDBACK_ADD_WHITE_OR_REMOVE:
+    {
+      int contents = gtk_goban_get_grid_contents(goban, x, y);
+
+      if (contents == EMPTY) {
+	feedback_tile = (STONE_50_TRANSPARENT
+			 + (feedback - GOBAN_FEEDBACK_ADD_OR_REMOVE));
+      }
+      else if (IS_STONE(contents))
+	feedback_tile = STONE_25_TRANSPARENT + COLOR_INDEX(contents);
+      else
+	feedback_tile = TILE_NONE;
     }
 
     break;
@@ -1065,7 +1160,10 @@ set_feedback_data(GtkGoban *goban, int x, int y,
     feedback_tile = TILE_NONE;
   }
 
-  set_overlay_data(goban, FEEDBACK_OVERLAY, x, y, feedback_tile);
+  if (feedback_tile != TILE_NONE)
+    set_overlay_data(goban, FEEDBACK_OVERLAY, x, y, feedback_tile);
+  else
+    set_overlay_data(goban, FEEDBACK_OVERLAY, NULL_X, NULL_Y, TILE_NONE);
 
   goban->pointer_x     = x;
   goban->pointer_y     = y;
@@ -1077,7 +1175,7 @@ static void
 set_overlay_data(GtkGoban *goban, int overlay_index, int x, int y, int tile)
 {
   GtkWidget *widget = GTK_WIDGET(goban);
-  int new_pos = (tile != TILE_NONE ? POSITION(x, y) : NULL_POSITION);
+  int new_pos = POSITION(x, y);
   int old_pos = goban->overlay_pos[overlay_index];
 
   if (old_pos == new_pos
@@ -1104,9 +1202,8 @@ set_overlay_data(GtkGoban *goban, int overlay_index, int x, int y, int tile)
     }
   }
 
-  if (old_pos != NULL_POSITION) {
+  if (old_pos != NULL_POSITION)
     goban->grid[old_pos] = goban->overlay_contents[overlay_index];
-  }
 
   goban->overlay_pos[overlay_index]	 = new_pos;
   goban->overlay_contents[overlay_index] = goban->grid[new_pos];

@@ -67,17 +67,28 @@ struct _GtkGobanClickData {
 
 typedef enum {
   GOBAN_FEEDBACK_NONE,
+
   GOBAN_FEEDBACK_GHOST,
   GOBAN_FEEDBACK_BLACK_GHOST = GOBAN_FEEDBACK_GHOST + BLACK_INDEX,
   GOBAN_FEEDBACK_WHITE_GHOST = GOBAN_FEEDBACK_GHOST + WHITE_INDEX,
+
   GOBAN_FEEDBACK_THICK_GHOST,
   GOBAN_FEEDBACK_THICK_BLACK_GHOST = GOBAN_FEEDBACK_THICK_GHOST + BLACK_INDEX,
   GOBAN_FEEDBACK_THICK_WHITE_GHOST = GOBAN_FEEDBACK_THICK_GHOST + WHITE_INDEX,
+
   GOBAN_FEEDBACK_PRESS_DEFAULT,
-  GOBAN_FEEDBACK_MOVE_DEFAULT,
-  GOBAN_FEEDBACK_BLACK_MOVE_DEFAULT = GOBAN_FEEDBACK_MOVE_DEFAULT + BLACK_INDEX,
-  GOBAN_FEEDBACK_WHITE_MOVE_DEFAULT = GOBAN_FEEDBACK_MOVE_DEFAULT + WHITE_INDEX,
+
+  GOBAN_FEEDBACK_MOVE,
+  GOBAN_FEEDBACK_BLACK_MOVE = GOBAN_FEEDBACK_MOVE + BLACK_INDEX,
+  GOBAN_FEEDBACK_WHITE_MOVE = GOBAN_FEEDBACK_MOVE + WHITE_INDEX,
+
+  GOBAN_FEEDBACK_ADD_OR_REMOVE,
+  GOBAN_FEEDBACK_ADD_BLACK_OR_REMOVE = (GOBAN_FEEDBACK_ADD_OR_REMOVE
+					+ BLACK_INDEX),
+  GOBAN_FEEDBACK_ADD_WHITE_OR_REMOVE = (GOBAN_FEEDBACK_ADD_OR_REMOVE
+					+ WHITE_INDEX),
   GOBAN_FEEDBACK_SPECIAL,
+
   NUM_GOBAN_FEEDBACKS
 } GtkGobanPointerFeedback;
 
@@ -210,6 +221,13 @@ void		gtk_goban_force_feedback_poll(GtkGoban *goban);
 
 void		gtk_goban_set_overlay_data(GtkGoban *goban, int overlay_index,
 					   int x, int y, int tile);
+
+void		gtk_goban_set_grid_contents(GtkGoban *goban,
+					    int x, int y, int contents);
+int		gtk_goban_get_grid_contents(GtkGoban *goban, int x, int y);
+void		gtk_goban_diff_against_grid
+		  (GtkGoban *goban, const char *grid,
+		   BoardPositionList *position_lists[NUM_ON_GRID_VALUES]);
 
 gint		gtk_goban_negotiate_width(GtkWidget *widget, gint height);
 gint		gtk_goban_negotiate_height(GtkWidget *widget, gint width);
