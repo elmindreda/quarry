@@ -139,10 +139,10 @@ sgf_game_tree_update_view_port (SgfGameTree *tree,
   assert (num_view_port_lines);
 
   if (!tree->view_port_nodes
-      || tree->view_port_x0 >= view_port_x0
-      || tree->view_port_y0 >= view_port_y0
-      || tree->view_port_x1 <= view_port_x1
-      || tree->view_port_y1 <= view_port_y1) {
+      || tree->view_port_x0 > view_port_x0
+      || tree->view_port_y0 > view_port_y0
+      || tree->view_port_x1 < view_port_x1
+      || tree->view_port_y1 < view_port_y1) {
     update_internal_view_port (tree,
 			       view_port_x0, view_port_y0,
 			       view_port_x1, view_port_y1);
