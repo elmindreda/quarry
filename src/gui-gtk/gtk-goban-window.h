@@ -26,6 +26,7 @@
 
 
 #include "gtk-clock.h"
+#include "gtk-game-info-dialog.h"
 #include "gtk-goban.h"
 #include "gtp-client.h"
 #include "gtk-progress-dialog.h"
@@ -119,13 +120,14 @@ struct _GtkGobanWindow {
   GtkWindow		  *save_as_dialog;
 
   SgfNode		  *last_displayed_node;
-  const SgfNode		  *last_game_info_node;
+  SgfNode		  *last_game_info_node;
 
   int			   switching_x;
   int			   switching_y;
   SgfDirection		   switching_direction;
   SgfNode		  *node_to_switch_to;
 
+  GtkGameInfoDialog	  *game_info_dialog;
   GtkProgressDialog	  *scoring_progress_dialog;
 };
 
