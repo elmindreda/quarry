@@ -2,7 +2,10 @@
 
 SUBDIRS =	\
 	data	\
+	po	\
 	src
 
 
 DISTCLEANFILES = *~
+
+EXTRA_DIST = config.rpath
