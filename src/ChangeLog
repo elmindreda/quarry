@@ -1,3 +1,49 @@
+2004-09-13  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* gui-gtk/gtk-goban-window.c (gtk_goban_window_init):
+	Center-justify `move_information_label'.
+	(update_move_information): Print result when browsing the last
+	node of main variation.
+	(move_has_been_generated): Handle resignation of GTP engines.
+
+2004-09-12  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* sgf/sgf-tree.c (sgf_node_get_result): New function.
+
+	* sgf/sgf-utils.c (do_enter_tree): Keep value of new
+	`last_main_variation_node' field of `SgfBoardState' structure
+	valid.
+	(descend_nodes): Likewise.
+	(ascend_nodes): Likewise.
+
+2004-09-10  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* gui-gtk/gtk-goban-window.c (gtk_goban_window_init): Add "Resign"
+	menu item.
+	(play_resign): New function.
+	(update_children_for_new_node): Sensitize/desensitize "Resign"
+	menu item.
+	(go_scoring_mode_done): Add game result SGF property.
+	(move_has_been_played): Likewise for Amazons and Othello.
+
+	* sgf/sgf-utils.c (sgf_utils_append_variation): Rename from
+	sgf_utils_append_move_variation().  Handle variations without
+	moves (when `color' is set to `EMPTY').
+
+	* sgf/sgf-tree.c (sgf_node_add_score_result) 
+	(sgf_node_append_text_property): New functions.
+
+	* gui-gtk/gtk-new-game-dialog.c (begin_game): Set game result to
+	"Void" initially.
+
+	* gtp/gtp-client.c (parse_generated_move): Handle "resign" answer
+	of GTP engines.
+
+	* board/board-topology.h (SPECIAL_X, SPECIAL_Y, SPECIAL_POSITION):
+	New macros.
+	* gtp/gtp-client.h (RESIGNATION_X, RESIGNATION_Y, RESIGNATION):
+	New macros.
+
 2004-09-09  Paul Pogonyshev  <pogonyshev@gmx.net>
 
 	* gui-gtk/gtk-utils.h
@@ -129,7 +175,7 @@
 2004-08-27  Paul Pogonyshev  <pogonyshev@gmx.net>
 
 	* gui-gtk/gtk-tile-set.c (gtk_main_tile_set_create_or_reuse):
-	Restore accidentially removed special case: only use odd-sized
+	Restore accidentally removed special case: only use odd-sized
 	tiles for Go (otherwise they won't center properly).
 
 	* gui-utils/tile-renderer.c (render_go_stones): Fix stone center
