@@ -420,9 +420,9 @@ do_parse_lists(FILE *h_file, FILE *c_file, const ListDescription *lists)
 
 	if (pending_eol_comment) {
 	  if (*pending_eol_comment && h_file_enum_name) {
-	    string_buffer_printf(&h_file_enums, ",%s/* %s */\n",
-				 TABBING(7, h_file_line_length + 1),
-				 pending_eol_comment);
+	    string_buffer_cprintf(&h_file_enums, ",%s/* %s */\n",
+				  TABBING(7, h_file_line_length + 1),
+				  pending_eol_comment);
 	  }
 
 	  utils_free(pending_eol_comment);
@@ -533,9 +533,9 @@ do_parse_lists(FILE *h_file, FILE *c_file, const ListDescription *lists)
 
 	if (pending_eol_comment) {
 	  if (*pending_eol_comment && h_file_enum_name) {
-	    string_buffer_printf(&h_file_enums, "%s/* %s */",
-				 TABBING(7, h_file_line_length),
-				 pending_eol_comment);
+	    string_buffer_cprintf(&h_file_enums, "%s/* %s */",
+				  TABBING(7, h_file_line_length),
+				  pending_eol_comment);
 	  }
 
 	  utils_free(pending_eol_comment);

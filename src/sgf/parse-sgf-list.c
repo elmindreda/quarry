@@ -239,9 +239,9 @@ property_list_parse_type2(StringBuffer *c_file_arrays,
 
   *pending_eol_comment = utils_duplicate_string(property_id);
 
-  string_buffer_printf(c_file_arrays, "  { \"%s\", %s, %s, %s }",
-		       property_id, value_type->c_name, parser_function,
-		       value_type->value_writer_function);
+  string_buffer_cprintf(c_file_arrays, "  { \"%s\", %s, %s, %s }",
+			property_id, value_type->c_name, parser_function,
+			value_type->value_writer_function);
 
   if (*property_id) {
     const char *pointer;
@@ -285,8 +285,8 @@ property_list_finalize(StringBuffer *c_file_arrays)
     return 1;
   }
 
-  string_buffer_printf(&h_file_bottom,
-		       "\n\n#define SGF_LONG_NAMES\t\t%d\n", long_names);
+  string_buffer_cprintf(&h_file_bottom,
+			"\n\n#define SGF_LONG_NAMES\t\t%d\n", long_names);
 
   enumerate_nodes(root);
 
@@ -330,8 +330,8 @@ print_nodes(const TreeNode *node, const char *identifier)
 
   for (k = 0; k < 'Z' - 'A' + 1; k++) {
     if (node->children[k]) {
-      string_buffer_printf(&c_file_bottom, ",\n    %s + %d",
-			   total, node->children[k]->index);
+      string_buffer_cprintf(&c_file_bottom, ",\n    %s + %d",
+			    total, node->children[k]->index);
     }
     else {
       string_buffer_cat_strings(&c_file_bottom,

@@ -89,21 +89,21 @@ write_game_tree(SgfWritingData *data, SgfGameTree *tree, int force_utf8)
   BoardPositionList *white_stones;
   int default_setup_hidden = 0;
 
-  buffered_writer_printf(&data->writer, "(;GM[%d]FF[4]\n", tree->game);
+  buffered_writer_cprintf(&data->writer, "(;GM[%d]FF[4]\n", tree->game);
 
   if (force_utf8 || tree->char_set) {
-    buffered_writer_printf(&data->writer, "CA[%s]\n",
-			   (force_utf8 ? "UTF-8" : tree->char_set));
+    buffered_writer_cprintf(&data->writer, "CA[%s]\n",
+			    (force_utf8 ? "UTF-8" : tree->char_set));
   }
 
   buffered_writer_cat_string(&data->writer,
 			     "AP[" PACKAGE_NAME ":" PACKAGE_VERSION "]\n");
 
   if (tree->board_width == tree->board_height)
-    buffered_writer_printf(&data->writer, "SZ[%d]\n", tree->board_width);
+    buffered_writer_cprintf(&data->writer, "SZ[%d]\n", tree->board_width);
   else {
-    buffered_writer_printf(&data->writer, "SZ[%d:%d]\n",
-			   tree->board_width, tree->board_height);
+    buffered_writer_cprintf(&data->writer, "SZ[%d:%d]\n",
+			    tree->board_width, tree->board_height);
   }
 
   root_black_stones = sgf_node_get_list_of_point_property_value(root,
@@ -312,7 +312,7 @@ void
 sgf_write_number(SgfWritingData *data, SgfValue value)
 {
   buffered_writer_add_character(&data->writer, '[');
-  buffered_writer_printf(&data->writer, "%d", value.number);
+  buffered_writer_cprintf(&data->writer, "%d", value.number);
   buffered_writer_add_character(&data->writer, ']');
 }
 
@@ -321,7 +321,7 @@ void
 sgf_write_real(SgfWritingData *data, SgfValue value)
 {
   buffered_writer_add_character(&data->writer, '[');
-  buffered_writer_cat_string(&data->writer, utils_format_double(*value.real));
+  buffered_writer_cprintf(&data->writer, "%.f", *value.real);
   buffered_writer_add_character(&data->writer, ']');
 }
 

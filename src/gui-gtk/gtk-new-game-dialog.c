@@ -839,7 +839,6 @@ begin_game(GtkEnginesInstantiationStatus status, gpointer user_data)
     gint handicap = gtk_adjustment_get_value(data->handicaps[handicap_is_fixed
 							     ? 0 : 1]);
     gdouble komi = gtk_adjustment_get_value(data->komi);
-    char *komi_string = utils_duplicate_string(utils_format_double(komi));
 
     /* Don't bother user with handicap subtleties. */
     if (handicap == 1)
@@ -847,7 +846,7 @@ begin_game(GtkEnginesInstantiationStatus status, gpointer user_data)
 
     sgf_utils_set_handicap(game_tree, handicap, handicap_is_fixed);
     sgf_node_add_text_property(game_tree->current_node, game_tree,
-			       SGF_KOMI, komi_string, 0);
+			       SGF_KOMI, utils_cprintf("%.f", komi), 0);
 
     new_go_game_configuration.board_size	= board_size;
     new_go_game_configuration.handicap_is_fixed = handicap_is_fixed;

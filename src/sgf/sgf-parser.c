@@ -2349,8 +2349,6 @@ sgf_parse_handicap(SgfParsingData *data)
     return SGF_FATAL_EMPTY_VALUE;
 
   if (do_parse_number(data, &handicap) && data->token == ']') {
-    char buffer[8];
-
     if (handicap > data->board_width * data->board_height) {
       handicap = data->board_width * data->board_height;
       add_error(data, SGF_WARNING_HANDICAP_REDUCED, handicap);
@@ -2360,8 +2358,7 @@ sgf_parse_handicap(SgfParsingData *data)
       add_error(data, SGF_ERROR_INVALID_HANDICAP);
     }
 
-    text = utils_duplicate_as_string(buffer, sprintf(buffer, "%d", handicap));
-
+    text = utils_cprintf("%d", handicap);
     result = end_parsing_value(data);
   }
   else {
@@ -2405,7 +2402,7 @@ sgf_parse_komi(SgfParsingData *data)
     return SGF_FATAL_EMPTY_VALUE;
 
   if (do_parse_real(data, &komi) && data->token == ']') {
-    text = utils_duplicate_string(utils_format_double(komi));
+    text = utils_cprintf("%.f", komi);
     result = end_parsing_value(data);
   }
   else {
@@ -2625,7 +2622,7 @@ sgf_parse_time_limit(SgfParsingData *data)
       return SGF_FATAL_NEGATIVE_TIME_LIMIT;
     }
 
-    text = utils_duplicate_string(utils_format_double(time_limit));
+    text = utils_cprintf("%.f", time_limit);
     result = end_parsing_value(data);
   }
   else {

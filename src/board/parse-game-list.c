@@ -154,22 +154,23 @@ game_list_parse_game2(StringBuffer *c_file_arrays,
   PARSE_THING(relative_num_moves_per_game, FLOATING_POINT_NUMBER, line,
 	      "relative number of moves per game");
 
-  string_buffer_printf(c_file_arrays,
-		       ("  { %s, %s, %s, %s,\n    %s,\n    \"%s\", %d,\n"
-			"    %s, %s,\n    %s, %s, %s,\n    %s, %s,\n"
-			"    %s, %s,\n    %s, %s,\n    sizeof(%s), %s }"),
-		       game_full_name, default_board_size, color_to_play_first,
-		       adjust_color_to_play_function, is_game_over_function,
-		       horizontal_coordinates,
-		       reversed_vertical_coordinates_flag,
-		       get_default_setup_function, reset_game_data_function,
-		       is_legal_move_function, play_move_function,
-		       undo_function,
-		       apply_changes_function, add_dummy_move_entry_function,
-		       format_move_function, parse_move_function,
-		       validate_board_function, dump_board_function,
-		       move_stack_entry_structure,
-		       relative_num_moves_per_game);
+  string_buffer_cprintf(c_file_arrays,
+			("  { %s, %s, %s, %s,\n    %s,\n    \"%s\", %d,\n"
+			 "    %s, %s,\n    %s, %s, %s,\n    %s, %s,\n"
+			 "    %s, %s,\n    %s, %s,\n    sizeof(%s), %s }"),
+			game_full_name, default_board_size,
+			color_to_play_first,
+			adjust_color_to_play_function, is_game_over_function,
+			horizontal_coordinates,
+			reversed_vertical_coordinates_flag,
+			get_default_setup_function, reset_game_data_function,
+			is_legal_move_function, play_move_function,
+			undo_function,
+			apply_changes_function, add_dummy_move_entry_function,
+			format_move_function, parse_move_function,
+			validate_board_function, dump_board_function,
+			move_stack_entry_structure,
+			relative_num_moves_per_game);
 
   return 0;
 }

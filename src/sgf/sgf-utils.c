@@ -447,8 +447,6 @@ sgf_utils_mark_territory_on_grid(const SgfGameTree *tree,
 void
 sgf_utils_set_handicap(SgfGameTree *tree, int handicap, int is_fixed)
 {
-  char buffer[32];
-
   assert(tree);
   assert(tree->game == GAME_GO);
   assert(tree->current_node);
@@ -470,10 +468,7 @@ sgf_utils_set_handicap(SgfGameTree *tree, int handicap, int is_fixed)
     assert(handicap < tree->board_width * tree->board_height);
 
   sgf_node_add_text_property(tree->current_node, tree, SGF_HANDICAP,
-			     utils_duplicate_as_string(buffer,
-						       sprintf(buffer, "%d",
-							       handicap)),
-			     1);
+			     utils_cprintf("%d", handicap), 1);
 }
 
 

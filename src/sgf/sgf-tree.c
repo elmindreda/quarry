@@ -635,7 +635,7 @@ sgf_node_get_handicap(const SgfNode *node)
     if (0 <= handicap && handicap <= BOARD_MAX_POSITIONS) {
       char buffer[32];
 
-      sprintf(buffer, "%d", handicap);
+      utils_ncprintf(buffer, sizeof(buffer), "%d", handicap);
       if (strcmp(text, buffer) == 0)
 	return handicap;
     }

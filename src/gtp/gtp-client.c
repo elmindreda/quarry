@@ -516,8 +516,7 @@ gtp_client_set_komi(GtpClient *client,
 {
   assert(client);
 
-  send_command(client, response_callback, user_data,
-	       "komi %s", utils_format_double(komi));
+  send_command(client, response_callback, user_data, "komi %.f", komi);
 }
 
 
@@ -667,7 +666,7 @@ send_command(GtpClient *client,
   va_list arguments;
 
   va_start(arguments, format_string);
-  command = utils_vprintf(format_string, arguments);
+  command = utils_vcprintf(format_string, arguments);
   va_end(arguments);
 
   command = utils_cat_string(command, "\n");

@@ -647,11 +647,13 @@ time_spin_button_output(GtkSpinButton *spin_button)
    * used only occasionally.
    */
   if (value >= 60 * 60) {
-    sprintf(buffer, "%d:%02d:%02d",
-	    value / (60 * 60), (value / 60) % 60, value % 60);
+    utils_ncprintf(buffer, sizeof(buffer), "%d:%02d:%02d",
+		   value / (60 * 60), (value / 60) % 60, value % 60);
   }
-  else
-    sprintf(buffer, "%02d:%02d", value / 60, value % 60);
+  else {
+    utils_ncprintf(buffer, sizeof(buffer), "%02d:%02d",
+		   value / 60, value % 60);
+  }
 
   gtk_entry_set_text(GTK_ENTRY(spin_button), buffer);
 

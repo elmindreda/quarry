@@ -727,9 +727,9 @@ game_format_point(Game game, int board_width, int board_height,
   assert(ON_SIZED_GRID(board_width, board_height, x, y));
 
   *buffer = game_info[game].horizontal_coordinates[x];
-  return (1 + sprintf(buffer + 1, "%d",
-		      (game_info[game].reversed_vertical_coordinates
-		       ? board_height - y : y + 1)));
+  return (1 + utils_ncprintf(buffer + 1, 3, "%d",
+			     (game_info[game].reversed_vertical_coordinates
+			      ? board_height - y : y + 1)));
 }
 
 

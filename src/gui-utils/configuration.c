@@ -480,16 +480,15 @@ write_section(BufferedWriter *writer, const ConfigurationSection *section,
       break;
 
     case VALUE_TYPE_INT:
-      buffered_writer_printf(writer, "%d", * (const int *) field);
+      buffered_writer_cprintf(writer, "%d", * (const int *) field);
       break;
 
     case VALUE_TYPE_REAL:
-      buffered_writer_cat_string(writer,
-				 utils_format_double(* ((const double *)
-							field)));
+      buffered_writer_cprintf(writer, "%.f", * (const double *) field);
       break;
 
     case VALUE_TYPE_COLOR:
+      /* I believe this cannot be locale-dependent, right? */
       buffered_writer_printf(writer, "#%02x%02x%02x",
 			     ((const QuarryColor *) field)->red,
 			     ((const QuarryColor *) field)->green,
@@ -498,15 +497,15 @@ write_section(BufferedWriter *writer, const ConfigurationSection *section,
 
     case VALUE_TYPE_TIME:
       if (* (const int *) field < 60 * 60) {
-	buffered_writer_printf(writer, "%02d:%02d",
-			       (* (const int *) field) / 60,
-			       (* (const int *) field) % 60);
+	buffered_writer_cprintf(writer, "%02d:%02d",
+				(* (const int *) field) / 60,
+				(* (const int *) field) % 60);
       }
       else {
-	buffered_writer_printf(writer, "%d:%02d:%02d",
-			       (* (const int *) field) / (60 * 60),
-			       ((* (const int *) field) / 60) % 60,
-			       (* (const int *) field) % 60);
+	buffered_writer_cprintf(writer, "%d:%02d:%02d",
+				(* (const int *) field) / (60 * 60),
+				((* (const int *) field) / 60) % 60,
+				(* (const int *) field) % 60);
       }
 
       break;

@@ -414,8 +414,8 @@ scale_and_paint_svg_image(char *buffer, const char *buffer_end,
   char *scan;
   RsvgHandle *rsvg_handle = rsvg_handle_new();
   char color_string[8];
-  char *scale_string = g_strdup_printf(" scale(%s)", utils_format_double(scale));
-  const char *opacity_string = utils_format_double(opacity);
+  char *scale_string = utils_cprintf(" scale(%.f)", scale);
+  char *opacity_string = utils_cprintf("%.f", opacity);
 
   sprintf(color_string, "#%02x%02x%02x", color.red, color.green, color.blue);
 
@@ -594,7 +594,9 @@ scale_and_paint_svg_image(char *buffer, const char *buffer_end,
   pixbuf = rsvg_handle_get_pixbuf(rsvg_handle);
 
   rsvg_handle_free(rsvg_handle);
-  g_free(scale_string);
+
+  utils_free(scale_string);
+  utils_free(opacity_string);
 
   return pixbuf;
 }

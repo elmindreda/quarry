@@ -873,13 +873,13 @@ do_generate_text_diff(const EditGraphLayer *layer,
       if (last_hunk_line_index > last_snake_line_index)
 	last_hunk_line_index = last_snake_line_index;
 
-      length = sprintf(buffer, "@@ -%d,%d +%d,%d @@\n",
-		       data->hunk_first_line_in_original + 1,
-		       (last_hunk_line_index
-			- data->hunk_first_line_in_original),
-		       data->hunk_first_line_in_modified + 1,
-		       ((last_hunk_line_index - trace_y_adjustment)
-			- data->hunk_first_line_in_modified));
+      length = utils_ncprintf(buffer, sizeof(buffer), "@@ -%d,%d +%d,%d @@\n",
+			      data->hunk_first_line_in_original + 1,
+			      (last_hunk_line_index
+			       - data->hunk_first_line_in_original),
+			      data->hunk_first_line_in_modified + 1,
+			      ((last_hunk_line_index - trace_y_adjustment)
+			       - data->hunk_first_line_in_modified));
 
       if (difference)
 	difference = utils_cat_as_string(difference, buffer, length);
