@@ -105,8 +105,9 @@ sgf_game_tree_new (void)
   tree->previous = NULL;
   tree->next	 = NULL;
 
-  tree->root	     = NULL;
-  tree->current_node = NULL;
+  tree->root		   = NULL;
+  tree->current_node	   = NULL;
+  tree->current_node_depth = 0;
 
   tree->board = NULL;
 
@@ -148,7 +149,7 @@ sgf_game_tree_new_with_root (Game game, int board_width, int board_height,
   tree->board_width = board_width;
   tree->board_height = board_height;
 
-  tree->root = sgf_node_new (tree, NULL);
+  tree->root	     = sgf_node_new (tree, NULL);
   tree->current_node = tree->root;
 
   if (provide_default_setup
@@ -229,27 +230,33 @@ sgf_game_tree_set_game (SgfGameTree *tree, Game game)
 }
 
 
-/* Set given tree's associated board and current node and optionally
- * save old values in `old_state' (if it is not `NULL').
- */
+/* Set given tree's associated board and current node. */
 void
-sgf_game_tree_set_state (SgfGameTree *tree, Board *board, SgfNode *node,
-			 SgfGameTreeState *old_state)
+sgf_game_tree_set_state (SgfGameTree *tree, const SgfGameTreeState *state)
 {
   assert (tree);
-  assert (board);
-  assert (board->game == tree->game);
-  assert (board->width == tree->board_width);
-  assert (board->height == tree->board_height);
-  assert (node);
+  assert (state);
+  assert (state->board);
+  assert (state->board->game == tree->game);
+  assert (state->board->width == tree->board_width);
+  assert (state->board->height == tree->board_height);
+  assert (state->current_node);
 
-  if (old_state) {
-    old_state->board = tree->board;
-    old_state->current_node = tree->current_node;
-  }
+  tree->board		   = state->board;
+  tree->current_node	   = state->current_node;
+  tree->current_node_depth = state->current_node_depth;
+}
 
-  tree->board = board;
-  tree->current_node = node;
+
+void
+sgf_game_tree_get_state (SgfGameTree *tree, SgfGameTreeState *state)
+{
+  assert (tree);
+  assert (state);
+
+  state->board		    = tree->board;
+  state->current_node	    = tree->current_node;
+  state->current_node_depth = tree->current_node_depth;
 }
 
 
