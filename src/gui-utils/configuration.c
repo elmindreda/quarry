@@ -1,7 +1,7 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *\
  * This file is part of Quarry.                                    *
  *                                                                 *
- * Copyright (C) 2003, 2004 Paul Pogonyshev.                       *
+ * Copyright (C) 2003, 2004, 2005 Paul Pogonyshev.                 *
  *                                                                 *
  * This program is free software; you can redistribute it and/or   *
  * modify it under the terms of the GNU General Public License as  *
@@ -182,6 +182,7 @@ configuration_read_from_file (const ConfigurationSection *sections,
 
 		  switch (value->type) {
 		  case VALUE_TYPE_BOOLEAN:
+		  case VALUE_TYPE_BOOLEAN_WRITE_TRUE_ONLY:
 		    if (strcasecmp (actual_contents, "true") == 0
 			|| strcasecmp (actual_contents, "yes") == 0
 			|| strcmp (actual_contents, "1") == 0)
@@ -495,7 +496,9 @@ write_section (BufferedWriter *writer, const ConfigurationSection *section,
 
     if ((value->type == VALUE_TYPE_STRING && ! * (char *const *) field)
 	|| (value->type == VALUE_TYPE_STRING_LIST
-	    && string_list_is_empty ((const StringList *) field)))
+	    && string_list_is_empty ((const StringList *) field))
+	|| (value->type == VALUE_TYPE_BOOLEAN_WRITE_TRUE_ONLY
+	    && ! * (const int *) field))
       continue;
 
     buffered_writer_cat_string (writer, value->name);
@@ -530,6 +533,7 @@ write_section (BufferedWriter *writer, const ConfigurationSection *section,
       break;
 
     case VALUE_TYPE_BOOLEAN:
+    case VALUE_TYPE_BOOLEAN_WRITE_TRUE_ONLY:
       buffered_writer_cat_string (writer,
 				  * (const int *) field ? "true" : "false");
       break;
@@ -611,6 +615,65 @@ write_string (BufferedWriter *writer, const char *string)
   }
 
   buffered_writer_add_character (writer, '"');
+}
+
+
+void
+configuration_combine_string_lists (void *main_configuration,
+				    void *site_configuration,
+				    int tag_field_offset)
+{
+  StringList *main_configuration_list = (StringList *) main_configuration;
+  StringList *site_configuration_list = (StringList *) site_configuration;
+  StringListItem *main_configuration_item;
+
+  for (main_configuration_item = main_configuration_list->first;
+       main_configuration_item; ) {
+    /* Required since we may delete some items. */
+    StringListItem *next_main_configuration_item
+      = main_configuration_item->next;
+
+    const char *tag = * ((const char **)
+			 ((char *) main_configuration_item
+			  + tag_field_offset));
+
+    if (tag && !string_list_find (site_configuration_list, tag)) {
+      string_list_delete_item (main_configuration_list,
+			       main_configuration_item);
+    }
+
+    main_configuration_item = next_main_configuration_item;
+  }
+
+  while (!string_list_is_empty (site_configuration_list)) {
+    StringListItem *site_configuration_item
+      = string_list_steal_first_item (site_configuration_list);
+
+    if (site_configuration_item->text) {
+      for (main_configuration_item = main_configuration_list->first;
+	   main_configuration_item;
+	   main_configuration_item = main_configuration_item->next) {
+	const char *tag = * ((const char **)
+			     ((char *) main_configuration_item
+			      + tag_field_offset));
+
+	if (tag && strcmp (tag, site_configuration_item->text) == 0)
+	  break;
+      }
+
+      if (!main_configuration_item) {
+	* ((char **) ((char *) site_configuration_item + tag_field_offset))
+	  = utils_duplicate_string (site_configuration_item->text);
+	string_list_add_ready_item (main_configuration_list,
+				    site_configuration_item);
+
+	continue;
+      }
+    }
+
+    string_list_dispose_item (site_configuration_list,
+			      site_configuration_item);
+  }
 }
 
 

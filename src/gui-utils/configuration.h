@@ -1,7 +1,7 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *\
  * This file is part of Quarry.                                    *
  *                                                                 *
- * Copyright (C) 2003, 2004 Paul Pogonyshev.                       *
+ * Copyright (C) 2003, 2004, 2005 Paul Pogonyshev.                 *
  *                                                                 *
  * This program is free software; you can redistribute it and/or   *
  * modify it under the terms of the GNU General Public License as  *
@@ -33,6 +33,7 @@ typedef enum {
   VALUE_TYPE_STRING  =	0,
   VALUE_TYPE_STRING_LIST,
   VALUE_TYPE_BOOLEAN,
+  VALUE_TYPE_BOOLEAN_WRITE_TRUE_ONLY,
   VALUE_TYPE_INT,
   VALUE_TYPE_ENUMERATION,
   VALUE_TYPE_REAL,
@@ -79,6 +80,11 @@ int		configuration_read_from_file
 int		configuration_write_to_file
 		  (const ConfigurationSection *sections, int num_sections,
 		   const char *filename);
+
+
+void		configuration_combine_string_lists
+		  (void *main_configuration, void *site_configuration,
+		   int tag_field_offset);
 
 
 void		configuration_init_repeatable_section

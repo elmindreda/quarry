@@ -1,7 +1,7 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *\
  * This file is part of Quarry.                                    *
  *                                                                 *
- * Copyright (C) 2003, 2004 Paul Pogonyshev.                       *
+ * Copyright (C) 2003, 2004, 2005 Paul Pogonyshev                  *
  *                                                                 *
  * This program is free software; you can redistribute it and/or   *
  * modify it under the terms of the GNU General Public License as  *
@@ -143,6 +143,9 @@ static int	configuration_finalize_defaults (StringBuffer *c_file_arrays);
 
 static int	configuration_finalize (StringBuffer *c_file_arrays);
 
+
+static ConfigurationValueType
+		look_at_field_type (char **line);
 
 static int	section_datum_equal (const SectionData *first_data,
 				     const SectionData *second_data);
@@ -412,6 +415,8 @@ configuration_parse_values2 (StringBuffer *c_file_arrays,
     value_type = "VALUE_TYPE_STRING_LIST";
   else if (looking_at ("boolean", line))
     value_type = "VALUE_TYPE_BOOLEAN";
+  else if (looking_at ("boolean_write_true_only", line))
+    value_type = "VALUE_TYPE_BOOLEAN_WRITE_TRUE_ONLY";
   else if (looking_at ("int", line))
     value_type = "VALUE_TYPE_INT";
   else if (looking_at ("enumeration", line)) {
@@ -597,7 +602,7 @@ configuration_parse_defaults2 (StringBuffer *c_file_arrays,
   if (strcmp (field_name, "end") != 0) {
     char *full_field_name = NULL;
     int full_field_subscription_length;
-    ConfigurationValueType field_type = VALUE_TYPE_INVALID;
+    ConfigurationValueType field_type;
     const char *structure_type;
     const char *dispose_field_function = NULL;
     const char *dispose_field_prefix = "";
@@ -610,9 +615,13 @@ configuration_parse_defaults2 (StringBuffer *c_file_arrays,
     full_field_name = utils_cat_string (full_field_name, field_name);
     full_field_subscription_length = 13 + strlen (full_field_name);
 
-    if (stack_pointer->is_array_subscription
-	? stack_pointer->array_element_type == VALUE_TYPE_STRING
-	: looking_at ("string", line)) {
+    if (stack_pointer->is_array_subscription)
+      field_type = stack_pointer->array_element_type;
+    else
+      field_type = look_at_field_type (line);
+
+    switch (field_type) {
+    case VALUE_TYPE_STRING:
       while (*line && ! **line)
 	*line = read_line ();
 
@@ -635,25 +644,23 @@ configuration_parse_defaults2 (StringBuffer *c_file_arrays,
       }
 
       default_value	     = "NULL";
-      field_type	     = VALUE_TYPE_STRING;
       dispose_field_function = "utils_free";
-    }
-    else if (stack_pointer->is_array_subscription
-	     ? stack_pointer->array_element_type == VALUE_TYPE_STRING_LIST
-	     : looking_at ("string_list", line)) {
+
+      break;
+
+    case VALUE_TYPE_STRING_LIST:
       if (!looking_at ("-", line)) {
 	/* FIXME */
       }
 
-      default_value = "STATIC_STRING_LIST";
-
-      field_type	     = VALUE_TYPE_STRING_LIST;
+      default_value	     = "STATIC_STRING_LIST";
       dispose_field_function = "string_list_empty";
       dispose_field_prefix   = "&";
-    }
-    else if (stack_pointer->is_array_subscription
-	     ? stack_pointer->array_element_type == VALUE_TYPE_BOOLEAN
-	     : looking_at ("boolean", line)) {
+
+      break;
+
+    case VALUE_TYPE_BOOLEAN:
+    case VALUE_TYPE_BOOLEAN_WRITE_TRUE_ONLY:
       if (looking_at ("true", line))
 	default_value = "1";
       else if (looking_at ("false", line))
@@ -664,176 +671,160 @@ configuration_parse_defaults2 (StringBuffer *c_file_arrays,
 	return 1;
       }
 
-      field_type = VALUE_TYPE_BOOLEAN;
-    }
-    else if (stack_pointer->is_array_subscription
-	     ? stack_pointer->array_element_type == VALUE_TYPE_INT
-	     : looking_at ("int", line)) {
-      PARSE_THING (default_value, INTEGER_NUMBER, line, "integer number");
+      break;
 
-      field_type = VALUE_TYPE_INT;
-    }
-    else if (stack_pointer->is_array_subscription
-	     ? stack_pointer->array_element_type == VALUE_TYPE_ENUMERATION
-	     : looking_at ("enumeration", line)) {
-      /* It would be good to check that the value is one of those
-       * described in corresponding `values' list, but I don't want to
-       * bother with this now.
+    case VALUE_TYPE_INT:
+      PARSE_THING (default_value, INTEGER_NUMBER, line, "integer number");
+      break;
+
+    case VALUE_TYPE_ENUMERATION:
+      /* FIXME: It would be good to check that the value is one of
+       *	those described in corresponding `values' list, but I
+       *	don't want to bother with this now.
        */
       PARSE_IDENTIFIER (default_value, line, "enumeration element identifier");
+      break;
 
-      field_type = VALUE_TYPE_ENUMERATION;
-    }
-    else if (stack_pointer->is_array_subscription
-	     ? stack_pointer->array_element_type == VALUE_TYPE_REAL
-	     : looking_at ("real", line)) {
+    case VALUE_TYPE_REAL:
       PARSE_THING (default_value, FLOATING_POINT_NUMBER, line, "real number");
+      break;
 
-      field_type = VALUE_TYPE_REAL;
-    }
-    else if (stack_pointer->is_array_subscription
-	     ? stack_pointer->array_element_type == VALUE_TYPE_COLOR
-	     : looking_at ("color", line)) {
-      QuarryColor color;
+    case VALUE_TYPE_COLOR:
+      {
+	QuarryColor color;
 
-      if (!parse_color (line, &color, "color")) {
-	utils_free (full_field_name);
-	return 1;
-      }
-
-      utils_ncprintf (buffer, sizeof buffer, "{ %d, %d, %d }",
-		      color.red, color.green, color.blue);
-      default_value = buffer;
-
-      field_type = VALUE_TYPE_COLOR;
-    }
-    else if (stack_pointer->is_array_subscription
-	     ? stack_pointer->array_element_type == VALUE_TYPE_TIME
-	     : looking_at ("time", line)) {
-      int seconds;
-
-      PARSE_THING (default_value, TIME_VALUE, line, "time value");
-
-      seconds = utils_parse_time (default_value);
-      if (seconds < 0) {
-	utils_free (full_field_name);
-	return 1;
-      }
-
-      utils_ncprintf (buffer, sizeof buffer, "%d", seconds);
-      default_value = buffer;
-
-      field_type = VALUE_TYPE_TIME;
-    }
-    else if (stack_pointer->is_array_subscription
-	     ? stack_pointer->array_element_type == VALUE_TYPE_STRUCTURE
-	     : looking_at ("structure", line)) {
-      int is_new_structure;
-
-      utils_free (full_field_name);
-
-      if (!stack_pointer->is_array_subscription) {
-	if (looking_at ("new", line))
-	  is_new_structure = 1;
-	else if (looking_at ("existing", line))
-	  is_new_structure = 0;
-	else {
-	  print_error ("new structure flag (`new' or `existing') expected");
+	if (!parse_color (line, &color, "color")) {
+	  utils_free (full_field_name);
 	  return 1;
 	}
 
-	PARSE_IDENTIFIER (structure_type, line, "structure field type");
-	if (!looking_at ("-", line))
-	  PARSE_IDENTIFIER (dispose_field_function, line, "dispose function");
-      }
-      else {
-	is_new_structure       = stack_pointer->declaring_new_structure;
-	structure_type	       = stack_pointer->structure_type;
-	dispose_field_function = stack_pointer->dispose_function_name;
+	utils_ncprintf (buffer, sizeof buffer, "{ %d, %d, %d }",
+			color.red, color.green, color.blue);
+	default_value = buffer;
       }
 
-      push_subscription_stack (0, is_new_structure, 1,
-			       structure_type, dispose_field_function);
-      stack_pointer->field_name_part = field_name;
+      break;
 
-      if (!current_defaults_data->is_repeatable)
-	open_initialization_braces (1);
+    case  VALUE_TYPE_TIME:
+      {
+	int seconds;
 
-      add_field_declaration_if_needed (stack_pointer->previous,
-				       VALUE_TYPE_STRUCTURE,
-				       field_name, structure_type, NULL);
-      return 0;
-    }
-    else if (!stack_pointer->is_array_subscription
-	     && looking_at ("array", line)) {
-      const char *dimensions;
+	PARSE_THING (default_value, TIME_VALUE, line, "time value");
 
-      utils_free (full_field_name);
-
-      push_subscription_stack (1, 0, 0, NULL, NULL);
-      stack_pointer->field_name_part = field_name;
-
-      PARSE_THING (dimensions, FIELD_NAME, line, "array dimensions");
-
-      if (looking_at ("string", line))
-	stack_pointer->array_element_type = VALUE_TYPE_STRING;
-      else if (looking_at ("string_list", line))
-	stack_pointer->array_element_type = VALUE_TYPE_STRING_LIST;
-      else if (looking_at ("boolean", line))
-	stack_pointer->array_element_type = VALUE_TYPE_BOOLEAN;
-      else if (looking_at ("int", line))
-	stack_pointer->array_element_type = VALUE_TYPE_INT;
-      else if (looking_at ("enumeration", line))
-	stack_pointer->array_element_type = VALUE_TYPE_ENUMERATION;
-      else if (looking_at ("real", line))
-	stack_pointer->array_element_type = VALUE_TYPE_REAL;
-      else if (looking_at ("color", line))
-	stack_pointer->array_element_type = VALUE_TYPE_COLOR;
-      else if (looking_at ("time", line))
-	stack_pointer->array_element_type = VALUE_TYPE_TIME;
-      else if (looking_at ("structure", line)) {
-	stack_pointer->array_element_type = VALUE_TYPE_STRUCTURE;
-
-	if (looking_at ("new", line))
-	  stack_pointer->declaring_new_structure = 1;
-	else if (looking_at ("existing", line))
-	  stack_pointer->declaring_new_structure = 0;
-	else {
-	  print_error ("new structure flag (`new' or `existing') expected");
+	seconds = utils_parse_time (default_value);
+	if (seconds < 0) {
+	  utils_free (full_field_name);
 	  return 1;
 	}
 
-	PARSE_IDENTIFIER (stack_pointer->structure_type, line,
-			  "type of structure array elements");
-	if (!looking_at ("-", line)) {
-	  PARSE_IDENTIFIER (stack_pointer->dispose_function_name, line,
-			    "dispose function");
+	utils_ncprintf (buffer, sizeof buffer, "%d", seconds);
+	default_value = buffer;
+
+	field_type = VALUE_TYPE_TIME;
+      }
+
+      break;
+
+    case  VALUE_TYPE_STRUCTURE:
+      {
+	int is_new_structure;
+
+	utils_free (full_field_name);
+
+	if (!stack_pointer->is_array_subscription) {
+	  if (looking_at ("new", line))
+	    is_new_structure = 1;
+	  else if (looking_at ("existing", line))
+	    is_new_structure = 0;
+	  else {
+	    print_error ("new structure flag (`new' or `existing') expected");
+	    return 1;
+	  }
+
+	  PARSE_IDENTIFIER (structure_type, line, "structure field type");
+	  if (!looking_at ("-", line)) {
+	    PARSE_IDENTIFIER (dispose_field_function, line,
+			      "dispose function");
+	  }
 	}
-	else
-	  stack_pointer->dispose_function_name = NULL;
-      }
-      else {
-	print_error ("array element type expected");
-	return 1;
-      }
-
-      add_field_declaration_if_needed (stack_pointer->previous,
-				       stack_pointer->array_element_type,
-				       field_name,
-				       stack_pointer->structure_type,
-				       dimensions);
-
-      if (!current_defaults_data->is_repeatable) {
-	for (stack_pointer->num_array_dimensions = 0; *dimensions;
-	     dimensions++) {
-	  if (*dimensions == '[')
-	    stack_pointer->num_array_dimensions++;
+	else {
+	  is_new_structure       = stack_pointer->declaring_new_structure;
+	  structure_type	 = stack_pointer->structure_type;
+	  dispose_field_function = stack_pointer->dispose_function_name;
 	}
 
-	open_initialization_braces (stack_pointer->num_array_dimensions);
+	push_subscription_stack (0, is_new_structure, 1,
+				 structure_type, dispose_field_function);
+	stack_pointer->field_name_part = field_name;
+
+	if (!current_defaults_data->is_repeatable)
+	  open_initialization_braces (1);
+
+	add_field_declaration_if_needed (stack_pointer->previous,
+					 VALUE_TYPE_STRUCTURE,
+					 field_name, structure_type, NULL);
+	return 0;
       }
 
-      return 0;
+    default:
+      if (!stack_pointer->is_array_subscription
+	  && looking_at ("array", line)) {
+	const char *dimensions;
+
+	utils_free (full_field_name);
+
+	push_subscription_stack (1, 0, 0, NULL, NULL);
+	stack_pointer->field_name_part = field_name;
+
+	PARSE_THING (dimensions, FIELD_NAME, line, "array dimensions");
+
+	stack_pointer->array_element_type = look_at_field_type (line);
+
+	if (stack_pointer->array_element_type == VALUE_TYPE_STRUCTURE) {
+	  if (looking_at ("new", line))
+	    stack_pointer->declaring_new_structure = 1;
+	  else if (looking_at ("existing", line))
+	    stack_pointer->declaring_new_structure = 0;
+	  else {
+	    print_error ("new structure flag (`new' or `existing') expected");
+	    return 1;
+	  }
+
+	  PARSE_IDENTIFIER (stack_pointer->structure_type, line,
+			    "type of structure array elements");
+	  if (!looking_at ("-", line)) {
+	    PARSE_IDENTIFIER (stack_pointer->dispose_function_name, line,
+			      "dispose function");
+	  }
+	  else
+	    stack_pointer->dispose_function_name = NULL;
+	}
+	else if (stack_pointer->array_element_type == VALUE_TYPE_INVALID) {
+	  print_error ("array element type expected");
+	  return 1;
+	}
+
+	add_field_declaration_if_needed (stack_pointer->previous,
+					 stack_pointer->array_element_type,
+					 field_name,
+					 stack_pointer->structure_type,
+					 dimensions);
+
+	if (!current_defaults_data->is_repeatable) {
+	  for (stack_pointer->num_array_dimensions = 0; *dimensions;
+	       dimensions++) {
+	    if (*dimensions == '[')
+	      stack_pointer->num_array_dimensions++;
+	  }
+
+	  open_initialization_braces (stack_pointer->num_array_dimensions);
+	}
+
+	return 0;
+      }
+
+      print_error ("field type expected");
+      return 1;
     }
 
     if (current_defaults_data->is_repeatable || string_to_duplicate) {
@@ -1156,6 +1147,48 @@ configuration_finalize (StringBuffer *c_file_arrays)
 }
 
 
+
+/* Note: doesn't handle "array" string, because it is not a real type.
+ * If the caller allows "array" in this context, it should check for
+ * it manually if look_at_field_type() returns `VALUE_TYPE_INVALID'.
+ */
+static ConfigurationValueType
+look_at_field_type (char **line)
+{
+  if (looking_at ("string", line))
+    return VALUE_TYPE_STRING;
+
+  if (looking_at ("string_list", line))
+    return VALUE_TYPE_STRING_LIST;
+
+  if (looking_at ("boolean", line))
+    return VALUE_TYPE_BOOLEAN;
+
+  if (looking_at ("boolean_write_true_only", line))
+    return VALUE_TYPE_BOOLEAN_WRITE_TRUE_ONLY;
+
+  if (looking_at ("int", line))
+    return VALUE_TYPE_INT;
+
+  if (looking_at ("enumeration", line))
+    return VALUE_TYPE_ENUMERATION;
+
+  if (looking_at ("real", line))
+    return VALUE_TYPE_REAL;
+
+  if (looking_at ("color", line))
+    return VALUE_TYPE_COLOR;
+
+  if (looking_at ("time", line))
+    return VALUE_TYPE_TIME;
+
+  if (looking_at ("structure", line))
+    return VALUE_TYPE_STRUCTURE;
+
+  return VALUE_TYPE_INVALID;
+}
+
+
 static int
 section_datum_equal (const SectionData *first_data,
 		     const SectionData *second_data)
@@ -1294,6 +1327,7 @@ add_field_declaration_if_needed (SubscriptionStackItem *stack_item,
       break;
 
     case VALUE_TYPE_BOOLEAN:
+    case VALUE_TYPE_BOOLEAN_WRITE_TRUE_ONLY:
     case VALUE_TYPE_INT:
     case VALUE_TYPE_ENUMERATION:
     case VALUE_TYPE_TIME:
