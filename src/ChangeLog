@@ -1,3 +1,92 @@
+2005-03-19  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* gui-gtk/gtk-goban-window.c (gtk_goban_window_init): Register
+	toolbars with gtk_preferences_register_main_toolbar() and
+	gtk_preferences_register_navigation_toolbar().
+
+	* gui-gtk/gtk-preferences.c (gtk_preferences_dialog_present): Add
+	"General" category with "Interface" subcategory.  Don't make
+	"Close" button default (not recommended by HIG.)
+	(create_gtp_engines_page): New function.
+	(gtk_preferences_dialog_response): Handle
+	`PREFERENCES_PAGE_GTK_UI'.
+	(change_toolbar_style, gtk_preferences_register_main_toolbar)
+	(gtk_preferences_register_navigation_toolbar)
+	(do_register_toolbar, unregister_toolbar)
+	(gtk_preferences_have_non_hidden_gtp_engine): New functions.
+
+	* gui-utils/configuration.c (configuration_read_from_file): Tweak
+	enumeration value parsing to allow values with embedded
+	whitespace.
+
+	* gui-utils/parse-configuration.c (configuration_parse_values2):
+	Fix line-wrapping of `enumeration_values_as_strings'.
+
+	* gui-gtk/gtk-configuration.list: Add configuration parameters for
+	file chooser dialog and toolbar styles.
+
+	* gtp/gtp-test.c (send_to_engine): Use write() instead of fwrite()
+	and fdatasync() instead of fflush().
+	(main): Move all side-effect function calls out of `assert's to
+	make the code work with assertions disabled (spotted by Darren
+	Cook.)  Don't wrap `engine_in' in a stream, use file descriptor.
+
+	* sgf/sgf-parser.c (refresh_buffer): Fix `assert' as described
+	above.
+	(expand_buffer): Likewise.
+
+	* sgf/sgf-diff.c (main): Fix `assert's as described above.
+
+	* gui-gtk/gtk-tile-set.c (gtk_sgf_markup_tile_set_create): Fix
+	`assert' as described above.
+	(scale_and_paint_svg_image): Don't assert that rsvg_handle_write()
+	and rsvg_handle_close() are successful.
+
+	* gui-gtk/gtk-preferences.c (do_remove_gtp_engine): Fix `assert'
+	as described above.
+	(do_move_gtp_engine): Likewise.
+	(gtk_gtp_engine_dialog_present): Likewise.
+
+	* gui-gtk/gtk-goban-window.c (go_scoring_mode_done): Don't assert
+	that komi is set and make it default to 0.0.
+
+2005-03-19  Sjoerd Simons  <sjoerd@spring.luon.net>
+
+	* board/board.h: Use `signed char' instead of `char' as field type
+	in BoardPoint structure (`char' may be signed or unsigned
+	depending on architecture.)
+
+2005-03-18  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* board/Makefile.am: Add explicit dependency to solve problems
+	with parallel build.
+	(LIST_STAMP_FILES, LIST_GENERATED_FILES): Remove variables, now
+	defined in `$(top_srcdir)/aux/list.make'.
+	* sgf/Makefile.am: Likewise.
+	* gui-utils/Makefile.am: Likewise.
+	* gui-gtk/Makefile.am: Likewise.
+
+2005-03-17  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* gui-gtk/gtk-goban-window.c (gtk_goban_window_save): Use
+	gtk_file_dialog_new() and friends..
+	(suggest_filename): Return filename in UTF-8 rather than in file
+	system encoding.
+	(save_file_as_response): Use gtk_file_dialog_get_filename().
+
+	* gui-gtk/gtk-parser-interface.c (gtk_parser_interface_present):
+	Use gtk_file_dialog_new() and friends.
+	(open_file_response): Likewise.
+
+	* gui-gtk/gtk-utils.c
+	(gtk_utils_add_file_selection_response_handlers): Remove function.
+	(file_selection_response, overwrite_confirmation): Remove
+	functions (code inherited by `gui-gtk/gtk-file-dialog.c'.)
+	(browse_button_clicked): Use gtk_file_dialog_new() and friends.
+	(browsing_dialog_response): Likewise.
+
+	* gui-gtk/gtk-file-dialog.c, gui-gtk/gtk-file-dialog.h: New files.
+
 2005-03-14  Paul Pogonyshev  <pogonyshev@gmx.net>
 
 	* (Quarry version 0.1.14.)
@@ -46,7 +135,7 @@
 
 	* gui-utils/Makefile.am (AM_CPPFLAGS): Add `src/sgf' to include
 	search path.
-	
+
 	* sgf/sgf-utils.c (sgf_utils_enter_tree): Initialize
 	`tree->board_state' with `board_state' argument.
 	(sgf_utils_go_down_in_tree): Remove `board_state' argument and use
@@ -1345,7 +1434,7 @@
 	sgf_utils_append_move_variation().  Handle variations without
 	moves (when `color' is set to `EMPTY').
 
-	* sgf/sgf-tree.c (sgf_node_add_score_result) 
+	* sgf/sgf-tree.c (sgf_node_add_score_result)
 	(sgf_node_append_text_property): New functions.
 
 	* gui-gtk/gtk-new-game-dialog.c (begin_game): Set game result to
@@ -1380,7 +1469,7 @@
 	* gui-gtk/gtk-clock.c (gtk_clock_expose): Remove `const' from
 	`black_color' and `gray_color' declaration to avoid warnings with
 	earlier GTK+ versions.
-	
+
 2004-08-31  Paul Pogonyshev  <pogonyshev@gmx.net>
 
 	* utils/utils.c (utils_parse_double): Bug-fix: don't skip one
@@ -2032,7 +2121,7 @@
 	`SgfAmazonsMoveData' and `SgfAbstractMoveData' and all `#define'd
 	pseudo-functions.
 
-	* sgf/sgf.h: Use types from board code instead of removed ones.	
+	* sgf/sgf.h: Use types from board code instead of removed ones.
 	* sgf/sgf-diff-utils.c: Likewise.
 	* sgf/sgf-parser.c: Likewise.
 	* sgf/sgf-tree.c: Likewise.
@@ -2330,7 +2419,7 @@
 	* gui-gtk/gtk-new-game-dialog.c: Implement game rules (partially).
 	(show_game_specific_rules, set_handicap_adjustment_limits): New
 	functions.
-	
+
 	* sgf/sgf-utils.c (sgf_utils_set_handicap): New function.
 	* board/go.c (go_get_max_fixed_handicap)
 	(go_get_fixed_handicap_stones): New functions.

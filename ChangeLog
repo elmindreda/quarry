@@ -1,3 +1,10 @@
+2005-03-18  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* aux/list.make (SUFFIXES): Also add `.h' in suffixes to make
+	`rm -f $*.stamp' below work as expected.
+	(LIST_STAMP_FILES, LIST_GENERATED_FILES): New variables, generate
+	from `LIST_FILES' with `make's substitution reference.
+
 2005-03-14  Paul Pogonyshev  <pogonyshev@gmx.net>
 
 	* configure.ac: Quarry version 0.1.14.
