@@ -1,7 +1,7 @@
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 # This file is part of Quarry                                     #
 #                                                                 #
-# Copyright (C) 2003, 2004 Paul Pogonyshev.                       #
+# Copyright (C) 2003, 2004, 2005 Paul Pogonyshev.                 #
 #                                                                 #
 # This program is free software; you can redistribute it and/or   #
 # modify it under the terms of the GNU General Public License as  #
@@ -182,6 +182,13 @@ errors  SgfError sgf_errors {
   "error: point %P (in `%N' property value) was already listed "
   "in another territory property (deleted)"
 
+  SGF_WARNING_DUPLICATE_VECTOR
+  "warning: vector/line %P:%P was already listed in another `%N' "
+  "property value (ignored)"
+
+  SGF_ERROR_ZERO_LENGTH_VECTOR
+  "error: vector/line %P:%P has zero length (deleted)"
+
   SGF_ERROR_DUPLICATE_LABEL
   "error: point %P already has a label (value deleted)"
 
@@ -209,6 +216,18 @@ errors  SgfError sgf_errors {
   SGF_WARNING_HANDICAP_REDUCED
   "warning: handicap larger than the number of board vertices "
   "(reduced to %d)"
+
+  SGF_WARNING_UNKNOWN_FLAGS
+  "warning: flags not listed in SGF specification used in `%N' property value "
+  "(unknown flags kept)"
+
+  SGF_ERROR_FIGURE_FLAGS_EXPECTED
+  "error: flags expected in the value of property `FG' "
+  "(default flags supplied)"
+
+  SGF_WARNING_UNKNOWN_PRINT_MODE
+  "warning: unknown print mode %d not listed in SGF specification "
+  "(kept anyway)"
 
   SGF_WARNING_ZERO_BYTE
   "warning: zero byte encountered "
