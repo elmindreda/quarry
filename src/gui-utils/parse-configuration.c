@@ -430,8 +430,10 @@ configuration_parse_values2 (StringBuffer *c_file_arrays,
 
       string_buffer_cat_string (&h_file_bottom, "\n\nenum {\n  ");
     }
-    else if (looking_at ("existing", line))
+    else if (looking_at ("existing", line)) {
+      /* FIXME: Think of a way to reuse enumerations nicely. */
       is_new_enumeration = 0;
+    }
     else {
       print_error ("new enumeration flag (`new' or `existing') expected");
       return 1;
@@ -453,15 +455,16 @@ configuration_parse_values2 (StringBuffer *c_file_arrays,
       }
 
       if (is_new_enumeration) {
-	if (enumeration_values_as_strings) {
+	if (enumeration_values_as_strings)
 	  string_buffer_cat_string (&h_file_bottom, ",\n  ");
 
-	  enumeration_values_as_strings
-	    = utils_cat_string (enumeration_values_as_strings,
-				"\\0\"\n    \"");
-	}
-
 	string_buffer_cat_string (&h_file_bottom, element_identifier);
+      }
+
+      if (enumeration_values_as_strings) {
+	enumeration_values_as_strings
+	  = utils_cat_string (enumeration_values_as_strings,
+			      "\\0\"\n    \"");
       }
 
       do {
