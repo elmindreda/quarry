@@ -210,7 +210,6 @@ configuration_read_from_file(const ConfigurationSection *sections,
 		break;
 
 	      case VALUE_TYPE_INT:
-	      case VALUE_TYPE_REAL:
 		{
 		  /* FIXME: Can be improved. */
 		  const char *digit_scan = actual_contents;
@@ -218,16 +217,14 @@ configuration_read_from_file(const ConfigurationSection *sections,
 		  if (*digit_scan == '+' || *digit_scan == '-')
 		    digit_scan++;
 
-		  if (('0' <= *digit_scan && *digit_scan <= '9')
-		      || (value->type == VALUE_TYPE_REAL
-			  && *digit_scan == '.')) {
-		    if (value->type == VALUE_TYPE_INT)
-		      * (int *) field = atoi(actual_contents);
-		    else
-		      * (double *) field = atof(actual_contents);
-		  }
+		  if ('0' <= *digit_scan && *digit_scan <= '9') 
+		    * (int *) field = atoi(actual_contents);
 		}
 
+		break;
+
+	      case VALUE_TYPE_REAL:
+		utils_parse_double(actual_contents, (double *) field);
 		break;
 
 	      case VALUE_TYPE_COLOR:
