@@ -1,5 +1,16 @@
 2004-05-13  Paul Pogonyshev  <pogonyshev@gmx.net>
 
+	* sgf/sgf.h: Remove types `SgfPoint', `SgfPositionList',
+	`SgfAmazonsMoveData' and `SgfAbstractMoveData' and all `#define'd
+	pseudo-functions.
+
+	* sgf/sgf.h: Use types from board code instead of removed ones.	
+	* sgf/sgf-diff-utils.c: Likewise.
+	* sgf/sgf-parser.c: Likewise.
+	* sgf/sgf-tree.c: Likewise.
+	* sgf/sgf-utils.c: Likewise.
+	* sgf/sgf-writer.c: Likewise.
+
 	* gui-gtk/gtk-goban-window.c (playing_mode_goban_clicked):
 	Bug-fix: use `GOBAN_TILE_DONT_CHANGE' instead of `TILE_NONE'.
 	Caused serious problems with all games when trying to play an
