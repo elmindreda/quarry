@@ -191,6 +191,7 @@ libguigtk_a_SOURCES = \
 	gtk-goban.c			\
 	gtk-goban-window.c		\
 	gtk-gtp-client-interface.c	\
+	gtk-help.c			\
 	gtk-named-vbox.c		\
 	gtk-new-game-dialog.c		\
 	gtk-parser-interface.c		\
@@ -213,6 +214,7 @@ libguigtk_a_SOURCES = \
 	gtk-goban.h			\
 	gtk-goban-window.h		\
 	gtk-gtp-client-interface.h	\
+	gtk-help.h			\
 	gtk-named-vbox.h		\
 	gtk-new-game-dialog.h		\
 	gtk-parser-interface.h		\
@@ -242,7 +244,7 @@ DISTCLEANFILES = *~
 
 MOSTLYCLEANFILES = $(BUILT_SOURCES)
 subdir = src/gui-gtk
-mkinstalldirs = $(SHELL) $(top_srcdir)/mkinstalldirs
+mkinstalldirs = $(SHELL) $(top_srcdir)/aux/mkinstalldirs
 CONFIG_HEADER = $(top_builddir)/config.h
 CONFIG_CLEAN_FILES =
 LIBRARIES = $(noinst_LIBRARIES)
@@ -253,19 +255,20 @@ am_libguigtk_a_OBJECTS = gtk-assistant.$(OBJEXT) gtk-clock.$(OBJEXT) \
 	gtk-color-button.$(OBJEXT) gtk-control-center.$(OBJEXT) \
 	gtk-game-info-dialog.$(OBJEXT) gtk-games.$(OBJEXT) \
 	gtk-goban.$(OBJEXT) gtk-goban-window.$(OBJEXT) \
-	gtk-gtp-client-interface.$(OBJEXT) gtk-named-vbox.$(OBJEXT) \
-	gtk-new-game-dialog.$(OBJEXT) gtk-parser-interface.$(OBJEXT) \
-	gtk-preferences.$(OBJEXT) gtk-progress-dialog.$(OBJEXT) \
-	gtk-qbox.$(OBJEXT) gtk-qhbox.$(OBJEXT) gtk-qvbox.$(OBJEXT) \
-	gtk-tile-set.$(OBJEXT) gtk-utils.$(OBJEXT) \
-	gui-back-end.$(OBJEXT) quarry-stock.$(OBJEXT)
+	gtk-gtp-client-interface.$(OBJEXT) gtk-help.$(OBJEXT) \
+	gtk-named-vbox.$(OBJEXT) gtk-new-game-dialog.$(OBJEXT) \
+	gtk-parser-interface.$(OBJEXT) gtk-preferences.$(OBJEXT) \
+	gtk-progress-dialog.$(OBJEXT) gtk-qbox.$(OBJEXT) \
+	gtk-qhbox.$(OBJEXT) gtk-qvbox.$(OBJEXT) gtk-tile-set.$(OBJEXT) \
+	gtk-utils.$(OBJEXT) gui-back-end.$(OBJEXT) \
+	quarry-stock.$(OBJEXT)
 am__objects_1 = gtk-configuration.$(OBJEXT) quarry-marshal.$(OBJEXT)
 nodist_libguigtk_a_OBJECTS = $(am__objects_1)
 libguigtk_a_OBJECTS = $(am_libguigtk_a_OBJECTS) \
 	$(nodist_libguigtk_a_OBJECTS)
 
 DEFAULT_INCLUDES =  -I. -I$(srcdir) -I$(top_builddir)
-depcomp = $(SHELL) $(top_srcdir)/depcomp
+depcomp = $(SHELL) $(top_srcdir)/aux/depcomp
 am__depfiles_maybe = depfiles
 @AMDEP_TRUE@DEP_FILES = ./$(DEPDIR)/gtk-assistant.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/gtk-clock.Po \
@@ -277,6 +280,7 @@ am__depfiles_maybe = depfiles
 @AMDEP_TRUE@	./$(DEPDIR)/gtk-goban-window.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/gtk-goban.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/gtk-gtp-client-interface.Po \
+@AMDEP_TRUE@	./$(DEPDIR)/gtk-help.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/gtk-named-vbox.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/gtk-new-game-dialog.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/gtk-parser-interface.Po \
@@ -333,6 +337,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gtk-goban-window.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gtk-goban.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gtk-gtp-client-interface.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gtk-help.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gtk-named-vbox.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gtk-new-game-dialog.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gtk-parser-interface.Po@am__quote@

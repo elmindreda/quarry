@@ -83,6 +83,7 @@ libguigtk_a_SOURCES =			\
 	gtk-goban.c			\
 	gtk-goban-window.c		\
 	gtk-gtp-client-interface.c	\
+	gtk-help.c			\
 	gtk-named-vbox.c		\
 	gtk-new-game-dialog.c		\
 	gtk-parser-interface.c		\
@@ -105,6 +106,7 @@ libguigtk_a_SOURCES =			\
 	gtk-goban.h			\
 	gtk-goban-window.h		\
 	gtk-gtp-client-interface.h	\
+	gtk-help.h			\
 	gtk-named-vbox.h		\
 	gtk-new-game-dialog.h		\
 	gtk-parser-interface.h		\
