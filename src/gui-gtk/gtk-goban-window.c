@@ -112,7 +112,7 @@ static void	 initialize_gtp_player(GtkGobanWindow *goban_window,
 static void	 gtp_player_initialized_for_game(GtpClient *player,
 						 int successful,
 						 GtkGobanWindow *goban_window);
-static void	 move_has_been_played(GtkGobanWindow *goban_window);
+static void	 move_has_been_played(GtkGobanWindow *goban_window, int color);
 static void	 move_has_been_generated(GtpClient *client, int successful,
 					 GtkGobanWindow *goban_window,
 					 int color, int x, int y,
@@ -497,7 +497,7 @@ play_pass_move(GtkGobanWindow *goban_window)
   sgf_utils_append_move_variation(goban_window->current_tree,
 				  &goban_window->sgf_board_state,
 				  color_to_play, PASS_X, PASS_Y);
-  move_has_been_played(goban_window);
+  move_has_been_played(goban_window, color_to_play);
 
   update_children_for_new_node(goban_window);
 }
@@ -651,11 +651,12 @@ playing_mode_goban_clicked(GtkGobanWindow *goban_window,
 					  goban_window->amazons_move);
 	}
       }
+
+      move_has_been_played(goban_window, color_to_play);
     }
     else
       return;
 
-    move_has_been_played(goban_window);
     break;
 
   case 3:
@@ -1014,13 +1015,14 @@ gtp_player_initialized_for_game(GtpClient *player, int successful,
 
 
 static void
-move_has_been_played(GtkGobanWindow *goban_window)
+move_has_been_played(GtkGobanWindow *goban_window, int color)
 {
-  int color_to_play = goban_window->sgf_board_state.color_to_play;
-  GtpClient *player = goban_window->players[COLOR_INDEX(color_to_play)];
+  int other_color_index = COLOR_INDEX(OTHER_COLOR(color));
+  GtpClient *player = goban_window->players[other_color_index];
 
-  if (player && goban_window->player_initialized[COLOR_INDEX(color_to_play)]) {
+  if (player && goban_window->player_initialized[other_color_index]) {
     const SgfNode *move_node = goban_window->sgf_board_state.last_move_node;
+    int color_to_play = goban_window->sgf_board_state.color_to_play;
 
     gtp_client_play_move_from_sgf_node(player, NULL, NULL,
 				       goban_window->current_tree, move_node);
@@ -1057,7 +1059,7 @@ move_has_been_generated(GtpClient *client, int successful,
 
     update_children_for_new_node(goban_window);
 
-    move_has_been_played(goban_window);
+    move_has_been_played(goban_window, color);
   }
 }
 
