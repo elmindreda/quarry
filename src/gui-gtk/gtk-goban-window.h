@@ -24,8 +24,10 @@
 #define QUARRY_GTK_GOBAN_WINDOW_H
 
 
+#include "gtk-clock.h"
 #include "gtk-goban.h"
 #include "gtp-client.h"
+#include "time-control.h"
 #include "sgf.h"
 #include "board.h"
 #include "quarry.h"
@@ -73,6 +75,7 @@ struct _GtkGobanWindow {
   GtkGoban		  *goban;
   GtkWidget		  *player_table_alignment;
   GtkPlayerInformation	   players_information[NUM_COLORS];
+  GtkClock		  *clocks[NUM_COLORS];
   GtkWidget		  *players_information_hseparator;
   GtkWidget		  *move_information_label;
   GtkWidget		  *mode_information_hseparator;
@@ -89,6 +92,7 @@ struct _GtkGobanWindow {
   gint			   num_handicap_stones_placed;
   GtpClient		  *players[NUM_COLORS];
   gboolean		   player_initialization_step[NUM_COLORS];
+  TimeControl		  *time_controls[NUM_COLORS];
 
   int			   amazons_move_stage;
   int			   amazons_to_x;
@@ -126,9 +130,11 @@ GtkType		gtk_goban_window_get_type(void);
 GtkWidget *	gtk_goban_window_new(SgfCollection *sgf_collection,
 				     const char *filename);
 
-void		gtk_goban_window_enter_game_mode(GtkGobanWindow *goban_window,
-						 GtpClient *black_player,
-						 GtpClient *white_player);
+void		gtk_goban_window_enter_game_mode
+		  (GtkGobanWindow *goban_window,
+		   GtpClient *black_player, GtpClient *white_player,
+		   TimeControl *black_time_control,
+		   TimeControl *white_time_control);
 
 
 #endif /* QUARRY_GTK_GOBAN_WINDOW_H */

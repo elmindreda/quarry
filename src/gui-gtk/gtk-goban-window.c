@@ -22,6 +22,7 @@
 
 #include "gtk-goban-window.h"
 
+#include "gtk-clock.h"
 #include "gtk-control-center.h"
 #include "gtk-goban.h"
 #include "gtk-gtp-client-interface.h"
@@ -33,6 +34,7 @@
 #include "quarry-marshal.h"
 #include "quarry-stock.h"
 #include "gui-utils.h"
+#include "time-control.h"
 #include "gtp-client.h"
 #include "sgf.h"
 #include "board.h"
@@ -42,6 +44,7 @@
 #include <assert.h>
 #include <gdk/gdkkeysyms.h>
 #include <gtk/gtk.h>
+#include <math.h>
 #include <stdio.h>
 #include <string.h>
 
@@ -64,6 +67,7 @@ enum {
   INITIALIZATION_NOT_STARTED,
   INITIALIZATION_GAME_SET,
   INITIALIZATION_BOARD_SIZE_SET,
+  INITIALIZATION_TIME_LIMITS_SET,
   INITIALIZATION_FIXED_HANDICAP_SET,
   INITIALIZATION_FREE_HANDICAP_PLACED,
   INITIALIZATION_HANDICAP_SET,
@@ -167,6 +171,8 @@ static void	 move_has_been_generated(GtpClient *client, int successful,
 					 GtkGobanWindow *goban_window,
 					 int color, int x, int y,
 					 BoardAbstractMoveData *move_data);
+static void	 generate_move_via_gtp(GtkGobanWindow *goban_window);
+static void	 start_clock_if_needed(GtkGobanWindow *goban_window);
 
 
 static GtkWindowClass  *parent_class;
@@ -283,12 +289,13 @@ gtk_goban_window_init(GtkGobanWindow *goban_window)
   /* Table that holds players' information and clocks. */
   table = gtk_table_new(2, 2, FALSE);
   gtk_table_set_row_spacings(GTK_TABLE(table), QUARRY_SPACING_SMALL);
-  gtk_table_set_col_spacings(GTK_TABLE(table), QUARRY_SPACING);
+  gtk_table_set_col_spacings(GTK_TABLE(table), QUARRY_SPACING_BIG);
 
   /* Information labels and clocks for each player. */
   for (k = 0; k < NUM_COLORS; k++) {
     GtkWidget *named_vbox;
     GtkWidget *label;
+    GtkWidget *clock;
 
     named_vbox = gtk_named_vbox_new(k == BLACK_INDEX ? "Black" : "White",
 				    FALSE, QUARRY_SPACING_VERY_SMALL);
@@ -302,6 +309,13 @@ gtk_goban_window_init(GtkGobanWindow *goban_window)
     gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
     gtk_box_pack_start(GTK_BOX(named_vbox), label, FALSE, TRUE, 0);
     goban_window->players_information[k].player_label = GTK_LABEL(label);
+
+    clock = gtk_clock_new();
+    gtk_table_attach(GTK_TABLE(table), gtk_utils_sink_widget(clock),
+		     1, 2, OTHER_INDEX(k), OTHER_INDEX(k) + 1,
+		     GTK_FILL, 0, 0, 0);
+
+    goban_window->clocks[k] = GTK_CLOCK(clock);
   }
 
   /* Alignment widget to keep the table centered in sidebar. */
@@ -440,17 +454,23 @@ gtk_goban_window_new(SgfCollection *sgf_collection, const char *filename)
 void
 gtk_goban_window_enter_game_mode(GtkGobanWindow *goban_window,
 				 GtpClient *black_player,
-				 GtpClient *white_player)
+				 GtpClient *white_player,
+				 TimeControl *black_time_control,
+				 TimeControl *white_time_control)
 {
   const SgfGameTree *game_tree;
   int handicap = -1;
+  GtkWidget *black_clock_frame;
+  GtkWidget *white_clock_frame;
 
   assert(GTK_IS_GOBAN_WINDOW(goban_window));
   assert(!goban_window->in_game_mode);
 
-  goban_window->in_game_mode	     = TRUE;
-  goban_window->players[BLACK_INDEX] = black_player;
-  goban_window->players[WHITE_INDEX] = white_player;
+  goban_window->in_game_mode		   = TRUE;
+  goban_window->players[BLACK_INDEX]	   = black_player;
+  goban_window->players[WHITE_INDEX]	   = white_player;
+  goban_window->time_controls[BLACK_INDEX] = black_time_control;
+  goban_window->time_controls[WHITE_INDEX] = white_time_control;
 
   game_tree = goban_window->current_tree;
   handicap = sgf_node_get_handicap(game_tree->current_node);
@@ -487,6 +507,30 @@ gtk_goban_window_enter_game_mode(GtkGobanWindow *goban_window,
       = INITIALIZATION_NOT_STARTED;
     initialize_gtp_player(white_player, 1, goban_window);
   }
+
+  black_clock_frame
+    = gtk_widget_get_parent(GTK_WIDGET(goban_window->clocks[BLACK_INDEX]));
+  white_clock_frame
+    = gtk_widget_get_parent(GTK_WIDGET(goban_window->clocks[WHITE_INDEX]));
+
+  if (black_time_control && white_time_control) {
+    gtk_clock_initialize_for_time_control(goban_window->clocks[BLACK_INDEX],
+					  black_time_control);
+    gtk_clock_initialize_for_time_control(goban_window->clocks[WHITE_INDEX],
+					  white_time_control);
+
+    gtk_widget_show(black_clock_frame);
+    gtk_widget_show(white_clock_frame);
+  }
+  else if (!black_time_control && !white_time_control) {
+    gtk_widget_hide(black_clock_frame);
+    gtk_widget_hide(white_clock_frame);
+  }
+  else
+    assert(0);
+
+  if (USER_CAN_PLAY_MOVES(goban_window))
+    start_clock_if_needed(goban_window);
 }
 
 
@@ -513,6 +557,11 @@ gtk_goban_window_finalize(GObject *object)
     gtk_schedule_gtp_client_deletion(goban_window->players[BLACK_INDEX]);
   if (goban_window->players[WHITE_INDEX])
     gtk_schedule_gtp_client_deletion(goban_window->players[WHITE_INDEX]);
+
+  if (goban_window->time_controls[BLACK_INDEX])
+    time_control_delete(goban_window->time_controls[BLACK_INDEX]);
+  if (goban_window->time_controls[WHITE_INDEX])
+    time_control_delete(goban_window->time_controls[WHITE_INDEX]);
 
   if (goban_window->sgf_collection)
     sgf_collection_delete(goban_window->sgf_collection);
@@ -1402,8 +1451,9 @@ initialize_gtp_player(GtpClient *client, int successful,
   const SgfNode *root_node = game_tree->root;
   int client_color = (client == goban_window->players[BLACK_INDEX]
 		      ? BLACK : WHITE);
+  int client_color_index = COLOR_INDEX(client_color);
   int *initialization_step = (goban_window->player_initialization_step
-			      + COLOR_INDEX(client_color));
+			      + client_color_index);
 
   /* FIXME */
   assert(successful);
@@ -1450,6 +1500,24 @@ initialize_gtp_player(GtpClient *client, int successful,
     break;
 
   case INITIALIZATION_BOARD_SIZE_SET:
+    {
+      TimeControl *time_control =
+	goban_window->time_controls[client_color_index];
+
+      if (time_control) {
+	*initialization_step = INITIALIZATION_TIME_LIMITS_SET;
+	gtp_client_send_time_settings(client,
+				      ((GtpClientResponseCallback)
+				       initialize_gtp_player),
+				      goban_window,
+				      time_control->main_time,
+				      time_control->overtime_length,
+				      time_control->moves_per_overtime);
+	break;
+      }
+    }
+
+  case INITIALIZATION_TIME_LIMITS_SET:
     if (game_tree->game == GAME_GO) {
       int handicap = sgf_node_get_handicap(root_node);
 
@@ -1535,9 +1603,8 @@ initialize_gtp_player(GtpClient *client, int successful,
     }
 
     if (client_color == goban_window->sgf_board_state.color_to_play) {
-      gtp_client_generate_move(client,
-			       (GtpClientMoveCallback) move_has_been_generated,
-			       goban_window, client_color);
+      generate_move_via_gtp(goban_window);
+      start_clock_if_needed(goban_window);
     }
 
     break;
@@ -1557,6 +1624,7 @@ free_handicap_has_been_placed(GtkGobanWindow *goban_window,
 				     handicap_stones);
 
   reenter_current_node(goban_window);
+  assert(goban_window->sgf_board_state.color_to_play == WHITE);
 
   if (GTP_ENGINE_CAN_PLAY_MOVES(goban_window, WHITE)) {
     /* The engine is initialized, but since free handicap placement
@@ -1565,11 +1633,10 @@ free_handicap_has_been_placed(GtkGobanWindow *goban_window,
      */
     gtp_client_set_free_handicap(goban_window->players[WHITE_INDEX],
 				 NULL, NULL, handicap_stones);
-
-    gtp_client_generate_move(goban_window->players[WHITE_INDEX],
-			     (GtpClientMoveCallback) move_has_been_generated,
-			     goban_window, WHITE);
+    generate_move_via_gtp(goban_window);
   }
+
+  start_clock_if_needed(goban_window);
 }
 
 
@@ -1578,6 +1645,9 @@ move_has_been_played(GtkGobanWindow *goban_window)
 {
   const SgfNode *move_node = goban_window->sgf_board_state.last_move_node;
   int color_to_play = goban_window->sgf_board_state.color_to_play;
+
+  if (goban_window->time_controls[COLOR_INDEX(move_node->move_color)])
+    gtk_clock_stop(goban_window->clocks[COLOR_INDEX(move_node->move_color)]);
 
   if (GTP_ENGINE_CAN_PLAY_MOVES(goban_window,
 				OTHER_COLOR(move_node->move_color))) {
@@ -1597,12 +1667,12 @@ move_has_been_played(GtkGobanWindow *goban_window)
       /* If the next move is to be played by a GTP engine and the engine
        * is ready, ask for a move now.
        */
-      GtpClient *player = goban_window->players[COLOR_INDEX(color_to_play)];
-
-      gtp_client_generate_move(player,
-			       (GtpClientMoveCallback) move_has_been_generated,
-			       goban_window, color_to_play);
+      generate_move_via_gtp(goban_window);
     }
+    else if (goban_window->players[COLOR_INDEX(color_to_play)])
+      return;
+
+    start_clock_if_needed(goban_window);
   }
   else {
     if (goban_window->board->game == GAME_GO) {
@@ -1644,6 +1714,45 @@ move_has_been_generated(GtpClient *client, int successful,
 
     update_children_for_new_node(goban_window);
     move_has_been_played(goban_window);
+  }
+}
+
+
+static void
+generate_move_via_gtp(GtkGobanWindow *goban_window)
+{
+  int color_to_play = goban_window->sgf_board_state.color_to_play;
+  int color_to_play_index = COLOR_INDEX(color_to_play);
+  TimeControl *time_control = goban_window->time_controls[color_to_play_index];
+
+  if (time_control) {
+    int moves_left;
+    double seconds_left = time_control_get_time_left(time_control,
+						     &moves_left);
+
+    /* FIXME: OUT_OF_TIME shouldn't really happen here. */
+    if (seconds_left != NO_TIME_LIMITS && seconds_left != OUT_OF_TIME) {
+      gtp_client_send_time_left(goban_window->players[color_to_play_index],
+				NULL, NULL, color_to_play,
+				floor(seconds_left + 0.5), moves_left);
+    }
+  }
+
+  gtp_client_generate_move(goban_window->players[color_to_play_index],
+			   (GtpClientMoveCallback) move_has_been_generated,
+			   goban_window, color_to_play);
+}
+
+
+static void
+start_clock_if_needed(GtkGobanWindow *goban_window)
+{
+  int color_to_play_index
+    = COLOR_INDEX(goban_window->sgf_board_state.color_to_play);
+
+  if (goban_window->time_controls[color_to_play_index]) {
+    gtk_clock_start(goban_window->clocks[color_to_play_index],
+		    goban_window->time_controls[color_to_play_index]);
   }
 }
 
