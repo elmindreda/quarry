@@ -960,6 +960,71 @@ go_dump_board(const Board *board)
 }
 
 
+
+/* Go-specific functions. */
+
+/* Get maximal number of fixed handicap stones that can be placed on a
+ * board of given dimensions.
+ */
+int
+go_get_max_fixed_handicap(int board_width, int board_height)
+{
+  assert(BOARD_MIN_WIDTH <= board_width && board_width <= BOARD_MAX_WIDTH);
+  assert(BOARD_MIN_HEIGHT <= board_height && board_height <= BOARD_MAX_HEIGHT);
+
+  if (board_width > 7 && board_height > 7) {
+    return ((board_width % 2 == 1 && board_width > 7 ? 3 : 2)
+	    * (board_height % 2 == 1 && board_height > 7 ? 3 : 2));
+  }
+  else
+    return 0;
+}
+
+
+/* Get positions of given number of fixed handicap stones. */
+BoardPositionList *
+go_get_fixed_handicap_stones(int board_width, int board_height,
+			     int num_stones)
+{
+  /* Minimal handicap at which nth stone (counting by ascending board
+   * position) is set.
+   */
+  static const int min_handicaps[9] = { 3, 8, 2, 6, 5, 6, 2, 8, 4 };
+
+  BoardPositionList *handicap_stones;
+  int horizontal_edge_gap = (board_width >= 13 ? 3 : 2);
+  int vertical_edge_gap = (board_height >= 13 ? 3 : 2);
+  int stone_index;
+  int k;
+
+  if (num_stones == 0)
+    return NULL;
+
+  assert(num_stones > 1
+	 && num_stones <= go_get_max_fixed_handicap(board_width,
+						    board_height));
+
+  handicap_stones = board_position_list_new_empty(num_stones);
+
+  for (k = 0, stone_index = 0; k < 9; k++) {
+    /* There is an additional requirement that the fifth (tengen)
+     * stone is only placed when the number of handicap stones is odd.
+     */
+    if (num_stones >= min_handicaps[k] && (k != 4 || num_stones % 2 == 1)) {
+      /* A little of obscure arithmetics that works. */
+      int stone_x = ((1 - (k % 3)) * horizontal_edge_gap
+		     + ((k % 3) * (board_width - 1)) / 2);
+      int stone_y = ((1 - (k / 3)) * vertical_edge_gap
+		     + ((k / 3) * (board_height - 1)) / 2);
+
+      handicap_stones->positions[stone_index++] = POSITION(stone_x, stone_y);
+    }
+  }
+
+  return handicap_stones;
+}
+
+
 /*
  * Local Variables:
  * tab-width: 8

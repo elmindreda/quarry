@@ -68,6 +68,7 @@ struct _BoardPoint {
 
 
 /* Go-specific definitions. */
+
 #define GO_STRING_RING_SIZE	(BOARD_MAX_POSITIONS			\
 				 + BOARD_MAX_WIDTH + BOARD_MAX_HEIGHT)
 
@@ -97,6 +98,7 @@ struct _GoBoardData{
 
 
 /* Amazons-specific definition. */
+
 #define ARROW			SPECIAL_ON_GRID_VALUE
 
 
@@ -259,6 +261,16 @@ void		board_fill_int_grid(Board *board, int grid[BOARD_GRID_SIZE],
 				    int value);
 #define board_fill_uint_grid(board, grid, value)	\
   board_fill_int_grid((board), (int *) grid, value)
+
+
+
+/* Go-specific functions. */
+
+int		     go_get_max_fixed_handicap(int board_width,
+					       int board_height);
+BoardPositionList *  go_get_fixed_handicap_stones(int board_width,
+						  int board_height,
+						  int num_stones);
 
 
 #endif /* QUARRY_BOARD_H */
