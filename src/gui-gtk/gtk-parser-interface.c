@@ -72,12 +72,13 @@ static void	 open_file_response(GtkFileSelection *dialog, gint response_id);
 void
 gtk_parser_interface_present(void)
 {
-  GtkWidget *file_selection = gtk_file_selection_new("Open SGF File");
+  GtkWidget *file_selection = gtk_file_selection_new("Open SGF File...");
 
   gtk_control_center_window_created(GTK_WINDOW(file_selection));
 
-  g_signal_connect(file_selection, "response",
-		   G_CALLBACK(open_file_response), NULL);
+  gtk_utils_add_file_selection_response_handlers(file_selection, FALSE,
+						 G_CALLBACK(open_file_response),
+						 NULL);
   g_signal_connect(file_selection, "destroy",
 		   G_CALLBACK(gtk_control_center_window_destroyed), NULL);
 
@@ -233,8 +234,8 @@ analyze_parsed_data(void *result)
 
     gtk_utils_create_message_dialog(GTK_WINDOW(data->parent),
 				    GTK_STOCK_DIALOG_ERROR,
-				    GTK_UTILS_BUTTONS_OK,
-				    G_CALLBACK(gtk_widget_destroy),
+				    (GTK_UTILS_BUTTONS_OK
+				     | GTK_UTILS_DESTROY_ON_RESPONSE),
 				    (data->result == SGF_ERROR_READING_FILE
 				     ? reading_error_hint
 				     : not_sgf_file_error_hint),

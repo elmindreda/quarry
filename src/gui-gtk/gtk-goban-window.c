@@ -414,8 +414,9 @@ gtk_goban_window_save(GtkGobanWindow *goban_window, guint callback_action)
 				   GTK_WINDOW(goban_window));
       gtk_window_set_destroy_with_parent(goban_window->save_as_dialog, TRUE);
 
-      g_signal_connect(file_selection, "response",
-		       G_CALLBACK(save_file_as_response), goban_window);
+      gtk_utils_add_file_selection_response_handlers
+	(file_selection, TRUE,
+	 G_CALLBACK(save_file_as_response), goban_window);
       g_signal_connect_swapped(file_selection, "destroy",
 			       G_CALLBACK(save_file_as_destroy),
 			       goban_window);

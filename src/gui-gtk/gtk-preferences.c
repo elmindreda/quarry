@@ -866,8 +866,8 @@ gtk_gtp_engine_dialog_response(GtkWindow *window, gint response_id,
     }
     else {
       gtk_utils_create_message_dialog(window, GTK_STOCK_DIALOG_ERROR,
-				      GTK_UTILS_BUTTONS_OK,
-				      G_CALLBACK(gtk_widget_destroy),
+				      (GTK_UTILS_BUTTONS_OK
+				       | GTK_UTILS_DESTROY_ON_RESPONSE),
 				      ("Please make sure you typed engine's "
 				       "filename correctly and that you have "
 				       "permission to execute it."),
@@ -886,11 +886,11 @@ static void
 browse_for_gtp_engine(GtkEngineDialogData *data)
 {
   if (!data->browsing_dialog) {
+    GtkWidget *file_selection = gtk_file_selection_new("Choose GTP Engine...");
     const gchar *command_line;
     gchar **argv;
 
-    data->browsing_dialog
-      = GTK_WINDOW(gtk_file_selection_new("Choose GTP Engine"));
+    data->browsing_dialog = GTK_WINDOW(file_selection);
     gtk_window_set_transient_for(data->browsing_dialog, data->window);
     gtk_window_set_destroy_with_parent(data->browsing_dialog, TRUE);
 
@@ -901,8 +901,8 @@ browse_for_gtp_engine(GtkEngineDialogData *data)
       g_strfreev(argv);
     }
 
-    g_signal_connect(data->browsing_dialog, "response",
-		     G_CALLBACK(browsing_dialog_response), data);
+    gtk_utils_add_file_selection_response_handlers
+      (file_selection, FALSE, G_CALLBACK(browsing_dialog_response), data);
   }
 
   gtk_window_present(data->browsing_dialog);
@@ -1029,8 +1029,8 @@ client_deleted(GtpClient *client, GError *shutdown_reason, void *user_data)
 
       if (shutdown_reason) {
 	gtk_utils_create_message_dialog(data->window, GTK_STOCK_DIALOG_ERROR,
-					GTK_UTILS_BUTTONS_OK,
-					G_CALLBACK(gtk_widget_destroy),
+					(GTK_UTILS_BUTTONS_OK
+					 | GTK_UTILS_DESTROY_ON_RESPONSE),
 					hint,
 					"Lost connection to GTP Engine (%s).",
 					shutdown_reason->message);
@@ -1367,8 +1367,8 @@ gtk_preferences_instantiate_selected_engine(GtkEngineChain *engine_chain,
 
       gtk_utils_create_message_dialog(engine_chain->parent_window,
 				      GTK_STOCK_DIALOG_ERROR,
-				      GTK_UTILS_BUTTONS_OK,
-				      G_CALLBACK(gtk_widget_destroy),
+				      (GTK_UTILS_BUTTONS_OK
+				       | GTK_UTILS_DESTROY_ON_RESPONSE),
 				      ("Perhaps engine's binary has been "
 				       "deleted or changed. You will probably "
 				       "need to alter engine's command line "
