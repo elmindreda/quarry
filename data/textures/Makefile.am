@@ -1,9 +1,10 @@
 # Process this file with Automake to produce `Makefile.in'.
 
 TEXTURES =		\
-	wood1.jpg
+	wood1.jpg	\
+	wood2.jpg
 
-texturesdir = $(datadir)/quarry/textures
+texturesdir = $(pkgdatadir)/textures
 textures_DATA = $(TEXTURES)
 
 

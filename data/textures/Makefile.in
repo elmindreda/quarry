@@ -147,10 +147,11 @@ sysconfdir = @sysconfdir@
 target_alias = @target_alias@
 
 TEXTURES = \
-	wood1.jpg
+	wood1.jpg	\
+	wood2.jpg
 
 
-texturesdir = $(datadir)/quarry/textures
+texturesdir = $(pkgdatadir)/textures
 textures_DATA = $(TEXTURES)
 
 EXTRA_DIST = $(TEXTURES)
