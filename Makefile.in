@@ -149,6 +149,10 @@ SUBDIRS = \
 	src
 
 
+EXTRA_DIST = \
+	COPYING-DOC
+
+
 DISTCLEANFILES = *~
 subdir = .
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4

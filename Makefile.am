@@ -7,4 +7,7 @@ SUBDIRS =	\
 	src
 
 
+EXTRA_DIST = 		\
+	COPYING-DOC
+
 DISTCLEANFILES = *~
