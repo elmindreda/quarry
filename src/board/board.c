@@ -547,27 +547,104 @@ board_position_list_new_empty(int num_positions)
 }
 
 
+void
+board_position_list_sort(BoardPositionList *list)
+{
+  assert(list);
+
+  if (list->num_positions > 1) {
+    qsort(list->positions, list->num_positions, sizeof(int),
+	  utils_compare_ints);
+  }
+}
+
+
 /* Position lists are always stored sorted in ascending order of
- * positions.  This is essential here and also for SGF writer.
+ * positions.  This is essential in the following functions and also
+ * for SGF writer.
+ */
+
+/* Determine if two position lists are equal, i.e. contain identical
+ * positions.
  */
 int
-board_position_lists_are_equal(const BoardPositionList *list1,
-			       const BoardPositionList *list2)
+board_position_lists_are_equal(const BoardPositionList *first_list,
+			       const BoardPositionList *second_list)
 {
   int k;
 
-  assert(list1);
-  assert(list2);
+  assert(first_list);
+  assert(second_list);
 
-  if (list1->num_positions != list2->num_positions)
+  if (first_list->num_positions != second_list->num_positions)
     return 0;
 
-  for (k = 0; k < list1->num_positions; k++) {
-    if (list1->positions[k] != list2->positions[k])
+  for (k = 0; k < first_list->num_positions; k++) {
+    if (first_list->positions[k] != second_list->positions[k])
       return 0;
   }
 
   return 1;
+}
+
+
+/* Determine if two position have at least one common position. */
+int
+board_position_lists_overlap(const BoardPositionList *first_list,
+			     const BoardPositionList *second_list)
+{
+  int i;
+  int j;
+
+  assert(first_list);
+  assert(second_list);
+
+  for (i = 0, j = 0;
+       i < first_list->num_positions && j < second_list->num_positions;) {
+    if (first_list->positions[i] < second_list->positions[j])
+      i++;
+    else if (first_list->positions[i] > second_list->positions[j])
+      j++;
+    else
+      return 1;
+  }
+
+  return 0;
+}
+
+
+/* Find given position in list.  If position is found, return its
+ * index or -1 otherwise.  The index may be useful for locating
+ * associated data in array.
+ */
+int
+board_position_list_find_position(const BoardPositionList *list, int pos)
+{
+  assert(list);
+
+  if (list->num_positions > 1) {
+    int *position_pointer = bsearch(&pos, list->positions, list->num_positions,
+				    sizeof(int), utils_compare_ints);
+
+    return position_pointer ? position_pointer - list->positions : -1;
+  }
+
+  return list->num_positions == 1 && list->positions[0] == pos ? 0 : -1;
+}
+
+
+
+void
+board_position_list_mark_on_grid(const BoardPositionList *list,
+				 char grid[BOARD_GRID_SIZE], char value)
+{
+  int k;
+
+  assert(list);
+  assert(grid);
+
+  for (k = 0; k < list->num_positions; k++)
+    grid[list->positions[k]] = value;
 }
 
 
