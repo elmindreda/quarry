@@ -1,3 +1,27 @@
+2004-08-07  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* gui-gtk/gtk-preferences.c (create_gtp_engines_page): Create GTP
+	engine information labels.
+	(gtk_preferences_dialog_update_gtp_engine_info): Display selected
+	GTP engine name, version, command line and supported games in
+	corresponding labels.
+
+	* gui-gtk/gtk-utils.c (gtk_utils_create_left_aligned_label): New
+	function.
+
+	* utils/string-list.c (string_list_implode): New function.
+
+	* gui-gtk/gtk-goban.c (gtk_goban_expose): Draw a small rectangle
+	to indicate focused state of widget.
+	(gtk_goban_button_press_event): Grab focus when goban is clicked
+	outside the playing area (e.g. on labels).
+	(gtk_goban_focus_in_or_out_event): New function.
+
+2004-08-04  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* quarry.c (main): Use `SIG_IGN' as signal handler for `SIGPIPE'.
+	(catch_broken_pipe_signal): Remove function.
+
 2004-07-22  Paul Pogonyshev  <pogonyshev@gmx.net>
 
 	* gui-gtk/gtk-goban-window.c (gtk_goban_window_save): Handle
