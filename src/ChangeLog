@@ -1,3 +1,25 @@
+2004-04-15  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* gui-gtk/gtk-utils.c (gtk_utils_create_message_dialog): Comment
+	gtk_window_set_skip_taskbar_hint() call out because it prevents
+	KDE window manager from giving message dialogs focus.  Also make
+	dialog modal even it has no parent (unless flags tell otherwise).
+
+	* gui-gtk/gtk-goban-window.c (gtk_goban_window_save): Use
+	gtk_utils_add_file_selection_response_handlers().
+	* gui-gtk/gtk-parser-interface.c (gtk_parser_interface_present):
+	Likewise.
+	* gui-gtk/gtk-preferences.c (browse_for_gtp_engine): Likewise.
+
+	* gui-gtk/gtk-utils.c
+	(gtk_utils_add_file_selection_response_handlers)
+	(overwrite_confirmation, file_selection_response): New functions.
+	Ask user if she really wants to overwrite existing file.
+	(gtk_utils_create_message_dialog): Remove `response_callback'
+	argument.  Add `GTK_UTILS_DESTROY_ON_RESPONSE' flag to acomplish
+	similar goal.
+	* gui-gtk/quarry-stock.c: New stock item `QUARRY_STOCK_OVERWRITE'.
+
 2004-04-14  Paul Pogonyshev  <pogonyshev@gmx.net>
 
 	* gui-utils/tile-set.c (tile_set_dump_recycle): Bugfix: don't
