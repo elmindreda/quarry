@@ -31,13 +31,22 @@ values  - gtp_engine_section_values {
 }
 
 
-values  - editing_and_viewing_values {
-  "Show game tree"		show_game_tree			 enumeration
+values  - game_tree_view_values {
+  "Show game tree"		show_game_tree			enumeration
 								new
-    SHOW_GAME_TREE_ALWAYS	  "Always"
-    SHOW_GAME_TREE_AUTOMATICALLY  "Auto" "Automatically"
-    SHOW_GAME_TREE_NEVER	  "Never"
+    SHOW_GAME_TREE_ALWAYS	      "Always"
+    SHOW_GAME_TREE_AUTOMATICALLY      "Auto" "Automatically"
+    SHOW_GAME_TREE_NEVER	      "Never"
   end
+
+  "Track current node"		track_current_node		enumeration
+								new
+    TRACK_CURRENT_NODE_ALWAYS	      "Always"
+    TRACK_CURRENT_NODE_AUTOMATICALLY  "Auto" "Automatically"
+    TRACK_CURRENT_NODE_NEVER	      "Never"
+  end
+
+  "Center on current node"	center_on_current_node		boolean
 }
 
 

@@ -29,8 +29,10 @@ defaults  - gtp_engine_defaults {
 }
 
 
-defaults  - editing_and_viewing_defaults {
-  show_game_tree		enumeration	SHOW_GAME_TREE_ALWAYS
+defaults  - game_tree_view_defaults {
+  show_game_tree		enumeration	SHOW_GAME_TREE_AUTOMATICALLY
+  track_current_node		enumeration	TRACK_CURRENT_NODE_AUTOMATICALLY
+  center_on_current_node	boolean		false
 }
 
 
