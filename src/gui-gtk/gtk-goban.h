@@ -186,13 +186,6 @@ struct _GtkGoban {
   gint			 coordinates_y_top;
   gint			 coordinates_y_bottom;
 
-  gint			 stones_left_margin;
-  gint			 stones_top_margin;
-  gint			 small_stones_left_margin;
-  gint			 small_stones_top_margin;
-  gint			 sgf_markup_left_margin;
-  gint			 sgf_markup_top_margin;
-
   int			 num_hoshi_points;
   BoardPoint		 hoshi_points[9];
 
