@@ -25,6 +25,30 @@
 #include "utils.h"
 
 #include <assert.h>
+#include <string.h>
+
+
+typedef void (* GtkUtilsFileSelectionCallback)
+  (GtkFileSelection *file_selection, gint response_id, gpointer user_data);
+
+typedef struct _GtkUtilsFileSelectionData	GtkUtilsFileSelectionData;
+
+struct _GtkUtilsFileSelectionData {
+  GtkFileSelection		*file_selection;
+
+  gboolean			 saving_file;
+
+  GtkUtilsFileSelectionCallback	 response_callback;
+  gpointer			 user_data;
+};
+
+
+static void	file_selection_response(GtkFileSelection *file_selection,
+					gint response_id,
+					GtkUtilsFileSelectionData *data);
+static void	overwrite_confirmation(GtkWidget *message_dialog,
+				       gint response_id,
+				       GtkUtilsFileSelectionData *data);
 
 
 static void	set_widget_sensitivity_on_toggle
@@ -84,7 +108,6 @@ gtk_utils_standardize_dialog(GtkDialog *dialog, GtkWidget *contents)
 GtkWidget *
 gtk_utils_create_message_dialog(GtkWindow *parent, const gchar *icon_stock_id,
 				GtkUtilsMessageDialogFlags flags,
-				GCallback response_callback,
 				const gchar *hint,
 				const gchar *message_format_string, ...)
 {
@@ -104,14 +127,19 @@ gtk_utils_create_message_dialog(GtkWindow *parent, const gchar *icon_stock_id,
   gtk_window_set_title(window, "");
   gtk_window_set_resizable(window, FALSE);
   gtk_window_set_skip_pager_hint(window, TRUE);
-  gtk_window_set_skip_taskbar_hint(window, TRUE);
 
-  if (parent) {
+  /* Note: disabled because KDE window manager doesn't give focus to
+   * message dialog after this call (is it a bug or what?).
+   */
+#if 0
+  gtk_window_set_skip_taskbar_hint(window, TRUE);
+#endif
+
+  if (parent)
     gtk_window_set_transient_for(window, GTK_WINDOW(parent));
 
-    if (!(flags & GTK_UTILS_NON_MODAL_WINDOW))
-      gtk_window_set_modal(window, TRUE);
-  }
+  if (!(flags & GTK_UTILS_NON_MODAL_WINDOW))
+    gtk_window_set_modal(window, TRUE);
 
   gtk_dialog_set_has_separator(dialog, FALSE);
 
@@ -164,13 +192,112 @@ gtk_utils_create_message_dialog(GtkWindow *parent, const gchar *icon_stock_id,
   gtk_utils_standardize_dialog(dialog, hbox);
   gtk_box_set_spacing(GTK_BOX(dialog->vbox), QUARRY_SPACING_VERY_BIG);
 
-  if (response_callback)
-    g_signal_connect(dialog, "response", response_callback, NULL);
-
   if (!(flags & GTK_UTILS_DONT_SHOW))
     gtk_window_present(window);
 
+  if (flags & GTK_UTILS_DESTROY_ON_RESPONSE)
+    g_signal_connect(dialog, "response", G_CALLBACK(gtk_widget_destroy), NULL);
+
   return widget;
+}
+
+
+void
+gtk_utils_add_file_selection_response_handlers(GtkWidget *file_selection,
+					       gboolean saving_file,
+					       GCallback response_callback,
+					       gpointer user_data)
+{
+  GtkUtilsFileSelectionData *data
+    = g_malloc(sizeof(GtkUtilsFileSelectionData));
+
+  assert(response_callback);
+
+  data->file_selection = GTK_FILE_SELECTION(file_selection);
+
+  data->saving_file	  = saving_file;
+  data->response_callback = (GtkUtilsFileSelectionCallback) response_callback;
+  data->user_data	  = user_data;
+
+  g_signal_connect(file_selection, "response",
+		   G_CALLBACK(file_selection_response), data);
+  g_signal_connect_swapped(file_selection, "destroy",
+			   G_CALLBACK(g_free), data);
+}
+
+
+static void
+file_selection_response(GtkFileSelection *file_selection, gint response_id,
+			GtkUtilsFileSelectionData *data)
+{
+  if (response_id == GTK_RESPONSE_OK) {
+    const gchar *filename = gtk_file_selection_get_filename(file_selection);
+
+    if (*filename) {
+      if (g_file_test(filename, G_FILE_TEST_IS_DIR)) {
+	/* Don't try to read directory, just browse into it. */
+	if (filename[strlen(filename) - 1] != G_DIR_SEPARATOR) {
+	  gchar *directory_name = g_strconcat(filename, G_DIR_SEPARATOR_S, NULL);
+
+	  gtk_file_selection_set_filename(file_selection, directory_name);
+	  g_free(directory_name);
+	}
+	else
+	  gtk_file_selection_set_filename(file_selection, filename);
+
+	/* We are done, no need to try to open/save. */
+	return;
+      }
+      else if (data->saving_file
+	       && g_file_test(filename, G_FILE_TEST_EXISTS)) {
+	static const gchar *hint
+	  = ("Note that all information in the existing file will be lost "
+	     "permanently if you choose to overwrite it.");
+	static const gchar *message_format_string
+	  = ("File named `%s' already exists. "
+	     "Do you want to overwrite it with the one you are saving?");
+
+	GtkWidget *confirmation_dialog
+	  = gtk_utils_create_message_dialog(GTK_WINDOW(file_selection),
+					    GTK_STOCK_DIALOG_WARNING,
+					    (GTK_UTILS_NO_BUTTONS
+					     | GTK_UTILS_DONT_SHOW),
+					    hint,
+					    message_format_string, filename);
+
+	gtk_dialog_add_buttons(GTK_DIALOG(confirmation_dialog),
+			       GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
+			       QUARRY_STOCK_OVERWRITE, GTK_RESPONSE_OK, NULL);
+	gtk_dialog_set_default_response(GTK_DIALOG(confirmation_dialog),
+					GTK_RESPONSE_OK);
+
+	g_signal_connect(confirmation_dialog, "response",
+			 G_CALLBACK(overwrite_confirmation), data);
+
+	gtk_window_present(GTK_WINDOW(confirmation_dialog));
+
+	/* Don't try to overwrite the file before we get user
+	 * confirmation.
+	 */
+	return;
+      }
+    }
+  }
+
+  data->response_callback(file_selection, response_id, data->user_data);
+}
+
+
+static void
+overwrite_confirmation(GtkWidget *message_dialog, gint response_id,
+		       GtkUtilsFileSelectionData *data)
+{
+  gtk_widget_destroy(message_dialog);
+
+  if (response_id == GTK_RESPONSE_OK) {
+    data->response_callback(data->file_selection, GTK_RESPONSE_OK,
+			    data->user_data);
+  }
 }
 
 

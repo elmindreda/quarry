@@ -80,8 +80,9 @@ typedef enum {
   GTK_UTILS_BUTTONS_CLOSE,
   GTK_UTILS_BUTTONS_MASK = 0xFF,
 
-  GTK_UTILS_DONT_SHOW	     = 1 << 8,
-  GTK_UTILS_NON_MODAL_WINDOW = 1 << 9
+  GTK_UTILS_DONT_SHOW		= 1 << 8,
+  GTK_UTILS_NON_MODAL_WINDOW	= 1 << 9,
+  GTK_UTILS_DESTROY_ON_RESPONSE = 1 << 10
 } GtkUtilsMessageDialogFlags;
 
 
@@ -106,8 +107,11 @@ void		gtk_utils_standardize_dialog(GtkDialog *dialog,
 GtkWidget *	gtk_utils_create_message_dialog
 		  (GtkWindow *parent, const gchar *icon_stock_id,
 		   GtkUtilsMessageDialogFlags flags,
-		   GCallback response_callback,
 		   const gchar *hint, const gchar *message_format_string, ...);
+
+void		gtk_utils_add_file_selection_response_handlers
+		  (GtkWidget *file_selection, gboolean saving_file,
+		   GCallback response_callback, gpointer user_data);
 
 GtkWidget *	gtk_utils_create_titled_page(GtkWidget *contents,
 					     const gchar *icon_stock_id,
