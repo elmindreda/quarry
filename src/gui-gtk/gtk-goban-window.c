@@ -30,6 +30,7 @@
 #include "gtk-gtp-client-interface.h"
 #include "gtk-help.h"
 #include "gtk-named-vbox.h"
+#include "gtk-new-game-dialog.h"
 #include "gtk-parser-interface.h"
 #include "gtk-preferences.h"
 #include "gtk-qhbox.h"
@@ -252,7 +253,7 @@ static void	 update_move_information (GtkGobanWindow *goban_window);
 static void	 fetch_comment_if_changed (GtkGobanWindow *goban_window,
 					   gboolean for_current_node);
 
-static void	 initialize_gtp_player (GtpClient *client, int successful,
+static int	 initialize_gtp_player (GtpClient *client, int successful,
 					GtkGobanWindow *goban_window, ...);
 
 static void	 free_handicap_has_been_placed
@@ -374,6 +375,11 @@ gtk_goban_window_init (GtkGobanWindow *goban_window)
 {
   static GtkItemFactoryEntry menu_entries[] = {
     { N_("/_File"), NULL, NULL, 0, "<Branch>" },
+    { N_("/File/New _Game..."),		"",
+      gtk_new_game_dialog_present,	0,
+      "<StockItem>",			GTK_STOCK_NEW },
+    { N_("/File/"), NULL, NULL, 0, "<Separator>" },
+
     { N_("/File/_Open..."),		"<ctrl>O",
       gtk_parser_interface_present,	0,
       "<StockItem>",			GTK_STOCK_OPEN },
@@ -426,6 +432,11 @@ gtk_goban_window_init (GtkGobanWindow *goban_window)
     { N_("/View/Game _Tree"),		NULL,
       show_or_hide_sgf_tree_view,	GTK_GOBAN_WINDOW_TOGGLE_CHILD,
       "<CheckItem>" },
+    { N_("/View/"), NULL, NULL, 0, "<Separator>" },
+
+    { N_("/View/_Control Center"),	NULL,
+      gtk_control_center_present,	0,
+      "<Item>" },
 
 
     { N_("/_Play"), NULL, NULL, 0, "<Branch>" },
@@ -1038,8 +1049,18 @@ save_file_as_response (GtkFileSelection *dialog, gint response_id,
 
     if (sgf_write_file (filename, goban_window->sgf_collection,
 			sgf_configuration.force_utf8)) {
+      gboolean need_window_title_update = (!goban_window->filename
+					   || (strcmp (goban_window->filename,
+						       filename)
+					       != 0));
+
       g_free (goban_window->filename);
       goban_window->filename = g_strdup (filename);
+
+      if (need_window_title_update) {
+	update_window_title (goban_window,
+			     goban_window->sgf_board_state.game_info_node);
+      }
     }
   }
 
@@ -1793,7 +1814,7 @@ show_or_hide_navigation_toolbar (GtkGobanWindow *goban_window)
   gtk_check_menu_item_set_active
     (GTK_CHECK_MENU_ITEM (menu_item),
      gtk_ui_configuration.show_navigation_toolbar);
-  gtk_utils_set_widgets_visible (gtk_ui_configuration.show_main_toolbar,
+  gtk_utils_set_widgets_visible (gtk_ui_configuration.show_navigation_toolbar,
 				 toolbar_handle_box, NULL);
 }
 
@@ -2881,24 +2902,43 @@ update_window_title (GtkGobanWindow *goban_window,
 		     const SgfNode *game_info_node)
 {
   const char *game_name = NULL;
-  char *basename = (goban_window->filename
-		    ? g_path_get_basename (goban_window->filename) : NULL);
+  char *string_to_free = NULL;
+  char *base_name = (goban_window->filename
+		     ? g_path_get_basename (goban_window->filename) : NULL);
   char *title;
 
   if (game_info_node) {
     game_name = sgf_node_get_text_property_value (game_info_node,
 						  SGF_GAME_NAME);
+
+    if (!game_name) {
+      const char *white_player
+	= sgf_node_get_text_property_value (game_info_node, SGF_PLAYER_WHITE);
+      const char *black_player
+	= sgf_node_get_text_property_value (game_info_node, SGF_PLAYER_BLACK);
+
+      if (white_player && black_player) {
+	string_to_free = g_strdup_printf (_("%s (W) vs. %s"),
+					  white_player, black_player);
+	game_name = string_to_free;
+      }
+    }
   }
 
-  if (game_name && basename) {
-    title = utils_cat_strings (NULL, game_name, " (", basename, ")", NULL);
-    gtk_window_set_title (GTK_WINDOW (goban_window), title);
-    utils_free (title);
+  if (game_name) {
+    if (base_name) {
+      title = utils_cat_strings (NULL, game_name, " (", base_name, ")", NULL);
+      gtk_window_set_title (GTK_WINDOW (goban_window), title);
+      utils_free (title);
+    }
+    else
+      gtk_window_set_title (GTK_WINDOW (goban_window), game_name);
   }
-  else if (basename)
-    gtk_window_set_title (GTK_WINDOW (goban_window), basename);
+  else if (base_name)
+    gtk_window_set_title (GTK_WINDOW (goban_window), base_name);
 
-  g_free (basename);
+  g_free (string_to_free);
+  g_free (base_name);
 }
 
 
@@ -3147,7 +3187,7 @@ fetch_comment_if_changed (GtkGobanWindow *goban_window,
 
 
 
-static void
+static int
 initialize_gtp_player (GtpClient *client, int successful,
 		       GtkGobanWindow *goban_window, ...)
 {
@@ -3320,6 +3360,8 @@ initialize_gtp_player (GtpClient *client, int successful,
     /* Must never happen. */
     assert (0);
   }
+
+  return 1;
 }
 
 
