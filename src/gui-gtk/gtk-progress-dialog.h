@@ -24,31 +24,27 @@
 #define QUARRY_GTK_PROGRESS_DIALOG_H
 
 
-#include "gtk-thread-interface.h"
 #include "quarry.h"
-
-
-#if THREADS_SUPPORTED
 
 
 #include <gtk/gtk.h>
 
 
-#define GTK_TYPE_PROGRESS_DIALOG	(gtk_progress_dialog_get_type())
+#define GTK_TYPE_PROGRESS_DIALOG	(gtk_progress_dialog_get_type ())
 #define GTK_PROGRESS_DIALOG(obj)					\
-  (GTK_CHECK_CAST((obj), GTK_TYPE_PROGRESS_DIALOG, GtkProgressDialog))
+  (GTK_CHECK_CAST ((obj), GTK_TYPE_PROGRESS_DIALOG, GtkProgressDialog))
 #define GTK_PROGRESS_DIALOG_CLASS(klass)				\
-  (GTK_CHECK_CLASS_CAST((klass), GTK_TYPE_PROGRESS_DIALOG,		\
-			GtkProgressDialogClass))
+  (GTK_CHECK_CLASS_CAST ((klass), GTK_TYPE_PROGRESS_DIALOG,		\
+			 GtkProgressDialogClass))
 
 #define GTK_IS_PROGRESS_DIALOG(obj)					\
-  (GTK_CHECK_TYPE((obj), GTK_TYPE_PROGRESS_DIALOG))
+  (GTK_CHECK_TYPE ((obj), GTK_TYPE_PROGRESS_DIALOG))
 #define GTK_IS_PROGRESS_DIALOG_CLASS(klass)				\
-  (GTK_CHECK_CLASS_TYPE((klass), GTK_TYPE_PROGRESS_DIALOG))
+  (GTK_CHECK_CLASS_TYPE ((klass), GTK_TYPE_PROGRESS_DIALOG))
 
 #define GTK_PROGRESS_DIALOG_GET_CLASS(obj)				\
-  (GTK_CHECK_GET_CLASS((obj), GTK_TYPE_PROGRESS_DIALOG,			\
-		       GtkProgressDialogClass))
+  (GTK_CHECK_GET_CLASS ((obj), GTK_TYPE_PROGRESS_DIALOG,		\
+			GtkProgressDialogClass))
 
 
 typedef struct _GtkProgressDialog	GtkProgressDialog;
@@ -81,7 +77,7 @@ struct _GtkProgressDialogClass {
 };
 
 
-GtkType		gtk_progress_dialog_get_type(void);
+GType		gtk_progress_dialog_get_type (void);
 
 GtkWidget *	gtk_progress_dialog_new
 		  (GtkWindow *parent,
@@ -98,9 +94,6 @@ void		gtk_progress_dialog_set_fraction
 
 void		gtk_progress_dialog_recover_parent
 		  (GtkProgressDialog *progress_dialog);
-
-
-#endif /* THREADS_SUPPORTED */
 
 
 #endif /* QUARRY_GTK_PROGRESS_DIALOG_H */
