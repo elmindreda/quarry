@@ -84,6 +84,20 @@
 #endif
 
 
+/* Much like g_signal_handlers_block_by_func() and
+ * g_signal_handlers_unblock_by_func(), but don't require to match
+ * data.
+ */
+#define gtk_utils_block_signal_handlers(instance, function)		\
+  g_signal_handlers_block_matched ((instance), G_SIGNAL_MATCH_FUNC,	\
+				   0, 0, NULL, (function), NULL)
+
+#define gtk_utils_unblock_signal_handlers(instance, function)		\
+  g_signal_handlers_unblock_matched ((instance), G_SIGNAL_MATCH_FUNC,	\
+				     0, 0, NULL, (function), NULL)
+
+
+
 typedef struct _GtkUtilsBindingInfo	GtkUtilsBindingInfo;
 
 struct _GtkUtilsBindingInfo {
