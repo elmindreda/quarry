@@ -106,6 +106,10 @@ char *		utils_special_vprintf(const char *format_string,
 char *		utils_fgets(FILE *file, int *length);
 
 
+int		utils_compare_ints(const void *first_int,
+				   const void *second_int);
+
+
 extern char    *full_program_name;
 extern char    *short_program_name;
 extern char    *program_directory;

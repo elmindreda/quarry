@@ -550,6 +550,17 @@ utils_fgets(FILE *file, int *length)
 }
 
 
+
+/* A function suitable for passing as fourth argument to qsort() for
+ * sorting array of `int's in ascending order.
+ */
+int
+utils_compare_ints(const void *first_int, const void *second_int)
+{
+  return * (const int *) first_int - * (const int *) second_int;
+}
+
+
 /*
  * Local Variables:
  * tab-width: 8
