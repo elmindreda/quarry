@@ -100,6 +100,13 @@ void		utils_free_program_name_strings(void);
 char *		utils_printf(const char *format_string, ...);
 char *		utils_vprintf(const char *format_string, va_list arguments);
 
+char *		utils_cprintf(const char *format_string, ...);
+char *		utils_vcprintf(const char *format_string, va_list arguments);
+int		utils_ncprintf(char *buffer, int buffer_size,
+			       const char *format_string, ...);
+int		utils_vncprintf(char *buffer, int buffer_size,
+				const char *format_string, va_list arguments);
+
 char *		utils_special_printf(const char *format_string, ...);
 char *		utils_special_vprintf(const char *format_string,
 				      va_list arguments);
@@ -111,8 +118,6 @@ char *		utils_fgets(FILE *file, int *length);
 int		utils_compare_ints(const void *first_int,
 				   const void *second_int);
 
-
-const char *	utils_format_double(double value);
 
 int             utils_parse_double(const char *float_string, 
                                    double *result);
@@ -464,6 +469,11 @@ void		string_buffer_printf(StringBuffer *string_buffer,
 void		string_buffer_vprintf(StringBuffer *string_buffer,
 				      const char *format_string,
 				      va_list arguments);
+void		string_buffer_cprintf(StringBuffer *string_buffer,
+				      const char *format_string, ...);
+void		string_buffer_vcprintf(StringBuffer *string_buffer,
+				       const char *format_string,
+				       va_list arguments);
 
 
 
@@ -511,6 +521,11 @@ void		buffered_writer_printf(BufferedWriter *writer,
 void		buffered_writer_vprintf(BufferedWriter *writer,
 					const char *format_string,
 					va_list arguments);
+void		buffered_writer_cprintf(BufferedWriter *writer,
+					const char *format_string, ...);
+void		buffered_writer_vcprintf(BufferedWriter *writer,
+					 const char *format_string,
+					 va_list arguments);
 
 
 

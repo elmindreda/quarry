@@ -23,12 +23,13 @@
 
 #include "utils.h"
 
+#include <assert.h>
 #include <limits.h>
+#include <math.h>
 #include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <math.h>
 
 #ifdef HAVE_FLOAT_H
 #include <float.h>
@@ -39,7 +40,11 @@
 #endif
 
 
-#define FORMAT_DOUBLE_DECIMALS	6
+enum {
+  PRECISION_DEFAULT   =  6,
+  PRECISION_SPECIAL   = -1,
+  PRECISION_PASSED_IN = -2
+};
 
 
 #if ENABLE_MEMORY_PROFILING
@@ -416,6 +421,10 @@ utils_free_program_name_strings(void)
 
 
 
+/* Call sprintf() with given `format_string' and arguments and return
+ * its result in a dynamically allocated buffer.  The current locale
+ * is taken into account.
+ */
 char *
 utils_printf(const char *format_string, ...)
 {
@@ -430,6 +439,7 @@ utils_printf(const char *format_string, ...)
 }
 
 
+/* Same as utils_printf(), but `arguments' are passed as `va_list'. */
 char *
 utils_vprintf(const char *format_string, va_list arguments)
 {
@@ -442,11 +452,10 @@ utils_vprintf(const char *format_string, va_list arguments)
   length = vsnprintf(buffer, sizeof(buffer), format_string, arguments_copy);
   va_end(arguments_copy);
 
-  if (length < (int) sizeof(buffer))
+  if (-1 < length && length < (int) sizeof(buffer))
     return utils_duplicate_as_string(buffer, length);
 
-  if (length <= -1)
-    length = 2 * sizeof(buffer) - 1;
+  length = (length > -1 ? length + 1 : 2 * sizeof(buffer));
 
   while (1) {
     int required_length;
@@ -462,6 +471,331 @@ utils_vprintf(const char *format_string, va_list arguments)
 
     length = (required_length > -1 ? required_length + 1 : 2 * length);
   }
+}
+
+
+/* Call utils_ncprintf() with given `format_string' and arguments and
+ * return its result in a dynamically allocated buffer.  This function
+ * ignores locales and should be used in cases when arguments are to
+ * be formatted according to C locale.
+ */
+char *
+utils_cprintf(const char *format_string, ...)
+{
+  char *string;
+  int num_bytes_required;
+  va_list arguments;
+
+  va_start(arguments, format_string);
+  num_bytes_required = utils_vncprintf(NULL, 0, format_string, arguments) + 1;
+  va_end(arguments);
+
+  string = utils_malloc(num_bytes_required);
+
+  va_start(arguments, format_string);
+  utils_vncprintf(string, num_bytes_required, format_string, arguments);
+  va_end(arguments);
+
+  return string;
+}
+
+
+/* Same as utils_cprintf(), but `arguments' are passed as
+ * `va_list'.
+ */
+char *
+utils_vcprintf(const char *format_string, va_list arguments)
+{
+  char *string;
+  int num_bytes_required;
+  va_list arguments_copy;
+
+  QUARRY_VA_COPY(arguments_copy, arguments);
+  num_bytes_required = (utils_vncprintf(NULL, 0, format_string, arguments_copy)
+			+ 1);
+  va_end(arguments_copy);
+
+  string = utils_malloc(num_bytes_required);
+  utils_vncprintf(string, num_bytes_required, format_string, arguments);
+
+  return string;
+}
+
+
+/* Format arguments in accordance with `format_string' and store
+ * result in given `buffer'.  At most `buffer_size' bytes (including
+ * terminating '\0') are written.  This function always formats
+ * according to C locale; current locale is ignored.
+ *
+ * Only a subset of standard conversion specifiers is understood: `%c'
+ * (character, must be ASCII), `%d' (decimal number), `%f'
+ * (floating-point number) and `%s' (string).
+ *
+ * A '+' before `%d' or `%f' forces sign before positive numbers (by
+ * default it is omitted).
+ *
+ * Default precision for `%f' conversion is 6.  Precision can be
+ * changed in the conversion specifier in one of the following ways:
+ *
+ *   `%.Nf' (where N is a non-negative decimal)---use precision N.
+ *
+ *   `%.*f'---get precision as an integer argument.
+ *
+ *   `%.f'---"special" precision: default precision (6) is used, but
+ *   all terminating zeros are removed, except if directly following
+ *   decimal point.  So, 1.25 would get formatted as "1.25", not as
+ *   "1.250000", while 1.0 would get formatted as "1.0", not as "1.".
+ */
+int
+utils_ncprintf(char *buffer, int buffer_size, const char *format_string, ...)
+{
+  int num_bytes_required;
+  va_list arguments;
+
+  va_start(arguments, format_string);
+  num_bytes_required = utils_vncprintf(buffer, buffer_size,
+				       format_string, arguments);
+  va_end(arguments);
+
+  return num_bytes_required;
+}
+
+
+#define CHECK_FOR_END_OF_BUFFER			\
+  do {						\
+    if (buffer == buffer_end) {			\
+      *buffer = 0;				\
+      buffer = NULL;				\
+    }						\
+  } while (0)
+
+
+/* Same as utils_ncprintf(), but `arguments' are passed as
+ * `va_list'.
+ */
+int
+utils_vncprintf(char *buffer, int buffer_size,
+		const char *format_string, va_list arguments)
+{
+  int num_bytes_required = 0;
+  char *buffer_end = (buffer ? buffer + buffer_size - 1 : NULL);
+
+  assert(buffer_size > 1 || !buffer);
+  assert(format_string);
+
+  while (*format_string) {
+    if (*format_string != '%') {
+      if (buffer) {
+	*buffer++ = *format_string;
+	CHECK_FOR_END_OF_BUFFER;
+      }
+
+      num_bytes_required++;
+      format_string++;
+    }
+    else {
+      const char *format_specifier = ++format_string;
+      int sign_is_forced = 0;
+      int precision = PRECISION_DEFAULT;
+
+      if (*format_string == '+') {
+	sign_is_forced = 1;
+	format_string++;
+      }
+
+      if (*format_string == '.') {
+	precision = PRECISION_SPECIAL;
+	format_string++;
+
+	if ('0' <= *format_string && *format_string <= '9') {
+	  for (precision = (*format_string++ - '0');
+	       '0' <= *format_string && *format_string <= '9'; format_string++)
+	    precision = precision * 10 + (*format_string - '0');
+	}
+	else if (*format_string == '*') {
+	  precision = PRECISION_PASSED_IN;
+	  format_string++;
+	}
+
+	if (*format_string != 'f') {
+	  format_string = format_specifier;
+	  continue;
+	}
+      }
+
+      switch (*format_string++) {
+      case 'c':
+	if (!sign_is_forced) {
+	  char character = (char) va_arg(arguments, int);
+
+	  if (buffer) {
+	    *buffer++ = (!(character & 0x80) ? character : ' ');
+	    CHECK_FOR_END_OF_BUFFER;
+	  }
+
+	  num_bytes_required++;
+	}
+	else
+	  format_string = format_specifier;
+
+	break;
+
+      case 'd':
+	{
+	  int number = va_arg(arguments, int);
+	  unsigned magnitude = (number >= 0 ? number : -number);
+	  unsigned magnitude_copy = magnitude;
+	  int num_digits = 0;
+
+	  if (number < 0 || sign_is_forced) {
+	    if (buffer) {
+	      *buffer++ = (number < 0 ? '-' : '+');
+	      CHECK_FOR_END_OF_BUFFER;
+	    }
+
+	    num_bytes_required++;
+	  }
+
+	  do {
+	    num_digits++;
+	    magnitude_copy /= 10;
+	  } while (magnitude_copy);
+
+	  num_bytes_required += num_digits;
+
+	  if (buffer) {
+	    int k;
+
+	    while (num_digits > buffer_end - buffer) {
+	      magnitude /= 10;
+	      num_digits--;
+	    }
+
+	    for (k = num_digits; --k >= 0; ) {
+	      *(buffer + k) = '0' + (magnitude % 10);
+	      magnitude /= 10;
+	    }
+
+	    buffer += num_digits;
+	    CHECK_FOR_END_OF_BUFFER;
+	  }
+	}
+
+	break;
+
+      case 'f':
+	if (precision == PRECISION_PASSED_IN) {
+	  precision = va_arg(arguments, int);
+	  if (precision < 0)
+	    precision = 0;
+	}
+
+	{
+	  double number = va_arg(arguments, double);
+	  int shift;
+	  int num_bytes_to_write;
+
+	  if (number < 0.0 || sign_is_forced) {
+	    if (buffer) {
+	      *buffer++ = (number < 0.0 ? '-' : '+');
+	      CHECK_FOR_END_OF_BUFFER;
+	    }
+
+	    if (number < 0.0)
+	      number = -number;
+
+	    num_bytes_required++;
+	  }
+
+	  if (precision != PRECISION_SPECIAL) {
+	    /* After this addition, proper rounding becomes simple
+	     * truncation.
+	     */
+	    number += 0.5 * pow(10, -precision);
+	  }
+	  else {
+	    double fraction;
+
+	    number += 0.5 * pow(10, -PRECISION_DEFAULT);
+	    fraction = ((number - floor(number))
+			* pow(10, PRECISION_DEFAULT - 1));
+
+	    /* Calculate precision: reduce from `PRECISION_DEFAULT'
+	     * down to 1 for as long as last digit is zero.
+	     */
+	    for (precision = PRECISION_DEFAULT;
+		 precision > 1 && fraction - floor(fraction) < 0.1;
+		 precision--)
+	      fraction /= 10.0;
+	  }
+
+	  if (number >= 10.0)
+	    shift = 1 + floor(log10(number));
+	  else
+	    shift = 1;
+
+	  num_bytes_to_write  = shift + (precision > 0 ? precision + 1 : 0);
+	  num_bytes_required += num_bytes_to_write;
+
+	  if (buffer) {
+	    int k;
+
+	    /* Make number less than 10.0. */
+	    number *= pow(10, (double) -(shift - 1));
+
+	    if (num_bytes_to_write > buffer_end - buffer)
+	      num_bytes_to_write = buffer_end - buffer;
+
+	    for (k = 0; k < num_bytes_to_write; k++) {
+	      if (shift--) {
+		*buffer++ = '0' + (char) (int) floor(number);
+		number = (number - floor(number)) * 10.0;
+	      }
+	      else
+		*buffer++ = '.';
+	    }
+
+	    CHECK_FOR_END_OF_BUFFER;
+	  }
+	}
+
+	break;
+
+      case 's':
+	if (!sign_is_forced) {
+	  const char *string = va_arg(arguments, const char *);
+	  int length = strlen(string);
+
+	  if (buffer) {
+	    if (buffer_end - buffer > length) {
+	      memcpy(buffer, string, length);
+	      buffer += length;
+	    }
+	    else {
+	      memcpy(buffer, string, buffer_end - buffer);
+
+	      *buffer_end = 0;
+	      buffer = NULL;
+	    }
+	  }
+
+	  num_bytes_required += length;
+	}
+	else
+	  format_string = format_specifier;
+
+	break;
+
+      default:
+	format_string = format_specifier;
+      }
+    }
+  }
+
+  if (buffer)
+    *buffer = 0;
+
+  return num_bytes_required;
 }
 
 
@@ -576,81 +910,13 @@ utils_compare_ints(const void *first_int, const void *second_int)
 
 
 
-/* Format a double number, so that it doesn't have trailing zeros
- * after decimal point (with the only exception of an integer number).
- * So, 1.2 would get formatted as "1.2", not "1.20", but 1 would be
- * represented as "1.0", not "1.".  At most FORMAT_DOUBLE_DECIMALS
- * digits after the decimal point are produced.  Locale is not
- * considered.
- *
- * The function returns address of a static buffer, so if you need to
- * save the value, copy it away.
- */
-const char *
-utils_format_double(double value)
-{
-#ifdef DBL_MAX_10_EXP
-
-  /* 20 is a safety margin. */
-  static char buffer[1 + DBL_MAX_10_EXP + 1 + FORMAT_DOUBLE_DECIMALS + 20];
-
-#else
-
-  static char buffer[0x400];
-
-#endif
-
-  char *buffer_pointer = buffer;
-  int shift;
-  int leading_digit;
-
-  /* Start with a '-' if value is negative. */
-  if(value < 0) {
-    *buffer_pointer++ = '-';
-    value = -value;
-  }
-
-  /* Now we can limit ourselves to positive values. */
-
-  /* After this addition, proper rounding becomes simple
-   * truncation.
-   */
-  value += 0.5 * pow(10, -FORMAT_DOUBLE_DECIMALS);
-
-  if (value >= 1.0) {
-    shift  = floor(log10(value));
-    value /= pow(10, (double) shift);
-  }
-  else
-    shift = 0;
-
-  /* Now value is less than 10.0. */
-
-  do {
-    leading_digit = floor(value);
-    *buffer_pointer++ = (char) leading_digit + '0';
-
-    if (shift-- == 0)
-      *buffer_pointer++ = '.';
-
-    value = (value - leading_digit) * 10.0;
-  } while ((value * pow(10, (double) FORMAT_DOUBLE_DECIMALS + shift) >= 1.0
-	    && shift >= -FORMAT_DOUBLE_DECIMALS)
-	   || shift >= -1);
-
-  *buffer_pointer = 0;
-  return buffer;
-}
-
-
-
-/*
- * Parse a double number in a locale independent way. The string may
- * contain an optional '-', followed by digits, optionally followed by
- * a '.', optionally followed by more digits. If the first character
- * other then those is not '\0', a parsing error is assumed and false
- * is returned. Otherwise, true is returned. Parsing an empty string
- * produces 0.0 and returns true.
+/* Parse a double number in a locale independent way.  The string may
+ * contain an optional sign ('+' or '-'), followed by digits,
+ * optionally followed by a '.', optionally followed by more digits.
+ * If the first character other then those is not '\0', a parsing
+ * error is assumed and zero is returned.  Otherwise, nonzero is
+ * returned.  Parsing an empty string produces 0.0 and returns
+ * nonzero.
  */
 int
 utils_parse_double(const char *float_string, double *result)
@@ -660,10 +926,8 @@ utils_parse_double(const char *float_string, double *result)
 
   *result = 0.0;
 
-  if (*scan == '-') {
-    is_negative = 1;
-    scan++;
-  }
+  if (*scan == '+' || *scan == '-')
+    is_negative = (*scan++ == '-');
 
   while (*scan >= '0' && *scan <= '9')
     *result = *result * 10 + (double) (*scan++ - '0');
