@@ -1,3 +1,96 @@
+2004-08-25  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* gui-gtk/gtk-goban.c (set_goban_non_style_appearance): Update
+	goban's SGF markup tile set.
+
+	* gui-gtk/gtk-preferences.c (create_go_board_appearance_page):
+	Create a page for markup appearance configuration.
+	(create_amazons_board_appearance_page): Likewise.
+	(create_othello_board_appearance_page): Likewise.
+	(create_board_appearance_notebook_page): Add markup page to the
+	notebook (passed as new parameter `markup_widget').
+	(update_board_background): Remove only GtkColorButton case.
+	Change `game_index's type to `gpointer'.
+	(update_board_background_texture): Likewise for `game_index'.
+	(create_markup_box, update_board_grid_and_labels_color)
+	(use_theme_default_size, use_theme_default_opacity)
+	(game_to_board_appearance_structure): New functions.
+	(update_board_grid_and_labels_color, update_checkerboard_pattern):
+	Remove functions.
+	(update_board_appearance): New function, contains code from
+	update_board_background(), update_board_grid_and_labels_color()
+	and update_checkerboard_pattern().
+
+	* gui-gtk/gtk-tile-set.c
+	(gtk_sgf_markup_tile_set_create_or_reuse): Remove `theme'
+	parameter.  Handle markup configuration.  Scale markup for Go when
+	decrementing markup cell/pixbuf size.  Update for new
+	`GtkSgfMarkupTileSetKey' format.
+	(gtk_sgf_markup_tile_set_compare_keys): Update for new
+	`GtkSgfMarkupTileSetKey' format.
+	(gtk_sgf_markup_tile_set_duplicate_key): Likewise.
+	(gtk_sgf_markup_tile_set_create): Handle markup configuration.
+	Read files here instead of scale_and_paint_svg_image().  Reuse
+	pixbufs when markup color over different backgrounds match.
+	(scale_and_paint_svg_image): Empty `color_properties' string list
+	just in case not all declared properties exist.
+
+2004-08-24  Martin Holters  <martin.holters@gmx.de>
+
+	* src/board/board.c (board_position_list_union): New function.
+
+	* src/utils/string-list.c (string_list_count_items): New function.
+
+	* src/gtp/gtp-client.c (gtp_client_final_status_list)
+	(parse_final_status_list): New functions.
+	* src/gui-gtk/gtk-goban-window.c (engine_has_scored)
+	(enter_scoring_mode, cancel_scoring): New functions.
+	(move_has_been_played): Invoke gtp_client_final_status_list() of
+	GTP engine player(s) (if any) before user may score.
+
+2004-08-23  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* gui-gtk/gtk-utils.c (gtk_utils_create_selector): Pass items'
+	text through _() also for pre-2.4 version of the function.
+	(gtk_utils_create_selector_from_string_list): New function.
+
+	* quarry.c (main): Invoke gui_utils_enumerate_themes() before
+	anything else GUI-related and gui_utils_discard_theme_lists()
+	afterwards.  Don't call gui_back_end_main_*() if
+	gui_back_end_init() failed in the first place.
+
+	* Makefile.am (AM_CPPFLAGS): Add `src/gui-utils' and `src/board'
+	to include path (the latter is required by
+	`src/gui-utils/gui-utils.h', not by `quarry.c' itself).
+
+	* gui-utils/gui-utils.c (gui_utils_enumerate_themes)
+	(gui_utils_discard_theme_lists): New functions.
+
+	* gui-utils/configuration.c (configuration_read_from_file): Return
+	non-zero if file is read successfully.
+
+	* gui-utils/Makefile.am (AM_CPPFLAGS): Define `PACKAGE_DATA_DIR'.
+
+	* utils/Makefile.am: Make `tags' target depend on `libutils.a' and
+	`libparselist.a', as otherwise `make tags' won't work in a clean
+	source tree.
+
+2004-08-22  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* gui-utils/markup-theme-configuration.list: New file.
+
+	* gui-utils/common-configuration-values.list: Add configuration
+	parameters for markup appearance for all supported games.
+	* gui-utils/common-configuration-defaults.list: Likewise.
+
+	* gui-gtk/gtk-goban-window.c (update_children_for_new_node): Move
+	cursor to comment's first line.
+	(fetch_comment_if_changed): Don't store empty comments, delete
+	them.
+
+	* sgf/sgf-utils.c (sgf_utils_normalize_text): Return NULL if
+	normalized comment is empty.
+
 2004-08-21  Paul Pogonyshev  <pogonyshev@gmx.net>
 
 	* gui-gtk/gtk-goban-window.c (gtk_goban_window_save): Make sure
