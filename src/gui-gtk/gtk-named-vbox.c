@@ -162,7 +162,7 @@ gtk_named_vbox_size_request(GtkWidget *widget, GtkRequisition *requisition)
 			    + named_vbox->left_padding),
 			   label_requisition.width);
   requisition->height = (label_requisition.height
-			 + GTK_BOX(widget)->spacing
+			 + QUARRY_SPACING_SMALL
 			 + named_vbox->vbox_requisition.height);
 }
 
@@ -185,12 +185,11 @@ gtk_named_vbox_size_allocate(GtkWidget *widget, GtkAllocation *allocation)
   gtk_widget_size_allocate(named_vbox->label, &child_allocation);
 
   child_allocation.x	  += named_vbox->left_padding;
-  child_allocation.y	  += (label_requisition.height
-			      + GTK_BOX(widget)->spacing);
+  child_allocation.y	  += label_requisition.height + QUARRY_SPACING_SMALL;
   child_allocation.width  -= named_vbox->left_padding;
   child_allocation.height  = (allocation->height
 			      - (label_requisition.height
-				 + GTK_BOX(widget)->spacing));
+				 + QUARRY_SPACING_SMALL));
 
   widget_requisition = widget->requisition;
   widget->requisition = named_vbox->vbox_requisition;
