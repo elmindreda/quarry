@@ -1,3 +1,12 @@
+2004-04-16  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* gui-gtk/gtk-goban-window.c
+	(USER_CAN_PLAY_MOVES): New macro.
+	(gtk_goban_window_init): New sub-menu "Play" with "Pass" item.
+	(play_pass_move): New function.
+	(update_children_for_new_node): Sensitize/desensitize "Pass" menu
+	item depending on the current game and who is to play.
+
 2004-04-15  Paul Pogonyshev  <pogonyshev@gmx.net>
 
 	* gui-gtk/gtk-utils.c (gtk_utils_create_message_dialog): Comment
@@ -22,7 +31,7 @@
 
 2004-04-14  Paul Pogonyshev  <pogonyshev@gmx.net>
 
-	* gui-utils/tile-set.c (tile_set_dump_recycle): Bugfix: don't
+	* gui-utils/tile-set.c (tile_set_dump_recycle): Bug-fix: don't
 	deadlock when performing "lazy" recycling.
 
 	* gui-gtk/gtk-utils.c (gtk_utils_set_menu_items_sensitive): New
@@ -39,7 +48,7 @@
 	* gui-gtk/gtk-preferences.c (engine_selector_destroyed): Free
 	selector data, don't leak memory.
 
-	* board/amazons.c (amazons_is_legal_move): Bugfix: make function
+	* board/amazons.c (amazons_is_legal_move): Bug-fix: make function
 	work properly when "to" point is a null point.
 
 2004-04-13  Paul Pogonyshev  <pogonyshev@gmx.net>
