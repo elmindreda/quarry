@@ -20,6 +20,7 @@
 \* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 
+#include "gtk-control-center.h"
 #include "gtk-freezable-spin-button.h"
 #include "gtk-utils.h"
 #include "quarry-stock.h"
@@ -56,6 +57,12 @@ struct _GtkUtilsBrowseButtonData {
   GtkUtilsBrowsingDoneCallback	 callback;
   gpointer			 user_data;
 };
+
+
+static void	 null_pointer_on_destroy (GtkWindow *window,
+					  GtkWindow **window_pointer);
+static void	 null_pointer_on_destroy_ask_control_center
+		   (GtkWindow *window, GtkWindow **window_pointer);
 
 static void	 file_selection_response (GtkFileSelection *file_selection,
 					  gint response_id,
@@ -239,6 +246,40 @@ gtk_utils_create_message_dialog (GtkWindow *parent, const gchar *icon_stock_id,
   }
 
   return widget;
+}
+
+
+void
+gtk_utils_null_pointer_on_destroy (GtkWindow **window_pointer,
+				   gboolean ask_control_center)
+{
+  assert (window_pointer && GTK_IS_WINDOW (*window_pointer));
+
+  g_signal_connect (*window_pointer, "destroy",
+		    G_CALLBACK (ask_control_center
+				? null_pointer_on_destroy_ask_control_center
+				: null_pointer_on_destroy),
+		    window_pointer);
+}
+
+
+static void
+null_pointer_on_destroy (GtkWindow *window, GtkWindow **window_pointer)
+{
+  assert (window == *window_pointer);
+
+  *window_pointer = NULL;
+}
+
+
+static void
+null_pointer_on_destroy_ask_control_center (GtkWindow *window,
+					    GtkWindow **window_pointer)
+{
+  assert (window == *window_pointer);
+
+  if (gtk_control_center_window_destroyed (window))
+    *window_pointer = NULL;
 }
 
 
