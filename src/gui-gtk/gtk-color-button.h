@@ -28,11 +28,16 @@
  * GTK+ at ftp://ftp.gtk.org/pub/gtk/. 
  */
 
-/* 2004-04-26  Paul Pogonyshev
+/* 2004-04-27  Paul Pogonyshev
  *
- * Include into Quarry to backport to pre-2.4 GTK+.  Modify to compile
- * with Quarry.  Modify to exclude all declarations if compiling with
- * GTK+ 2.4 or later.
+ *	Move `GtkColorButtonPrivate' into `GtkColorButton' (apparently
+ *	pre-2.4 GLib doesn't have support for privates).
+ *
+ * 2004-04-26  Paul Pogonyshev
+ *
+ *	Include into Quarry to backport to pre-2.4 GTK+.  Modify to
+ *	compile with Quarry.  Modify to exclude all declarations if
+ *	compiling with GTK+ 2.4 or later.
  */
 
 
@@ -75,6 +80,7 @@ struct _GtkColorButton {
   /*< private >*/
 
   GtkColorButtonPrivate *priv;
+  GtkColorButtonPrivate  the_priv;
 };
 
 struct _GtkColorButtonClass {
@@ -87,6 +93,22 @@ struct _GtkColorButtonClass {
   void (*_gtk_reserved2) (void);
   void (*_gtk_reserved3) (void);
   void (*_gtk_reserved4) (void);
+};
+
+struct _GtkColorButtonPrivate 
+{
+  GdkPixbuf *pixbuf;    /* Pixbuf for rendering sample */
+  GdkGC *gc;            /* GC for drawing */
+  
+  GtkWidget *drawing_area;/* Drawing area for color sample */
+  GtkWidget *cs_dialog; /* Color selection dialog */
+  
+  gchar *title;         /* Title for the color selection window */
+  
+  GdkColor color;
+  guint16 alpha;
+  
+  guint use_alpha : 1;  /* Use alpha or not */
 };
 
 

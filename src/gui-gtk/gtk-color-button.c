@@ -28,11 +28,23 @@
  * GTK+ at ftp://ftp.gtk.org/pub/gtk/. 
  */
 
-/* 2004-04-26  Paul Pogonyshev
+/* 2004-04-27  Paul Pogonyshev
  *
- * Include into Quarry to backport to pre-2.4 GTK+.  Modify to compile
- * with Quarry.  Modify to exclude all code if compiling with GTK+ 2.4
- * or later.  Remove "Since: 2.4" comments.
+ *	Remove `gettext' stuff as not yet supported in Quarry.
+ *
+ *	Use `quarry_marshal_VOID__VOID' instead of
+ *	`_gtk_marshal_VOID__VOID'.
+ *
+ *	Move `GtkColorButtonPrivate' into `GtkColorButton' (apparently
+ *	pre-2.4 GLib doesn't have support for privates).
+ *
+ *	"Use" unused parameters with UNUSED() macro.
+ *
+ * 2004-04-26  Paul Pogonyshev
+ *
+ *	Include into Quarry to backport to pre-2.4 GTK+.  Modify to
+ *	compile with Quarry.  Modify to exclude all code if compiling
+ *	with GTK+ 2.4 or later.  Remove "Since: 2.4" comments.
  */
 
 
@@ -43,6 +55,8 @@
 #if !GTK_2_4_OR_LATER
 
 
+#include "quarry-marshal.h"
+
 #include <gtk/gtk.h>
 
 
@@ -50,24 +64,6 @@
 #define CHECK_SIZE  4
 #define CHECK_DARK  21845  /* 65535 / 3     */
 #define CHECK_LIGHT 43690 
-
-#define GTK_COLOR_BUTTON_GET_PRIVATE(obj) (G_TYPE_INSTANCE_GET_PRIVATE ((obj), GTK_TYPE_COLOR_BUTTON, GtkColorButtonPrivate))
-
-struct _GtkColorButtonPrivate 
-{
-  GdkPixbuf *pixbuf;    /* Pixbuf for rendering sample */
-  GdkGC *gc;            /* GC for drawing */
-  
-  GtkWidget *drawing_area;/* Drawing area for color sample */
-  GtkWidget *cs_dialog; /* Color selection dialog */
-  
-  gchar *title;         /* Title for the color selection window */
-  
-  GdkColor color;
-  guint16 alpha;
-  
-  guint use_alpha : 1;  /* Use alpha or not */
-};
 
 /* Properties */
 enum 
@@ -198,8 +194,8 @@ gtk_color_button_class_init (GtkColorButtonClass *klass)
    */
   g_object_class_install_property (gobject_class,
                                    PROP_USE_ALPHA,
-                                   g_param_spec_boolean ("use_alpha", P_("Use alpha"), 
-                                                         P_("Whether or not to give the color an alpha value"),
+                                   g_param_spec_boolean ("use_alpha", "Use alpha",
+							 "Whether or not to give the color an alpha value",
                                                          FALSE,
                                                          (G_PARAM_READABLE | G_PARAM_WRITABLE)));
 
@@ -211,9 +207,9 @@ gtk_color_button_class_init (GtkColorButtonClass *klass)
   g_object_class_install_property (gobject_class,
                                    PROP_TITLE,
                                    g_param_spec_string ("title", 
-							P_("Title"), 
-                                                        P_("The title of the color selection dialog"),
-                                                        _("Pick a Color"),
+							"Title",
+							"The title of the color selection dialog",
+							"Pick a Color",
                                                         (G_PARAM_READABLE | G_PARAM_WRITABLE)));
 
   /**
@@ -224,8 +220,8 @@ gtk_color_button_class_init (GtkColorButtonClass *klass)
   g_object_class_install_property (gobject_class,
                                    PROP_COLOR,
                                    g_param_spec_boxed ("color",
-                                                       P_("Current Color"),
-                                                       P_("The selected color"),
+						       "Current Color",
+						       "The selected color",
                                                        GDK_TYPE_COLOR,
                                                        G_PARAM_READABLE | G_PARAM_WRITABLE));
 
@@ -237,8 +233,8 @@ gtk_color_button_class_init (GtkColorButtonClass *klass)
   g_object_class_install_property (gobject_class,
                                    PROP_ALPHA,
                                    g_param_spec_uint ("alpha",
-                                                      P_("Current Alpha"),
-                                                      P_("The selected opacity value (0 fully transparent, 65535 fully opaque)"),
+						      "Current Alpha",
+						      "The selected opacity value (0 fully transparent, 65535 fully opaque)",
                                                       0, 65535, 65535,
                                                       G_PARAM_READABLE | G_PARAM_WRITABLE));
         
@@ -255,10 +251,8 @@ gtk_color_button_class_init (GtkColorButtonClass *klass)
 						  G_SIGNAL_RUN_FIRST,
 						  G_STRUCT_OFFSET (GtkColorButtonClass, color_set),
 						  NULL, NULL,
-						  _gtk_marshal_VOID__VOID,
+						  quarry_marshal_VOID__VOID,
 						  G_TYPE_NONE, 0);
-
-  g_type_class_add_private (gobject_class, sizeof (GtkColorButtonPrivate));
 }
 
 static void
@@ -445,6 +439,13 @@ gtk_color_button_drag_data_received (GtkWidget        *widget,
 {
   guint16 *dropped;
 
+  UNUSED(widget);
+  UNUSED(context);
+  UNUSED(x);
+  UNUSED(y);
+  UNUSED(info);
+  UNUSED(time);
+
   if (selection_data->length < 0)
     return;
 
@@ -453,7 +454,7 @@ gtk_color_button_drag_data_received (GtkWidget        *widget,
    */
   if (selection_data->length != 8) 
     {
-      g_warning (_("Received invalid color data\n"));
+      g_warning ("Received invalid color data\n");
       return;
     }
 
@@ -505,6 +506,8 @@ gtk_color_button_drag_begin (GtkWidget      *widget,
 			     gpointer        data)
 {
   GtkColorButton *color_button = data;
+
+  UNUSED(widget);
   
   set_color_icon (context, &color_button->priv->color);
 }
@@ -518,6 +521,11 @@ gtk_color_button_drag_data_get (GtkWidget        *widget,
 				GtkColorButton   *color_button)
 {
   guint16 dropped[4];
+
+  UNUSED(widget);
+  UNUSED(context);
+  UNUSED(info);
+  UNUSED(time);
 
   dropped[0] = color_button->priv->color.red;
   dropped[1] = color_button->priv->color.green;
@@ -537,7 +545,7 @@ gtk_color_button_init (GtkColorButton *color_button)
   PangoRectangle rect;
 
   /* Create the widgets */
-  color_button->priv = GTK_COLOR_BUTTON_GET_PRIVATE (color_button);
+  color_button->priv = &color_button->the_priv;
 
   gtk_widget_push_composite_child ();
 
@@ -561,7 +569,7 @@ gtk_color_button_init (GtkColorButton *color_button)
   gtk_container_add (GTK_CONTAINER (frame), color_button->priv->drawing_area);
   gtk_widget_show (color_button->priv->drawing_area);
 
-  color_button->priv->title = g_strdup (_("Pick a Color")); /* default title */
+  color_button->priv->title = g_strdup ("Pick a Color"); /* default title */
 
   /* Create the buffer for the image so that we can create an image.  
    * Also create the picker's pixmap.
@@ -659,6 +667,8 @@ dialog_ok_clicked (GtkWidget *widget,
   GtkColorButton *color_button = GTK_COLOR_BUTTON (data);
   GtkColorSelection *color_selection;
 
+  UNUSED(widget);
+
   color_selection = GTK_COLOR_SELECTION (GTK_COLOR_SELECTION_DIALOG (color_button->priv->cs_dialog)->colorsel);
 
   gtk_color_selection_get_current_color (color_selection, &color_button->priv->color);
@@ -685,7 +695,9 @@ dialog_destroy (GtkWidget *widget,
 		gpointer   data)
 {
   GtkColorButton *color_button = GTK_COLOR_BUTTON (data);
-  
+
+  UNUSED(widget);
+
   color_button->priv->cs_dialog = NULL;
 
   return FALSE;
@@ -696,7 +708,9 @@ dialog_cancel_clicked (GtkWidget *widget,
 		       gpointer   data)
 {
   GtkColorButton *color_button = GTK_COLOR_BUTTON (data);
-  
+
+  UNUSED(widget);
+
   gtk_widget_hide (color_button->priv->cs_dialog);  
 }
 
