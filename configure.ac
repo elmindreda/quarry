@@ -91,6 +91,10 @@ AC_CHECK_FUNCS(memrchr)
 # Require math library.
 AC_SEARCH_LIBS(floor, m)
 
+# Find iconv().  It is usually sitting in GNU C library, but may
+# sometimes be in a separate `libiconv' library.
+AC_SEARCH_LIBS(iconv, iconv)
+
 
 # Require GTK+ 2.0.0 or later and librsvg 2.5.0 or later.
 PKG_CHECK_MODULES(QUARRY_GTK, gtk+-2.0 >= 2.0.0 librsvg-2.0 >= 2.5.0)
