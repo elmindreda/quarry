@@ -1,5 +1,16 @@
 2004-04-27  Paul Pogonyshev  <pogonyshev@gmx.net>
 
+	* utils/memory-pool.c (memory_pool_free): Fix bug: do free the
+	very last item in the pool if asked.  Fix typo: when profiling,
+	increment the number of freed items, not of allocated ones.
+
+	* sgf/sgf-diff-utils.c (generate_sgf_collection_diff)
+	(generate_sgf_node_layer_diff): Initialize some variables to
+	silence GCC warnings.
+	* gui-utils/configuration.c (configuration_read_from_file):
+	Likewise.
+	* gui-gtk/gtk-utils.c (gtk_utils_create_titled_page): Likewise.
+
 	* gui-gtk/gtk-color-button.c: Various backports to GTK+ pre-2.4
 	and for compilation in Quarry source tree.  See file for details.
 
