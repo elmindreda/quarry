@@ -1,7 +1,7 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *\
  * This file is part of Quarry.                                    *
  *                                                                 *
- * Copyright (C) 2003, 2004 Paul Pogonyshev.                       *
+ * Copyright (C) 2003, 2004, 2005 Paul Pogonyshev                  *
  *                                                                 *
  * This program is free software; you can redistribute it and/or   *
  * modify it under the terms of the GNU General Public License as  *
@@ -671,51 +671,115 @@ create_gtp_engines_page (void)
 static GtkWidget *
 create_game_tree_page (void)
 {
-  static const gchar *radio_labels[3] = { N_("_Always"),
-					  N_("A_utomatically"),
-					  N_("_Never") };
-  static const gchar *hint
-    = N_("In automatic mode, the game tree is shown only if it has at least "
+  static const gchar *show_game_tree_radio_labels[3]
+    = { N_("_Always"), N_("A_utomatically"), N_("_Never") };
+  static const gchar *track_current_node_radio_labels[3]
+    = { N_("Al_ways"), N_("Au_tomatically"), N_("Ne_ver") };
+  static const gchar *scroll_method_radio_labels[2]
+    = { N_("Scroll _minimal distance"),
+	N_("_Recenter view on the current node") };
+
+  static const gchar *show_game_tree_hint
+    = N_("In automatic mode the game tree is shown only if it has at least "
 	 "one variation. In any case, you can show/hide game tree in each "
 	 "window separately.");
+  static const gchar *track_current_node_hint
+    = N_("In automatic mode the game tree view scrolls to show the current "
+	 "node only if it has been showing current node before.  I.e. unless "
+	 "you scrolled it away manually.");
 
   GtkWidget *radio_buttons[3];
   GtkWidget *label;
-  GtkWidget *named_vbox;
+  GtkWidget *show_game_tree_named_vbox;
+  GtkWidget *scroll_method_radio_buttons[2];
+  GtkWidget *track_current_node_named_vbox;
   int k;
 
   /* Let's be over-secure (a compile-time error would have been
    * better...)
    */
-  assert (SHOW_GAME_TREE_ALWAYS == 0
-	  && SHOW_GAME_TREE_AUTOMATICALLY == 1
-	  && SHOW_GAME_TREE_NEVER == 2);
+  assert (SHOW_GAME_TREE_ALWAYS		      == 0
+	  && SHOW_GAME_TREE_AUTOMATICALLY     == 1
+	  && SHOW_GAME_TREE_NEVER	      == 2
+	  && TRACK_CURRENT_NODE_ALWAYS	      == 0
+	  && TRACK_CURRENT_NODE_AUTOMATICALLY == 1
+	  && TRACK_CURRENT_NODE_NEVER	      == 2);
 
-  gtk_utils_create_radio_chain (radio_buttons, radio_labels, 3);
+  gtk_utils_create_radio_chain (radio_buttons, show_game_tree_radio_labels, 3);
 
   gtk_toggle_button_set_active
-    (GTK_TOGGLE_BUTTON (radio_buttons[editing_and_viewing.show_game_tree]),
+    (GTK_TOGGLE_BUTTON (radio_buttons[game_tree_view.show_game_tree]), TRUE);
+
+  for (k = 0; k < sizeof radio_buttons / sizeof (GtkWidget *); k++) {
+    g_signal_connect (radio_buttons[k], "toggled",
+		      G_CALLBACK (store_radio_button_setting),
+		      &game_tree_view.show_game_tree);
+  }
+
+  label = gtk_utils_create_left_aligned_label (_(show_game_tree_hint));
+  gtk_label_set_line_wrap (GTK_LABEL (label), TRUE);
+
+  show_game_tree_named_vbox
+    = gtk_utils_pack_in_box (GTK_TYPE_NAMED_VBOX,
+			     QUARRY_SPACING_SMALL,
+			     radio_buttons[0], GTK_UTILS_FILL,
+			     radio_buttons[1], GTK_UTILS_FILL,
+			     radio_buttons[2], GTK_UTILS_FILL,
+			     label, GTK_UTILS_FILL, NULL);
+  gtk_named_vbox_set_label_text (GTK_NAMED_VBOX (show_game_tree_named_vbox),
+				 _("Show Game Tree"));
+
+  gtk_utils_create_radio_chain (radio_buttons,
+				track_current_node_radio_labels, 3);
+
+  gtk_toggle_button_set_active
+    (GTK_TOGGLE_BUTTON (radio_buttons[game_tree_view.track_current_node]),
      TRUE);
 
   for (k = 0; k < sizeof radio_buttons / sizeof (GtkWidget *); k++) {
     g_signal_connect (radio_buttons[k], "toggled",
 		      G_CALLBACK (store_radio_button_setting),
-		      &editing_and_viewing.show_game_tree);
+		      &game_tree_view.track_current_node);
   }
 
-  label = gtk_utils_create_left_aligned_label (_(hint));
+  gtk_utils_create_radio_chain (scroll_method_radio_buttons,
+				scroll_method_radio_labels, 2);
+
+  if (game_tree_view.center_on_current_node) {
+    gtk_toggle_button_set_active
+      (GTK_TOGGLE_BUTTON (scroll_method_radio_buttons[1]), TRUE);
+  }
+
+  g_signal_connect (scroll_method_radio_buttons[1], "toggled",
+		    G_CALLBACK (store_toggle_setting),
+		    &game_tree_view.center_on_current_node);
+
+  gtk_utils_set_sensitive_on_toggle (GTK_TOGGLE_BUTTON (radio_buttons[2]),
+				     scroll_method_radio_buttons[0], TRUE);
+  gtk_utils_set_sensitive_on_toggle (GTK_TOGGLE_BUTTON (radio_buttons[2]),
+				     scroll_method_radio_buttons[1], TRUE);
+
+  label = gtk_utils_create_left_aligned_label (_(track_current_node_hint));
   gtk_label_set_line_wrap (GTK_LABEL (label), TRUE);
 
-  named_vbox = gtk_utils_pack_in_box (GTK_TYPE_NAMED_VBOX,
-				      QUARRY_SPACING_SMALL,
-				      radio_buttons[0], GTK_UTILS_FILL,
-				      radio_buttons[1], GTK_UTILS_FILL,
-				      radio_buttons[2], GTK_UTILS_FILL,
-				      label, GTK_UTILS_FILL, NULL);
-  gtk_named_vbox_set_label_text (GTK_NAMED_VBOX (named_vbox),
-				 _("Show Game Tree"));
+  track_current_node_named_vbox
+    = gtk_utils_pack_in_box (GTK_TYPE_NAMED_VBOX,
+			     QUARRY_SPACING_SMALL,
+			     radio_buttons[0], GTK_UTILS_FILL,
+			     radio_buttons[1], GTK_UTILS_FILL,
+			     radio_buttons[2], GTK_UTILS_FILL,
+			     label, GTK_UTILS_FILL | QUARRY_SPACING_SMALL,
+			     scroll_method_radio_buttons[0], GTK_UTILS_FILL,
+			     scroll_method_radio_buttons[1], GTK_UTILS_FILL,
+			     NULL);
+  gtk_named_vbox_set_label_text
+    (GTK_NAMED_VBOX (track_current_node_named_vbox),
+     _("Track Tree's Current Node"));
 
-  return named_vbox;
+  return gtk_utils_pack_in_box (GTK_TYPE_VBOX, QUARRY_SPACING_BIG,
+				show_game_tree_named_vbox, GTK_UTILS_FILL,
+				track_current_node_named_vbox, GTK_UTILS_FILL,
+				NULL);
 }
 
 
@@ -885,7 +949,7 @@ create_background_table (GtkGameIndex game_index, gint num_table_rows)
   entry = gtk_utils_create_entry (board_appearance->background_texture,
 				  RETURN_DEFAULT_MODE);
   gtk_utils_set_sensitive_on_toggle (GTK_TOGGLE_BUTTON (radio_buttons[0]),
-				     entry);
+				     entry, FALSE);
 
   g_signal_connect (entry, "focus-out-event",
 		    G_CALLBACK (update_board_background_texture),
@@ -899,7 +963,7 @@ create_background_table (GtkGameIndex game_index, gint num_table_rows)
 					    update_board_background_texture),
 					   GINT_TO_POINTER (game_index));
   gtk_utils_set_sensitive_on_toggle (GTK_TOGGLE_BUTTON (radio_buttons[0]),
-				     button);
+				     button, FALSE);
 
   gtk_table_attach (table, button, 2, 3, 0, 1, GTK_FILL, 0, GTK_FILL, 0);
 
@@ -908,7 +972,7 @@ create_background_table (GtkGameIndex game_index, gint num_table_rows)
   gtk_color_button_set_title (GTK_COLOR_BUTTON (color_button),
 			      _("Pick Background Color"));
   gtk_utils_set_sensitive_on_toggle (GTK_TOGGLE_BUTTON (radio_buttons[1]),
-				     color_button);
+				     color_button, FALSE);
 
   g_signal_connect (color_button, "color-set",
 		    G_CALLBACK (update_board_appearance),
@@ -1752,10 +1816,8 @@ store_radio_button_setting (GtkRadioButton *radio_button, int *value_storage)
   if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (radio_button))) {
     GSList *radio_button_group = gtk_radio_button_get_group (radio_button);
 
-    for (*value_storage = 0;
-	 (GtkRadioButton *) (radio_button_group->data) != radio_button;
-	 (*value_storage)++)
-      radio_button_group = radio_button_group->next;
+    *value_storage = ((g_slist_length (radio_button_group) - 1)
+		      - g_slist_index (radio_button_group, radio_button));
   }
 }
 
@@ -1863,6 +1925,8 @@ update_markup_theme_defaults_usage (GtkToggleButton *toggle_button,
 
      gtk_widget_set_sensitive (data->vbox, !use_theme_defaults);
   }
+  else
+    use_theme_defaults = board_appearance->use_theme_defaults;
 
   if (toggle_button || use_theme_defaults) {
     gtk_utils_block_signal_handlers (data->size_range,
