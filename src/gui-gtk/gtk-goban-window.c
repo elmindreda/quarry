@@ -971,14 +971,35 @@ update_move_information(GtkGobanWindow *goban_window)
 static void
 initialize_gtp_player(GtkGobanWindow *goban_window, GtpClient *client)
 {
-  if (gtp_client_is_known_command(client, "set_game"))
-    gtp_client_set_game(client, NULL, NULL, goban_window->current_tree->game);
+  const SgfGameTree *game_tree = goban_window->current_tree;
 
-  gtp_client_set_board_size(client,
-			    ((GtpClientResponseCallback)
-			     gtp_player_initialized_for_game),
-			    goban_window,
-			    goban_window->current_tree->board_width);
+  if (gtp_client_is_known_command(client, "set_game"))
+    gtp_client_set_game(client, NULL, NULL, game_tree->game);
+
+  assert(game_tree->board_width == game_tree->board_height);
+
+  if (game_tree->game == GAME_GO) {
+    int handicap;
+    double komi;
+
+    gtp_client_set_board_size(client, NULL, NULL, game_tree->board_width);
+
+    handicap = sgf_node_get_handicap(game_tree->current_node);
+    if (handicap != -1)
+      gtp_client_set_fixed_handicap(client, NULL, NULL, handicap);
+
+    assert(sgf_node_get_komi(game_tree->current_node, &komi));
+    gtp_client_set_komi(client,
+			((GtpClientResponseCallback)
+			 gtp_player_initialized_for_game),
+			goban_window, komi);
+  }
+  else {
+    gtp_client_set_board_size(client,
+			      ((GtpClientResponseCallback)
+			       gtp_player_initialized_for_game),
+			      goban_window, game_tree->board_width);
+  }
 }
 
 
