@@ -284,28 +284,39 @@ const SgfLabelList *
 int		 sgf_node_add_none_property(SgfNode *node, SgfGameTree *tree,
 					    SgfType type);
 int		 sgf_node_add_number_property(SgfNode *node, SgfGameTree *tree,
-					      SgfType type, int number);
+					      SgfType type, int number,
+					      int overwrite);
 int		 sgf_node_add_real_property(SgfNode *node, SgfGameTree *tree,
-					    SgfType type, double value);
+					    SgfType type, double value,
+					    int overwrite);
 int		 sgf_node_add_pointer_property(SgfNode *node, SgfGameTree *tree,
-					       SgfType type, void *pointer);
+					       SgfType type, void *pointer,
+					       int overwrite);
 
-#define sgf_node_add_double_property(node, tree, type, emphasized)	\
-  sgf_node_add_number_property((node), (tree), (type), (emphasized))
+#define sgf_node_add_double_property(node, tree, type, emphasized,	\
+				     overwrite)				\
+  sgf_node_add_number_property((node), (tree), (type), (emphasized),	\
+			       (overwrite))
 
-#define sgf_node_add_color_property(node, tree, type, color)		\
-  sgf_node_add_number_property((node), (tree), (type), (color))
+#define sgf_node_add_color_property(node, tree, type, color, overwrite)	\
+  sgf_node_add_number_property((node), (tree), (type), (color),		\
+			       (overwrite))
 
-#define sgf_node_add_text_property(node, tree, type, text)		\
-  sgf_node_add_pointer_property((node), (tree), (type), (text))
+#define sgf_node_add_text_property(node, tree, type, text, overwrite)	\
+  sgf_node_add_pointer_property((node), (tree), (type), (text),		\
+				(overwrite))
 
 #define sgf_node_add_list_of_point_property(node, tree,			\
-					    type, position_list)	\
-  sgf_node_add_pointer_property((node), (tree), (type), (position_list))
+					    type, position_list,	\
+					    overwrite)			\
+  sgf_node_add_pointer_property((node), (tree),				\
+				(type), (position_list), (overwrite))
 
 #define sgf_node_add_list_of_label_property(node, tree,			\
-					    type, label_list)		\
-  sgf_node_add_pointer_property((node), (tree), (type), (label_list))
+					    type, label_list,		\
+					    overwrite)			\
+  sgf_node_add_pointer_property((node), (tree), (type), (label_list),	\
+				(overwrite))
 
 
 int		 sgf_node_delete_property(SgfNode *node, SgfGameTree *tree,
@@ -501,6 +512,9 @@ void	      sgf_utils_set_handicap(SgfGameTree *tree,
 				     int handicap, int is_fixed);
 void	      sgf_utils_add_free_handicap_stones
 		(SgfGameTree *tree, BoardPositionList *handicap_stones);
+
+
+char *	      sgf_utils_normalize_text(const char *text);
 
 
 

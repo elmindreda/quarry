@@ -153,12 +153,12 @@ sgf_game_tree_new_with_root(Game game, int board_width, int board_height,
 
     if (black_stones) {
       sgf_node_add_list_of_point_property(tree->root, tree,
-					  SGF_ADD_BLACK, black_stones);
+					  SGF_ADD_BLACK, black_stones, 0);
     }
 
     if (white_stones) {
       sgf_node_add_list_of_point_property(tree->root, tree,
-					  SGF_ADD_WHITE, white_stones);
+					  SGF_ADD_WHITE, white_stones, 0);
     }
   }
 
@@ -728,7 +728,7 @@ sgf_node_add_none_property(SgfNode *node, SgfGameTree *tree, SgfType type)
 
 int
 sgf_node_add_number_property(SgfNode *node, SgfGameTree *tree,
-			     SgfType type, int number)
+			     SgfType type, int number, int overwrite)
 {
   SgfProperty **link;
 
@@ -744,13 +744,18 @@ sgf_node_add_number_property(SgfNode *node, SgfGameTree *tree,
     return 1;
   }
 
+  if (overwrite) {
+    (*link)->value.number = number;
+    return 1;
+  }
+
   return 0;
 }
 
 
 int
 sgf_node_add_real_property(SgfNode *node, SgfGameTree *tree,
-			   SgfType type, double value)
+			   SgfType type, double value, int overwrite)
 {
   SgfProperty **link;
 
@@ -765,13 +770,18 @@ sgf_node_add_real_property(SgfNode *node, SgfGameTree *tree,
     return 1;
   }
 
+  if (overwrite) {
+    * (*link)->value.real = value;
+    return 1;
+  }
+
   return 0;
 }
 
 
 int
 sgf_node_add_pointer_property(SgfNode *node, SgfGameTree *tree,
-			      SgfType type, void *pointer)
+			      SgfType type, void *pointer, int overwrite)
 {
   SgfProperty **link;
 
@@ -789,9 +799,14 @@ sgf_node_add_pointer_property(SgfNode *node, SgfGameTree *tree,
   }
 
   if (property_info[type].value_type != SGF_LIST_OF_LABEL)
-    utils_free(pointer);
+    utils_free(overwrite ? (*link)->value.memory_block : pointer);
   else
-    sgf_label_list_delete(pointer);
+    sgf_label_list_delete(overwrite ? (*link)->value.memory_block : pointer);
+
+  if (overwrite) {
+    (*link)->value.memory_block = pointer;
+    return 1;
+  }
 
   return 0;
 }

@@ -161,9 +161,9 @@ write_game_tree(SgfWritingData *data, SgfGameTree *tree, int force_utf8)
 
   if (default_setup_hidden) {
     sgf_node_add_list_of_point_property(root, tree,
-					SGF_ADD_BLACK, black_stones);
+					SGF_ADD_BLACK, black_stones, 0);
     sgf_node_add_list_of_point_property(root, tree,
-					SGF_ADD_WHITE, white_stones);
+					SGF_ADD_WHITE, white_stones, 0);
   }
 }
 

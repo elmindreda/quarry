@@ -829,7 +829,8 @@ begin_game(GtkEnginesInstantiationStatus status, gpointer user_data)
 				? SGF_PLAYER_BLACK : SGF_PLAYER_WHITE),
 			       utils_duplicate_string(player_is_computer[k]
 						      ? engine_screen_names[k]
-						      : human_names[k]));
+						      : human_names[k]),
+			       0);
   }
 
   if (game == GAME_GO) {
@@ -845,8 +846,8 @@ begin_game(GtkEnginesInstantiationStatus status, gpointer user_data)
       handicap = 0;
 
     sgf_utils_set_handicap(game_tree, handicap, handicap_is_fixed);
-    sgf_node_add_text_property(game_tree->current_node, game_tree, SGF_KOMI,
-			       komi_string);
+    sgf_node_add_text_property(game_tree->current_node, game_tree,
+			       SGF_KOMI, komi_string, 0);
 
     new_go_game_configuration.board_size	= board_size;
     new_go_game_configuration.handicap_is_fixed = handicap_is_fixed;

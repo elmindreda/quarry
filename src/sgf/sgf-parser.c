@@ -990,26 +990,26 @@ complete_node_and_update_board(SgfParsingData *data, int is_leaf_node)
       if (position_lists[BLACK]) {
 	sgf_node_add_list_of_point_property(data->node, data->tree,
 					    SGF_ADD_BLACK,
-					    position_lists[BLACK]);
+					    position_lists[BLACK], 0);
       }
 
       if (position_lists[WHITE]) {
 	sgf_node_add_list_of_point_property(data->node, data->tree,
 					    SGF_ADD_WHITE,
-					    position_lists[WHITE]);
+					    position_lists[WHITE], 0);
       }
 
       if (position_lists[EMPTY]) {
 	sgf_node_add_list_of_point_property(data->node, data->tree,
 					    SGF_ADD_EMPTY,
-					    position_lists[EMPTY]);
+					    position_lists[EMPTY], 0);
       }
 
       if (position_lists[SPECIAL_ON_GRID_VALUE]) {
 	/* NOTE: might have to "if" further if we have more games.  */
 	sgf_node_add_list_of_point_property(data->node, data->tree,
 					    SGF_ADD_ARROWS,
-					    position_lists[ARROW]);
+					    position_lists[ARROW], 0);
       }
 
       data->node->move_color = SETUP_NODE;
@@ -1088,7 +1088,7 @@ create_position_lists(SgfParsingData *data,
       else {
 	sgf_node_add_list_of_point_property(data->node, data->tree,
 					    property_types[value],
-					    position_list);
+					    position_list, 0);
       }
     }
     else if (position_lists)
