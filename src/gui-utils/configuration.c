@@ -33,6 +33,16 @@
 #include <string.h>
 
 
+/* Cannot use is*() functions since we don't want to depend on the
+ * current locale.
+ */
+#define IS_ACCEPTABLE_NAME_CHARACTER(character)				\
+  (('A' <= (character) && (character) <= 'Z')				\
+   || ('a' <= (character) && (character) <= 'z')			\
+   || ('0' <= (character) && (character) <= '9')			\
+   || (character) == '-' || (character) == '+' || (character) == '\'')
+
+
 static const char *configuration_file_intro_comment =
   "# This is Quarry configuration file.\n#\n"
   "# You probably don't really want to edit it directly as you can tweak\n"
@@ -103,7 +113,7 @@ configuration_read_from_file (const ConfigurationSection *sections,
 	parsing_section_name = 1;
       }
 
-      if (('A' <= *scan && *scan <= 'Z') || ('a' <= *scan && *scan <= 'z')) {
+      if (IS_ACCEPTABLE_NAME_CHARACTER (*scan)) {
 	const char *name = scan;
 	char *name_pointer = scan;
 	char name_terminating_character;
@@ -111,13 +121,12 @@ configuration_read_from_file (const ConfigurationSection *sections,
 	while (1) {
 	  do
 	    *name_pointer++ = *scan++;
-	  while (('A' <= *scan && *scan <= 'Z')
-		 || ('a' <= *scan && *scan <= 'z'));
+	  while (IS_ACCEPTABLE_NAME_CHARACTER (*scan));
 
 	  while (*scan == ' ' || *scan == '\t')
 	    scan++;
 
-	  if (('A' <= *scan && *scan <= 'Z') || ('a' <= *scan && *scan <= 'z'))
+	  if (IS_ACCEPTABLE_NAME_CHARACTER (*scan))
 	    *name_pointer++ = ' ';
 	  else
 	    break;
