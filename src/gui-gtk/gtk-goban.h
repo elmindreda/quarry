@@ -32,18 +32,22 @@
 #include <gtk/gtk.h>
 
 
-#define GTK_TYPE_GOBAN		(gtk_goban_get_type())
-#define GTK_GOBAN(obj)		(GTK_CHECK_CAST((obj), GTK_TYPE_GOBAN,	\
-						GtkGoban))
-#define GTK_GOBAN_CLASS(klass)						\
-  (GTK_CHECK_CLASS_CAST((klass), GTK_TYPE_GOBAN, GtkGobanClass))
+#define GTK_TYPE_GOBAN		gtk_goban_get_type ()
 
-#define GTK_IS_GOBAN(obj)	(GTK_CHECK_TYPE((obj), GTK_TYPE_GOBAN))
-#define GTK_IS_GOBAN_CLASS(klass)					\
-  (GTK_CHECK_CLASS_TYPE((klass), GTK_TYPE_GOBAN))
+#define GTK_GOBAN(object)						\
+  GTK_CHECK_CAST ((object), GTK_TYPE_GOBAN, GtkGoban)
 
-#define GTK_GOBAN_GET_CLASS(obj)					\
-  (GTK_CHECK_GET_CLASS((obj), GTK_TYPE_GOBAN, GtkGobanClass))
+#define GTK_GOBAN_CLASS(class)						\
+  GTK_CHECK_CLASS_CAST ((class), GTK_TYPE_GOBAN, GtkGobanClass)
+
+#define GTK_IS_GOBAN(object)						\
+  GTK_CHECK_TYPE ((object), GTK_TYPE_GOBAN)
+
+#define GTK_IS_GOBAN_CLASS(class)					\
+  GTK_CHECK_CLASS_TYPE ((class), GTK_TYPE_GOBAN)
+
+#define GTK_GOBAN_GET_CLASS(object)					\
+  (GTK_CHECK_GET_CLASS ((object), GTK_TYPE_GOBAN, GtkGobanClass)
 
 
 typedef struct _GtkGobanPointerData	GtkGobanPointerData;
@@ -191,8 +195,7 @@ struct _GtkGoban {
   gint			 sgf_markup_top_margin;
 
   int			 num_hoshi_points;
-  int			 hoshi_point_x[9];
-  int			 hoshi_point_y[9];
+  BoardPoint		 hoshi_points[9];
 
   GtkMainTileSet	*main_tile_set;
   GtkMainTileSet	*small_tile_set;
@@ -225,39 +228,39 @@ struct _GtkGobanClass {
 #define KEEP_SGF_LABELS		((const SgfLabelList *) -1)
 
 
-GtkType 	gtk_goban_get_type(void);
+GtkType 	gtk_goban_get_type (void);
 
-GtkWidget *	gtk_goban_new(void);
+GtkWidget *	gtk_goban_new (void);
 
-void		gtk_goban_set_parameters(GtkGoban *goban, Game game,
-					 int width, int height);
+void		gtk_goban_set_parameters (GtkGoban *goban, Game game,
+					  int width, int height);
 
-void		gtk_goban_update(GtkGoban *goban,
-				 const char grid[BOARD_GRID_SIZE],
-				 const char goban_markup[BOARD_GRID_SIZE],
-				 const char sgf_markup[BOARD_GRID_SIZE],
-				 const SgfLabelList *sgf_label_list,
-				 int last_move_x, int last_move_y);
-void		gtk_goban_force_feedback_poll(GtkGoban *goban);
+void		gtk_goban_update (GtkGoban *goban,
+				  const char grid[BOARD_GRID_SIZE],
+				  const char goban_markup[BOARD_GRID_SIZE],
+				  const char sgf_markup[BOARD_GRID_SIZE],
+				  const SgfLabelList *sgf_label_list,
+				  int last_move_x, int last_move_y);
+void		gtk_goban_force_feedback_poll (GtkGoban *goban);
 
-void		gtk_goban_set_overlay_data(GtkGoban *goban, int overlay_index,
-					   BoardPositionList *position_list,
-					   int tile, int goban_markup_tile);
+void		gtk_goban_set_overlay_data (GtkGoban *goban, int overlay_index,
+					    BoardPositionList *position_list,
+					    int tile, int goban_markup_tile);
 
-void		gtk_goban_set_contents(GtkGoban *goban,
-				       BoardPositionList *position_list,
-				       int grid_contents,
-				       int goban_markup_contents);
-int		gtk_goban_get_grid_contents(GtkGoban *goban, int x, int y);
+void		gtk_goban_set_contents (GtkGoban *goban,
+					BoardPositionList *position_list,
+					int grid_contents,
+					int goban_markup_contents);
+int		gtk_goban_get_grid_contents (GtkGoban *goban, int x, int y);
 void		gtk_goban_diff_against_grid
 		  (GtkGoban *goban, const char *grid,
 		   BoardPositionList *position_lists[NUM_ON_GRID_VALUES]);
 
-gint		gtk_goban_negotiate_width(GtkWidget *widget, gint height);
-gint		gtk_goban_negotiate_height(GtkWidget *widget, gint width);
+gint		gtk_goban_negotiate_width (GtkWidget *widget, gint height);
+gint		gtk_goban_negotiate_height (GtkWidget *widget, gint width);
 
 
-void		gtk_goban_update_appearance(Game game);
+void		gtk_goban_update_appearance (Game game);
 
 
 #endif /* QUARRY_GTK_GOBAN_H */

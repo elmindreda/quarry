@@ -56,62 +56,69 @@ enum {
 };
 
 
-static void	 gtk_goban_class_init(GtkGobanClass *class);
-static void	 gtk_goban_init(GtkGoban *goban);
-static void	 gtk_goban_realize(GtkWidget *widget);
+static void	 gtk_goban_class_init (GtkGobanClass *class);
+static void	 gtk_goban_init (GtkGoban *goban);
+static void	 gtk_goban_realize (GtkWidget *widget);
 
-static void	 gtk_goban_size_request(GtkWidget *widget,
-					GtkRequisition *requisition);
-static void	 gtk_goban_size_allocate(GtkWidget *widget,
-					 GtkAllocation *allocation);
+static void	 gtk_goban_size_request (GtkWidget *widget,
+					 GtkRequisition *requisition);
+static void	 gtk_goban_size_allocate (GtkWidget *widget,
+					  GtkAllocation *allocation);
 
-static gboolean	 gtk_goban_expose(GtkWidget *widget,
-				  GdkEventExpose *event);
+static gboolean	 gtk_goban_expose (GtkWidget *widget,
+				   GdkEventExpose *event);
+inline static void
+		 draw_vertical_line_with_gaps (GtkGoban *goban,
+					       GdkWindow *window, GdkGC *gc,
+					       int x, gint window_x,
+					       gint extra_length);
+inline static void
+		 draw_horizontal_line_with_gaps (GtkGoban *goban,
+						 GdkWindow *window, GdkGC *gc,
+						 int y, gint window_y,
+						 gint extra_length);
 
-static gboolean	 gtk_goban_button_press_event(GtkWidget *widget,
-					      GdkEventButton *event);
-static gboolean	 gtk_goban_button_release_event(GtkWidget *widget,
-						GdkEventButton *event);
-static gboolean	 gtk_goban_motion_notify_event(GtkWidget *widget,
-					       GdkEventMotion *event);
-static gboolean	 gtk_goban_enter_notify_event(GtkWidget *widget,
-					      GdkEventCrossing *event);
-static gboolean	 gtk_goban_leave_notify_event(GtkWidget *widget,
-					      GdkEventCrossing *event);
-static gboolean	 gtk_goban_scroll_event(GtkWidget *widget,
-					GdkEventScroll *event);
+static gboolean	 gtk_goban_button_press_event (GtkWidget *widget,
+					       GdkEventButton *event);
+static gboolean	 gtk_goban_button_release_event (GtkWidget *widget,
+						 GdkEventButton *event);
+static gboolean	 gtk_goban_motion_notify_event (GtkWidget *widget,
+						GdkEventMotion *event);
+static gboolean	 gtk_goban_enter_notify_event (GtkWidget *widget,
+					       GdkEventCrossing *event);
+static gboolean	 gtk_goban_leave_notify_event (GtkWidget *widget,
+					       GdkEventCrossing *event);
+static gboolean	 gtk_goban_scroll_event (GtkWidget *widget,
+					 GdkEventScroll *event);
 
-static gboolean	 gtk_goban_key_press_event(GtkWidget *widget,
-					   GdkEventKey *event);
-static gboolean	 gtk_goban_key_release_event(GtkWidget *widget,
-					     GdkEventKey *event);
+static gboolean	 gtk_goban_key_press_event (GtkWidget *widget,
+					    GdkEventKey *event);
+static gboolean	 gtk_goban_key_release_event (GtkWidget *widget,
+					      GdkEventKey *event);
 
-static gboolean	 gtk_goban_focus_in_or_out_event(GtkWidget *widget,
-						 GdkEventFocus *event);
+static gboolean	 gtk_goban_focus_in_or_out_event (GtkWidget *widget,
+						  GdkEventFocus *event);
 
-static void	 gtk_goban_finalize(GObject *object);
+static void	 gtk_goban_finalize (GObject *object);
 
-static void	 unreference_cached_objects(GtkGoban *goban);
+static void	 unreference_cached_objects (GtkGoban *goban);
 
-static void	 set_goban_style_appearance(GtkGoban *goban);
-static void	 set_goban_non_style_appearance(GtkGoban *goban);
+static void	 set_goban_style_appearance (GtkGoban *goban);
+static void	 set_goban_non_style_appearance (GtkGoban *goban);
 
-/* FIXME: Doesn't belong here.  And name is bad too. */
-static void	 find_hoshi_points(GtkGoban *goban);
+static void	 emit_pointer_moved (GtkGoban *goban, int x, int y,
+				     GdkModifierType modifiers);
+static void	 set_feedback_data (GtkGoban *goban, int x, int y,
+				    BoardPositionList *position_list,
+				    GtkGobanPointerFeedback feedback);
 
-static void	 emit_pointer_moved(GtkGoban *goban, int x, int y,
-				    GdkModifierType modifiers);
-static void	 set_feedback_data(GtkGoban *goban, int x, int y,
+static void	 set_overlay_data (GtkGoban *goban, int overlay_index,
 				   BoardPositionList *position_list,
-				   GtkGobanPointerFeedback feedback);
+				   int tile, int goban_markup_tile);
 
-static void	 set_overlay_data(GtkGoban *goban, int overlay_index,
-				  BoardPositionList *position_list,
-				  int tile, int goban_markup_tile);
-
-static void	 widget_coordinates_to_board(GtkGoban *goban,
-					     int window_x, int window_y,
-					     int *board_x, int *board_y);
+static void	 widget_coordinates_to_board (GtkGoban *goban,
+					      int window_x, int window_y,
+					      int *board_x, int *board_y);
 
 
 static GtkWidgetClass  *parent_class;
@@ -130,26 +137,26 @@ static guint		goban_signals[NUM_SIGNALS];
 
 
 GtkType
-gtk_goban_get_type(void)
+gtk_goban_get_type (void)
 {
   static GtkType goban_type = 0;
 
   if (!goban_type) {
     static GTypeInfo goban_info = {
-      sizeof(GtkGobanClass),
+      sizeof (GtkGobanClass),
       NULL,
       NULL,
       (GClassInitFunc) gtk_goban_class_init,
       NULL,
       NULL,
-      sizeof(GtkGoban),
+      sizeof (GtkGoban),
       2,
       (GInstanceInitFunc) gtk_goban_init,
       NULL
     };
 
-    goban_type = g_type_register_static(GTK_TYPE_WIDGET, "GtkGoban",
-					&goban_info, 0);
+    goban_type = g_type_register_static (GTK_TYPE_WIDGET, "GtkGoban",
+					 &goban_info, 0);
   }
 
   return goban_type;
@@ -157,7 +164,7 @@ gtk_goban_get_type(void)
 
 
 static void
-gtk_goban_class_init(GtkGobanClass *class)
+gtk_goban_class_init (GtkGobanClass *class)
 {
   static GtkUtilsBindingInfo navigation_bindings[] = {
     {GDK_Left,		0,	GOBAN_NAVIGATE_BACK},
@@ -170,12 +177,12 @@ gtk_goban_class_init(GtkGobanClass *class)
     {GDK_End,		0,	GOBAN_NAVIGATE_VARIATION_END}
   };
 
-  GtkWidgetClass *widget_class = GTK_WIDGET_CLASS(class);
+  GtkWidgetClass *widget_class = GTK_WIDGET_CLASS (class);
   GtkBindingSet *binding_set;
 
-  parent_class = g_type_class_peek_parent(class);
+  parent_class = g_type_class_peek_parent (class);
 
-  G_OBJECT_CLASS(class)->finalize = gtk_goban_finalize;
+  G_OBJECT_CLASS (class)->finalize = gtk_goban_finalize;
 
   widget_class->realize		     = gtk_goban_realize;
   widget_class->size_request	     = gtk_goban_size_request;
@@ -197,45 +204,45 @@ gtk_goban_class_init(GtkGobanClass *class)
   class->navigate      = NULL;
 
   goban_signals[POINTER_MOVED]
-    = g_signal_new("pointer-moved",
-		   G_TYPE_FROM_CLASS(class),
-		   G_SIGNAL_RUN_LAST,
-		   G_STRUCT_OFFSET(GtkGobanClass, pointer_moved),
-		   NULL, NULL,
-		   quarry_marshal_INT__POINTER,
-		   G_TYPE_INT, 1, G_TYPE_POINTER);
+    = g_signal_new ("pointer-moved",
+		    G_TYPE_FROM_CLASS (class),
+		    G_SIGNAL_RUN_LAST,
+		    G_STRUCT_OFFSET (GtkGobanClass, pointer_moved),
+		    NULL, NULL,
+		    quarry_marshal_INT__POINTER,
+		    G_TYPE_INT, 1, G_TYPE_POINTER);
 
   goban_signals[GOBAN_CLICKED]
-    = g_signal_new("goban-clicked",
-		   G_TYPE_FROM_CLASS(class),
-		   G_SIGNAL_RUN_LAST,
-		   G_STRUCT_OFFSET(GtkGobanClass, pointer_moved),
-		   NULL, NULL,
-		   quarry_marshal_VOID__POINTER,
-		   G_TYPE_NONE, 1, G_TYPE_POINTER);
+    = g_signal_new ("goban-clicked",
+		    G_TYPE_FROM_CLASS (class),
+		    G_SIGNAL_RUN_LAST,
+		    G_STRUCT_OFFSET (GtkGobanClass, pointer_moved),
+		    NULL, NULL,
+		    quarry_marshal_VOID__POINTER,
+		    G_TYPE_NONE, 1, G_TYPE_POINTER);
 
   goban_signals[NAVIGATE]
-    = g_signal_new("navigate",
-		   G_TYPE_FROM_CLASS(class),
-		   G_SIGNAL_RUN_LAST | G_SIGNAL_ACTION,
-		   G_STRUCT_OFFSET(GtkGobanClass, navigate),
-		   NULL, NULL,
-		   quarry_marshal_VOID__INT,
-		   G_TYPE_NONE, 1, G_TYPE_INT);
+    = g_signal_new ("navigate",
+		    G_TYPE_FROM_CLASS (class),
+		    G_SIGNAL_RUN_LAST | G_SIGNAL_ACTION,
+		    G_STRUCT_OFFSET (GtkGobanClass, navigate),
+		    NULL, NULL,
+		    quarry_marshal_VOID__INT,
+		    G_TYPE_NONE, 1, G_TYPE_INT);
 
-  binding_set = gtk_binding_set_by_class(class);
-  gtk_utils_add_similar_bindings(binding_set, "navigate", navigation_bindings,
-				 (sizeof(navigation_bindings)
-				  / sizeof(GtkUtilsBindingInfo)));
+  binding_set = gtk_binding_set_by_class (class);
+  gtk_utils_add_similar_bindings (binding_set, "navigate", navigation_bindings,
+				  (sizeof navigation_bindings
+				   / sizeof (GtkUtilsBindingInfo)));
 }
 
 
 static void
-gtk_goban_init(GtkGoban *goban)
+gtk_goban_init (GtkGoban *goban)
 {
   int k;
 
-  GTK_WIDGET_SET_FLAGS(GTK_WIDGET(goban), GTK_CAN_FOCUS);
+  GTK_WIDGET_SET_FLAGS (GTK_WIDGET (goban), GTK_CAN_FOCUS);
 
   goban->game	= GAME_DUMMY;
   goban->width	= 0;
@@ -244,7 +251,7 @@ gtk_goban_init(GtkGoban *goban)
   goban->cell_size = 0;
 
   goban->font_description
-    = pango_font_description_copy(gtk_widget_get_default_style()->font_desc);
+    = pango_font_description_copy (gtk_widget_get_default_style ()->font_desc);
   goban->font_size = 0;
 
   goban->main_tile_set		     = NULL;
@@ -260,27 +267,27 @@ gtk_goban_init(GtkGoban *goban)
     goban->overlay_contents[k] = NULL;
   }
 
-  set_feedback_data(goban, NULL_X, NULL_Y, NULL, GOBAN_FEEDBACK_NONE);
+  set_feedback_data (goban, NULL_X, NULL_Y, NULL, GOBAN_FEEDBACK_NONE);
 
-  all_gobans = g_slist_prepend(all_gobans, goban);
+  all_gobans = g_slist_prepend (all_gobans, goban);
 }
 
 
 GtkWidget *
-gtk_goban_new(void)
+gtk_goban_new (void)
 {
-  return GTK_WIDGET(g_object_new(GTK_TYPE_GOBAN, NULL));
+  return GTK_WIDGET (g_object_new (GTK_TYPE_GOBAN, NULL));
 }
 
 
 void
-gtk_goban_set_parameters(GtkGoban *goban, Game game, int width, int height)
+gtk_goban_set_parameters (GtkGoban *goban, Game game, int width, int height)
 {
   int is_new_game;
 
-  assert(GTK_IS_GOBAN(goban));
-  assert(GAME_IS_SUPPORTED(game));
-  assert(width > 0 && height > 0);
+  assert (GTK_IS_GOBAN (goban));
+  assert (GAME_IS_SUPPORTED (game));
+  assert (width > 0 && height > 0);
 
   if (goban->width && goban->height) {
     int x;
@@ -288,7 +295,7 @@ gtk_goban_set_parameters(GtkGoban *goban, Game game, int width, int height)
 
     for (y = 0; y < goban->height; y++) {
       for (x = 0; x < goban->width; x++)
-	g_free(goban->sgf_labels[POSITION(x, y)]);
+	g_free (goban->sgf_labels[POSITION (x, y)]);
     }
   }
 
@@ -297,23 +304,30 @@ gtk_goban_set_parameters(GtkGoban *goban, Game game, int width, int height)
   goban->width	= width;
   goban->height = height;
 
-  grid_fill(goban->grid, goban->width, goban->height, TILE_NONE);
-  grid_fill(goban->goban_markup, goban->width, goban->height, TILE_NONE);
-  grid_fill(goban->sgf_markup, goban->width, goban->height, TILE_NONE);
-  pointer_grid_fill((void **) goban->sgf_labels, goban->width, goban->height,
-		    NULL);
+  grid_fill (goban->grid, goban->width, goban->height, TILE_NONE);
+  grid_fill (goban->goban_markup, goban->width, goban->height, TILE_NONE);
+  grid_fill (goban->sgf_markup, goban->width, goban->height, TILE_NONE);
+  pointer_grid_fill ((void **) goban->sgf_labels, goban->width, goban->height,
+		     NULL);
+
+  if (game == GAME_GO) {
+    goban->num_hoshi_points = go_get_hoshi_points (width, height,
+						   goban->hoshi_points);
+  }
+  else
+    goban->num_hoshi_points = 0;
 
   if (is_new_game)
-    set_goban_style_appearance(goban);
+    set_goban_style_appearance (goban);
 
-  set_goban_non_style_appearance(goban);
+  set_goban_non_style_appearance (goban);
 }
 
 
 static void
-gtk_goban_realize(GtkWidget *widget)
+gtk_goban_realize (GtkWidget *widget)
 {
-  GtkGoban *goban = GTK_GOBAN(widget);
+  GtkGoban *goban = GTK_GOBAN (widget);
   GdkWindowAttr attributes;
   const gint attributes_mask = (GDK_WA_X | GDK_WA_Y | GDK_WA_VISUAL
 				| GDK_WA_COLORMAP);
@@ -324,34 +338,34 @@ gtk_goban_realize(GtkWidget *widget)
 			   | GDK_SCROLL_MASK
 			   | GDK_KEY_PRESS_MASK | GDK_KEY_RELEASE_MASK);
 
-  GTK_WIDGET_SET_FLAGS(widget, GTK_REALIZED);
+  GTK_WIDGET_SET_FLAGS (widget, GTK_REALIZED);
 
-  attributes.event_mask = gtk_widget_get_events(widget) | event_mask;
+  attributes.event_mask = gtk_widget_get_events (widget) | event_mask;
   attributes.x = widget->allocation.x;
   attributes.y = widget->allocation.y;
   attributes.width = widget->allocation.width;
   attributes.height = widget->allocation.height;
   attributes.wclass = GDK_INPUT_OUTPUT;
-  attributes.visual = gtk_widget_get_visual(widget);
-  attributes.colormap = gtk_widget_get_colormap(widget);
+  attributes.visual = gtk_widget_get_visual (widget);
+  attributes.colormap = gtk_widget_get_colormap (widget);
   attributes.window_type = GDK_WINDOW_CHILD;
 
-  widget->window = gdk_window_new(gtk_widget_get_parent_window(widget),
-				  &attributes, attributes_mask);
-  gdk_window_set_user_data(widget->window, goban);
+  widget->window = gdk_window_new (gtk_widget_get_parent_window (widget),
+				   &attributes, attributes_mask);
+  gdk_window_set_user_data (widget->window, goban);
 
-  widget->style = gtk_style_attach(widget->style, widget->window);
-  gtk_style_set_background(widget->style, widget->window, GTK_STATE_NORMAL);
+  widget->style = gtk_style_attach (widget->style, widget->window);
+  gtk_style_set_background (widget->style, widget->window, GTK_STATE_NORMAL);
 
-  set_goban_non_style_appearance(goban);
+  set_goban_non_style_appearance (goban);
 }
 
 
 /* FIXME: write this function. */
 static void
-gtk_goban_size_request(GtkWidget *widget, GtkRequisition *requisition)
+gtk_goban_size_request (GtkWidget *widget, GtkRequisition *requisition)
 {
-  UNUSED(widget);
+  UNUSED (widget);
 
   requisition->width = 500;
   requisition->height = 500;
@@ -359,9 +373,9 @@ gtk_goban_size_request(GtkWidget *widget, GtkRequisition *requisition)
 
 
 static void
-gtk_goban_size_allocate(GtkWidget *widget, GtkAllocation *allocation)
+gtk_goban_size_allocate (GtkWidget *widget, GtkAllocation *allocation)
 {
-  GtkGoban *goban = GTK_GOBAN(widget);
+  GtkGoban *goban = GTK_GOBAN (widget);
   int cell_size;
   int grid_width = goban->width - (goban->game == GAME_GO ? 1 : 0);
   int grid_height = goban->height - (goban->game == GAME_GO ? 1 : 0);
@@ -373,29 +387,29 @@ gtk_goban_size_allocate(GtkWidget *widget, GtkAllocation *allocation)
   int horizontal_gap_pixels;
   int vertical_padding;
 
-  assert(goban->width != 0 && goban->height != 0);
+  assert (goban->width != 0 && goban->height != 0);
 
   widget->allocation = *allocation;
 
-  cell_size = floor(MIN(allocation->width / (goban->width
-					     + 2 * horizontal_gap),
-			allocation->height / (goban->height
-					      + 2 * vertical_gap)));
+  cell_size = floor (MIN (allocation->width / (goban->width
+					       + 2 * horizontal_gap),
+			  allocation->height / (goban->height
+						+ 2 * vertical_gap)));
   font_size = (3 * cell_size) / 7;
 
   if (font_size != goban->font_size) {
-    PangoLayout *layout = gtk_widget_create_pango_layout(widget, "8");
+    PangoLayout *layout = gtk_widget_create_pango_layout (widget, "8");
 
     goban->font_size = font_size;
 
-    pango_font_description_set_size(goban->font_description,
-				    font_size * PANGO_SCALE);
-    pango_layout_set_font_description(layout, goban->font_description);
-    pango_layout_get_pixel_size(layout,
-				&goban->digit_width, &goban->character_height);
+    pango_font_description_set_size (goban->font_description,
+				     font_size * PANGO_SCALE);
+    pango_layout_set_font_description (layout, goban->font_description);
+    pango_layout_get_pixel_size (layout,
+				 &goban->digit_width, &goban->character_height);
     goban->digit_width += 2;
 
-    g_object_unref(layout);
+    g_object_unref (layout);
   }
 
   horizontal_deficit = (allocation->width - goban->width * cell_size
@@ -408,16 +422,16 @@ gtk_goban_size_allocate(GtkWidget *widget, GtkAllocation *allocation)
 
     goban->cell_size = cell_size;
 
-    unreference_cached_objects(goban);
+    unreference_cached_objects (goban);
 
     goban->main_tile_set
-      = gtk_main_tile_set_create_or_reuse(main_tile_size, goban->game);
+      = gtk_main_tile_set_create_or_reuse (main_tile_size, goban->game);
     goban->small_tile_set
-      = gtk_main_tile_set_create_or_reuse((2 * cell_size - 1) / 3, goban->game);
+      = gtk_main_tile_set_create_or_reuse ((2 * cell_size - 1) / 3, goban->game);
     goban->sgf_markup_tile_set
-      = gtk_sgf_markup_tile_set_create_or_reuse(main_tile_size, goban->game);
+      = gtk_sgf_markup_tile_set_create_or_reuse (main_tile_size, goban->game);
 
-    set_goban_non_style_appearance(goban);
+    set_goban_non_style_appearance (goban);
   }
 
   goban->left_margin = (allocation->width - grid_width * cell_size) / 2;
@@ -431,9 +445,9 @@ gtk_goban_size_allocate(GtkWidget *widget, GtkAllocation *allocation)
   goban->first_cell_center_y = (allocation->height
 				- (goban->height - 1) * cell_size) / 2;
 
-  horizontal_gap_pixels = MAX(horizontal_gap * cell_size,
-			      ((goban->height < 10 ? 1 : 2)
-			       * goban->digit_width));
+  horizontal_gap_pixels = MAX (horizontal_gap * cell_size,
+			       ((goban->height < 10 ? 1 : 2)
+				* goban->digit_width));
   vertical_padding  = (vertical_gap * cell_size - goban->character_height) / 2;
 
   goban->coordinates_x_left = (goban->first_cell_center_x - cell_size / 2
@@ -476,34 +490,34 @@ gtk_goban_size_allocate(GtkWidget *widget, GtkAllocation *allocation)
   goban->stones_left_margin += goban->main_tile_set->stones_x_offset;
   goban->stones_top_margin += goban->main_tile_set->stones_y_offset;
 
-  find_hoshi_points(goban);
-
   goban->button_pressed = 0;
 
-  if (GTK_WIDGET_REALIZED(widget)) {
+  if (GTK_WIDGET_REALIZED (widget)) {
     int x;
     int y;
     GdkModifierType modifiers;
 
-    gdk_window_move_resize(widget->window, allocation->x, allocation->y,
-			   allocation->width, allocation->height);
+    gdk_window_move_resize (widget->window, allocation->x, allocation->y,
+			    allocation->width, allocation->height);
 
-    gdk_window_get_pointer(widget->window, &x, &y, &modifiers);
-    widget_coordinates_to_board(goban, x, y, &x, &y);
+    gdk_window_get_pointer (widget->window, &x, &y, &modifiers);
+    widget_coordinates_to_board (goban, x, y, &x, &y);
 
     if (x != goban->pointer_x || y != goban->pointer_y
 	|| (modifiers & MODIFIER_MASK) != goban->modifiers)
-      emit_pointer_moved(goban, x, y, modifiers & MODIFIER_MASK);
+      emit_pointer_moved (goban, x, y, modifiers & MODIFIER_MASK);
   }
 }
 
 
 static gboolean
-gtk_goban_expose(GtkWidget *widget, GdkEventExpose *event)
+gtk_goban_expose (GtkWidget *widget, GdkEventExpose *event)
 {
   int k;
   int x;
   int y;
+  gint window_x;
+  gint window_y;
   gint clip_left_margin	  = event->area.x;
   gint clip_right_margin  = event->area.x + event->area.width;
   gint clip_top_margin	  = event->area.y;
@@ -514,68 +528,61 @@ gtk_goban_expose(GtkWidget *widget, GdkEventExpose *event)
   GdkRectangle cell_rectangle;
   PangoLayout *layout = NULL;
 
-  GtkGoban *goban = GTK_GOBAN(widget);
+  GtkGoban *goban = GTK_GOBAN (widget);
   int cell_size = goban->cell_size;
   gint checkerboard_pattern_mode;
 
   GdkWindow *window = widget->window;
   GdkGC *gc = widget->style->fg_gc[GTK_STATE_NORMAL];
 
-  if (!GTK_WIDGET_DRAWABLE(widget))
+  if (!GTK_WIDGET_DRAWABLE (widget))
     return FALSE;
 
-  if (GTK_WIDGET_HAS_FOCUS(widget)) {
+  if (GTK_WIDGET_HAS_FOCUS (widget)) {
     /* Draw a small rectangle to indicate focus. */
-    gdk_draw_rectangle(window, gc, FALSE,
-		       goban->coordinates_x_left - 1,
-		       (goban->coordinates_y_top + goban->character_height / 2
-			- 4),
-		       7, 7);
+    gdk_draw_rectangle (window, gc, FALSE,
+			goban->coordinates_x_left - 1,
+			(goban->coordinates_y_top + goban->character_height / 2
+			 - 4),
+			7, 7);
   }
 
   /* Draw grid lines. */
 
-  for (x = (goban->left_margin
-	    + ((MAX(0, clip_left_margin - goban->left_margin) / cell_size)
-	       * cell_size));
-       x <= goban->right_margin && x < clip_right_margin; x += cell_size) {
-    gdk_draw_line(window, gc,
-		  x, goban->top_margin, x, goban->bottom_margin);
-  }
+  for (x = MAX (0, clip_left_margin - goban->left_margin) / cell_size,
+	 window_x = goban->left_margin + x * cell_size;
+       window_x <= goban->right_margin && window_x < clip_right_margin;
+       x++, window_x += cell_size)
+    draw_vertical_line_with_gaps (goban, window, gc, x, window_x, 0);
 
-  for (y = (goban->top_margin
-	    + ((MAX(0, clip_top_margin - goban->top_margin) / cell_size)
-	       * cell_size));
-       y <= goban->bottom_margin && y < clip_bottom_margin; y += cell_size) {
-    gdk_draw_line(window, gc,
-		  goban->left_margin, y, goban->right_margin, y);
-  }
+  for (y = MAX (0, clip_top_margin - goban->top_margin) / cell_size,
+	 window_y = goban->top_margin + y * cell_size;
+       window_y <= goban->bottom_margin && window_y < clip_bottom_margin;
+       y++, window_y += cell_size)
+    draw_horizontal_line_with_gaps (goban, window, gc, y, window_y, 0);
 
   /* Make the outmost grid lines thicker. */
 
   if (clip_left_margin <= goban->left_margin - 1) {
-    gdk_draw_line(window, gc,
-		  goban->left_margin - 1, goban->top_margin,
-		  goban->left_margin - 1, goban->bottom_margin + 1);
+    draw_vertical_line_with_gaps (goban, window, gc,
+				  0, goban->left_margin - 1, 1);
   }
 
   if (clip_right_margin > goban->right_margin + 1) {
-    gdk_draw_line(window, gc,
-		  goban->right_margin + 1, goban->top_margin - 1,
-		  goban->right_margin + 1, goban->bottom_margin);
+    draw_vertical_line_with_gaps (goban, window, gc,
+				  goban->width - 1,
+				  goban->right_margin + 1, 1);
   }
 
   if (clip_top_margin <= goban->top_margin - 1) {
-    gdk_draw_line(window, gc,
-		  goban->left_margin - 1, goban->top_margin - 1,
-		  goban->right_margin, goban->top_margin - 1);
+    draw_horizontal_line_with_gaps (goban, window, gc,
+				    0, goban->top_margin - 1, 1);
   }
 
   if (clip_bottom_margin > goban->bottom_margin + 1) {
-    gdk_draw_line(window, gc,
-		  goban->left_margin, goban->bottom_margin + 1,
-		  goban->right_margin + 1, goban->bottom_margin + 1);
-
+    draw_horizontal_line_with_gaps (goban, window, gc,
+				    goban->height - 1,
+				    goban->bottom_margin + 1, 1);
   }
 
   /* Draw coordinate labels. */
@@ -586,41 +593,41 @@ gtk_goban_expose(GtkWidget *widget, GdkEventExpose *event)
     const char *horizontal_coordinates
       = game_info[goban->game].horizontal_coordinates;
 
-    layout = gtk_widget_create_pango_layout(widget, NULL);
-    pango_layout_set_font_description(layout, goban->font_description);
-    pango_layout_set_alignment(layout, PANGO_ALIGN_CENTER);
-    pango_layout_set_width(layout, 2 * cell_size);
+    layout = gtk_widget_create_pango_layout (widget, NULL);
+    pango_layout_set_font_description (layout, goban->font_description);
+    pango_layout_set_alignment (layout, PANGO_ALIGN_CENTER);
+    pango_layout_set_width (layout, 2 * cell_size);
 
     /* Left and right label columns. */
     if (clip_left_margin < goban->left_margin
 	|| clip_right_margin > goban->right_margin) {
-      lower_limit = MAX(0,
-			((clip_top_margin - goban->coordinates_y_side)
-			 / cell_size));
-      upper_limit = MIN(goban->height,
-			(1 + ((clip_bottom_margin - goban->coordinates_y_side)
-			      / cell_size)));
+      lower_limit = MAX (0,
+			 ((clip_top_margin - goban->coordinates_y_side)
+			  / cell_size));
+      upper_limit = MIN (goban->height,
+			 (1 + ((clip_bottom_margin - goban->coordinates_y_side)
+			       / cell_size)));
 
       for (k = lower_limit; k < upper_limit; k++) {
 	char buffer[4];
 
-	sprintf(buffer, "%d",
-		(game_info[goban->game].reversed_vertical_coordinates
-		 ? goban->height - k : k + 1));
-	pango_layout_set_text(layout, buffer, -1);
+	sprintf (buffer, "%d",
+		 (game_info[goban->game].reversed_vertical_coordinates
+		  ? goban->height - k : k + 1));
+	pango_layout_set_text (layout, buffer, -1);
 
 	if (clip_left_margin < goban->left_margin) {
-	  gdk_draw_layout(widget->window, gc,
-			  goban->coordinates_x_left,
-			  goban->coordinates_y_side + k * cell_size,
-			  layout);
+	  gdk_draw_layout (widget->window, gc,
+			   goban->coordinates_x_left,
+			   goban->coordinates_y_side + k * cell_size,
+			   layout);
 	}
 
 	if (clip_right_margin > goban->right_margin) {
-	  gdk_draw_layout(widget->window, gc,
-			  goban->coordinates_x_right,
-			  goban->coordinates_y_side + k * cell_size,
-			  layout);
+	  gdk_draw_layout (widget->window, gc,
+			   goban->coordinates_x_right,
+			   goban->coordinates_y_side + k * cell_size,
+			   layout);
 	}
       }
     }
@@ -628,30 +635,30 @@ gtk_goban_expose(GtkWidget *widget, GdkEventExpose *event)
     /* Top and bottom label rows. */
     if (clip_top_margin < goban->top_margin
 	|| clip_bottom_margin > goban->bottom_margin) {
-      lower_limit = MAX(0,
-			((clip_left_margin
-			  - (goban->first_cell_center_x - cell_size / 2))
-			 / cell_size));
-      upper_limit = MIN(goban->width,
-			(1 + ((clip_right_margin
-			       - (goban->first_cell_center_x - cell_size / 2))
-			      / cell_size)));
+      lower_limit = MAX (0,
+			 ((clip_left_margin
+			   - (goban->first_cell_center_x - cell_size / 2))
+			  / cell_size));
+      upper_limit = MIN (goban->width,
+			 (1 + ((clip_right_margin
+				- (goban->first_cell_center_x - cell_size / 2))
+			       / cell_size)));
 
       for (k = lower_limit; k < upper_limit; k++) {
-	pango_layout_set_text(layout, horizontal_coordinates + k, 1);
+	pango_layout_set_text (layout, horizontal_coordinates + k, 1);
 
 	if (clip_top_margin < goban->top_margin) {
-	  gdk_draw_layout(widget->window, gc,
-			  goban->first_cell_center_x + k * cell_size,
-			  goban->coordinates_y_top,
-			  layout);
+	  gdk_draw_layout (widget->window, gc,
+			   goban->first_cell_center_x + k * cell_size,
+			   goban->coordinates_y_top,
+			   layout);
 	}
 
 	if (clip_bottom_margin > goban->bottom_margin) {
-	  gdk_draw_layout(widget->window, gc,
-			  goban->first_cell_center_x + k * cell_size,
-			  goban->coordinates_y_bottom,
-			  layout);
+	  gdk_draw_layout (widget->window, gc,
+			   goban->first_cell_center_x + k * cell_size,
+			   goban->coordinates_y_bottom,
+			   layout);
 	}
       }
     }
@@ -659,21 +666,20 @@ gtk_goban_expose(GtkWidget *widget, GdkEventExpose *event)
 
   /* FIXME: Not clipped now.  Needs a rewrite anyway. */
   for (k = 0; k < goban->num_hoshi_points; k++) {
-    gdk_draw_rectangle(window, gc, FALSE,
-		       goban->left_margin + goban->hoshi_point_x[k] - 2,
-		       goban->top_margin + goban->hoshi_point_y[k] - 1,
-		       4, 2);
-    gdk_draw_rectangle(window, gc, FALSE,
-		       goban->left_margin + goban->hoshi_point_x[k] - 1,
-		       goban->top_margin + goban->hoshi_point_y[k] - 2,
-		       2, 4);
+    if (!goban->sgf_labels[POINT_TO_POSITION (goban->hoshi_points[k])]) {
+      window_x = goban->left_margin + goban->hoshi_points[k].x * cell_size;
+      window_y = goban->top_margin + goban->hoshi_points[k].y * cell_size;
+
+      gdk_draw_rectangle (window, gc, FALSE, window_x - 2, window_y - 1, 4, 2);
+      gdk_draw_rectangle (window, gc, FALSE, window_x - 1, window_y - 2, 2, 4);
+    }
   }
 
   if (goban->checkerboard_pattern_object) {
-    if (GDK_IS_PIXBUF(goban->checkerboard_pattern_object))
+    if (GDK_IS_PIXBUF (goban->checkerboard_pattern_object))
       checkerboard_pattern_mode = CHECKERBOARD_PATTERN_WITH_PIXBUF;
     else {
-      assert(GDK_IS_PIXMAP(goban->checkerboard_pattern_object));
+      assert (GDK_IS_PIXMAP (goban->checkerboard_pattern_object));
       checkerboard_pattern_mode = CHECKERBOARD_PATTERN_WITH_PIXMAP;
     }
   }
@@ -685,43 +691,43 @@ gtk_goban_expose(GtkWidget *widget, GdkEventExpose *event)
 
   row_rectangle.y = (checkerboard_pattern_mode == NO_CHECKERBOARD_PATTERN
 		     ? goban->stones_top_margin
-		     : MIN(goban->stones_top_margin, goban->top_margin + 1));
+		     : MIN (goban->stones_top_margin, goban->top_margin + 1));
 
   if (checkerboard_pattern_mode == NO_CHECKERBOARD_PATTERN)
     row_rectangle.height = goban->cell_size;
   else {
-    row_rectangle.height = (MAX((goban->stones_top_margin
-				 + goban->main_tile_set->tile_size),
-				goban->top_margin + 1 + cell_size)
+    row_rectangle.height = (MAX ((goban->stones_top_margin
+				  + goban->main_tile_set->tile_size),
+				 goban->top_margin + 1 + cell_size)
 			    - row_rectangle.y);
   }
 
   cell_rectangle.width = row_rectangle.height;
   cell_rectangle.height = row_rectangle.height;
 
-  lower_limit = MAX(0, (clip_top_margin - row_rectangle.y) / cell_size);
-  upper_limit = MIN(goban->height,
-		    (1 + ((clip_bottom_margin
-			   - (row_rectangle.y
-			      + (row_rectangle.height - cell_size)))
-			  / cell_size)));
+  lower_limit = MAX (0, (clip_top_margin - row_rectangle.y) / cell_size);
+  upper_limit = MIN (goban->height,
+		     (1 + ((clip_bottom_margin
+			    - (row_rectangle.y
+			       + (row_rectangle.height - cell_size)))
+			   / cell_size)));
 
   for (y = lower_limit, row_rectangle.y += lower_limit * cell_size;
        y < upper_limit; y++, row_rectangle.y += cell_size) {
-    GdkRegion *row_region = gdk_region_rectangle(&row_rectangle);
+    GdkRegion *row_region = gdk_region_rectangle (&row_rectangle);
 
-    gdk_region_intersect(row_region, event->region);
-    if (!gdk_region_empty(row_region)) {
+    gdk_region_intersect (row_region, event->region);
+    if (!gdk_region_empty (row_region)) {
       cell_rectangle.x = (checkerboard_pattern_mode == NO_CHECKERBOARD_PATTERN
 			  ? goban->stones_left_margin
-			  : MIN(goban->stones_left_margin,
-				goban->left_margin + 1));
+			  : MIN (goban->stones_left_margin,
+				 goban->left_margin + 1));
       cell_rectangle.y = row_rectangle.y;
 
       for (x = 0; x < goban->width; x++, cell_rectangle.x += cell_size) {
-	if (gdk_region_rect_in(row_region, &cell_rectangle)
+	if (gdk_region_rect_in (row_region, &cell_rectangle)
 	    != GDK_OVERLAP_RECTANGLE_OUT) {
-	  int pos = POSITION(x, y);
+	  int pos = POSITION (x, y);
 	  int tile = goban->grid[pos];
 	  int markup_tile = goban->goban_markup[pos] & GOBAN_MARKUP_TILE_MASK;
 	  int sgf_markup_tile = goban->sgf_markup[pos];
@@ -730,136 +736,198 @@ gtk_goban_expose(GtkWidget *widget, GdkEventExpose *event)
 	      && (x + y) % 2 == 1) {
 	    if (checkerboard_pattern_mode
 		== CHECKERBOARD_PATTERN_WITH_PIXBUF) {
-	      gdk_draw_pixbuf(window, gc,
-			      (GdkPixbuf *) goban->checkerboard_pattern_object,
-			      0, 0,
-			      goban->left_margin + 1 + x * cell_size,
-			      goban->top_margin + 1 + y * cell_size,
-			      -1, -1,
-			      GDK_RGB_DITHER_NORMAL, 0, 0);
+	      gdk_draw_pixbuf (window, gc,
+			       (GdkPixbuf *) goban->checkerboard_pattern_object,
+			       0, 0,
+			       goban->left_margin + 1 + x * cell_size,
+			       goban->top_margin + 1 + y * cell_size,
+			       -1, -1,
+			       GDK_RGB_DITHER_NORMAL, 0, 0);
 	    }
 	    else {
-	      gdk_draw_drawable(window, gc,
-				((GdkDrawable *)
-				 goban->checkerboard_pattern_object),
-				0, 0,
-				goban->left_margin + 1 + x * cell_size,
-				goban->top_margin + 1 + y * cell_size,
-				-1, -1);
+	      gdk_draw_drawable (window, gc,
+				 ((GdkDrawable *)
+				  goban->checkerboard_pattern_object),
+				 0, 0,
+				 goban->left_margin + 1 + x * cell_size,
+				 goban->top_margin + 1 + y * cell_size,
+				 -1, -1);
 	    }
 	  }
 
 	  if (tile != TILE_NONE && tile != TILE_SPECIAL) {
-	    if (IS_STONE(tile)) {
+	    if (IS_STONE (tile)) {
 	      if (goban->goban_markup[pos] & GOBAN_MARKUP_GHOSTIFY)
-		tile = STONE_50_TRANSPARENT + COLOR_INDEX(tile);
+		tile = STONE_50_TRANSPARENT + COLOR_INDEX (tile);
 	      else if (goban->goban_markup[pos]
 		       & GOBAN_MARKUP_GHOSTIFY_SLIGHTLY)
-		tile = STONE_25_TRANSPARENT + COLOR_INDEX(tile);
+		tile = STONE_25_TRANSPARENT + COLOR_INDEX (tile);
 	    }
 
-	    gdk_draw_pixbuf(window, gc,
-			    goban->main_tile_set->tiles[tile],
-			    0, 0,
-			    goban->stones_left_margin + x * cell_size,
-			    goban->stones_top_margin + y * cell_size,
-			    -1, -1,
-			    GDK_RGB_DITHER_NORMAL, 0, 0);
+	    gdk_draw_pixbuf (window, gc,
+			     goban->main_tile_set->tiles[tile],
+			     0, 0,
+			     goban->stones_left_margin + x * cell_size,
+			     goban->stones_top_margin + y * cell_size,
+			     -1, -1,
+			     GDK_RGB_DITHER_NORMAL, 0, 0);
 	  }
 	  else if (tile == TILE_SPECIAL) {
 	    int base_x = goban->left_margin + x * cell_size;
 	    int base_y = goban->top_margin + y * cell_size;
 
-	    gdk_draw_line(window, gc,
-			  base_x, base_y,
-			  base_x + cell_size, base_y + cell_size);
-	    gdk_draw_line(window, gc,
-			  base_x, base_y + cell_size,
-			  base_x + cell_size, base_y);
+	    gdk_draw_line (window, gc,
+			   base_x, base_y,
+			   base_x + cell_size, base_y + cell_size);
+	    gdk_draw_line (window, gc,
+			   base_x, base_y + cell_size,
+			   base_x + cell_size, base_y);
 	  }
 
 	  if (markup_tile != TILE_NONE) {
-	    assert(markup_tile != TILE_SPECIAL);
+	    assert (markup_tile != TILE_SPECIAL);
 
-	    gdk_draw_pixbuf(window, gc,
-			    goban->small_tile_set->tiles[markup_tile],
-			    0, 0,
-			    goban->small_stones_left_margin + x * cell_size,
-			    goban->small_stones_top_margin + y * cell_size,
-			    -1, -1,
-			    GDK_RGB_DITHER_NORMAL, 0, 0);
+	    gdk_draw_pixbuf (window, gc,
+			     goban->small_tile_set->tiles[markup_tile],
+			     0, 0,
+			     goban->small_stones_left_margin + x * cell_size,
+			     goban->small_stones_top_margin + y * cell_size,
+			     -1, -1,
+			     GDK_RGB_DITHER_NORMAL, 0, 0);
 	  }
 
 	  if (sgf_markup_tile != SGF_MARKUP_NONE) {
-	    gint background = (IS_STONE(goban->grid[pos])
+	    gint background = (IS_STONE (goban->grid[pos])
 			       ? goban->grid[pos] : EMPTY);
 	    GdkPixbuf *pixbuf
 	      = goban->sgf_markup_tile_set->tiles[sgf_markup_tile][background];
 
-	    gdk_draw_pixbuf(window, gc, pixbuf, 0, 0,
-			    goban->sgf_markup_left_margin + x * cell_size,
-			    goban->sgf_markup_top_margin + y * cell_size,
-			    -1, -1,
-			    GDK_RGB_DITHER_NORMAL, 0, 0);
+	    gdk_draw_pixbuf (window, gc, pixbuf, 0, 0,
+			     goban->sgf_markup_left_margin + x * cell_size,
+			     goban->sgf_markup_top_margin + y * cell_size,
+			     -1, -1,
+			     GDK_RGB_DITHER_NORMAL, 0, 0);
 	  }
 
 	  if (goban->sgf_labels[pos]) {
 	    if (!layout) {
-	      layout = gtk_widget_create_pango_layout(widget, NULL);
-	      pango_layout_set_font_description(layout,
-						goban->font_description);
-	      pango_layout_set_alignment(layout, PANGO_ALIGN_CENTER);
-	      pango_layout_set_width(layout, cell_size - 2);
+	      layout = gtk_widget_create_pango_layout (widget, NULL);
+	      pango_layout_set_font_description (layout,
+						 goban->font_description);
+	      pango_layout_set_alignment (layout, PANGO_ALIGN_CENTER);
+	      pango_layout_set_width (layout, cell_size - 2);
 	    }
 
-	    pango_layout_set_text(layout, goban->sgf_labels[pos], -1);
-	    gdk_draw_layout(widget->window, gc,
-			    goban->first_cell_center_x + x * cell_size,
-			    (goban->first_cell_center_y
-			     - goban->character_height / 2
-			     + y * cell_size),
-			    layout);
+	    pango_layout_set_text (layout, goban->sgf_labels[pos], -1);
+	    gdk_draw_layout (widget->window, gc,
+			     goban->first_cell_center_x + x * cell_size,
+			     (goban->first_cell_center_y
+			      - goban->character_height / 2
+			      + y * cell_size),
+			     layout);
 	  }
 	}
       }
     }
 
-    gdk_region_destroy(row_region);
+    gdk_region_destroy (row_region);
   }
 
   if (layout)
-    g_object_unref(layout);
+    g_object_unref (layout);
 
-  if (!IS_NULL_POINT(goban->last_move_x, goban->last_move_y)) {
-    if (goban->grid[POSITION(goban->last_move_x, goban->last_move_y)] == BLACK)
+  if (!IS_NULL_POINT (goban->last_move_x, goban->last_move_y)) {
+    if (goban->grid[POSITION (goban->last_move_x, goban->last_move_y)] == BLACK)
       gc = widget->style->white_gc;
     else
       gc = widget->style->black_gc;
 
-    x = goban->first_cell_center_x + goban->last_move_x * cell_size;
-    y = goban->first_cell_center_y + goban->last_move_y * cell_size;
+    window_x = goban->first_cell_center_x + goban->last_move_x * cell_size;
+    window_y = goban->first_cell_center_y + goban->last_move_y * cell_size;
 
-    gdk_draw_line(window, gc, x - 3, y, x + 3, y);
-    gdk_draw_line(window, gc, x, y - 3, x, y + 3);
+    gdk_draw_line (window, gc, window_x - 3, window_y, window_x + 3, window_y);
+    gdk_draw_line (window, gc, window_x, window_y - 3, window_x, window_y + 3);
   }
 
   return FALSE;
 }
 
 
+/* Draw a vertical line, leaving gaps in places where there are labels
+ * (to avoid cluttering them.)
+ */
+inline static void
+draw_vertical_line_with_gaps (GtkGoban *goban, GdkWindow *window, GdkGC *gc,
+			      int x, gint window_x, gint extra_length)
+{
+  gint gap_half = 2 + (goban->character_height * 5) / 9;
+  gint top = goban->top_margin - extra_length;
+  int y;
+  gint window_y;
+
+  for (y = 0, window_y = goban->first_cell_center_y; y < goban->height;
+       y++, window_y += goban->cell_size) {
+    if (goban->sgf_labels[POSITION (x, y)]) {
+      if (window_y - gap_half > top) {
+	gdk_draw_line (window, gc,
+		       window_x, top, window_x, window_y - gap_half);
+      }
+
+      top = window_y + gap_half;
+    }
+  }
+
+  if (goban->bottom_margin > top) {
+    gdk_draw_line (window, gc,
+		   window_x, top,
+		   window_x, goban->bottom_margin + extra_length);
+  }
+}
+
+
+/* Just as draw_vertical_line_with_gaps(), but draws horizontally. */
+inline static void
+draw_horizontal_line_with_gaps (GtkGoban *goban, GdkWindow *window, GdkGC *gc,
+				int y, gint window_y, gint extra_length)
+{
+  gint gap_half = (goban->cell_size - 1) / 2;
+  gint left = goban->left_margin - extra_length;
+  int x;
+  gint window_x;
+
+  for (x = 0, window_x = goban->first_cell_center_x; x < goban->width;
+       x++, window_x += goban->cell_size) {
+    if (goban->sgf_labels[POSITION (x, y)]) {
+      if (window_x - gap_half > left) {
+	gdk_draw_line (window, gc,
+		       left, window_y, window_x - gap_half, window_y);
+      }
+
+      left = window_x + gap_half;
+    }
+  }
+
+  if (goban->right_margin > left) {
+    gdk_draw_line (window, gc,
+		   left, window_y,
+		   goban->right_margin + extra_length, window_y);
+  }
+}
+
+
 static gboolean
-gtk_goban_button_press_event(GtkWidget *widget, GdkEventButton *event)
+gtk_goban_button_press_event (GtkWidget *widget, GdkEventButton *event)
 {
   if (event->button == 1 || event->button == 3) {
-    GtkGoban *goban = GTK_GOBAN(widget);
+    GtkGoban *goban = GTK_GOBAN (widget);
     int x;
     int y;
     GdkModifierType modifiers;
 
-    gdk_window_get_pointer(widget->window, &x, &y, &modifiers);
-    widget_coordinates_to_board(goban, x, y, &x, &y);
+    gdk_window_get_pointer (widget->window, &x, &y, &modifiers);
+    widget_coordinates_to_board (goban, x, y, &x, &y);
 
-    if (!IS_NULL_POINT(x, y)) {
+    if (!IS_NULL_POINT (x, y)) {
       if (goban->button_pressed == 0) {
 	goban->button_pressed	      = event->button;
 	goban->press_x		      = x;
@@ -870,10 +938,10 @@ gtk_goban_button_press_event(GtkWidget *widget, GdkEventButton *event)
       else
 	goban->button_pressed = -1;
 
-      emit_pointer_moved(goban, x, y, modifiers & MODIFIER_MASK);
+      emit_pointer_moved (goban, x, y, modifiers & MODIFIER_MASK);
     }
-    else if (goban->button_pressed == 0 && !GTK_WIDGET_HAS_FOCUS(widget))
-      gtk_widget_grab_focus(widget);
+    else if (goban->button_pressed == 0 && !GTK_WIDGET_HAS_FOCUS (widget))
+      gtk_widget_grab_focus (widget);
   }
 
   return FALSE;
@@ -881,17 +949,17 @@ gtk_goban_button_press_event(GtkWidget *widget, GdkEventButton *event)
 
 
 static gboolean
-gtk_goban_button_release_event(GtkWidget *widget, GdkEventButton *event)
+gtk_goban_button_release_event (GtkWidget *widget, GdkEventButton *event)
 {
   if (event->button == 1 || event->button == 3) {
-    GtkGoban *goban = GTK_GOBAN(widget);
+    GtkGoban *goban = GTK_GOBAN (widget);
     GdkModifierType modifiers;
     GdkModifierType button_mask = (event->button == 1
 				   ? GDK_BUTTON1_MASK : GDK_BUTTON3_MASK);
     GtkGobanClickData data;
 
-    gdk_window_get_pointer(widget->window, &data.x, &data.y, &modifiers);
-    widget_coordinates_to_board(goban, data.x, data.y, &data.x, &data.y);
+    gdk_window_get_pointer (widget->window, &data.x, &data.y, &modifiers);
+    widget_coordinates_to_board (goban, data.x, data.y, &data.x, &data.y);
 
     if (goban->button_pressed == event->button) {
       goban->button_pressed = 0;
@@ -902,7 +970,7 @@ gtk_goban_button_release_event(GtkWidget *widget, GdkEventButton *event)
 	data.feedback_tile = goban->feedback_tile;
 	data.button	   = event->button;
 	data.modifiers	   = modifiers & ~button_mask;
-	g_signal_emit(G_OBJECT(goban), goban_signals[GOBAN_CLICKED], 0, &data);
+	g_signal_emit (G_OBJECT (goban), goban_signals[GOBAN_CLICKED], 0, &data);
       }
     }
     else {
@@ -910,7 +978,7 @@ gtk_goban_button_release_event(GtkWidget *widget, GdkEventButton *event)
 	goban->button_pressed = 0;
     }
 
-    emit_pointer_moved(goban, data.x, data.y, modifiers & MODIFIER_MASK);
+    emit_pointer_moved (goban, data.x, data.y, modifiers & MODIFIER_MASK);
   }
 
   return FALSE;
@@ -918,46 +986,46 @@ gtk_goban_button_release_event(GtkWidget *widget, GdkEventButton *event)
 
 
 static gboolean
-gtk_goban_motion_notify_event(GtkWidget *widget, GdkEventMotion *event)
+gtk_goban_motion_notify_event (GtkWidget *widget, GdkEventMotion *event)
 {
-  GtkGoban *goban = GTK_GOBAN(widget);
+  GtkGoban *goban = GTK_GOBAN (widget);
   int x;
   int y;
 
-  widget_coordinates_to_board(goban, event->x, event->y, &x, &y);
+  widget_coordinates_to_board (goban, event->x, event->y, &x, &y);
   if (x != goban->pointer_x || y != goban->pointer_y
       || (event->state & MODIFIER_MASK) != goban->modifiers)
-    emit_pointer_moved(goban, x, y, event->state & MODIFIER_MASK);
+    emit_pointer_moved (goban, x, y, event->state & MODIFIER_MASK);
 
   return FALSE;
 }
 
 
 static gboolean
-gtk_goban_enter_notify_event(GtkWidget *widget, GdkEventCrossing *event)
+gtk_goban_enter_notify_event (GtkWidget *widget, GdkEventCrossing *event)
 {
-  GtkGoban *goban = GTK_GOBAN(widget);
+  GtkGoban *goban = GTK_GOBAN (widget);
   int x;
   int y;
 
-  widget_coordinates_to_board(goban, event->x, event->y, &x, &y);
-  emit_pointer_moved(goban, x, y, event->state & MODIFIER_MASK);
+  widget_coordinates_to_board (goban, event->x, event->y, &x, &y);
+  emit_pointer_moved (goban, x, y, event->state & MODIFIER_MASK);
 
   return FALSE;
 }
 
 
 static gboolean
-gtk_goban_leave_notify_event(GtkWidget *widget, GdkEventCrossing *event)
+gtk_goban_leave_notify_event (GtkWidget *widget, GdkEventCrossing *event)
 {
-  GtkGoban *goban = GTK_GOBAN(widget);
+  GtkGoban *goban = GTK_GOBAN (widget);
 
-  UNUSED(event);
+  UNUSED (event);
 
   if (goban->button_pressed)
     goban->button_pressed = 0;
 
-  set_feedback_data(goban, NULL_X, NULL_Y, NULL, GOBAN_FEEDBACK_NONE);
+  set_feedback_data (goban, NULL_X, NULL_Y, NULL, GOBAN_FEEDBACK_NONE);
 
   return FALSE;
 }
@@ -968,7 +1036,7 @@ gtk_goban_leave_notify_event(GtkWidget *widget, GdkEventCrossing *event)
  * variations, Ctrl makes navigation fast.
  */
 static gboolean
-gtk_goban_scroll_event(GtkWidget *widget, GdkEventScroll *event)
+gtk_goban_scroll_event (GtkWidget *widget, GdkEventScroll *event)
 {
   gint direction;
 
@@ -999,57 +1067,57 @@ gtk_goban_scroll_event(GtkWidget *widget, GdkEventScroll *event)
     return FALSE;
   }
 
-  g_signal_emit(G_OBJECT(widget), goban_signals[NAVIGATE], 0, direction);
+  g_signal_emit (G_OBJECT (widget), goban_signals[NAVIGATE], 0, direction);
 
   return FALSE;
 }
 
 
 static gboolean
-gtk_goban_key_press_event(GtkWidget *widget, GdkEventKey *event)
+gtk_goban_key_press_event (GtkWidget *widget, GdkEventKey *event)
 {
-  GtkGoban *goban = GTK_GOBAN(widget);
+  GtkGoban *goban = GTK_GOBAN (widget);
   GdkModifierType modifiers;
 
-  gdk_window_get_pointer(widget->window, NULL, NULL, &modifiers);
+  gdk_window_get_pointer (widget->window, NULL, NULL, &modifiers);
   if ((modifiers & MODIFIER_MASK) != goban->modifiers) {
-    emit_pointer_moved(goban, goban->pointer_x, goban->pointer_y,
-		       modifiers & MODIFIER_MASK);
+    emit_pointer_moved (goban, goban->pointer_x, goban->pointer_y,
+			modifiers & MODIFIER_MASK);
   }
 
-  return parent_class->key_press_event(widget, event);
+  return parent_class->key_press_event (widget, event);
 }
 
 
 static gboolean
-gtk_goban_key_release_event(GtkWidget *widget, GdkEventKey *event)
+gtk_goban_key_release_event (GtkWidget *widget, GdkEventKey *event)
 {
-  GtkGoban *goban = GTK_GOBAN(widget);
+  GtkGoban *goban = GTK_GOBAN (widget);
   GdkModifierType modifiers;
 
-  gdk_window_get_pointer(widget->window, NULL, NULL, &modifiers);
+  gdk_window_get_pointer (widget->window, NULL, NULL, &modifiers);
   if ((modifiers & MODIFIER_MASK) != goban->modifiers) {
-    emit_pointer_moved(goban, goban->pointer_x, goban->pointer_y,
-		       modifiers & MODIFIER_MASK);
+    emit_pointer_moved (goban, goban->pointer_x, goban->pointer_y,
+			modifiers & MODIFIER_MASK);
   }
 
-  return parent_class->key_release_event(widget, event);
+  return parent_class->key_release_event (widget, event);
 }
 
 
 static gboolean
-gtk_goban_focus_in_or_out_event(GtkWidget *widget, GdkEventFocus *event)
+gtk_goban_focus_in_or_out_event (GtkWidget *widget, GdkEventFocus *event)
 {
-  GtkGoban *goban = GTK_GOBAN(widget);
+  GtkGoban *goban = GTK_GOBAN (widget);
   GdkRectangle rectangle = { goban->coordinates_x_left - 1,
 			     (goban->coordinates_y_top
 			      + goban->character_height / 2
 			      - 4),
 			     8, 8 };
 
-  UNUSED(event);
+  UNUSED (event);
 
-  gdk_window_invalidate_rect(widget->window, &rectangle, FALSE);
+  gdk_window_invalidate_rect (widget->window, &rectangle, FALSE);
 
   /* Don't fallback to default handler, since we don't need full
    * widget redraw.
@@ -1059,9 +1127,10 @@ gtk_goban_focus_in_or_out_event(GtkWidget *widget, GdkEventFocus *event)
 
 
 static void
-gtk_goban_finalize(GObject *object)
+gtk_goban_finalize (GObject *object)
 {
-  GtkGoban *goban = GTK_GOBAN(object);
+  GtkGoban *goban = GTK_GOBAN (object);
+  int k;
 
   if (goban->width && goban->height) {
     int x;
@@ -1069,70 +1138,77 @@ gtk_goban_finalize(GObject *object)
 
     for (y = 0; y < goban->height; y++) {
       for (x = 0; x < goban->width; x++)
-	g_free(goban->sgf_labels[POSITION(x, y)]);
+	g_free (goban->sgf_labels[POSITION (x, y)]);
+    }
+  }
+
+  for (k = 0; k < NUM_OVERLAYS; k++) {
+    if (goban->overlay_positon_lists[k]) {
+      board_position_list_delete (goban->overlay_positon_lists[k]);
+      g_free (goban->overlay_contents[k]);
     }
   }
 
   if (goban->font_description)
-    pango_font_description_free(goban->font_description);
+    pango_font_description_free (goban->font_description);
 
-  unreference_cached_objects(goban);
+  unreference_cached_objects (goban);
 
   if (goban->checkerboard_pattern_object)
-    g_object_unref(goban->checkerboard_pattern_object);
+    g_object_unref (goban->checkerboard_pattern_object);
 
-  all_gobans = g_slist_remove(all_gobans, goban);
+  all_gobans = g_slist_remove (all_gobans, goban);
 
-  G_OBJECT_CLASS(parent_class)->finalize(object);
+  G_OBJECT_CLASS (parent_class)->finalize (object);
 }
 
 
 static void
-unreference_cached_objects(GtkGoban *goban)
+unreference_cached_objects (GtkGoban *goban)
 {
   if (goban->main_tile_set) {
-    object_cache_unreference_object(&gtk_main_tile_set_cache,
-				    goban->main_tile_set);
+    object_cache_unreference_object (&gtk_main_tile_set_cache,
+				     goban->main_tile_set);
   }
 
   if (goban->small_tile_set) {
-    object_cache_unreference_object(&gtk_main_tile_set_cache,
-				    goban->small_tile_set);
+    object_cache_unreference_object (&gtk_main_tile_set_cache,
+				     goban->small_tile_set);
   }
 
   if (goban->sgf_markup_tile_set) {
-    object_cache_unreference_object(&gtk_sgf_markup_tile_set_cache,
-				    goban->sgf_markup_tile_set);
+    object_cache_unreference_object (&gtk_sgf_markup_tile_set_cache,
+				     goban->sgf_markup_tile_set);
   }
 }
 
 
 
 static void
-set_goban_style_appearance(GtkGoban *goban)
+set_goban_style_appearance (GtkGoban *goban)
 {
   const BoardAppearance *board_appearance
-    = game_to_board_appearance_structure(goban->game);
-  GtkRcStyle *rc_style = gtk_rc_style_new();
+    = game_to_board_appearance_structure (goban->game);
+  GtkRcStyle *rc_style = gtk_rc_style_new ();
 
   rc_style->color_flags[GTK_STATE_NORMAL] = GTK_RC_FG | GTK_RC_BG;
-  gtk_utils_set_gdk_color(&rc_style->fg[GTK_STATE_NORMAL],
-			  board_appearance->grid_and_labels_color);
-  gtk_utils_set_gdk_color(&rc_style->bg[GTK_STATE_NORMAL],
-			  board_appearance->background_color);
+  gtk_utils_set_gdk_color (&rc_style->fg[GTK_STATE_NORMAL],
+			   board_appearance->grid_and_labels_color);
+  gtk_utils_set_gdk_color (&rc_style->bg[GTK_STATE_NORMAL],
+			   board_appearance->background_color);
 
   if (board_appearance->use_background_texture) {
     rc_style->bg_pixmap_name[GTK_STATE_NORMAL]
-      = g_strdup(board_appearance->background_texture);
+      = g_strdup (board_appearance->background_texture);
   }
 
-  gtk_widget_modify_style(GTK_WIDGET(goban), rc_style);
-  g_object_unref(rc_style);
+  gtk_widget_modify_style (GTK_WIDGET (goban), rc_style);
+  g_object_unref (rc_style);
 }
 
 
 static void
-set_goban_non_style_appearance(GtkGoban *goban)
+set_goban_non_style_appearance (GtkGoban *goban)
 {
   Game game = goban->game;
 
@@ -1140,15 +1216,15 @@ set_goban_non_style_appearance(GtkGoban *goban)
     return;
 
   if (goban->checkerboard_pattern_object) {
-    g_object_unref(goban->checkerboard_pattern_object);
+    g_object_unref (goban->checkerboard_pattern_object);
     goban->checkerboard_pattern_object = NULL;
   }
 
-  if (game == GAME_AMAZONS && GTK_WIDGET_REALIZED(goban)
+  if (game == GAME_AMAZONS && GTK_WIDGET_REALIZED (goban)
       && goban->cell_size > 0) {
     QuarryColor color = amazons_board_appearance.checkerboard_pattern_color;
     double opacity = amazons_board_appearance.checkerboard_pattern_opacity;
-    guint8 actual_opacity = G_MAXUINT8 * CLAMP(opacity, 0.0, 1.0);
+    guint8 actual_opacity = G_MAXUINT8 * CLAMP (opacity, 0.0, 1.0);
 
     if (actual_opacity > 0) {
       if (!amazons_board_appearance.board_appearance.use_background_texture) {
@@ -1170,72 +1246,72 @@ set_goban_non_style_appearance(GtkGoban *goban)
 
       if (actual_opacity < G_MAXUINT8) {
 	goban->checkerboard_pattern_object
-	  = (GObject *) gdk_pixbuf_new(GDK_COLORSPACE_RGB, TRUE, 8,
-				       goban->cell_size - 1,
-				       goban->cell_size - 1);
-	gdk_pixbuf_fill(GDK_PIXBUF(goban->checkerboard_pattern_object),
-			(actual_opacity
-			 | (color.red << 24)
-			 | (color.green << 16)
-			 | (color.blue << 8)));
+	  = (GObject *) gdk_pixbuf_new (GDK_COLORSPACE_RGB, TRUE, 8,
+					goban->cell_size - 1,
+					goban->cell_size - 1);
+	gdk_pixbuf_fill (GDK_PIXBUF (goban->checkerboard_pattern_object),
+			 (actual_opacity
+			  | (color.red << 24)
+			  | (color.green << 16)
+			  | (color.blue << 8)));
       }
       else {
-	GdkGC *gc = gdk_gc_new(goban->widget.window);
+	GdkGC *gc = gdk_gc_new (goban->widget.window);
 	GdkColor gdk_color;
 
-	gtk_utils_set_gdk_color(&gdk_color, color);
-	gdk_gc_set_rgb_fg_color(gc, &gdk_color);
+	gtk_utils_set_gdk_color (&gdk_color, color);
+	gdk_gc_set_rgb_fg_color (gc, &gdk_color);
 
 	goban->checkerboard_pattern_object
-	  = (GObject *) gdk_pixmap_new(goban->widget.window,
-				       goban->cell_size - 1,
-				       goban->cell_size - 1,
-				       -1);
-	gdk_draw_rectangle(GDK_DRAWABLE(goban->checkerboard_pattern_object),
-			   gc, TRUE,
-			   0, 0, goban->cell_size - 1, goban->cell_size - 1);
+	  = (GObject *) gdk_pixmap_new (goban->widget.window,
+					goban->cell_size - 1,
+					goban->cell_size - 1,
+					-1);
+	gdk_draw_rectangle (GDK_DRAWABLE (goban->checkerboard_pattern_object),
+			    gc, TRUE,
+			    0, 0, goban->cell_size - 1, goban->cell_size - 1);
 
-	g_object_unref(gc);
+	g_object_unref (gc);
       }
     }
   }
 
-  object_cache_unreference_object(&gtk_sgf_markup_tile_set_cache,
-				  goban->sgf_markup_tile_set);
+  object_cache_unreference_object (&gtk_sgf_markup_tile_set_cache,
+				   goban->sgf_markup_tile_set);
   goban->sgf_markup_tile_set
-    = gtk_sgf_markup_tile_set_create_or_reuse((goban->cell_size
-					       - (game == GAME_GO ? 0 : 1)),
-					      game);
+    = gtk_sgf_markup_tile_set_create_or_reuse ((goban->cell_size
+						- (game == GAME_GO ? 0 : 1)),
+					       game);
 }
 
 
 gint
-gtk_goban_negotiate_width(GtkWidget *widget, gint height)
+gtk_goban_negotiate_width (GtkWidget *widget, gint height)
 {
-  UNUSED(widget);
-  UNUSED(height);
+  UNUSED (widget);
+  UNUSED (height);
 
   return height;
 }
 
 
 gint
-gtk_goban_negotiate_height(GtkWidget *widget, gint width)
+gtk_goban_negotiate_height (GtkWidget *widget, gint width)
 {
-  UNUSED(widget);
-  UNUSED(width);
+  UNUSED (widget);
+  UNUSED (width);
 
   return width;
 }
 
 
 void
-gtk_goban_update(GtkGoban *goban,
-		 const char grid[BOARD_GRID_SIZE],
-		 const char goban_markup[BOARD_GRID_SIZE],
-		 const char sgf_markup[BOARD_GRID_SIZE],
-		 const SgfLabelList *sgf_label_list,
-		 int last_move_x, int last_move_y)
+gtk_goban_update (GtkGoban *goban,
+		  const char grid[BOARD_GRID_SIZE],
+		  const char goban_markup[BOARD_GRID_SIZE],
+		  const char sgf_markup[BOARD_GRID_SIZE],
+		  const SgfLabelList *sgf_label_list,
+		  int last_move_x, int last_move_y)
 {
   GtkWidget *widget;
   gint width;
@@ -1245,10 +1321,10 @@ gtk_goban_update(GtkGoban *goban,
   int x;
   int y;
 
-  assert(GTK_IS_GOBAN(goban));
+  assert (GTK_IS_GOBAN (goban));
 
   for (k = NUM_OVERLAYS; --k >= 0;)
-    set_overlay_data(goban, k, NULL, TILE_NONE, TILE_NONE);
+    set_overlay_data (goban, k, NULL, TILE_NONE, TILE_NONE);
 
   if (!grid)
     grid = goban->grid;
@@ -1257,13 +1333,13 @@ gtk_goban_update(GtkGoban *goban,
   if (!sgf_markup)
     sgf_markup = goban->sgf_markup;
 
-  widget = GTK_WIDGET(goban);
+  widget = GTK_WIDGET (goban);
 
   width	    = goban->width;
   height    = goban->height;
   cell_size = goban->cell_size;
 
-  if (GTK_WIDGET_REALIZED(widget)) {
+  if (GTK_WIDGET_REALIZED (widget)) {
     GdkRectangle rectangle_stone;
     GdkRectangle rectangle_markup;
     GdkRectangle rectangle_sgf_markup;
@@ -1283,18 +1359,22 @@ gtk_goban_update(GtkGoban *goban,
     rectangle_sgf_markup.width	= goban->sgf_markup_tile_set->tile_size;
     rectangle_sgf_markup.height = goban->sgf_markup_tile_set->tile_size;
     rectangle_sgf_label.width	= cell_size - 2;
-    rectangle_sgf_label.height	= goban->character_height;
+
+    /* NOTE: Keep in sync with draw_vertical_line_with_gaps().  Or
+     *	     maybe define a macro.
+     */
+    rectangle_sgf_label.height	= 6 + (10 * goban->character_height) / 9;
 
     for (y = 0; y < height; y++) {
       for (x = 0; x < width; x++) {
-	int pos = POSITION(x, y);
+	int pos = POSITION (x, y);
 
 	if (goban->grid[pos] != grid[pos]
 	    || ((goban->goban_markup[pos] & GOBAN_MARKUP_FLAGS_MASK)
 		!= (goban_markup[pos] & GOBAN_MARKUP_FLAGS_MASK))) {
 	  rectangle_stone.x = goban->stones_left_margin + x * cell_size;
 	  rectangle_stone.y = goban->stones_top_margin + y * cell_size;
-	  gdk_window_invalidate_rect(widget->window, &rectangle_stone, FALSE);
+	  gdk_window_invalidate_rect (widget->window, &rectangle_stone, FALSE);
 
 	  goban->grid[pos]	   = grid[pos];
 	  goban->goban_markup[pos] = goban_markup[pos];
@@ -1305,8 +1385,8 @@ gtk_goban_update(GtkGoban *goban,
 				    + x * cell_size);
 	  rectangle_sgf_markup.y = (goban->sgf_markup_top_margin
 				    + y * cell_size);
-	  gdk_window_invalidate_rect(widget->window, &rectangle_sgf_markup,
-				     FALSE);
+	  gdk_window_invalidate_rect (widget->window, &rectangle_sgf_markup,
+				      FALSE);
 
 	  goban->goban_markup[pos] = goban_markup[pos];
 	  goban->sgf_markup[pos] = sgf_markup[pos];
@@ -1314,7 +1394,7 @@ gtk_goban_update(GtkGoban *goban,
 	else if (goban->goban_markup[pos] != goban_markup[pos]) {
 	  rectangle_markup.x = goban->small_stones_left_margin + x * cell_size;
 	  rectangle_markup.y = goban->small_stones_top_margin + y * cell_size;
-	  gdk_window_invalidate_rect(widget->window, &rectangle_markup, FALSE);
+	  gdk_window_invalidate_rect (widget->window, &rectangle_markup, FALSE);
 
 	  goban->goban_markup[pos] = goban_markup[pos];
 	}
@@ -1327,20 +1407,20 @@ gtk_goban_update(GtkGoban *goban,
 
 	  if (goban->sgf_labels[pos]
 	      ? (!label_text
-		 || strcmp(goban->sgf_labels[pos], label_text) != 0)
+		 || strcmp (goban->sgf_labels[pos], label_text) != 0)
 	      : label_text != NULL) {
 	    rectangle_sgf_label.x = (goban->first_cell_center_x
 				     - cell_size / 2
 				     + x * cell_size);
 	    rectangle_sgf_label.y = (goban->first_cell_center_y
-				     - goban->character_height / 2
+				     - rectangle_sgf_label.height / 2
 				     + y * cell_size);
-	    gdk_window_invalidate_rect(widget->window, &rectangle_sgf_label,
-				       FALSE);
+	    gdk_window_invalidate_rect (widget->window, &rectangle_sgf_label,
+					FALSE);
 
-	    g_free(goban->sgf_labels[pos]);
+	    g_free (goban->sgf_labels[pos]);
 	    goban->sgf_labels[pos] = (label_text
-				      ? g_strdup(label_text) : NULL);
+				      ? g_strdup (label_text) : NULL);
 	  }
 
 	  if (label_text)
@@ -1350,55 +1430,55 @@ gtk_goban_update(GtkGoban *goban,
     }
   }
   else {
-    grid_copy(goban->grid, grid, width, height);
-    grid_copy(goban->goban_markup, goban_markup, width, height);
-    grid_copy(goban->sgf_markup, sgf_markup, width, height);
+    grid_copy (goban->grid, grid, width, height);
+    grid_copy (goban->goban_markup, goban_markup, width, height);
+    grid_copy (goban->sgf_markup, sgf_markup, width, height);
 
     if (sgf_label_list != KEEP_SGF_LABELS) {
       for (y = 0; y < height; y++) {
 	for (x = 0; x < width; x++) {
-	  int pos = POSITION(x, y);
+	  int pos = POSITION (x, y);
 
-	  g_free(goban->sgf_labels[pos]);
+	  g_free (goban->sgf_labels[pos]);
 	  goban->sgf_labels[pos] = NULL;
 	}
       }
 
       if (sgf_label_list) {
 	for (k = 0; k < sgf_label_list->num_labels; k++) {
-	  int pos = POINT_TO_POSITION(sgf_label_list->labels[k].point);
+	  int pos = POINT_TO_POSITION (sgf_label_list->labels[k].point);
 
-	  goban->sgf_labels[pos] = g_strdup(sgf_label_list->labels[k].text);
+	  goban->sgf_labels[pos] = g_strdup (sgf_label_list->labels[k].text);
 	}
       }
     }
   }
 
   if (goban->last_move_x != last_move_x || goban->last_move_y != last_move_y) {
-    if (GTK_WIDGET_REALIZED(widget)) {
+    if (GTK_WIDGET_REALIZED (widget)) {
       GdkRectangle rectangle;
-      int pos = POSITION(last_move_x, last_move_y);
+      int pos = POSITION (last_move_x, last_move_y);
 
       rectangle.width = 7;
       rectangle.height = 7;
 
-      if (!IS_NULL_POINT(goban->last_move_x, goban->last_move_y)) {
+      if (!IS_NULL_POINT (goban->last_move_x, goban->last_move_y)) {
 	rectangle.x = (goban->first_cell_center_x
 		       + goban->last_move_x * cell_size - 3);
 	rectangle.y = (goban->first_cell_center_y
 		       + goban->last_move_y * cell_size - 3);
-	gdk_window_invalidate_rect(widget->window, &rectangle, FALSE);
+	gdk_window_invalidate_rect (widget->window, &rectangle, FALSE);
       }
 
-      if (ON_SIZED_GRID(width, height, last_move_x, last_move_y)
+      if (ON_SIZED_GRID (width, height, last_move_x, last_move_y)
 	  && goban->grid[pos] == grid[pos]) {
 	rectangle.x = goban->first_cell_center_x + last_move_x * cell_size - 3;
 	rectangle.y = goban->first_cell_center_y + last_move_y * cell_size - 3;
-	gdk_window_invalidate_rect(widget->window, &rectangle, FALSE);
+	gdk_window_invalidate_rect (widget->window, &rectangle, FALSE);
       }
     }
 
-    if (ON_SIZED_GRID(width, height, last_move_x, last_move_y)) {
+    if (ON_SIZED_GRID (width, height, last_move_x, last_move_y)) {
       goban->last_move_x = last_move_x;
       goban->last_move_y = last_move_y;
     }
@@ -1411,80 +1491,80 @@ gtk_goban_update(GtkGoban *goban,
 
 
 void
-gtk_goban_force_feedback_poll(GtkGoban *goban)
+gtk_goban_force_feedback_poll (GtkGoban *goban)
 {
-  emit_pointer_moved(goban, goban->pointer_x, goban->pointer_y,
-		     goban->modifiers);
+  emit_pointer_moved (goban, goban->pointer_x, goban->pointer_y,
+		      goban->modifiers);
 }
 
 
 void
-gtk_goban_set_overlay_data(GtkGoban *goban, int overlay_index,
-			   BoardPositionList *position_list,
-			   int tile, int goban_markup_tile)
+gtk_goban_set_overlay_data (GtkGoban *goban, int overlay_index,
+			    BoardPositionList *position_list,
+			    int tile, int goban_markup_tile)
 {
   const BoardPositionList *feedback_position_list
     = goban->overlay_positon_lists[FEEDBACK_OVERLAY];
   int need_feedback_poll
     = (position_list && feedback_position_list
-       && board_position_lists_overlap(feedback_position_list, position_list));
+       && board_position_lists_overlap (feedback_position_list, position_list));
 
-  assert(goban);
-  assert(0 <= overlay_index && overlay_index < NUM_OVERLAYS
-	 && overlay_index != FEEDBACK_OVERLAY);
-  assert((0 <= tile && tile < NUM_TILES) || tile == GOBAN_TILE_DONT_CHANGE);
-  assert((0 <= goban_markup_tile && goban_markup_tile < NUM_TILES)
-	 || goban_markup_tile == GOBAN_TILE_DONT_CHANGE);
-  assert(tile != GOBAN_TILE_DONT_CHANGE
-	 || goban_markup_tile != GOBAN_TILE_DONT_CHANGE);
+  assert (goban);
+  assert (0 <= overlay_index && overlay_index < NUM_OVERLAYS
+	  && overlay_index != FEEDBACK_OVERLAY);
+  assert ((0 <= tile && tile < NUM_TILES) || tile == GOBAN_TILE_DONT_CHANGE);
+  assert ((0 <= goban_markup_tile && goban_markup_tile < NUM_TILES)
+	  || goban_markup_tile == GOBAN_TILE_DONT_CHANGE);
+  assert (tile != GOBAN_TILE_DONT_CHANGE
+	  || goban_markup_tile != GOBAN_TILE_DONT_CHANGE);
 
   if (need_feedback_poll)
-    set_overlay_data(goban, FEEDBACK_OVERLAY, NULL, TILE_NONE, TILE_NONE);
+    set_overlay_data (goban, FEEDBACK_OVERLAY, NULL, TILE_NONE, TILE_NONE);
 
-  set_overlay_data(goban, overlay_index, position_list,
-		   tile, goban_markup_tile);
+  set_overlay_data (goban, overlay_index, position_list,
+		    tile, goban_markup_tile);
 
   if (need_feedback_poll) {
-    emit_pointer_moved(goban, goban->pointer_x, goban->pointer_y,
-		       goban->modifiers);
+    emit_pointer_moved (goban, goban->pointer_x, goban->pointer_y,
+			goban->modifiers);
   }
 }
 
 
 
 void
-gtk_goban_set_contents(GtkGoban *goban, BoardPositionList *position_list,
-		       int grid_contents, int goban_markup_contents)
+gtk_goban_set_contents (GtkGoban *goban, BoardPositionList *position_list,
+			int grid_contents, int goban_markup_contents)
 {
   int k;
 
-  assert(GTK_IS_GOBAN(goban));
-  assert(goban->game != GAME_DUMMY);
+  assert (GTK_IS_GOBAN (goban));
+  assert (goban->game != GAME_DUMMY);
 
   for (k = NUM_OVERLAYS; --k >= 0;)
-    set_overlay_data(goban, k, NULL, TILE_NONE, TILE_NONE);
+    set_overlay_data (goban, k, NULL, TILE_NONE, TILE_NONE);
 
-  set_overlay_data(goban, 0, position_list,
-		   grid_contents, goban_markup_contents);
+  set_overlay_data (goban, 0, position_list,
+		    grid_contents, goban_markup_contents);
   goban->overlay_positon_lists[0] = NULL;
 }
 
 
 int
-gtk_goban_get_grid_contents(GtkGoban *goban, int x, int y)
+gtk_goban_get_grid_contents (GtkGoban *goban, int x, int y)
 {
   int k;
-  int pos = POSITION(x, y);
+  int pos = POSITION (x, y);
 
-  assert(GTK_IS_GOBAN(goban));
-  assert(goban->game != GAME_DUMMY);
-  assert(ON_SIZED_GRID(goban->width, goban->height, x, y));
+  assert (GTK_IS_GOBAN (goban));
+  assert (goban->game != GAME_DUMMY);
+  assert (ON_SIZED_GRID (goban->width, goban->height, x, y));
 
   for (k = NUM_OVERLAYS; --k >= 0;) {
     if (goban->overlay_positon_lists[k]) {
       int position_index
-	= board_position_list_find_position(goban->overlay_positon_lists[k],
-					    pos);
+	= board_position_list_find_position (goban->overlay_positon_lists[k],
+					     pos);
 
       if (position_index != -1)
 	return goban->overlay_contents[k][position_index];
@@ -1497,8 +1577,8 @@ gtk_goban_get_grid_contents(GtkGoban *goban, int x, int y)
 
 void
 gtk_goban_diff_against_grid
-		(GtkGoban *goban, const char *grid,
-		 BoardPositionList *position_lists[NUM_ON_GRID_VALUES])
+  (GtkGoban *goban, const char *grid,
+   BoardPositionList *position_lists[NUM_ON_GRID_VALUES])
 {
   int k;
   int x;
@@ -1506,19 +1586,19 @@ gtk_goban_diff_against_grid
   int num_positions[NUM_ON_GRID_VALUES];
   int positions[NUM_ON_GRID_VALUES][BOARD_MAX_POSITIONS];
 
-  assert(GTK_IS_GOBAN(goban));
-  assert(grid);
+  assert (GTK_IS_GOBAN (goban));
+  assert (grid);
 
   for (k = 0; k < NUM_ON_GRID_VALUES; k++)
     num_positions[k] = 0;
 
   for (y = 0; y < goban->height; y++) {
     for (x = 0; x < goban->width; x++) {
-      int pos = POSITION(x, y);
+      int pos = POSITION (x, y);
       int contents = goban->grid[pos];
 
       if (contents != grid[pos]) {
-	assert(0 <= contents && contents < NUM_ON_GRID_VALUES);
+	assert (0 <= contents && contents < NUM_ON_GRID_VALUES);
 
 	positions[contents][num_positions[contents]++] = pos;
       }
@@ -1527,8 +1607,8 @@ gtk_goban_diff_against_grid
 
   for (k = 0; k < NUM_ON_GRID_VALUES; k++) {
     if (num_positions[k] > 0) {
-      position_lists[k] = board_position_list_new(positions[k],
-						  num_positions[k]);
+      position_lists[k] = board_position_list_new (positions[k],
+						   num_positions[k]);
     }
     else
       position_lists[k] = NULL;
@@ -1537,27 +1617,27 @@ gtk_goban_diff_against_grid
 
 
 void
-gtk_goban_update_appearance(Game game)
+gtk_goban_update_appearance (Game game)
 {
   GSList *item;
 
-  assert(game >= FIRST_GAME && GAME_IS_SUPPORTED(game));
+  assert (game >= FIRST_GAME && GAME_IS_SUPPORTED (game));
 
   for (item = all_gobans; item; item = item->next) {
     GtkGoban *goban = (GtkGoban *) (item->data);
 
     if (goban->game == game) {
-      set_goban_style_appearance(goban);
-      set_goban_non_style_appearance(goban);
+      set_goban_style_appearance (goban);
+      set_goban_non_style_appearance (goban);
     }
   }
 }
 
 
 static void
-emit_pointer_moved(GtkGoban *goban, int x, int y, GdkModifierType modifiers)
+emit_pointer_moved (GtkGoban *goban, int x, int y, GdkModifierType modifiers)
 {
-  if (ON_SIZED_GRID(goban->width, goban->height, x, y)
+  if (ON_SIZED_GRID (goban->width, goban->height, x, y)
       && (goban->button_pressed == 0 || goban->press_modifiers == modifiers)) {
     GtkGobanPointerData data;
     GtkGobanPointerFeedback feedback;
@@ -1571,33 +1651,33 @@ emit_pointer_moved(GtkGoban *goban, int x, int y, GdkModifierType modifiers)
     data.press_x		= goban->press_x;
     data.press_y		= goban->press_y;
 
-    g_signal_emit(G_OBJECT(goban), goban_signals[POINTER_MOVED], 0,
-		  &data, &feedback);
+    g_signal_emit (G_OBJECT (goban), goban_signals[POINTER_MOVED], 0,
+		   &data, &feedback);
 
-    assert(data.button
-	   || ((feedback & GOBAN_FEEDBACK_GRID_MASK)
-	       != GOBAN_FEEDBACK_PRESS_DEFAULT));
+    assert (data.button
+	    || ((feedback & GOBAN_FEEDBACK_GRID_MASK)
+		!= GOBAN_FEEDBACK_PRESS_DEFAULT));
 
     if (data.feedback_position_list)
-      set_feedback_data(goban, x, y, data.feedback_position_list, feedback);
+      set_feedback_data (goban, x, y, data.feedback_position_list, feedback);
     else {
-      int pos = POSITION(x, y);
+      int pos = POSITION (x, y);
 
-      set_feedback_data(goban, x, y, board_position_list_new(&pos, 1),
-			feedback);
+      set_feedback_data (goban, x, y, board_position_list_new (&pos, 1),
+			 feedback);
     }
   }
   else
-    set_feedback_data(goban, NULL_X, NULL_Y, NULL, GOBAN_FEEDBACK_NONE);
+    set_feedback_data (goban, NULL_X, NULL_Y, NULL, GOBAN_FEEDBACK_NONE);
 
   goban->modifiers = modifiers;
 }
 
 
 static void
-set_feedback_data(GtkGoban *goban,
-		  int x, int y, BoardPositionList *position_list,
-		  GtkGobanPointerFeedback feedback)
+set_feedback_data (GtkGoban *goban,
+		   int x, int y, BoardPositionList *position_list,
+		   GtkGobanPointerFeedback feedback)
 {
   int feedback_grid = feedback & GOBAN_FEEDBACK_GRID_MASK;
   int feedback_goban_markup = feedback / GOBAN_FEEDBACK_MARKUP_FACTOR;
@@ -1656,9 +1736,9 @@ set_feedback_data(GtkGoban *goban,
     {
       int color_index = feedback_grid - GOBAN_FEEDBACK_MOVE;
 
-      assert(position_list->num_positions == 1);
+      assert (position_list->num_positions == 1);
 
-      if (COLOR_INDEX(goban->grid[POSITION(x, y)]) != color_index)
+      if (COLOR_INDEX (goban->grid[POSITION (x, y)]) != color_index)
 	feedback_tile = STONE_50_TRANSPARENT + color_index;
       else
 	feedback_tile = STONE_25_TRANSPARENT + color_index;
@@ -1669,14 +1749,14 @@ set_feedback_data(GtkGoban *goban,
   case GOBAN_FEEDBACK_ADD_BLACK_OR_REMOVE:
   case GOBAN_FEEDBACK_ADD_WHITE_OR_REMOVE:
     {
-      int contents = gtk_goban_get_grid_contents(goban, x, y);
+      int contents = gtk_goban_get_grid_contents (goban, x, y);
 
       if (contents == EMPTY) {
 	feedback_tile = (STONE_50_TRANSPARENT
 			 + (feedback_grid - GOBAN_FEEDBACK_ADD_OR_REMOVE));
       }
-      else if (IS_STONE(contents))
-	feedback_tile = STONE_25_TRANSPARENT + COLOR_INDEX(contents);
+      else if (IS_STONE (contents))
+	feedback_tile = STONE_25_TRANSPARENT + COLOR_INDEX (contents);
       else
 	feedback_tile = GOBAN_TILE_DONT_CHANGE;
     }
@@ -1723,14 +1803,14 @@ set_feedback_data(GtkGoban *goban,
 
   if (feedback_tile != GOBAN_TILE_DONT_CHANGE
       || goban_markup_feedback_tile != GOBAN_TILE_DONT_CHANGE) {
-    set_overlay_data(goban, FEEDBACK_OVERLAY,
-		     position_list, feedback_tile, goban_markup_feedback_tile);
+    set_overlay_data (goban, FEEDBACK_OVERLAY,
+		      position_list, feedback_tile, goban_markup_feedback_tile);
   }
   else {
     if (position_list)
-      board_position_list_delete(position_list);
+      board_position_list_delete (position_list);
 
-    set_overlay_data(goban, FEEDBACK_OVERLAY, NULL, TILE_NONE, TILE_NONE);
+    set_overlay_data (goban, FEEDBACK_OVERLAY, NULL, TILE_NONE, TILE_NONE);
   }
 
   goban->pointer_x     = x;
@@ -1740,11 +1820,11 @@ set_feedback_data(GtkGoban *goban,
 
 
 static void
-set_overlay_data(GtkGoban *goban, int overlay_index,
-		 BoardPositionList *position_list,
-		 int tile, int goban_markup_tile)
+set_overlay_data (GtkGoban *goban, int overlay_index,
+		  BoardPositionList *position_list,
+		  int tile, int goban_markup_tile)
 {
-  GtkWidget *widget = GTK_WIDGET(goban);
+  GtkWidget *widget = GTK_WIDGET (goban);
   BoardPositionList *old_position_list
     = goban->overlay_positon_lists[overlay_index];
   int num_new_positions = (position_list ? position_list->num_positions : -1);
@@ -1759,7 +1839,7 @@ set_overlay_data(GtkGoban *goban, int overlay_index,
   if (position_list == NULL && old_position_list == NULL)
     return;
 
-  if (GTK_WIDGET_REALIZED(widget)) {
+  if (GTK_WIDGET_REALIZED (widget)) {
     int cell_size = goban->cell_size;
     GdkRectangle rectangle_stone;
     GdkRectangle rectangle_markup;
@@ -1816,20 +1896,20 @@ set_overlay_data(GtkGoban *goban, int overlay_index,
       }
 
       if (new_tile != grid[pos] || new_goban_markup_tile != goban_markup[pos]) {
-	int x = POSITION_X(pos);
-	int y = POSITION_Y(pos);
+	int x = POSITION_X (pos);
+	int y = POSITION_Y (pos);
 
 	if (new_tile != grid[pos]
 	    || (new_goban_markup_tile & GOBAN_MARKUP_FLAGS_MASK)
 	    || (goban_markup[pos] & GOBAN_MARKUP_FLAGS_MASK)) {
 	  rectangle_stone.x = goban->stones_left_margin + x * cell_size;
 	  rectangle_stone.y = goban->stones_top_margin + y * cell_size;
-	  gdk_window_invalidate_rect(widget->window, &rectangle_stone, FALSE);
+	  gdk_window_invalidate_rect (widget->window, &rectangle_stone, FALSE);
 	}
 	else {
 	  rectangle_markup.x = goban->small_stones_left_margin + x * cell_size;
 	  rectangle_markup.y = goban->small_stones_top_margin + y * cell_size;
-	  gdk_window_invalidate_rect(widget->window, &rectangle_markup, FALSE);
+	  gdk_window_invalidate_rect (widget->window, &rectangle_markup, FALSE);
 	}
       }
     }
@@ -1842,14 +1922,14 @@ set_overlay_data(GtkGoban *goban, int overlay_index,
 	= old_overlay_contents[num_old_positions + j];
     }
 
-    board_position_list_delete(old_position_list);
-    g_free(old_overlay_contents);
+    board_position_list_delete (old_position_list);
+    g_free (old_overlay_contents);
   }
 
   goban->overlay_positon_lists[overlay_index] = position_list;
   if (position_list) {
-    goban->overlay_contents[overlay_index] = g_malloc((2 * num_new_positions)
-						      * sizeof(char));
+    goban->overlay_contents[overlay_index] = g_malloc ((2 * num_new_positions)
+						       * sizeof (char));
 
     for (i = 0; i < num_new_positions; i++) {
       int pos = position_list->positions[i];
@@ -1868,69 +1948,8 @@ set_overlay_data(GtkGoban *goban, int overlay_index,
 
 
 static void
-find_hoshi_points(GtkGoban *goban)
-{
-  int edge_distance_x = (goban->width > 11 ? 3 : 2);
-  int edge_distance_y = (goban->height > 11 ? 3 : 2);
-
-  if (goban->game != GAME_GO
-      || goban->width < 5 || goban->width == 6
-      || goban->height < 5 || goban->height == 6)
-    goban->num_hoshi_points = 0;
-  else {
-    int k;
-    int num_points;
-    int point_x[9];
-    int point_y[9];
-
-    point_x[0] = edge_distance_x;
-    point_y[0] = edge_distance_y;
-
-    point_x[1] = goban->width - 1 - edge_distance_x;
-    point_y[1] = edge_distance_y;
-
-    point_x[2] = edge_distance_x;
-    point_y[2] = goban->height - 1 - edge_distance_y;
-
-    point_x[3] = goban->width - 1 - edge_distance_x;
-    point_y[3] = goban->height - 1 - edge_distance_y;
-
-    if (goban->width % 2 == 1 && goban->height % 2 == 1) {
-      point_x[4] = goban->width / 2;
-      point_y[4] = goban->height / 2;
-      num_points = 5;
-    }
-    else
-      num_points = 4;
-
-    if (goban->width % 2 == 1 && goban->width >= 13) {
-      point_x[num_points] = goban->width / 2;
-      point_y[num_points++] = edge_distance_y;
-
-      point_x[num_points] = goban->width / 2;
-      point_y[num_points++] = goban->height - 1 - edge_distance_y;
-    }
-
-    if (goban->height % 2 == 1 && goban->height >= 13) {
-      point_x[num_points] = edge_distance_x;
-      point_y[num_points++] = goban->height / 2;
-
-      point_x[num_points] = goban->width - 1 - edge_distance_x;
-      point_y[num_points++] = goban->height / 2;
-    }
-
-    goban->num_hoshi_points = num_points;
-    for (k = 0; k < num_points; k++) {
-      goban->hoshi_point_x[k] = point_x[k] * goban->cell_size;
-      goban->hoshi_point_y[k] = point_y[k] * goban->cell_size;
-    }
-  }
-}
-
-
-static void
-widget_coordinates_to_board(GtkGoban *goban, int window_x, int window_y,
-			    int *board_x, int *board_y)
+widget_coordinates_to_board (GtkGoban *goban, int window_x, int window_y,
+			     int *board_x, int *board_y)
 {
   window_x -= goban->first_cell_center_x - goban->cell_size / 2;
   window_y -= goban->first_cell_center_y - goban->cell_size / 2;
