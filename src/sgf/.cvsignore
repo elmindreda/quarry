@@ -1,6 +1,7 @@
 .deps
 Makefile
 parse-sgf-list
+sgf-diff
 sgf-errors.c
 sgf-errors.h
 sgf-properties.c
