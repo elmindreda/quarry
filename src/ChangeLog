@@ -1,3 +1,35 @@
+2005-01-18  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* gui-gtk/gtk-goban-window.c (leave_game_mode): New function.
+	(do_resign_game): Call leave_game_mode().
+	(move_has_been_played): Call time_control_*() functions itself,
+	GtkClock doesn't do it anymore.  Call leave_game_mode() if the
+	move is too late or if the game ends normally.
+	(move_has_been_generated): Ignore move when not in game mode.
+	(start_clock_if_needed): Call time_control_start().
+	(player_is_out_of_time): New function.
+
+	* gui-gtk/gtk-clock.c (gtk_clock_init): Initialize all fields.
+	(gtk_clock_realize): Call set_background_pixmap().
+	(set_background_pixmap): New function.
+	(gtk_clock_finalize): Don't assume that GLib event source exists
+	if `time_control' is set.
+	(gtk_clock_start, gtk_clock_stop)
+	(gtk_clock_initialize_for_time_control, clock_set_time): Remove
+	functions.
+	(gtk_clock_set_time, gtk_clock_use_time_control)
+	(gtk_clock_time_control_state_changed)
+	(fetch_time_from_time_control, do_set_time, ensure_clock_size)
+	(clock_tick_callback):New functions, partially inherit removed
+	code.
+	(time_control_watch_prepare, time_control_watch_check)
+	(time_control_watch_dispatch)
+	(time_control_watch_source_set_tick_time): New functions.
+
+	* gui-utils/time-control.c
+	(time_control_get_time_till_seconds_update)
+	(time_control_is_short_on_time): New functions.
+
 2005-01-17  Paul Pogonyshev  <pogonyshev@gmx.net>
 
 	* gui-gtk/gtk-goban-window.c (gtk_goban_window_save): Don't show
