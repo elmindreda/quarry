@@ -944,9 +944,9 @@ begin_game (GtkEnginesInstantiationStatus status, gpointer user_data)
       overtime_length	   = (time_control_configuration
 			      ->overtime_period_length);
       moves_per_overtime   = time_control_configuration->moves_per_overtime;
-      overtime_description = utils_cprintf ("%d/%.f Canadian",
-					    overtime_length,
-					    moves_per_overtime);
+      overtime_description = utils_cprintf ("%d/%d Canadian",
+					    moves_per_overtime,
+					    (int) overtime_length);
 
       break;
 
