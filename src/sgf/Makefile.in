@@ -45,6 +45,8 @@ AUTOCONF = @AUTOCONF@
 AUTOHEADER = @AUTOHEADER@
 AUTOMAKE = @AUTOMAKE@
 AWK = @AWK@
+BUILD_SGF_UTILS_FALSE = @BUILD_SGF_UTILS_FALSE@
+BUILD_SGF_UTILS_TRUE = @BUILD_SGF_UTILS_TRUE@
 CC = @CC@
 CCDEPMODE = @CCDEPMODE@
 CFLAGS = @CFLAGS@
@@ -136,6 +138,7 @@ BUILT_SOURCES = \
 
 
 libsgf_a_SOURCES = \
+	sgf-diff-utils.c	\
 	sgf-parser.c		\
 	sgf-tree.c		\
 	sgf-utils.c		\
@@ -158,7 +161,22 @@ parse_sgf_list_LDADD = \
 	$(top_srcdir)/src/utils/libutils.a
 
 
-EXTRA_PROGRAMS = sgf-test
+# `sgf-diff' can be made optional with `configure'.
+EXTRA_PROGRAMS = \
+	sgf-diff	\
+	sgf-test
+
+@BUILD_SGF_UTILS_FALSE@bin_PROGRAMS = 
+
+@BUILD_SGF_UTILS_TRUE@bin_PROGRAMS = sgf-diff
+
+sgf_diff_SOURCES = sgf-diff.c
+
+sgf_diff_LDADD = \
+	libsgf.a				\
+	$(top_srcdir)/src/board/libboard.a	\
+	$(top_srcdir)/src/utils/libutils.a
+
 
 sgf_test_SOURCES = sgf-test.c
 
@@ -186,20 +204,27 @@ LIBRARIES = $(noinst_LIBRARIES)
 
 libsgf_a_AR = $(AR) cru
 libsgf_a_LIBADD =
-am_libsgf_a_OBJECTS = sgf-parser.$(OBJEXT) sgf-tree.$(OBJEXT) \
-	sgf-utils.$(OBJEXT) sgf-writer.$(OBJEXT)
+am_libsgf_a_OBJECTS = sgf-diff-utils.$(OBJEXT) sgf-parser.$(OBJEXT) \
+	sgf-tree.$(OBJEXT) sgf-utils.$(OBJEXT) sgf-writer.$(OBJEXT)
 am__objects_1 = sgf-errors.$(OBJEXT) sgf-properties.$(OBJEXT)
 nodist_libsgf_a_OBJECTS = $(am__objects_1)
 libsgf_a_OBJECTS = $(am_libsgf_a_OBJECTS) $(nodist_libsgf_a_OBJECTS)
-EXTRA_PROGRAMS = sgf-test$(EXEEXT)
+EXTRA_PROGRAMS = sgf-diff$(EXEEXT) sgf-test$(EXEEXT)
+@BUILD_SGF_UTILS_TRUE@bin_PROGRAMS = sgf-diff$(EXEEXT)
+@BUILD_SGF_UTILS_FALSE@bin_PROGRAMS =
 noinst_PROGRAMS = parse-sgf-list$(EXEEXT)
-PROGRAMS = $(noinst_PROGRAMS)
+PROGRAMS = $(bin_PROGRAMS) $(noinst_PROGRAMS)
 
 am_parse_sgf_list_OBJECTS = parse-sgf-list.$(OBJEXT)
 parse_sgf_list_OBJECTS = $(am_parse_sgf_list_OBJECTS)
 parse_sgf_list_DEPENDENCIES = $(top_srcdir)/src/utils/libparselist.a \
 	$(top_srcdir)/src/utils/libutils.a
 parse_sgf_list_LDFLAGS =
+am_sgf_diff_OBJECTS = sgf-diff.$(OBJEXT)
+sgf_diff_OBJECTS = $(am_sgf_diff_OBJECTS)
+sgf_diff_DEPENDENCIES = libsgf.a $(top_srcdir)/src/board/libboard.a \
+	$(top_srcdir)/src/utils/libutils.a
+sgf_diff_LDFLAGS =
 am_sgf_test_OBJECTS = sgf-test.$(OBJEXT)
 sgf_test_OBJECTS = $(am_sgf_test_OBJECTS)
 sgf_test_DEPENDENCIES = libsgf.a $(top_srcdir)/src/board/libboard.a \
@@ -210,7 +235,9 @@ DEFAULT_INCLUDES =  -I. -I$(srcdir) -I$(top_builddir)
 depcomp = $(SHELL) $(top_srcdir)/depcomp
 am__depfiles_maybe = depfiles
 @AMDEP_TRUE@DEP_FILES = ./$(DEPDIR)/parse-sgf-list.Po \
-@AMDEP_TRUE@	./$(DEPDIR)/sgf-errors.Po ./$(DEPDIR)/sgf-parser.Po \
+@AMDEP_TRUE@	./$(DEPDIR)/sgf-diff-utils.Po \
+@AMDEP_TRUE@	./$(DEPDIR)/sgf-diff.Po ./$(DEPDIR)/sgf-errors.Po \
+@AMDEP_TRUE@	./$(DEPDIR)/sgf-parser.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/sgf-properties.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/sgf-test.Po ./$(DEPDIR)/sgf-tree.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/sgf-utils.Po ./$(DEPDIR)/sgf-writer.Po
@@ -219,9 +246,9 @@ COMPILE = $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) \
 CCLD = $(CC)
 LINK = $(CCLD) $(AM_CFLAGS) $(CFLAGS) $(AM_LDFLAGS) $(LDFLAGS) -o $@
 DIST_SOURCES = $(libsgf_a_SOURCES) $(parse_sgf_list_SOURCES) \
-	$(sgf_test_SOURCES)
+	$(sgf_diff_SOURCES) $(sgf_test_SOURCES)
 DIST_COMMON = Makefile.am Makefile.in
-SOURCES = $(libsgf_a_SOURCES) $(nodist_libsgf_a_SOURCES) $(parse_sgf_list_SOURCES) $(sgf_test_SOURCES)
+SOURCES = $(libsgf_a_SOURCES) $(nodist_libsgf_a_SOURCES) $(parse_sgf_list_SOURCES) $(sgf_diff_SOURCES) $(sgf_test_SOURCES)
 
 all: $(BUILT_SOURCES)
 	$(MAKE) $(AM_MAKEFLAGS) all-am
@@ -242,12 +269,39 @@ libsgf.a: $(libsgf_a_OBJECTS) $(libsgf_a_DEPENDENCIES)
 	-rm -f libsgf.a
 	$(libsgf_a_AR) libsgf.a $(libsgf_a_OBJECTS) $(libsgf_a_LIBADD)
 	$(RANLIB) libsgf.a
+binPROGRAMS_INSTALL = $(INSTALL_PROGRAM)
+install-binPROGRAMS: $(bin_PROGRAMS)
+	@$(NORMAL_INSTALL)
+	$(mkinstalldirs) $(DESTDIR)$(bindir)
+	@list='$(bin_PROGRAMS)'; for p in $$list; do \
+	  p1=`echo $$p|sed 's/$(EXEEXT)$$//'`; \
+	  if test -f $$p \
+	  ; then \
+	    f=`echo "$$p1" | sed 's,^.*/,,;$(transform);s/$$/$(EXEEXT)/'`; \
+	   echo " $(INSTALL_PROGRAM_ENV) $(binPROGRAMS_INSTALL) $$p $(DESTDIR)$(bindir)/$$f"; \
+	   $(INSTALL_PROGRAM_ENV) $(binPROGRAMS_INSTALL) $$p $(DESTDIR)$(bindir)/$$f || exit 1; \
+	  else :; fi; \
+	done
+
+uninstall-binPROGRAMS:
+	@$(NORMAL_UNINSTALL)
+	@list='$(bin_PROGRAMS)'; for p in $$list; do \
+	  f=`echo "$$p" | sed 's,^.*/,,;s/$(EXEEXT)$$//;$(transform);s/$$/$(EXEEXT)/'`; \
+	  echo " rm -f $(DESTDIR)$(bindir)/$$f"; \
+	  rm -f $(DESTDIR)$(bindir)/$$f; \
+	done
+
+clean-binPROGRAMS:
+	-test -z "$(bin_PROGRAMS)" || rm -f $(bin_PROGRAMS)
 
 clean-noinstPROGRAMS:
 	-test -z "$(noinst_PROGRAMS)" || rm -f $(noinst_PROGRAMS)
 parse-sgf-list$(EXEEXT): $(parse_sgf_list_OBJECTS) $(parse_sgf_list_DEPENDENCIES) 
 	@rm -f parse-sgf-list$(EXEEXT)
 	$(LINK) $(parse_sgf_list_LDFLAGS) $(parse_sgf_list_OBJECTS) $(parse_sgf_list_LDADD) $(LIBS)
+sgf-diff$(EXEEXT): $(sgf_diff_OBJECTS) $(sgf_diff_DEPENDENCIES) 
+	@rm -f sgf-diff$(EXEEXT)
+	$(LINK) $(sgf_diff_LDFLAGS) $(sgf_diff_OBJECTS) $(sgf_diff_LDADD) $(LIBS)
 sgf-test$(EXEEXT): $(sgf_test_OBJECTS) $(sgf_test_DEPENDENCIES) 
 	@rm -f sgf-test$(EXEEXT)
 	$(LINK) $(sgf_test_LDFLAGS) $(sgf_test_OBJECTS) $(sgf_test_LDADD) $(LIBS)
@@ -259,6 +313,8 @@ distclean-compile:
 	-rm -f *.tab.c
 
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/parse-sgf-list.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sgf-diff-utils.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sgf-diff.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sgf-errors.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sgf-parser.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sgf-properties.Po@am__quote@
@@ -381,6 +437,7 @@ check: check-am
 all-am: Makefile $(LIBRARIES) $(PROGRAMS)
 
 installdirs:
+	$(mkinstalldirs) $(DESTDIR)$(bindir)
 
 install: install-am
 install-exec: install-exec-am
@@ -411,8 +468,8 @@ maintainer-clean-generic:
 	-test -z "$(BUILT_SOURCES)" || rm -f $(BUILT_SOURCES)
 clean: clean-am
 
-clean-am: clean-generic clean-noinstLIBRARIES clean-noinstPROGRAMS \
-	mostlyclean-am
+clean-am: clean-binPROGRAMS clean-generic clean-noinstLIBRARIES \
+	clean-noinstPROGRAMS mostlyclean-am
 
 distclean: distclean-am
 
@@ -429,7 +486,7 @@ info-am:
 
 install-data-am:
 
-install-exec-am:
+install-exec-am: install-binPROGRAMS
 
 install-info: install-info-am
 
@@ -453,18 +510,19 @@ ps: ps-am
 
 ps-am:
 
-uninstall-am: uninstall-info-am
+uninstall-am: uninstall-binPROGRAMS uninstall-info-am
 
-.PHONY: CTAGS GTAGS all all-am check check-am clean clean-generic \
-	clean-noinstLIBRARIES clean-noinstPROGRAMS ctags distclean \
-	distclean-compile distclean-depend distclean-generic \
+.PHONY: CTAGS GTAGS all all-am check check-am clean clean-binPROGRAMS \
+	clean-generic clean-noinstLIBRARIES clean-noinstPROGRAMS ctags \
+	distclean distclean-compile distclean-depend distclean-generic \
 	distclean-tags distdir dvi dvi-am info info-am install \
-	install-am install-data install-data-am install-exec \
-	install-exec-am install-info install-info-am install-man \
-	install-strip installcheck installcheck-am installdirs \
-	maintainer-clean maintainer-clean-generic mostlyclean \
-	mostlyclean-compile mostlyclean-generic pdf pdf-am ps ps-am \
-	tags uninstall uninstall-am uninstall-info-am
+	install-am install-binPROGRAMS install-data install-data-am \
+	install-exec install-exec-am install-info install-info-am \
+	install-man install-strip installcheck installcheck-am \
+	installdirs maintainer-clean maintainer-clean-generic \
+	mostlyclean mostlyclean-compile mostlyclean-generic pdf pdf-am \
+	ps ps-am tags uninstall uninstall-am uninstall-binPROGRAMS \
+	uninstall-info-am
 
 
 sgf-errors.c sgf-errors.h : sgf-errors.list parse-sgf-list$(EXEEXT)
