@@ -11,15 +11,11 @@ noinst_LIBRARIES = libboard.a
 
 LIST_FILES = games.list
 
-LIST_STAMP_FILES = games.stamp
-
-LIST_GENERATED_FILES =	\
-	games.c		\
-			\
-	games.h
-
 PARSE_LIST_COMMAND = ./parse-game-list$(EXEEXT)
 PARSE_LIST_FLAGS   =
+
+# Avoid problems with parallel builds.
+games.c: games.h
 
 include $(top_srcdir)/aux/list.make
 

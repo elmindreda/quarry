@@ -17,15 +17,11 @@ noinst_LIBRARIES = libguiutils.a
 
 LIST_FILES = markup-theme-configuration.list
 
-LIST_STAMP_FILES = markup-theme-configuration.stamp
-
-LIST_GENERATED_FILES =			\
-	markup-theme-configuration.c	\
-					\
-	markup-theme-configuration.h
-
 PARSE_LIST_COMMAND = ./parse-configuration$(EXEEXT)
 PARSE_LIST_FLAGS   =
+
+# Avoid problems with parallel builds.
+markup-theme-configuration.c: markup-theme-configuration.h
 
 include $(top_srcdir)/aux/list.make
 

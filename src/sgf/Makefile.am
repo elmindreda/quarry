@@ -15,19 +15,14 @@ LIST_FILES =			\
 	sgf-errors.list		\
 	sgf-properties.list
 
-LIST_STAMP_FILES =		\
-	sgf-errors.stamp	\
-	sgf-properties.stamp
-
-LIST_GENERATED_FILES =		\
-	sgf-errors.c		\
-	sgf-properties.c	\
-				\
-	sgf-errors.h		\
-	sgf-properties.h
-
 PARSE_LIST_COMMAND = ./parse-sgf-list$(EXEEXT)
 PARSE_LIST_FLAGS   =
+
+# Avoid problems with parallel builds.
+
+sgf-errors.c: sgf-errors.h
+
+sgf-properties.c: sgf-properties.h
 
 include $(top_srcdir)/aux/list.make
 

@@ -157,23 +157,25 @@ noinst_LIBRARIES = libboard.a
 
 LIST_FILES = games.list
 
-LIST_STAMP_FILES = games.stamp
-
-LIST_GENERATED_FILES = \
-	games.c		\
-			\
-	games.h
-
-
 PARSE_LIST_COMMAND = ./parse-game-list$(EXEEXT)
 PARSE_LIST_FLAGS = 
-SUFFIXES = .list
+SUFFIXES = .list .h
+
+# `LIST_FILES' must be set by the includer.  The includer can use
+# `LIST_STAMP_FILES' and `LIST_GENERATED_FILES' and assume they are
+# set just as here.
+#
+LIST_STAMP_FILES = $(LIST_FILES:.list=.stamp)
+LIST_GENERATED_FILES = $(LIST_FILES:.list=.c) $(LIST_FILES:.list=.h)
 
 # `PARSE_LIST_COMMAND' and `PARSE_LIST_FLAGS' should be set by the
 # includer.
 #
 PARSE_LIST = $(PARSE_LIST_COMMAND) $(PARSE_LIST_FLAGS)
 
+# We use `cmp' here to avoid unneeded recompilations of files that
+# depend on generated ones (only really useful for `.h' files.)
+#
 PARSE_LIST_BUILD_RULE = \
 	if $(PARSE_LIST) `test -f '$<' || echo '$(srcdir)/'`$<	\
 			 $*.h.new $*.c.new; then		\
@@ -238,7 +240,8 @@ am__objects_1 =
 am_libboard_a_OBJECTS = amazons.$(OBJEXT) board.$(OBJEXT) go.$(OBJEXT) \
 	othello.$(OBJEXT) $(am__objects_1)
 am__objects_2 = games.$(OBJEXT)
-nodist_libboard_a_OBJECTS = $(am__objects_2)
+am__objects_3 = $(am__objects_2) $(am__objects_1)
+nodist_libboard_a_OBJECTS = $(am__objects_3)
 libboard_a_OBJECTS = $(am_libboard_a_OBJECTS) \
 	$(nodist_libboard_a_OBJECTS)
 noinst_PROGRAMS = parse-game-list$(EXEEXT)
@@ -270,7 +273,7 @@ all: $(BUILT_SOURCES)
 	$(MAKE) $(AM_MAKEFLAGS) all-am
 
 .SUFFIXES:
-.SUFFIXES: .list .c .o .obj .stamp
+.SUFFIXES: .list .h .c .o .obj .stamp
 $(srcdir)/Makefile.in: @MAINTAINER_MODE_TRUE@ Makefile.am $(top_srcdir)/aux/list.make $(top_srcdir)/configure.ac $(ACLOCAL_M4)
 	cd $(top_srcdir) && \
 	  $(AUTOMAKE) --foreign  src/board/Makefile
@@ -508,19 +511,20 @@ uninstall-am: uninstall-info-am
 	uninstall-am uninstall-info-am
 
 
+# Avoid problems with parallel builds.
+games.c: games.h
+
+# Make everything depend on the `Makefile' and the list parser.
 $(LIST_STAMP_FILES) : Makefile $(PARSE_LIST_COMMAND)
 
-# We use `cmp' here to avoid unneeded recompilations of files that
-# depend on generated ones (only really useful for `.h' files.)
-#
 .list.stamp:
 	$(PARSE_LIST_BUILD_RULE)
 
-# Since these don't (at least shouldn't) have any dependencies, if
-# this rule is being executed, it probably means that one of the
-# files was removed.  Then all we can do is to force rebuilding of
-# corresponding stamp file, which builds the required sources
-# ``by side-effect.''
+# Since $(LIST_GENERATED_FILES) defined by the includer don't (at
+# least shouldn't) have any dependencies, if this rule is being
+# executed, it probably means that one of the files was removed.
+# Then all we can do is to force rebuilding of corresponding stamp
+# file, which builds the required sources ``by side-effect.''
 #
 $(LIST_GENERATED_FILES):
 	rm -f $*.stamp;

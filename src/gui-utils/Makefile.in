@@ -163,17 +163,16 @@ noinst_LIBRARIES = libguiutils.a
 
 LIST_FILES = markup-theme-configuration.list
 
-LIST_STAMP_FILES = markup-theme-configuration.stamp
-
-LIST_GENERATED_FILES = \
-	markup-theme-configuration.c	\
-					\
-	markup-theme-configuration.h
-
-
 PARSE_LIST_COMMAND = ./parse-configuration$(EXEEXT)
 PARSE_LIST_FLAGS = 
-SUFFIXES = .list
+SUFFIXES = .list .h
+
+# `LIST_FILES' must be set by the includer.  The includer can use
+# `LIST_STAMP_FILES' and `LIST_GENERATED_FILES' and assume they are
+# set just as here.
+#
+LIST_STAMP_FILES = $(LIST_FILES:.list=.stamp)
+LIST_GENERATED_FILES = $(LIST_FILES:.list=.c) $(LIST_FILES:.list=.h)
 
 # `PARSE_LIST_COMMAND' and `PARSE_LIST_FLAGS' should be set by the
 # includer.
@@ -251,7 +250,8 @@ am__objects_1 =
 am_libguiutils_a_OBJECTS = configuration.$(OBJEXT) gui-utils.$(OBJEXT) \
 	tile-renderer.$(OBJEXT) time-control.$(OBJEXT) $(am__objects_1)
 am__objects_2 = markup-theme-configuration.$(OBJEXT)
-nodist_libguiutils_a_OBJECTS = $(am__objects_2)
+am__objects_3 = $(am__objects_2) $(am__objects_1)
+nodist_libguiutils_a_OBJECTS = $(am__objects_3)
 libguiutils_a_OBJECTS = $(am_libguiutils_a_OBJECTS) \
 	$(nodist_libguiutils_a_OBJECTS)
 noinst_PROGRAMS = parse-configuration$(EXEEXT)
@@ -286,7 +286,7 @@ all: $(BUILT_SOURCES)
 	$(MAKE) $(AM_MAKEFLAGS) all-am
 
 .SUFFIXES:
-.SUFFIXES: .list .c .o .obj .stamp
+.SUFFIXES: .list .h .c .o .obj .stamp
 $(srcdir)/Makefile.in: @MAINTAINER_MODE_TRUE@ Makefile.am $(top_srcdir)/aux/list.make $(top_srcdir)/configure.ac $(ACLOCAL_M4)
 	cd $(top_srcdir) && \
 	  $(AUTOMAKE) --foreign  src/gui-utils/Makefile
@@ -524,6 +524,10 @@ uninstall-am: uninstall-info-am
 	uninstall-am uninstall-info-am
 
 
+# Avoid problems with parallel builds.
+markup-theme-configuration.c: markup-theme-configuration.h
+
+# Make everything depend on the `Makefile' and the list parser.
 $(LIST_STAMP_FILES) : Makefile $(PARSE_LIST_COMMAND)
 
 .list.stamp:

@@ -162,28 +162,25 @@ LIST_FILES = \
 	sgf-properties.list
 
 
-LIST_STAMP_FILES = \
-	sgf-errors.stamp	\
-	sgf-properties.stamp
-
-
-LIST_GENERATED_FILES = \
-	sgf-errors.c		\
-	sgf-properties.c	\
-				\
-	sgf-errors.h		\
-	sgf-properties.h
-
-
 PARSE_LIST_COMMAND = ./parse-sgf-list$(EXEEXT)
 PARSE_LIST_FLAGS = 
-SUFFIXES = .list
+SUFFIXES = .list .h
+
+# `LIST_FILES' must be set by the includer.  The includer can use
+# `LIST_STAMP_FILES' and `LIST_GENERATED_FILES' and assume they are
+# set just as here.
+#
+LIST_STAMP_FILES = $(LIST_FILES:.list=.stamp)
+LIST_GENERATED_FILES = $(LIST_FILES:.list=.c) $(LIST_FILES:.list=.h)
 
 # `PARSE_LIST_COMMAND' and `PARSE_LIST_FLAGS' should be set by the
 # includer.
 #
 PARSE_LIST = $(PARSE_LIST_COMMAND) $(PARSE_LIST_FLAGS)
 
+# We use `cmp' here to avoid unneeded recompilations of files that
+# depend on generated ones (only really useful for `.h' files.)
+#
 PARSE_LIST_BUILD_RULE = \
 	if $(PARSE_LIST) `test -f '$<' || echo '$(srcdir)/'`$<	\
 			 $*.h.new $*.c.new; then		\
@@ -275,7 +272,8 @@ am_libsgf_a_OBJECTS = sgf-diff-utils.$(OBJEXT) sgf-parser.$(OBJEXT) \
 	sgf-tree.$(OBJEXT) sgf-tree-map.$(OBJEXT) sgf-utils.$(OBJEXT) \
 	sgf-writer.$(OBJEXT) $(am__objects_1)
 am__objects_2 = sgf-errors.$(OBJEXT) sgf-properties.$(OBJEXT)
-nodist_libsgf_a_OBJECTS = $(am__objects_2)
+am__objects_3 = $(am__objects_2) $(am__objects_1)
+nodist_libsgf_a_OBJECTS = $(am__objects_3)
 libsgf_a_OBJECTS = $(am_libsgf_a_OBJECTS) $(nodist_libsgf_a_OBJECTS)
 EXTRA_PROGRAMS = sgf-diff$(EXEEXT) sgf-test$(EXEEXT)
 @BUILD_SGF_UTILS_TRUE@bin_PROGRAMS = sgf-diff$(EXEEXT)
@@ -324,7 +322,7 @@ all: $(BUILT_SOURCES)
 	$(MAKE) $(AM_MAKEFLAGS) all-am
 
 .SUFFIXES:
-.SUFFIXES: .list .c .o .obj .stamp
+.SUFFIXES: .list .h .c .o .obj .stamp
 $(srcdir)/Makefile.in: @MAINTAINER_MODE_TRUE@ Makefile.am $(top_srcdir)/aux/list.make $(top_srcdir)/configure.ac $(ACLOCAL_M4)
 	cd $(top_srcdir) && \
 	  $(AUTOMAKE) --foreign  src/sgf/Makefile
@@ -600,19 +598,23 @@ uninstall-am: uninstall-binPROGRAMS uninstall-info-am
 	uninstall-info-am
 
 
+# Avoid problems with parallel builds.
+
+sgf-errors.c: sgf-errors.h
+
+sgf-properties.c: sgf-properties.h
+
+# Make everything depend on the `Makefile' and the list parser.
 $(LIST_STAMP_FILES) : Makefile $(PARSE_LIST_COMMAND)
 
-# We use `cmp' here to avoid unneeded recompilations of files that
-# depend on generated ones (only really useful for `.h' files.)
-#
 .list.stamp:
 	$(PARSE_LIST_BUILD_RULE)
 
-# Since these don't (at least shouldn't) have any dependencies, if
-# this rule is being executed, it probably means that one of the
-# files was removed.  Then all we can do is to force rebuilding of
-# corresponding stamp file, which builds the required sources
-# ``by side-effect.''
+# Since $(LIST_GENERATED_FILES) defined by the includer don't (at
+# least shouldn't) have any dependencies, if this rule is being
+# executed, it probably means that one of the files was removed.
+# Then all we can do is to force rebuilding of corresponding stamp
+# file, which builds the required sources ``by side-effect.''
 #
 $(LIST_GENERATED_FILES):
 	rm -f $*.stamp;

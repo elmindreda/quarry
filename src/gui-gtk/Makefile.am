@@ -28,19 +28,15 @@ noinst_LIBRARIES = libguigtk.a
 
 LIST_FILES = gtk-configuration.list
 
-LIST_STAMP_FILES = gtk-configuration.stamp
-
-LIST_GENERATED_FILES =		\
-	gtk-configuration.c	\
-				\
-	gtk-configuration.h
-
 PARSE_LIST_COMMAND =							\
 	$(top_builddir)/src/gui-utils/parse-configuration$(EXEEXT)
 
 PARSE_LIST_FLAGS =						\
 	-D top_srcdir="$(top_srcdir)"				\
 	-D PACKAGE_TEXTURES_DIR="$(pkgdatadir)/textures"
+
+# Avoid problems with parallel builds.
+gtk-configuration.c: gtk-configuration.h
 
 include $(top_srcdir)/aux/list.make
 
@@ -72,6 +68,7 @@ libguigtk_a_SOURCES =			\
 	gtk-clock.c			\
 	gtk-color-button.c		\
 	gtk-control-center.c		\
+	gtk-file-dialog.c		\
 	gtk-file-selector.c		\
 	gtk-freezable-spin-button.c	\
 	gtk-game-info-dialog.c		\
@@ -101,6 +98,7 @@ libguigtk_a_SOURCES =			\
 	gtk-clock.h			\
 	gtk-color-button.h		\
 	gtk-control-center.h		\
+	gtk-file-dialog.h		\
 	gtk-file-selector.h		\
 	gtk-freezable-spin-button.h	\
 	gtk-game-info-dialog.h		\

@@ -174,14 +174,6 @@ noinst_LIBRARIES = libguigtk.a
 
 LIST_FILES = gtk-configuration.list
 
-LIST_STAMP_FILES = gtk-configuration.stamp
-
-LIST_GENERATED_FILES = \
-	gtk-configuration.c	\
-				\
-	gtk-configuration.h
-
-
 PARSE_LIST_COMMAND = \
 	$(top_builddir)/src/gui-utils/parse-configuration$(EXEEXT)
 
@@ -190,7 +182,14 @@ PARSE_LIST_FLAGS = \
 	-D top_srcdir="$(top_srcdir)"				\
 	-D PACKAGE_TEXTURES_DIR="$(pkgdatadir)/textures"
 
-SUFFIXES = .list
+SUFFIXES = .list .h
+
+# `LIST_FILES' must be set by the includer.  The includer can use
+# `LIST_STAMP_FILES' and `LIST_GENERATED_FILES' and assume they are
+# set just as here.
+#
+LIST_STAMP_FILES = $(LIST_FILES:.list=.stamp)
+LIST_GENERATED_FILES = $(LIST_FILES:.list=.c) $(LIST_FILES:.list=.h)
 
 # `PARSE_LIST_COMMAND' and `PARSE_LIST_FLAGS' should be set by the
 # includer.
@@ -220,6 +219,7 @@ libguigtk_a_SOURCES = \
 	gtk-clock.c			\
 	gtk-color-button.c		\
 	gtk-control-center.c		\
+	gtk-file-dialog.c		\
 	gtk-file-selector.c		\
 	gtk-freezable-spin-button.c	\
 	gtk-game-info-dialog.c		\
@@ -249,6 +249,7 @@ libguigtk_a_SOURCES = \
 	gtk-clock.h			\
 	gtk-color-button.h		\
 	gtk-control-center.h		\
+	gtk-file-dialog.h		\
 	gtk-file-selector.h		\
 	gtk-freezable-spin-button.h	\
 	gtk-game-info-dialog.h		\
@@ -319,7 +320,8 @@ libguigtk_a_DEPENDENCIES = $(top_builddir)/src/gui-utils/libguiutils.a
 am__objects_1 =
 am_libguigtk_a_OBJECTS = gtk-assistant.$(OBJEXT) gtk-clock.$(OBJEXT) \
 	gtk-color-button.$(OBJEXT) gtk-control-center.$(OBJEXT) \
-	gtk-file-selector.$(OBJEXT) gtk-freezable-spin-button.$(OBJEXT) \
+	gtk-file-dialog.$(OBJEXT) gtk-file-selector.$(OBJEXT) \
+	gtk-freezable-spin-button.$(OBJEXT) \
 	gtk-game-info-dialog.$(OBJEXT) gtk-games.$(OBJEXT) \
 	gtk-goban.$(OBJEXT) gtk-goban-base.$(OBJEXT) \
 	gtk-goban-window.$(OBJEXT) gtk-gtp-client-interface.$(OBJEXT) \
@@ -332,7 +334,8 @@ am_libguigtk_a_OBJECTS = gtk-assistant.$(OBJEXT) gtk-clock.$(OBJEXT) \
 	gtk-tile-set.$(OBJEXT) gtk-utils.$(OBJEXT) \
 	gui-back-end.$(OBJEXT) quarry-stock.$(OBJEXT) $(am__objects_1)
 am__objects_2 = gtk-configuration.$(OBJEXT)
-nodist_libguigtk_a_OBJECTS = $(am__objects_2) quarry-marshal.$(OBJEXT)
+am__objects_3 = $(am__objects_2) $(am__objects_1)
+nodist_libguigtk_a_OBJECTS = $(am__objects_3) quarry-marshal.$(OBJEXT)
 libguigtk_a_OBJECTS = $(am_libguigtk_a_OBJECTS) \
 	$(nodist_libguigtk_a_OBJECTS)
 
@@ -344,6 +347,7 @@ am__depfiles_maybe = depfiles
 @AMDEP_TRUE@	./$(DEPDIR)/gtk-color-button.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/gtk-configuration.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/gtk-control-center.Po \
+@AMDEP_TRUE@	./$(DEPDIR)/gtk-file-dialog.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/gtk-file-selector.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/gtk-freezable-spin-button.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/gtk-game-info-dialog.Po \
@@ -381,7 +385,7 @@ all: $(BUILT_SOURCES)
 	$(MAKE) $(AM_MAKEFLAGS) all-am
 
 .SUFFIXES:
-.SUFFIXES: .list .c .o .obj .stamp
+.SUFFIXES: .list .h .c .o .obj .stamp
 $(srcdir)/Makefile.in: @MAINTAINER_MODE_TRUE@ Makefile.am $(top_srcdir)/aux/list.make $(top_srcdir)/configure.ac $(ACLOCAL_M4)
 	cd $(top_srcdir) && \
 	  $(AUTOMAKE) --foreign  src/gui-gtk/Makefile
@@ -408,6 +412,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gtk-color-button.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gtk-configuration.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gtk-control-center.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gtk-file-dialog.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gtk-file-selector.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gtk-freezable-spin-button.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gtk-game-info-dialog.Po@am__quote@
@@ -635,6 +640,10 @@ uninstall-am: uninstall-info-am
 	ps ps-am tags uninstall uninstall-am uninstall-info-am
 
 
+# Avoid problems with parallel builds.
+gtk-configuration.c: gtk-configuration.h
+
+# Make everything depend on the `Makefile' and the list parser.
 $(LIST_STAMP_FILES) : Makefile $(PARSE_LIST_COMMAND)
 
 .list.stamp:
