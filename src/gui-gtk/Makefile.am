@@ -36,7 +36,7 @@ BUILT_SOURCES =			\
 quarry-marshal.c : quarry-marshal.list
 	@GLIB_GENMARSHAL@ quarry-marshal.list --stdinc	\
 			  --prefix=quarry_marshal	\
-			  --body >> quarry-marshal.c	\
+			  --body > quarry-marshal.c	\
 	  || (rm -f quarry-marshal.c ; exit 1)
 
 quarry-marshal.h : quarry-marshal.list
