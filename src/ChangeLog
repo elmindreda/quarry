@@ -1,3 +1,61 @@
+2004-10-20  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* gui-gtk/gtk-goban.c (gtk_goban_expose): Only use
+	draw_horizontal_line_with_gaps() and
+	draw_vertical_line_with_gaps() for Go, not other games.  Draw
+	labels on black stones using white color.  Don't draw last move
+	indicator over SGF labels.
+
+	* gui-gtk/gtk-configuration.list: Add "Find Dialog Parameters"
+	section.
+
+	* gui-gtk/gtk-goban-window.c (gtk_goban_window_init): Add "Find",
+	"Find Next" and "Find Previous" menu items.  Initialize new
+	`find_dialog' and `text_to_find' fields.
+	(gtk_goban_window_finalize): Free `text_to_find' and destroy
+	`find_dialog' (if present.)
+	(show_find_dialog, find_dialog_response)
+	(find_dialog_parameters_changed, do_find_text)
+	(strstr_whole_word, strrstr_whole_word)
+	(char_is_word_constituent, get_normalized_text)
+	(get_offset_in_original_text): New functions.
+	(about_to_change_node, just_changed_node): New functions, broken
+	out of navigate_goban().
+	(playing_mode_goban_clicked): Bug-fix: invoke new
+	about_to_change_node() and just_changed_node() when switching
+	variations on right button click (could lead to game tree
+	corruption when playing a game.)
+	(update_move_information): Bug-fix: only call
+	sgf_node_get_result() if there is a game-info node in the first
+	place.
+
+	* sgf/sgf-utils.c (sgf_utils_switch_to_given_node): New function.
+
+2004-10-19  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* gui-gtk/quarry-stock.c: New stock item `QUARRY_STOCK_PREVIOUS'.
+
+	* sgf/sgf-tree.c (sgf_game_tree_traverse_forward)
+	(sgf_game_tree_traverse_backward, sgf_node_traverse_forward)
+	(sgf_node_traverse_backward): New functions.
+
+	* gui-gtk/gtk-control-center.c (gtk_control_center_destroy):
+	Remove function, use gtk_utils_null_pointer_on_destroy() instead.
+	* gui-gtk/gtk-goban-window.c (save_file_as_destroy): Likewise.
+	(game_info_dialog_destroyed): Likewise.
+	(about_dialog_destroy): Likewise.
+	* gui-gtk/gtk-preferences.c (gtk_preferences_dialog_destroy):
+	Likewise.
+
+	* gui-gtk/gtk-utils.c (gtk_utils_null_pointer_on_destroy)
+	(null_pointer_on_destroy)
+	(null_pointer_on_destroy_ask_control_center): New functions.
+
+	* gui-gtk/gtk-goban-window.c (show_about_dialog): Fix copyright
+	string (add year 2003.)  Center-justify copyright label.  Use
+	`GTK_RESPONSE_CANCEL' for the "Close" button, so that the dialog
+	can be closed with Escape.
+
 2004-10-18  Paul Pogonyshev  <pogonyshev@gmx.net>
 
 	* gui-gtk/gtk-goban.c (gtk_goban_set_parameters): Update goban's
