@@ -324,11 +324,10 @@ gtk_sgf_tree_view_set_scroll_adjustments (GtkSgfTreeView *view,
 static gboolean
 gtk_sgf_tree_view_expose (GtkWidget *widget, GdkEventExpose *event)
 {
-  GtkSgfTreeView *view = GTK_SGF_TREE_VIEW (widget);
-
   UNUSED (event);
 
-  if (view->current_tree) {
+  if (GTK_WIDGET_DRAWABLE (widget)) {
+    GtkSgfTreeView *view = GTK_SGF_TREE_VIEW (widget);
     int x;
     int y;
     SgfNode **view_port_scan;
@@ -344,40 +343,92 @@ gtk_sgf_tree_view_expose (GtkWidget *widget, GdkEventExpose *event)
     GdkWindow *window = view->output_window;
     GdkGC *gc = widget->style->fg_gc[GTK_STATE_NORMAL];
 
+    assert (view->current_tree);
+    assert (view->view_port_nodes);
+    assert (view->view_port_lines);
+
     gdk_gc_set_line_attributes (gc, 2, GDK_LINE_SOLID,
 				GDK_CAP_ROUND, GDK_JOIN_ROUND);
 
     for (lines_scan = view->view_port_lines, k = 0;
 	 k < view->num_view_port_lines; lines_scan++, k++) {
       GdkPoint points[4];
-      GdkPoint *actual_points;
-      gint num_actual_points;
+      GdkPoint *next_point = points;
+      GdkPoint *point_scan;
+      gint y2 = lines_scan->y1 + (lines_scan->x2 - lines_scan->x0);
 
-      points[1].x = lines_scan->x0 * full_cell_size + full_cell_size_half;
-      points[1].y = lines_scan->y1 * full_cell_size + full_cell_size_half;
-      points[2].x = lines_scan->x2 * full_cell_size + full_cell_size_half;
-      points[2].y = points[1].y + (points[2].x - points[1].x);
+      /* The clipping below is a workaround for X drawing functions'
+       * bug: they cannot handle line lengths over 32K properly.
+       */
 
-      if (lines_scan->y1 > lines_scan->y0) {
-	points[0].x = points[1].x;
-	points[0].y = lines_scan->y0 * full_cell_size + full_cell_size_half;
+      if (lines_scan->x2 >= view->view_port_x0) {
+	if (lines_scan->x0 >= view->view_port_x0) {
+	  if (lines_scan->y1 >= view->view_port_y0) {
+	    if (lines_scan->y0 < lines_scan->y1) {
+	      next_point->x = lines_scan->x0;
+	      next_point->y = MAX (lines_scan->y0, view->view_port_y0 - 1);
+	      next_point++;
+	    }
 
-	actual_points = points;
-	num_actual_points = 3;
+	    if (lines_scan->y1 < view->view_port_y1) {
+	      next_point->x = lines_scan->x0;
+	      next_point->y = lines_scan->y1;
+	      next_point++;
+	    }
+	    else {
+	      next_point->x = lines_scan->x0;
+	      next_point->y = view->view_port_y1;
+	      next_point++;
+
+	      goto line_clipped;
+	    }
+	  }
+	  else {
+	    next_point->y = view->view_port_y0 - 1;
+	    next_point->x = lines_scan->x0 + (next_point->y - lines_scan->y1);
+	    next_point++;
+	  }
+	}
+	else {
+	  next_point->x = view->view_port_x0 - 1;
+	  next_point->y = lines_scan->y1 + (next_point->x - lines_scan->x0);
+	  next_point++;
+	}
+
+	if (y2 > lines_scan->y1) {
+	  if ((view->view_port_x1 - (next_point - 1)->x)
+	      > (view->view_port_y1 - (next_point - 1)->y)) {
+	    next_point->y = MIN (y2, view->view_port_y1);
+	    next_point->x = lines_scan->x0 + (next_point->y - lines_scan->y1);
+	    next_point++;
+	  }
+	  else {
+	    next_point->x = MIN (lines_scan->x2, view->view_port_x1);
+	    next_point->y = lines_scan->y1 + (next_point->x - lines_scan->x0);
+	    next_point++;
+	  }
+	}
       }
       else {
-	actual_points = points + 1;
-	num_actual_points = 2;
+	next_point->x = view->view_port_x0 - 1;
+	next_point->y = y2;
+	next_point++;
       }
 
-      if (lines_scan->x3 > lines_scan->x2) {
-	points[3].x = lines_scan->x3 * full_cell_size + full_cell_size_half;
-	points[3].y = points[2].y;
-
-	num_actual_points++;
+      if (y2 < view->view_port_y1) {
+	next_point->x = MIN (lines_scan->x3, view->view_port_x1);
+	next_point->y = y2;
+	next_point++;
       }
 
-      gdk_draw_lines (window, gc, actual_points, num_actual_points);
+    line_clipped:
+
+      for (point_scan = points; point_scan < next_point; point_scan++) {
+	point_scan->x = point_scan->x * full_cell_size + full_cell_size_half;
+	point_scan->y = point_scan->y * full_cell_size + full_cell_size_half;
+      }
+
+      gdk_draw_lines (window, gc, points, next_point - points);
     }
 
     for (view_port_scan = view->view_port_nodes, y = view->view_port_y0;
@@ -540,10 +591,12 @@ gtk_sgf_tree_view_update_view_port (GtkSgfTreeView *view)
 {
   assert (GTK_IS_SGF_TREE_VIEW (view));
 
-  if (view->current_tree) {
+  if (GTK_WIDGET_REALIZED (view)) {
     SgfNode **view_port_nodes = view->view_port_nodes;
     SgfNode *tree_current_node = view->tree_current_node;
     SgfGameTreeMapLine *view_port_lines = view->view_port_lines;
+
+    assert (view->current_tree);
 
     view->view_port_nodes = NULL;
     view->view_port_lines = NULL;
