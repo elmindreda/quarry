@@ -84,6 +84,11 @@ struct _GtkGobanWindow {
   Board			  *board;
   SgfBoardState		   sgf_board_state;
 
+  SgfNode		  *game_position_node;
+  Board			  *game_position_board;
+  SgfBoardState		  *game_position_board_state;
+  SgfBoardState		   game_position_board_state_holder;
+
   gboolean		   in_game_mode;
   gint			   pending_free_handicap;
   gint			   num_handicap_stones_placed;
