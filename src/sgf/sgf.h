@@ -249,152 +249,157 @@ typedef enum {
 } SgfResult;
 
 
-SgfCollection *	 sgf_collection_new(void);
-void		 sgf_collection_delete(SgfCollection *collection);
-void		 sgf_collection_add_game_tree(SgfCollection *collection,
-					      SgfGameTree *tree);
+SgfCollection *	 sgf_collection_new (void);
+void		 sgf_collection_delete (SgfCollection *collection);
+void		 sgf_collection_add_game_tree (SgfCollection *collection,
+					       SgfGameTree *tree);
 
 
-SgfGameTree *	 sgf_game_tree_new(void);
-SgfGameTree *	 sgf_game_tree_new_with_root(Game game,
-					     int board_width,
-					     int board_height,
-					     int provide_default_setup);
-void		 sgf_game_tree_delete(SgfGameTree *tree);
+SgfGameTree *	 sgf_game_tree_new (void);
+SgfGameTree *	 sgf_game_tree_new_with_root (Game game,
+					      int board_width,
+					      int board_height,
+					      int provide_default_setup);
+void		 sgf_game_tree_delete (SgfGameTree *tree);
 
-void		 sgf_game_tree_set_game(SgfGameTree *tree, Game game);
-void		 sgf_game_tree_set_state(SgfGameTree *tree,
-					 Board *board, SgfNode *node,
-					 SgfGameTreeState *old_state);
+void		 sgf_game_tree_set_game (SgfGameTree *tree, Game game);
+void		 sgf_game_tree_set_state (SgfGameTree *tree,
+					  Board *board, SgfNode *node,
+					  SgfGameTreeState *old_state);
 
-SgfGameTree *	 sgf_game_tree_duplicate(const SgfGameTree *tree);
-SgfGameTree *	 sgf_game_tree_duplicate_with_nodes(const SgfGameTree *tree);
+SgfGameTree *	 sgf_game_tree_duplicate (const SgfGameTree *tree);
+SgfGameTree *	 sgf_game_tree_duplicate_with_nodes (const SgfGameTree *tree);
 
-int		 sgf_game_tree_count_nodes(const SgfGameTree *tree);
-
-
-SgfNode *	 sgf_node_new(SgfGameTree *tree, SgfNode *parent);
-void		 sgf_node_delete(SgfNode *node, SgfGameTree *tree);
-
-SgfNode *	 sgf_node_append_child(SgfNode *node, SgfGameTree *tree);
-
-SgfNode *	 sgf_node_duplicate(const SgfNode *node,
-				    SgfGameTree *tree, SgfNode *parent);
-SgfNode *	 sgf_node_duplicate_recursively(const SgfNode *node,
-						SgfGameTree *tree,
-						SgfNode *parent);
-SgfNode *	 sgf_node_duplicate_to_given_depth(const SgfNode *node,
-						   SgfGameTree *tree,
-						   SgfNode *parent,
-						   int depth);
-
-int		 sgf_node_find_property(SgfNode *node, SgfType type,
-					SgfProperty ***link);
-int		 sgf_node_find_unknown_property(SgfNode *node,
-						char *id, int length,
-						SgfProperty ***link);
-
-int		 sgf_node_is_game_info_node(const SgfNode *node);
+int		 sgf_game_tree_count_nodes (const SgfGameTree *tree);
 
 
-int		 sgf_node_get_number_property_value(const SgfNode *node,
-						    SgfType type, int *number);
-int		 sgf_node_get_double_property_value(const SgfNode *node,
+SgfNode *	 sgf_node_new (SgfGameTree *tree, SgfNode *parent);
+void		 sgf_node_delete (SgfNode *node, SgfGameTree *tree);
+
+SgfNode *	 sgf_node_append_child (SgfNode *node, SgfGameTree *tree);
+
+SgfNode *	 sgf_node_duplicate (const SgfNode *node,
+				     SgfGameTree *tree, SgfNode *parent);
+SgfNode *	 sgf_node_duplicate_recursively (const SgfNode *node,
+						 SgfGameTree *tree,
+						 SgfNode *parent);
+SgfNode *	 sgf_node_duplicate_to_given_depth (const SgfNode *node,
+						    SgfGameTree *tree,
+						    SgfNode *parent,
+						    int depth);
+
+int		 sgf_node_find_property (SgfNode *node, SgfType type,
+					 SgfProperty ***link);
+int		 sgf_node_find_unknown_property (SgfNode *node,
+						 char *id, int length,
+						 SgfProperty ***link);
+
+int		 sgf_node_is_game_info_node (const SgfNode *node);
+
+
+int		 sgf_node_get_number_property_value (const SgfNode *node,
+						     SgfType type,
+						     int *number);
+int		 sgf_node_get_double_property_value (const SgfNode *node,
+						     SgfType type);
+int		 sgf_node_get_color_property_value (const SgfNode *node,
 						    SgfType type);
-int		 sgf_node_get_color_property_value(const SgfNode *node,
+int		 sgf_node_get_real_property_value (const SgfNode *node,
+						   SgfType type,
+						   double *value);
+const char *	 sgf_node_get_text_property_value (const SgfNode *node,
 						   SgfType type);
-int		 sgf_node_get_real_property_value(const SgfNode *node,
-						  SgfType type, double *value);
-const char *	 sgf_node_get_text_property_value(const SgfNode *node,
-						       SgfType type);
 const BoardPositionList *
-		 sgf_node_get_list_of_point_property_value(const SgfNode *node,
-							   SgfType type);
+		 sgf_node_get_list_of_point_property_value
+		   (const SgfNode *node, SgfType type);
 const SgfLabelList *
-		 sgf_node_get_list_of_label_property_value(const SgfNode *node,
-							   SgfType type);
+		 sgf_node_get_list_of_label_property_value
+		   (const SgfNode *node, SgfType type);
 
-int		 sgf_node_get_handicap(const SgfNode *node);
-int		 sgf_node_get_komi(const SgfNode *node, double *komi);
-SgfResult	 sgf_node_get_result(const SgfNode *node, double *score);
-int		 sgf_node_get_time_limit(const SgfNode *node,
-					 double *time_limit);
+int		 sgf_node_get_handicap (const SgfNode *node);
+int		 sgf_node_get_komi (const SgfNode *node, double *komi);
+SgfResult	 sgf_node_get_result (const SgfNode *node, double *score);
+int		 sgf_node_get_time_limit (const SgfNode *node,
+					  double *time_limit);
 
 
-int		 sgf_node_add_none_property(SgfNode *node, SgfGameTree *tree,
-					    SgfType type);
-int		 sgf_node_add_number_property(SgfNode *node, SgfGameTree *tree,
-					      SgfType type, int number,
-					      int overwrite);
-int		 sgf_node_add_real_property(SgfNode *node, SgfGameTree *tree,
-					    SgfType type, double value,
-					    int overwrite);
-int		 sgf_node_add_pointer_property(SgfNode *node, SgfGameTree *tree,
-					       SgfType type, void *pointer,
+int		 sgf_node_add_none_property (SgfNode *node, SgfGameTree *tree,
+					     SgfType type);
+int		 sgf_node_add_number_property (SgfNode *node,
+					       SgfGameTree *tree,
+					       SgfType type, int number,
 					       int overwrite);
+int		 sgf_node_add_real_property (SgfNode *node, SgfGameTree *tree,
+					     SgfType type, double value,
+					     int overwrite);
+int		 sgf_node_add_pointer_property (SgfNode *node,
+						SgfGameTree *tree,
+						SgfType type, void *pointer,
+						int overwrite);
 
 #define sgf_node_add_double_property(node, tree, type, emphasized,	\
 				     overwrite)				\
-  sgf_node_add_number_property((node), (tree), (type), (emphasized),	\
-			       (overwrite))
+  sgf_node_add_number_property ((node), (tree), (type), (emphasized),	\
+				(overwrite))
 
 #define sgf_node_add_color_property(node, tree, type, color, overwrite)	\
-  sgf_node_add_number_property((node), (tree), (type), (color),		\
-			       (overwrite))
+  sgf_node_add_number_property ((node), (tree), (type), (color),	\
+				(overwrite))
 
 #define sgf_node_add_text_property(node, tree, type, text, overwrite)	\
-  sgf_node_add_pointer_property((node), (tree), (type), (text),		\
-				(overwrite))
+  sgf_node_add_pointer_property ((node), (tree), (type), (text),	\
+				 (overwrite))
 
 #define sgf_node_add_list_of_point_property(node, tree,			\
 					    type, position_list,	\
 					    overwrite)			\
-  sgf_node_add_pointer_property((node), (tree),				\
-				(type), (position_list), (overwrite))
+  sgf_node_add_pointer_property ((node), (tree),			\
+				 (type), (position_list), (overwrite))
 
 #define sgf_node_add_list_of_label_property(node, tree,			\
 					    type, label_list,		\
 					    overwrite)			\
-  sgf_node_add_pointer_property((node), (tree), (type), (label_list),	\
-				(overwrite))
+  sgf_node_add_pointer_property ((node), (tree), (type), (label_list),	\
+				 (overwrite))
 
 
-int		 sgf_node_add_score_result(SgfNode *node, SgfGameTree *tree,
-					   double score, int overwrite);
+int		 sgf_node_add_score_result (SgfNode *node, SgfGameTree *tree,
+					    double score, int overwrite);
 
-int		 sgf_node_append_text_property(SgfNode *node,
-					       SgfGameTree *tree,
-					       SgfType type,
-					       char *text,
-					       const char *separator);
-
-
-int		 sgf_node_delete_property(SgfNode *node, SgfGameTree *tree,
-					  SgfType type);
-
-void		 sgf_node_split(SgfNode *node, SgfGameTree *tree);
+int		 sgf_node_append_text_property (SgfNode *node,
+						SgfGameTree *tree,
+						SgfType type,
+						char *text,
+						const char *separator);
 
 
-int		 sgf_node_count_subtree_nodes(const SgfNode *node);
+int		 sgf_node_delete_property (SgfNode *node, SgfGameTree *tree,
+					   SgfType type);
+
+void		 sgf_node_split (SgfNode *node, SgfGameTree *tree);
+
+
+int		 sgf_node_count_subtree_nodes (const SgfNode *node);
 
 
 inline SgfProperty *
-		 sgf_property_new(SgfGameTree *tree, SgfType type,
-				  SgfProperty *next);
-inline void	 sgf_property_delete(SgfProperty *property, SgfGameTree *tree);
-void		 sgf_property_delete_at_link(SgfProperty **link,
-					     SgfGameTree *tree);
+		 sgf_property_new (SgfGameTree *tree, SgfType type,
+				   SgfProperty *next);
+inline void	 sgf_property_delete (SgfProperty *property,
+				      SgfGameTree *tree);
+void		 sgf_property_delete_at_link (SgfProperty **link,
+					      SgfGameTree *tree);
 
-SgfProperty *	 sgf_property_duplicate(const SgfProperty *property,
-					SgfGameTree *tree, SgfProperty *next);
+SgfProperty *	 sgf_property_duplicate (const SgfProperty *property,
+					 SgfGameTree *tree, SgfProperty *next);
 
 
-SgfLabelList *	 sgf_label_list_new(int num_labels,
-				    BoardPoint *points, char **labels);
-SgfLabelList *	 sgf_label_list_new_empty(int num_labels);
-void		 sgf_label_list_delete(SgfLabelList *list);
+SgfLabelList *	 sgf_label_list_new (int num_labels,
+				     BoardPoint *points, char **labels);
+SgfLabelList *	 sgf_label_list_new_empty (int num_labels);
+void		 sgf_label_list_delete (SgfLabelList *list);
 
-SgfLabelList *	 sgf_label_list_duplicate(const SgfLabelList *list);
+SgfLabelList *	 sgf_label_list_duplicate (const SgfLabelList *list);
 
 
 
@@ -444,39 +449,39 @@ struct _SgfErrorList {
 
 
 #define sgf_error_list_new()						\
-  ((SgfErrorList *) string_list_new_derived(sizeof(SgfErrorListItem),	\
-					    NULL))
+  ((SgfErrorList *) string_list_new_derived (sizeof (SgfErrorListItem),	\
+					     NULL))
 
 #define sgf_error_list_init(list)					\
-  string_list_init_derived((list), sizeof(SgfErrorListItem), NULL)
+  string_list_init_derived ((list), sizeof (SgfErrorListItem), NULL)
 
 #define STATIC_SGF_ERROR_LIST						\
-  STATIC_STRING_LIST_DERIVED(SgfErrorListItem, NULL)
+  STATIC_STRING_LIST_DERIVED (SgfErrorListItem, NULL)
 
 
 #define sgf_error_list_get_item(list, item_index)			\
-  ((SgfErrorListItem *) string_list_get_item((list), (item_index)))
+  ((SgfErrorListItem *) string_list_get_item ((list), (item_index)))
 
 #define sgf_error_list_find(list, text)					\
-  ((SgfErrorListItem *) string_list_find((list), (text)))
+  ((SgfErrorListItem *) string_list_find ((list), (text)))
 
 #define sgf_error_list_find_after_notch(list, text, notch)		\
   ((SgfErrorListItem *)							\
-   string_list_find_after_notch((list), (text) (notch)))
+   string_list_find_after_notch ((list), (text) (notch)))
 
 
-int		 sgf_parse_file(const char *filename,
-				SgfCollection **collection,
-				SgfErrorList **error_list,
-				const SgfParserParameters *parameters,
-				int *file_size, int *bytes_parsed,
-				const int *cancellation_flag);
-int		 sgf_parse_buffer(char *buffer, int size,
-				  SgfCollection **collection,
-				  SgfErrorList **error_list,
-				  const SgfParserParameters *parameters,
-				  int *bytes_parsed,
-				  const int *cancellation_flag);
+int		 sgf_parse_file (const char *filename,
+				 SgfCollection **collection,
+				 SgfErrorList **error_list,
+				 const SgfParserParameters *parameters,
+				 int *file_size, int *bytes_parsed,
+				 const int *cancellation_flag);
+int		 sgf_parse_buffer (char *buffer, int size,
+				   SgfCollection **collection,
+				   SgfErrorList **error_list,
+				   const SgfParserParameters *parameters,
+				   int *bytes_parsed,
+				   const int *cancellation_flag);
 
 
 extern const SgfParserParameters	sgf_parser_defaults;
@@ -485,8 +490,8 @@ extern const SgfParserParameters	sgf_parser_defaults;
 
 /* `sgf-writer.c' global functions. */
 
-int		 sgf_write_file(const char *filename,
-				SgfCollection *collection, int force_utf8);
+int		 sgf_write_file (const char *filename,
+				 SgfCollection *collection, int force_utf8);
 
 
 
@@ -517,64 +522,64 @@ typedef enum {
 } SgfDirection;
 
 
-inline void   sgf_utils_play_node_move(const SgfNode *node, Board *board);
-int	      sgf_utils_format_node_move(const SgfGameTree *tree,
-					 const SgfNode *node,
-					 char *buffer,
-					 const char *black_string,
-					 const char *white_string,
-					 const char *pass_string);
+inline void   sgf_utils_play_node_move (const SgfNode *node, Board *board);
+int	      sgf_utils_format_node_move (const SgfGameTree *tree,
+					  const SgfNode *node,
+					  char *buffer,
+					  const char *black_string,
+					  const char *white_string,
+					  const char *pass_string);
 
-void	      sgf_utils_enter_tree(SgfGameTree *tree, Board *board,
-				   SgfBoardState *board_state);
+void	      sgf_utils_enter_tree (SgfGameTree *tree, Board *board,
+				    SgfBoardState *board_state);
 
-void	      sgf_utils_go_down_in_tree(SgfGameTree *tree, int num_nodes,
-					SgfBoardState *board_state);
-void	      sgf_utils_go_up_in_tree(SgfGameTree *tree, int num_nodes,
-				      SgfBoardState *board_state);
+void	      sgf_utils_go_down_in_tree (SgfGameTree *tree, int num_nodes,
+					 SgfBoardState *board_state);
+void	      sgf_utils_go_up_in_tree (SgfGameTree *tree, int num_nodes,
+				       SgfBoardState *board_state);
 
-int	      sgf_utils_count_variations(const SgfGameTree *tree,
-					 int of_current_node,
-					 int black_variations[BOARD_GRID_SIZE],
-					 int white_variations[BOARD_GRID_SIZE],
-					 int *other_variations);
-SgfNode *     sgf_utils_find_variation_at_position(SgfGameTree *tree,
-						   int x, int y,
-						   SgfDirection direction,
-						   int after_current);
+int	      sgf_utils_count_variations
+		(const SgfGameTree *tree, int of_current_node,
+		 int black_variations[BOARD_GRID_SIZE],
+		 int white_variations[BOARD_GRID_SIZE],
+		 int *other_variations);
+SgfNode *     sgf_utils_find_variation_at_position (SgfGameTree *tree,
+						    int x, int y,
+						    SgfDirection direction,
+						    int after_current);
 
-void	      sgf_utils_switch_to_variation(SgfGameTree *tree,
-					    SgfDirection direction,
-					    SgfBoardState *board_state);
-void	      sgf_utils_switch_to_given_variation(SgfGameTree *tree,
-						  SgfNode *node,
-						  SgfBoardState *board_state);
+void	      sgf_utils_switch_to_variation (SgfGameTree *tree,
+					     SgfDirection direction,
+					     SgfBoardState *board_state);
+void	      sgf_utils_switch_to_given_variation (SgfGameTree *tree,
+						   SgfNode *node,
+						   SgfBoardState *board_state);
 
-void	      sgf_utils_append_variation(SgfGameTree *tree,
-					 SgfBoardState *board_state,
-					 int color, ...);
+void	      sgf_utils_append_variation (SgfGameTree *tree,
+					  SgfBoardState *board_state,
+					  int color, ...);
 
-void	      sgf_utils_get_markup(const SgfGameTree *tree,
-				   char markup[BOARD_GRID_SIZE]);
-void	      sgf_utils_mark_territory_on_grid(const SgfGameTree *tree,
-					       char grid[BOARD_GRID_SIZE],
-					       char black_territory_mark,
-					       char white_territory_mark);
+void	      sgf_utils_get_markup (const SgfGameTree *tree,
+				    char markup[BOARD_GRID_SIZE]);
+void	      sgf_utils_mark_territory_on_grid (const SgfGameTree *tree,
+						char grid[BOARD_GRID_SIZE],
+						char black_territory_mark,
+						char white_territory_mark);
 
-void	      sgf_utils_set_handicap(SgfGameTree *tree,
-				     int handicap, int is_fixed);
+void	      sgf_utils_set_handicap (SgfGameTree *tree,
+				      int handicap, int is_fixed);
 void	      sgf_utils_add_free_handicap_stones
 		(SgfGameTree *tree, BoardPositionList *handicap_stones);
 
 
-char *	      sgf_utils_normalize_text(const char *text);
+char *	      sgf_utils_normalize_text (const char *text, int is_simple_text);
 
 
 
 /* `sgf-diff-utils.c' global functions. */
 
-SgfCollection *	 sgf_diff(const SgfCollection *from_collection,
-			  const SgfCollection *to_collection);
+SgfCollection *	 sgf_diff (const SgfCollection *from_collection,
+			   const SgfCollection *to_collection);
 
 
 #endif /* QUARRY_SGF_H */
