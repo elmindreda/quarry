@@ -105,6 +105,15 @@ typedef enum {
 } GtkUtilsMessageDialogFlags;
 
 
+/* This is the same as the prototype of the `focus-out-event' handler
+ * since this callback basically does the same job.  Note that
+ * `dummy_event' will be `NULL'.
+ */
+typedef void (* GtkUtilsBrowsingDoneCallback) (GtkEntry *entry,
+					       GdkEvent *dummy_event,
+					       gpointer user_data);
+
+
 #define GTK_UTILS_EXPAND		(1 << 16)
 #define GTK_UTILS_FILL			(1 << 17)
 #define GTK_UTILS_PACK_DEFAULT		(GTK_UTILS_EXPAND | GTK_UTILS_FILL)
@@ -151,6 +160,11 @@ GtkWidget *	gtk_utils_create_left_aligned_label(const gchar *label_text);
 GtkWidget *	gtk_utils_create_mnemonic_label(const gchar *label_text,
 						GtkWidget *mnemonic_widget);
 GtkWidget *	gtk_utils_create_entry(const gchar *text);
+GtkWidget *	gtk_utils_create_browse_button
+		  (gboolean with_text,
+		   GtkWidget *associated_entry, gboolean is_command_line_entry,
+		   const gchar *browsing_dialog_caption,
+		   GtkUtilsBrowsingDoneCallback callback, gpointer user_data);
 GtkWidget *	gtk_utils_create_spin_button(GtkAdjustment *adjustment,
 					     gdouble climb_rate,
 					     guint num_digits,

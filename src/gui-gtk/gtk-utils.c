@@ -43,12 +43,31 @@ struct _GtkUtilsFileSelectionData {
 };
 
 
+typedef struct _GtkUtilsBrowseButtonData	GtkUtilsBrowseButtonData;
+
+struct _GtkUtilsBrowseButtonData {
+  GtkWindow			*browsing_dialog;
+  const gchar			*browsing_dialog_caption;
+
+  GtkEntry			*associated_entry;
+  gboolean			 is_command_line_entry;
+
+  GtkUtilsBrowsingDoneCallback	 callback;
+  gpointer			 user_data;
+};
+
 static void	 file_selection_response(GtkFileSelection *file_selection,
 					 gint response_id,
 					 GtkUtilsFileSelectionData *data);
 static void	 overwrite_confirmation(GtkWidget *message_dialog,
 					gint response_id,
 					GtkUtilsFileSelectionData *data);
+
+static void	 browse_button_clicked(GtkWidget *button,
+				       GtkUtilsBrowseButtonData *data);
+static void	 browsing_dialog_response(GtkFileSelection *file_selection,
+					  gint response_id,
+					  GtkUtilsBrowseButtonData *data);
 
 static gboolean	 time_spin_button_output(GtkSpinButton *spin_button);
 static gint	 time_spin_button_input(GtkSpinButton *spin_button,
@@ -473,6 +492,99 @@ gtk_utils_create_entry(const gchar *text)
   gtk_entry_set_activates_default(GTK_ENTRY(entry), TRUE);
 
   return entry;
+}
+
+
+GtkWidget *
+gtk_utils_create_browse_button(gboolean with_text, GtkWidget *associated_entry,
+			       gboolean is_command_line_entry,
+			       const gchar *browsing_dialog_caption,
+			       GtkUtilsBrowsingDoneCallback callback,
+			       gpointer user_data)
+{
+  GtkWidget *button;
+  GtkUtilsBrowseButtonData *data = g_malloc(sizeof(GtkUtilsBrowseButtonData));
+
+  assert(browsing_dialog_caption);
+
+  if (with_text)
+    button = gtk_button_new_from_stock(QUARRY_STOCK_BROWSE);
+  else {
+    button = gtk_button_new();
+    gtk_container_add(GTK_CONTAINER(button),
+		      gtk_image_new_from_stock(QUARRY_STOCK_BROWSE,
+					       GTK_ICON_SIZE_BUTTON));
+  }
+
+  data->browsing_dialog = NULL;
+  data->browsing_dialog_caption = browsing_dialog_caption;
+
+  data->associated_entry = GTK_ENTRY(associated_entry);
+  data->is_command_line_entry = is_command_line_entry;
+
+  data->callback = callback;
+  data->user_data = user_data;
+
+  g_signal_connect(button, "clicked", G_CALLBACK(browse_button_clicked), data);
+  g_signal_connect_swapped(button, "destroy", G_CALLBACK(g_free), data);
+
+  return button;
+}
+
+
+static void
+browse_button_clicked(GtkWidget *button, GtkUtilsBrowseButtonData *data)
+{
+  if (!data->browsing_dialog) {
+    GtkWidget *file_selection_widget
+      = gtk_file_selection_new(data->browsing_dialog_caption);
+    GtkWindow *parent_window = GTK_WINDOW(gtk_widget_get_toplevel(button));
+    const gchar *current_entry_text;
+
+    data->browsing_dialog = GTK_WINDOW(file_selection_widget);
+    gtk_window_set_transient_for(data->browsing_dialog, parent_window);
+    gtk_window_set_destroy_with_parent(data->browsing_dialog, TRUE);
+
+    current_entry_text = gtk_entry_get_text(data->associated_entry);
+    if (*current_entry_text) {
+      GtkFileSelection *file_selection
+	= GTK_FILE_SELECTION(data->browsing_dialog);
+
+      if (data->is_command_line_entry) {
+	gchar **argv;
+
+	if (g_shell_parse_argv(current_entry_text, NULL, &argv, NULL)) {
+	  gtk_file_selection_set_filename(file_selection, argv[0]);
+	  g_strfreev(argv);
+	}
+      }
+      else
+	gtk_file_selection_set_filename(file_selection, current_entry_text);
+    }
+
+    gtk_utils_add_file_selection_response_handlers
+      (file_selection_widget, FALSE, G_CALLBACK(browsing_dialog_response), data);
+  }
+
+  gtk_window_present(data->browsing_dialog);
+}
+
+
+static void
+browsing_dialog_response(GtkFileSelection *file_selection,
+			 gint response_id, GtkUtilsBrowseButtonData *data)
+{
+  if (response_id == GTK_RESPONSE_OK) {
+    gtk_entry_set_text(data->associated_entry,
+		       gtk_file_selection_get_filename(file_selection));
+    gtk_widget_grab_focus(GTK_WIDGET(data->associated_entry));
+
+    if (data->callback)
+      data->callback(data->associated_entry, NULL, data->user_data);
+  }
+
+  gtk_widget_destroy(GTK_WIDGET(file_selection));
+  data->browsing_dialog = NULL;
 }
 
 
