@@ -21,9 +21,39 @@
 
 
 defaults  - gtp_engine_defaults {
-  screen_name_format	string		"%n %v"
-  name			string		NULL
-  version		string		NULL
-  command_line		string		NULL
-  supported_games	string_list	-
+  screen_name_format		string		"%n %v"
+  name				string		NULL
+  version			string		NULL
+  command_line			string		NULL
+  supported_games		string_list	-
+}
+
+
+defaults  - go_board_appearance_defaults {
+  use_background_texture	boolean		true
+  background_texture		string
+					substitute_value PACKAGE_TEXTURES_DIR
+					"/wood1.jpg"
+
+  background_color		color		#dbb665
+  foreground_color		color		#000000
+}
+
+
+defaults  - amazons_board_appearance_defaults {
+  use_background_texture	boolean		true
+  background_texture		string
+					substitute_value PACKAGE_TEXTURES_DIR
+					"/wood1.jpg"
+
+  background_color		color		#dbb665
+  foreground_color		color		#000000
+}
+
+
+defaults  - othello_board_appearance_defaults {
+  use_background_texture	boolean		false
+  background_texture		string		NULL
+  background_color		color		#087834
+  foreground_color		color		#cceebb
 }
