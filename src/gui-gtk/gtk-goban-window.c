@@ -1433,10 +1433,12 @@ update_game_specific_information(GtkGobanWindow *goban_window)
 
     if (game_info_node
 	&& sgf_node_get_komi(game_info_node, &komi) && komi != 0.0) {
-      white_string = g_strdup_printf("%d capture(s) %c %s komi",
+      white_string = g_strdup_printf("%d capture(s) %c %.*f komi",
 				     board->data.go.prisoners[WHITE_INDEX],
 				     (komi > 0.0 ? '+' : '-'),
-				     utils_format_double(fabs(komi)));
+				     ((int) floor(komi * 100.0 + 0.5) % 10 == 0
+				      ? 1 : 2),
+				     fabs(komi));
     }
     else {
       white_string = g_strdup_printf("%d capture(s)",

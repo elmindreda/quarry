@@ -1184,28 +1184,30 @@ go_score_game(Board *board, const char *dead_stones, double komi,
     *score = black_score - white_score;
 
   if (detailed_score) {
-    char *white_score_string
-      = utils_duplicate_string(utils_format_double(white_score));
-
     *detailed_score
-      = utils_printf(("White: %d territory + %d capture(s) %c %s komi = %s\n"
-		      "Black: %d territory + %d capture(s) = %d.0\n\n"),
+      = utils_printf(("White: %d territory + %d capture(s) %c %.*f komi"
+		      " = %.*f\n"
+		      "Black: %d territory + %d capture(s) = %.1f\n\n"),
 		     num_territory_positions[WHITE_INDEX],
 		     num_prisoners[WHITE_INDEX],
 		     (komi >= 0.0 ? '+' : '-'),
-		     utils_format_double(fabs(komi)),
-		     white_score_string,
+		     ((int) floor(komi * 100.0 + 0.5) % 10 == 0 ? 1 : 2),
+		     fabs(komi),
+		     ((int) floor(white_score * 100.0 + 0.5) % 10 == 0
+		      ? 1 : 2),
+		     white_score,
 		     num_territory_positions[BLACK_INDEX],
 		     num_prisoners[BLACK_INDEX],
-		     black_score);
-    utils_free(white_score_string);
+		     (double) black_score);
 
     if ((double) black_score != white_score) {
-      *detailed_score = utils_printf("%s%s wins by %s", *detailed_score,
-				     ((double) black_score > white_score
-				      ? "Black" : "White"),
-				     utils_format_double(fabs(black_score
-							      - white_score)));
+      *detailed_score
+	= utils_printf("%s%s wins by %.*f", *detailed_score,
+		       ((double) black_score > white_score
+			? "Black" : "White"),
+		       ((int) floor((black_score - white_score) * 100.0 + 0.5)
+			% 10 == 0 ? 1 : 2),
+		       fabs(black_score - white_score));
     }
     else
       *detailed_score = utils_cat_string(*detailed_score, "The game is draw");
