@@ -533,7 +533,7 @@ create_board_appearance_page(void)
     GdkColor color;
     gint num_table_rows = (k != GTK_GAME_AMAZONS ? 3 : 5);
     GtkWidget *table_widget;
-    GtkTable *table; 
+    GtkTable *table;
     GtkWidget *radio_buttons[2];
     GtkWidget *label;
     GtkWidget *entry;
@@ -1651,8 +1651,36 @@ chain_client_initialized(GtpClient *client, void *user_data)
 {
   GtkChainEngineData *chain_engine_data = (GtkChainEngineData *) user_data;
   GtkEngineChain *engine_chain = chain_engine_data->engine_chain;
+  GtpEngineListItem *engine_data = chain_engine_data->engine_data;
+  char *new_screen_name = utils_special_printf(engine_data->screen_name_format,
+					       'n', client->engine_name,
+					       'v', client->engine_version, 0);
 
-  UNUSED(client);
+  configuration_set_string_value(&engine_data->name, client->engine_name);
+  configuration_set_string_value(&engine_data->version,
+				 client->engine_version);
+
+  if (strcmp(engine_data->screen_name, new_screen_name) != 0) {
+    GtkTreeModel *gtp_engines_tree_model
+      = GTK_TREE_MODEL(gtp_engines_list_store);
+    GtkTreeIter iterator;
+    GtpEngineListItem *this_engine_data;
+
+    utils_free(engine_data->screen_name);
+    engine_data->screen_name = new_screen_name;
+
+    gtk_tree_model_get_iter_first(gtp_engines_tree_model, &iterator);
+    while (gtk_tree_model_get(gtp_engines_tree_model, &iterator,
+			      ENGINES_DATA, &this_engine_data, -1),
+	   this_engine_data != engine_data)
+      gtk_tree_model_iter_next(gtp_engines_tree_model, &iterator);
+
+    gtk_list_store_set(gtp_engines_list_store, &iterator,
+		       ENGINES_NAME, new_screen_name, -1);
+  }
+
+  configuration_set_string_list_value(&engine_data->supported_games,
+				      &client->supported_games);
 
   engine_chain->chain_engine_datum
     = g_slist_remove(engine_chain->chain_engine_datum, chain_engine_data);
