@@ -133,11 +133,14 @@ noinst_LIBRARIES = \
 libutils_a_SOURCES = \
 	buffered-writer.c	\
 	format.c		\
+	getopt.c		\
+	getopt1.c		\
 	memory-pool.c		\
 	string-buffer.c		\
 	string-list.c		\
 	utils.c			\
 				\
+	getopt.h		\
 	utils.h
 
 
@@ -161,15 +164,16 @@ libparselist_a_OBJECTS = $(am_libparselist_a_OBJECTS)
 libutils_a_AR = $(AR) cru
 libutils_a_LIBADD =
 am_libutils_a_OBJECTS = buffered-writer.$(OBJEXT) format.$(OBJEXT) \
-	memory-pool.$(OBJEXT) string-buffer.$(OBJEXT) \
-	string-list.$(OBJEXT) utils.$(OBJEXT)
+	getopt.$(OBJEXT) getopt1.$(OBJEXT) memory-pool.$(OBJEXT) \
+	string-buffer.$(OBJEXT) string-list.$(OBJEXT) utils.$(OBJEXT)
 libutils_a_OBJECTS = $(am_libutils_a_OBJECTS)
 
 DEFAULT_INCLUDES =  -I. -I$(srcdir) -I$(top_builddir)
 depcomp = $(SHELL) $(top_srcdir)/depcomp
 am__depfiles_maybe = depfiles
 @AMDEP_TRUE@DEP_FILES = ./$(DEPDIR)/buffered-writer.Po \
-@AMDEP_TRUE@	./$(DEPDIR)/format.Po ./$(DEPDIR)/memory-pool.Po \
+@AMDEP_TRUE@	./$(DEPDIR)/format.Po ./$(DEPDIR)/getopt.Po \
+@AMDEP_TRUE@	./$(DEPDIR)/getopt1.Po ./$(DEPDIR)/memory-pool.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/parse-list.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/string-buffer.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/string-list.Po ./$(DEPDIR)/utils.Po
@@ -212,6 +216,8 @@ distclean-compile:
 
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/buffered-writer.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/format.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/getopt.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/getopt1.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/memory-pool.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/parse-list.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/string-buffer.Po@am__quote@
