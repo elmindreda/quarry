@@ -40,55 +40,55 @@ static const char *configuration_file_intro_comment =
   "# absolutely OK, just make sure that its general format is preserved.\n";
 
 
-static char *	parse_string(char **line_scan, char fuzzy_terminator);
+static char *	parse_string (char **line_scan, char fuzzy_terminator);
 
-static void	write_section(BufferedWriter *writer,
-			      const ConfigurationSection *section,
-			      const void *section_structure,
-			      const char *section_text_field);
-static void	write_string(BufferedWriter *writer, const char *string);
+static void	write_section (BufferedWriter *writer,
+			       const ConfigurationSection *section,
+			       const void *section_structure,
+			       const char *section_text_field);
+static void	write_string (BufferedWriter *writer, const char *string);
 
 
 void
-configuration_init(const ConfigurationSection *sections, int num_sections)
+configuration_init (const ConfigurationSection *sections, int num_sections)
 {
   int k;
 
-  assert(sections);
+  assert (sections);
 
   for (k = 0; k < num_sections; k++, sections++) {
     if (!sections->is_repeatable && sections->section_structure_init)
-      sections->section_structure_init(sections->section_structure);
+      sections->section_structure_init (sections->section_structure);
   }
 }
 
 
 void
-configuration_dispose(const ConfigurationSection *sections, int num_sections)
+configuration_dispose (const ConfigurationSection *sections, int num_sections)
 {
   int k;
 
-  assert(sections);
+  assert (sections);
 
   for (k = 0; k < num_sections; k++, sections++) {
     if (sections->section_structure_dispose)
-      sections->section_structure_dispose(sections->section_structure);
+      sections->section_structure_dispose (sections->section_structure);
   }
 }
 
 
 int
-configuration_read_from_file(const ConfigurationSection *sections,
-			     int num_sections, const char *filename)
+configuration_read_from_file (const ConfigurationSection *sections,
+			      int num_sections, const char *filename)
 {
-  FILE *file = fopen(filename, "r");
+  FILE *file = fopen (filename, "r");
 
   if (file) {
     const ConfigurationSection *current_section = NULL;
     void *current_section_structure = NULL;
     char *line;
 
-    while ((line = utils_fgets(file, NULL)) != NULL) {
+    while ((line = utils_fgets (file, NULL)) != NULL) {
       char *scan;
       int parsing_section_name = 0;
 
@@ -134,153 +134,150 @@ configuration_read_from_file(const ConfigurationSection *sections,
 
 	  for (k = 0, value = current_section->values;
 	       k < current_section->num_values; k++, value++) {
-	    if (strcasecmp(value->name, name) == 0)
+	    if (strcasecmp (value->name, name) == 0)
 	      break;
 	  }
 
 	  if (k < current_section->num_values) {
 	    void *field = (((char *) current_section_structure)
 			   + value->field_offset);
-	    char *string = NULL;
-	    char *actual_contents = NULL;
 
 	    scan++;
 
 	    if (value->type != VALUE_TYPE_STRING_LIST) {
-	      string = parse_string(&scan, 0);
+	      char *string = parse_string (&scan, 0);
 
-	      if (value->type != VALUE_TYPE_STRING) {
-		char *whitespace_scan;
+	      if (string) {
+		if (value->type == VALUE_TYPE_STRING) {
+		  utils_free (* (char **) field);
+		  * (char **) field = string;
+		}
+		else {
+		  char *actual_contents = NULL;
+		  char *whitespace_scan;
 
-		for (actual_contents = string;
-		     *actual_contents == ' ' || *actual_contents == '\t';)
-		  actual_contents++;
+		  for (actual_contents = string;
+		       *actual_contents == ' ' || *actual_contents == '\t';)
+		    actual_contents++;
 
-		/* Find first whitespace character and break line at
-		 * its position.
-		 */
-		for (whitespace_scan = actual_contents;
-		     (*whitespace_scan != ' ' && *whitespace_scan != '\t'
-		      && *whitespace_scan != 0);)
-		  whitespace_scan++;
+		  /* Find first whitespace character and break line at
+		   * its position.
+		   */
+		  for (whitespace_scan = actual_contents;
+		       (*whitespace_scan != ' ' && *whitespace_scan != '\t'
+			&& *whitespace_scan != 0);)
+		    whitespace_scan++;
 
-		*whitespace_scan = 0;
+		  *whitespace_scan = 0;
+
+		  switch (value->type) {
+		  case VALUE_TYPE_BOOLEAN:
+		    if (strcasecmp (actual_contents, "true") == 0
+			|| strcasecmp (actual_contents, "yes") == 0
+			|| strcmp (actual_contents, "1") == 0)
+		      * (int *) field = 1;
+		    else if (strcasecmp (actual_contents, "false") == 0
+			     || strcasecmp (actual_contents, "no") == 0
+			     || strcmp (actual_contents, "0") == 0)
+		      * (int *) field = 0;
+
+		    break;
+
+		  case VALUE_TYPE_INT:
+		    {
+		      /* FIXME: Can be improved. */
+		      const char *digit_scan = actual_contents;
+
+		      if (*digit_scan == '+' || *digit_scan == '-')
+			digit_scan++;
+
+		      if ('0' <= *digit_scan && *digit_scan <= '9') 
+			* (int *) field = atoi (actual_contents);
+		    }
+
+		    break;
+
+		  case VALUE_TYPE_REAL:
+		    utils_parse_double (actual_contents, (double *) field);
+		    break;
+
+		  case VALUE_TYPE_COLOR:
+		    {
+		      int num_digits;
+
+		      if (*actual_contents == '#')
+			actual_contents++;
+
+		      for (num_digits = 0;
+			   ((('0' <= *actual_contents && *actual_contents <= '9')
+			     || ('a' <= *actual_contents
+				 && *actual_contents <= 'f')
+			     || ('A' <= *actual_contents
+				 && *actual_contents <= 'F'))
+			    && num_digits <= 6);
+			   num_digits++)
+			actual_contents++;
+
+		      if (num_digits == 6 || num_digits == 3) {
+			int red;
+			int green;
+			int blue;
+
+			if (num_digits == 6) {
+			  sscanf (actual_contents - 6, "%2x%2x%2x",
+				  &red, &green, &blue);
+			}
+			else {
+			  sscanf (actual_contents - 3, "%1x%1x%1x",
+				  &red, &green, &blue);
+			  red   *= 0x11;
+			  green *= 0x11;
+			  blue  *= 0x11;
+			}
+
+			((QuarryColor *) field)->red   = red;
+			((QuarryColor *) field)->green = green;
+			((QuarryColor *) field)->blue  = blue;
+		      }
+		    }
+
+		    break;
+
+		  case VALUE_TYPE_TIME:
+		    {
+		      int seconds = utils_parse_time (actual_contents);
+
+		      if (seconds >= 0)
+			* (int *) field = seconds;
+		    }
+
+		    break;
+
+		  default:
+		    assert (0);
+		  }
+
+		  utils_free (string);
+		}
 	      }
 	    }
+	    else {
+	      int first_value = 1;
 
-	    if (value->type == VALUE_TYPE_STRING_LIST || string) {
-	      switch (value->type) {
-	      case VALUE_TYPE_STRING:
-		utils_free(* (char **) field);
-		* (char **) field = string;
-		break;
+	      do {
+		char *string = parse_string (&scan, ',');
 
-	      case VALUE_TYPE_STRING_LIST:
-		{
-		  int first_value = 1;
-
-		  do {
-		    string = parse_string(&scan, ',');
-
-		    if (string) {
-		      if (first_value) {
-			string_list_empty(field);
-			first_value = 0;
-		      }
-
-		      string_list_add_ready(field, string);
-		    }
-		    else
-		      break;
-		  } while (*scan++ == ',');
-		}
-
-		break;
-
-	      case VALUE_TYPE_BOOLEAN:
-		if (strcasecmp(actual_contents, "true") == 0
-		    || strcasecmp(actual_contents, "yes") == 0
-		    || strcmp(actual_contents, "1") == 0)
-		  * (int *) field = 1;
-		else if (strcasecmp(actual_contents, "false") == 0
-			 || strcasecmp(actual_contents, "no") == 0
-			 || strcmp(actual_contents, "0") == 0)
-		  * (int *) field = 0;
-
-		break;
-
-	      case VALUE_TYPE_INT:
-		{
-		  /* FIXME: Can be improved. */
-		  const char *digit_scan = actual_contents;
-
-		  if (*digit_scan == '+' || *digit_scan == '-')
-		    digit_scan++;
-
-		  if ('0' <= *digit_scan && *digit_scan <= '9') 
-		    * (int *) field = atoi(actual_contents);
-		}
-
-		break;
-
-	      case VALUE_TYPE_REAL:
-		utils_parse_double(actual_contents, (double *) field);
-		break;
-
-	      case VALUE_TYPE_COLOR:
-		{
-		  int num_digits;
-
-		  if (*actual_contents == '#')
-		    actual_contents++;
-
-		  for (num_digits = 0;
-		       ((('0' <= *actual_contents && *actual_contents <= '9')
-			 || ('a' <= *actual_contents && *actual_contents <= 'f')
-			 || ('A' <= *actual_contents && *actual_contents <= 'F'))
-			&& num_digits <= 6);
-		       num_digits++)
-		    actual_contents++;
-
-		  if (num_digits == 6 || num_digits == 3) {
-		    int red;
-		    int green;
-		    int blue;
-
-		    if (num_digits == 6)
-		      sscanf(actual_contents - 6, "%2x%2x%2x", &red, &green, &blue);
-		    else {
-		      sscanf(actual_contents - 3, "%1x%1x%1x", &red, &green, &blue);
-		      red   *= 0x11;
-		      green *= 0x11;
-		      blue  *= 0x11;
-		    }
-
-		    ((QuarryColor *) field)->red   = red;
-		    ((QuarryColor *) field)->green = green;
-		    ((QuarryColor *) field)->blue  = blue;
+		if (string) {
+		  if (first_value) {
+		    string_list_empty (field);
+		    first_value = 0;
 		  }
+
+		  string_list_add_ready (field, string);
 		}
-
-		break;
-
-	      case VALUE_TYPE_TIME:
-		{
-		  int seconds = utils_parse_time(actual_contents);
-
-		  if (seconds >= 0)
-		    * (int *) field = seconds;
-		}
-
-		break;
-
-	      default:
-		assert(0);
-	      }
-
-	      if (value->type != VALUE_TYPE_STRING_LIST
-		  && value->type != VALUE_TYPE_STRING)
-		utils_free(string);
+		else
+		  break;
+	      } while (*scan++ == ',');
 	    }
 	  }
 	}
@@ -293,7 +290,7 @@ configuration_read_from_file(const ConfigurationSection *sections,
 	  current_section = NULL;
 
 	  for (k = 0, section = sections; k < num_sections; k++, section++) {
-	    if (strcasecmp(section->name, name) == 0)
+	    if (strcasecmp (section->name, name) == 0)
 	      break;
 	  }
 
@@ -303,21 +300,22 @@ configuration_read_from_file(const ConfigurationSection *sections,
 
 	      if (name_terminating_character == '"') {
 		*scan = name_terminating_character;
-		section_name = parse_string(&scan, '"');
+		section_name = parse_string (&scan, '"');
 	      }
 
 	      if (*scan == ']') {
-		string_list_add_ready(section->section_structure,
-				      section_name);
+		string_list_add_ready (section->section_structure,
+				       section_name);
 		current_section = section;
 		current_section_structure = ((StringList *)
 					     section->section_structure)->last;
 
 		if (section->section_structure_init)
-		  section->section_structure_init(current_section_structure);
+		  section->section_structure_init (current_section_structure);
 	      }
 	    }
-	    else if (!section->is_repeatable && name_terminating_character == ']') {
+	    else if (!section->is_repeatable
+		     && name_terminating_character == ']') {
 	      current_section = section;
 	      current_section_structure = section->section_structure;
 	    }
@@ -325,10 +323,10 @@ configuration_read_from_file(const ConfigurationSection *sections,
 	}
       }
 
-      utils_free(line);
+      utils_free (line);
     }
 
-    fclose(file);
+    fclose (file);
     return 1;
   }
 
@@ -337,7 +335,7 @@ configuration_read_from_file(const ConfigurationSection *sections,
 
 
 static char *
-parse_string(char **line_scan, char fuzzy_terminator)
+parse_string (char **line_scan, char fuzzy_terminator)
 {
   char *buffer = *line_scan;
   char *buffer_pointer = buffer;
@@ -366,7 +364,8 @@ parse_string(char **line_scan, char fuzzy_terminator)
   }
   else {
     if (fuzzy_terminator != '"') {
-      while (**line_scan && **line_scan != fuzzy_terminator)
+      while (**line_scan && **line_scan != fuzzy_terminator
+	     && **line_scan != '#')
 	*buffer_pointer++ = * (*line_scan)++;
 
       while (buffer_pointer > buffer
@@ -383,20 +382,20 @@ parse_string(char **line_scan, char fuzzy_terminator)
   while (**line_scan == ' ' || **line_scan == '\t')
     (*line_scan)++;
 
-  return utils_duplicate_as_string(buffer, buffer_pointer - buffer);
+  return utils_duplicate_as_string (buffer, buffer_pointer - buffer);
 }
 
 
 int
-configuration_write_to_file(const ConfigurationSection *sections,
-			    int num_sections, const char *filename)
+configuration_write_to_file (const ConfigurationSection *sections,
+			     int num_sections, const char *filename)
 {
   BufferedWriter writer;
 
-  if (buffered_writer_init(&writer, filename, 0x1000)) {
+  if (buffered_writer_init (&writer, filename, 0x1000)) {
     int k;
 
-    buffered_writer_cat_string(&writer, configuration_file_intro_comment);
+    buffered_writer_cat_string (&writer, configuration_file_intro_comment);
 
     for (k = 0; k < num_sections; k++, sections++) {
       if (sections->is_repeatable) {
@@ -404,14 +403,16 @@ configuration_write_to_file(const ConfigurationSection *sections,
 	StringListItem *abstract_item;
 
 	for (abstract_item = abstract_list->first; abstract_item;
-	     abstract_item = abstract_item->next)
-	  write_section(&writer, sections, abstract_item, abstract_item->text);
+	     abstract_item = abstract_item->next) {
+	  write_section (&writer, sections,
+			 abstract_item, abstract_item->text);
+	}
       }
       else
-	write_section(&writer, sections, sections->section_structure, NULL);
+	write_section (&writer, sections, sections->section_structure, NULL);
     }
 
-    return buffered_writer_dispose(&writer);
+    return buffered_writer_dispose (&writer);
   }
 
   return 0;
@@ -419,20 +420,20 @@ configuration_write_to_file(const ConfigurationSection *sections,
 
 
 static void
-write_section(BufferedWriter *writer, const ConfigurationSection *section,
-	      const void *section_structure, const char *section_text_field)
+write_section (BufferedWriter *writer, const ConfigurationSection *section,
+	       const void *section_structure, const char *section_text_field)
 {
   const ConfigurationValue *value;
   int k;
 
-  buffered_writer_cat_strings(writer, "\n[", section->name, NULL);
+  buffered_writer_cat_strings (writer, "\n[", section->name, NULL);
 
   if (section_text_field) {
-    buffered_writer_add_character(writer, ' ');
-    write_string(writer, section_text_field);
+    buffered_writer_add_character (writer, ' ');
+    write_string (writer, section_text_field);
   }
 
-  buffered_writer_cat_string(writer, "]\n");
+  buffered_writer_cat_string (writer, "]\n");
 
   for (k = 0, value = section->values; k < section->num_values; k++, value++) {
     const void *field = (((const char *) section_structure)
@@ -440,24 +441,24 @@ write_section(BufferedWriter *writer, const ConfigurationSection *section,
 
     if ((value->type == VALUE_TYPE_STRING && ! * (char *const *) field)
 	|| (value->type == VALUE_TYPE_STRING_LIST
-	    && string_list_is_empty((const StringList *) field)))
+	    && string_list_is_empty ((const StringList *) field)))
       continue;
 
-    buffered_writer_cat_string(writer, value->name);
+    buffered_writer_cat_string (writer, value->name);
 
     if (writer->column < 24) {
       do
-	buffered_writer_add_character(writer, '\t');
+	buffered_writer_add_character (writer, '\t');
       while (writer->column < 24);
     }
     else
-      buffered_writer_add_character(writer, ' ');
+      buffered_writer_add_character (writer, ' ');
 
-    buffered_writer_cat_string(writer, "= ");
+    buffered_writer_cat_string (writer, "= ");
 
     switch (value->type) {
     case VALUE_TYPE_STRING:
-      write_string(writer, * (char *const *) field);
+      write_string (writer, * (char *const *) field);
       break;
 
     case VALUE_TYPE_STRING_LIST:
@@ -466,112 +467,112 @@ write_section(BufferedWriter *writer, const ConfigurationSection *section,
 
 	for (item = ((const StringList *) field)->first; item;
 	     item = item->next) {
-	  write_string(writer, item->text);
+	  write_string (writer, item->text);
 	  if (item->next)
-	    buffered_writer_cat_string(writer, ", ");
+	    buffered_writer_cat_string (writer, ", ");
 	}
       }
 
       break;
 
     case VALUE_TYPE_BOOLEAN:
-      buffered_writer_cat_string(writer,
-				 * (const int *) field ? "true" : "false");
+      buffered_writer_cat_string (writer,
+				  * (const int *) field ? "true" : "false");
       break;
 
     case VALUE_TYPE_INT:
-      buffered_writer_cprintf(writer, "%d", * (const int *) field);
+      buffered_writer_cprintf (writer, "%d", * (const int *) field);
       break;
 
     case VALUE_TYPE_REAL:
-      buffered_writer_cprintf(writer, "%.f", * (const double *) field);
+      buffered_writer_cprintf (writer, "%.f", * (const double *) field);
       break;
 
     case VALUE_TYPE_COLOR:
       /* I believe this cannot be locale-dependent, right? */
-      buffered_writer_printf(writer, "#%02x%02x%02x",
-			     ((const QuarryColor *) field)->red,
-			     ((const QuarryColor *) field)->green,
-			     ((const QuarryColor *) field)->blue);
+      buffered_writer_printf (writer, "\"#%02x%02x%02x\"",
+			      ((const QuarryColor *) field)->red,
+			      ((const QuarryColor *) field)->green,
+			      ((const QuarryColor *) field)->blue);
       break;
 
     case VALUE_TYPE_TIME:
       if (* (const int *) field < 60 * 60) {
-	buffered_writer_cprintf(writer, "%02d:%02d",
-				(* (const int *) field) / 60,
-				(* (const int *) field) % 60);
+	buffered_writer_cprintf (writer, "%02d:%02d",
+				 (* (const int *) field) / 60,
+				 (* (const int *) field) % 60);
       }
       else {
-	buffered_writer_cprintf(writer, "%d:%02d:%02d",
-				(* (const int *) field) / (60 * 60),
-				((* (const int *) field) / 60) % 60,
-				(* (const int *) field) % 60);
+	buffered_writer_cprintf (writer, "%d:%02d:%02d",
+				 (* (const int *) field) / (60 * 60),
+				 ((* (const int *) field) / 60) % 60,
+				 (* (const int *) field) % 60);
       }
 
       break;
 
     default:
-      assert(0);
+      assert (0);
     }
 
-    buffered_writer_add_newline(writer);
+    buffered_writer_add_newline (writer);
   }
 }
 
 
 static void
-write_string(BufferedWriter *writer, const char *string)
+write_string (BufferedWriter *writer, const char *string)
 {
-  buffered_writer_add_character(writer, '"');
+  buffered_writer_add_character (writer, '"');
 
   for (; *string; string++) {
     if (*string == '\n' || *string == '\r'
 	|| *string == '"' || *string == '\\')
-      buffered_writer_add_character(writer, '\\');
+      buffered_writer_add_character (writer, '\\');
 
     if (*string != '\n' && *string != '\r')
-      buffered_writer_add_character(writer, *string);
+      buffered_writer_add_character (writer, *string);
     else
-      buffered_writer_add_character(writer, *string == '\n' ? 'n' : 'r');
+      buffered_writer_add_character (writer, *string == '\n' ? 'n' : 'r');
   }
 
-  buffered_writer_add_character(writer, '"');
+  buffered_writer_add_character (writer, '"');
 }
 
 
 void
-configuration_init_repeatable_section(const ConfigurationSection *section,
-				      void *abstract_list_item)
+configuration_init_repeatable_section (const ConfigurationSection *section,
+				       void *abstract_list_item)
 {
-  assert(section);
-  assert(section->is_repeatable);
-  assert(abstract_list_item);
+  assert (section);
+  assert (section->is_repeatable);
+  assert (abstract_list_item);
 
   if (section->section_structure_init)
-    section->section_structure_init(abstract_list_item);
+    section->section_structure_init (abstract_list_item);
 }
 
 
 void
-configuration_set_string_value(char **configuration_variable,
-			       const char *string)
+configuration_set_string_value (char **configuration_variable,
+				const char *string)
 {
-  assert(configuration_variable);
+  assert (configuration_variable);
 
-  utils_free(*configuration_variable);
-  *configuration_variable = utils_duplicate_string(string);
+  utils_free (*configuration_variable);
+  *configuration_variable = utils_duplicate_string (string);
 }
 
 
 void
-configuration_set_string_list_value(StringList *configuration_variable,
-				    const StringList *string_list)
+configuration_set_string_list_value (StringList *configuration_variable,
+				     const StringList *string_list)
 {
-  assert(configuration_variable);
-  assert(string_list);
+  assert (configuration_variable);
+  assert (string_list);
 
-  string_list_empty(configuration_variable);
-  string_list_duplicate_items(configuration_variable, string_list);
+  string_list_empty (configuration_variable);
+  string_list_duplicate_items (configuration_variable, string_list);
 }
 
 
@@ -579,11 +580,11 @@ void
 configuration_set_string_list_value_steal_strings
 		(StringList *configuration_variable, StringList *string_list)
 {
-  assert(configuration_variable);
-  assert(string_list);
+  assert (configuration_variable);
+  assert (string_list);
 
-  string_list_empty(configuration_variable);
-  string_list_steal_items(configuration_variable, string_list);
+  string_list_empty (configuration_variable);
+  string_list_steal_items (configuration_variable, string_list);
 }
 
 
