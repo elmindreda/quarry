@@ -1,0 +1,38 @@
+		  AUTOMATICALLY REGISTERING ENGINES
+
+As of version 0.1.13, Quarry supports site configuration file, which
+can be used to provide default configuration.  Most importantly,
+engines (like GNU Go) can be listed in site configuration to save a
+few movements for users.
+
+Site configuration is completely unintrusive for users, since they can
+still change all parameters and hide (but not remove) unwanted
+engines.
+
+So, this is how you could enhance Quarry package.  If, when installing
+the package, you detect that, say GNU Go, is installed too, create a
+file `/usr/share/quarry/quarryrc' (normally, the name might differ if
+you use a different $(datadir)) with the following contents:
+
+---8<--- cut here ---8<---
+[GTP Engine "GNU Go"]
+Screen name format	= "%n %v"
+Name			= "GNU Go"
+Version			= "<version>"
+Command line		= "<path to GNU Go binary> --mode gtp --quiet"
+Supported games		= "Go"
+---8<--- cut here ---8<---
+
+Note that the name in ``[GTP Engine "<name>"]'' should not include any
+version numbers.
+
+<version> should be the version GNU Go reports itself, not the version
+of GNU Go package.  If it is too much trouble, you can just omit the
+version, Quarry will supply it as soon as the user starts his first
+game against GNU Go.
+
+<path to GNU Go> would typically be `/usr/bin/gnugo',
+`/usr/games/gnugo' or `/usr/games/bin/gnugo'.
+
+Obviously, the very same functionaity could work the way round, when
+installing GNU Go and detecting an installed Quarry.
