@@ -12,14 +12,14 @@ I_CPPFLAGS =				\
 	-I $(top_srcdir)/src/sgf	\
 	-I $(top_srcdir)/src/utils
 
-AM_CPPFLAGS = 								\
-	-D PACKAGE_DATA_DIR=\""$(datadir)/quarry"\"			\
-	-D PACKAGE_TEXTURES_DIR=\""$(datadir)/quarry/textures"\"	\
-									\
-	$(QUARRY_WARNINGS_GTK)						\
-									\
-	$(I_CPPFLAGS)							\
-									\
+AM_CPPFLAGS = 							\
+	-D PACKAGE_DATA_DIR=\"$(datadir)/quarry\"		\
+	-D PACKAGE_TEXTURES_DIR=\"$(datadir)/quarry/textures\"	\
+								\
+	$(QUARRY_WARNINGS_GTK)					\
+								\
+	$(I_CPPFLAGS)						\
+								\
 	$(QUARRY_FULL_GTK_CFLAGS)
 
 
@@ -66,13 +66,16 @@ gtk-configuration.c gtk-configuration.h					\
     $(top_srcdir)/src/gui-utils/common-configuration-values.list	\
     $(top_srcdir)/src/gui-utils/common-configuration-defaults.list	\
     $(PARSE_CONFIGURATION)
-	$(PARSE_CONFIGURATION) gtk-configuration.list			\
-			       gtk-configuration.h gtk-configuration.c	\
+	$(PARSE_CONFIGURATION)						\
+	    -D PACKAGE_TEXTURES_DIR="\"$(datadir)/quarry/textures\""	\
+	    gtk-configuration.list					\
+	    gtk-configuration.h gtk-configuration.c			\
 	  || (rm -f gtk-configuration.c gtk-configuration.h ; exit 1)
 
 
 libguigtk_a_SOURCES =			\
 	gtk-assistant.c			\
+	gtk-color-button.c		\
 	gtk-configuration-structures.c	\
 	gtk-control-center.c		\
 	gtk-games.c			\
@@ -92,6 +95,7 @@ libguigtk_a_SOURCES =			\
 	quarry-stock.c			\
 					\
 	gtk-assistant.h			\
+	gtk-color-button.h		\
 	gtk-configuration-structures.h	\
 	gtk-control-center.h		\
 	gtk-games.h			\
