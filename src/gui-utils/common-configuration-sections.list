@@ -30,6 +30,15 @@
 		gtp_engine_defaults
 
 
+  SECTION_SGF			"SGF"
+		single
+		new		SgfConfiguration	sgf_configuration_dispose
+
+		sgf_configuration
+		sgf_configuration_values
+		sgf_configuration_defaults
+
+
   SECTION_GO_BOARD_APPEARANCE	"Go Board Appearance"
 		single
 		new		BoardAppearance		board_appearance_dispose

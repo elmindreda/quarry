@@ -31,6 +31,11 @@ values  - gtp_engine_section_values {
 }
 
 
+values  - sgf_configuration_values {
+  "Force UTF-8"			force_utf8			boolean
+}
+
+
 values  - board_appearance_values {
   "Use background texture"	use_background_texture		boolean
   "Background texture"		background_texture		string
