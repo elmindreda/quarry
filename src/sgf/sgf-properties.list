@@ -131,10 +131,10 @@ properties  SgfType property_info {
   TE	SGF_TESUJI		double		sgf_parse_double
 
   #> Timing properties.
-  BL	SGF_TIME_LEFT_4BLACK	real		sgf_parse_real
-  OB	SGF_MOVES_LEFT_4BLACK	number		sgf_parse_constrained_number
-  WL	SGF_TIME_LEFT_4WHITE	real		sgf_parse_real
-  OW	SGF_MOVES_LEFT_4WHITE	number		sgf_parse_constrained_number
+  BL	SGF_TIME_LEFT_FOR_BLACK	  real		sgf_parse_real
+  OB	SGF_MOVES_LEFT_FOR_BLACK  number	sgf_parse_constrained_number
+  WL	SGF_TIME_LEFT_FOR_WHITE	  real		sgf_parse_real
+  OW	SGF_MOVES_LEFT_FOR_WHITE  number	sgf_parse_constrained_number
 
   #> Markup properties.
   MA	SGF_MARK		list_of_point	sgf_parse_markup_property
