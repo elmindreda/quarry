@@ -1,3 +1,53 @@
+2005-03-06  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* sgf/sgf-properties.list: Rename `SGF_TIME_LEFT_4BLACK' to
+	`SGF_TIME_LEFT_FOR_BLACK' and likewise for other properties.
+
+	* gui-gtk/gtk-goban-window.c (gtk_goban_window_init): Use
+	`QUARRY_STOCK_MENU_ITEM_ABOUT' for that menu item.
+	(show_about_dialog): Use native GtkAboutDialog with GTK+ 2.6+.
+
+	* gui-gtk/gtk-preferences.c (gtk_preferences_init): Fix GTK+ 2.4+
+	compilation: gtk_tree_model_filter_set_visible_func(), not
+	gtk_tree_model_filter_set_visible_function().
+	(gtk_preferences_dialog_present): Move previously global
+	`preferences_dialog_categories' here.  Use `GTK_STOCK_EXECUTE' for
+	"GTP Engines" page and `QUARRY_STOCK_ICON_FILE' for "Game
+	Records (SGF)" category.
+
+	* gui-gtk/quarry-stock.h (QUARRY_STOCK_ICON_DIRECTORY)
+	(QUARRY_STOCK_FILE, QUARRY_STOCK_MENU_ITEM_ABOUT): New
+	compatibility macros for GTK+ stock items.
+
+	* gui-gtk/gtk-utils.h (GTK_2_6_OR_LATER): New macro.
+	(gtk_dialog_set_default_response): Define this to
+	gtk_utils_workaround_focus_bug() for GTK+ 2.0.
+	* gui-gtk/gtk-utils.c (gtk_utils_workaround_set_default_response):
+	New function, for GTK+ 2.0 only.
+
+	* gui-gtk/gtk-goban-window.c (gtk_goban_window_new):
+	Sensitize/desensitize "Save" menu item and toolbar button,
+	depending on whether the SGF collection was read from file.
+	(set_sgf_collection_is_modified): New temporary function.
+	(gtk_goban_window_save): Mark SGF collection as unmodified after
+	saving.
+	(save_file_as_response): Likewise.
+	(game_info_dialog_property_changed): Mark SGF collection as
+	modified after the change.
+	(go_scoring_mode_done): Likewise.
+	(play_pass_move): Likewise.
+	(do_resign_game): Likewise.
+	(playing_mode_goban_clicked): Likewise.
+	(update_window_title): Append " (modified)" to the window title if
+	appropriate.  If there is no game name and no associated file, set
+	window title to "Unnamed Game".
+	(fetch_comment_if_changed): Mark SGF collection as modified after
+	the change.  Also take care to notice if the comment has not been
+	changed.
+	(move_has_been_played): Mark SGF collection as modified after the
+	change.
+	(player_is_out_of_time): Likewise.
+
 2005-03-05  Paul Pogonyshev  <pogonyshev@gmx.net>
 
 	* gui-gtk/gtk-goban-window.c (gtk_goban_window_init): Add
