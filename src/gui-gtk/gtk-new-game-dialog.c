@@ -31,6 +31,7 @@
 #include "gtk-preferences.h"
 #include "gtk-utils.h"
 #include "quarry-stock.h"
+#include "sgf.h"
 #include "board.h"
 #include "game-info.h"
 
@@ -796,6 +797,9 @@ begin_game(GtkEnginesInstantiationStatus status, gpointer user_data)
 
   game_tree = sgf_game_tree_new_with_root(game, board_size, board_size, 1);
   game_tree->char_set = utils_duplicate_string("UTF-8");
+
+  sgf_node_add_text_property(game_tree->root, game_tree,
+			     SGF_RESULT, "Void", 0);
 
   for (k = 0; k < NUM_COLORS; k++) {
     GtpEngineListItem *engine_data =
