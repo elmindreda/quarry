@@ -1,6 +1,7 @@
 # Process this file with Automake to produce `Makefile.in'.
 
 SUBDIRS =		\
+	markup-themes	\
 	textures
 
 FILES =		\
