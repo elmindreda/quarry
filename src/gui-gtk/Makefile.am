@@ -5,21 +5,21 @@ QUARRY_FULL_GTK_CFLAGS = 		\
 	$(QUARRY_GTK_DEPRECATED_FLAGS)	\
 	$(QUARRY_GTHREAD_CFLAGS)
 
-AM_CPPFLAGS = 						\
-	-D PACKAGE_DATA_DIR=\"$(datadir)/quarry\"	\
-							\
-	$(QUARRY_WARNINGS_GTK)				\
-							\
-	-I $(top_srcdir)/src				\
-	-I $(top_srcdir)/src/board			\
-	-I $(top_builddir)/src/board			\
-	-I $(top_srcdir)/src/gtp			\
-	-I $(top_srcdir)/src/gui-utils			\
-	-I $(top_builddir)/src/gui-utils		\
-	-I $(top_srcdir)/src/sgf			\
-	-I $(top_builddir)/src/sgf			\
-	-I $(top_srcdir)/src/utils			\
-							\
+AM_CPPFLAGS = 					\
+	-D PACKAGE_DATA_DIR=\"$(pkgdatadir)\"	\
+						\
+	$(QUARRY_WARNINGS_GTK)			\
+						\
+	-I $(top_srcdir)/src			\
+	-I $(top_srcdir)/src/board		\
+	-I $(top_builddir)/src/board		\
+	-I $(top_srcdir)/src/gtp		\
+	-I $(top_srcdir)/src/gui-utils		\
+	-I $(top_builddir)/src/gui-utils	\
+	-I $(top_srcdir)/src/sgf		\
+	-I $(top_builddir)/src/sgf		\
+	-I $(top_srcdir)/src/utils		\
+						\
 	$(QUARRY_FULL_GTK_CFLAGS)
 
 
@@ -40,7 +40,7 @@ PARSE_LIST_COMMAND =							\
 
 PARSE_LIST_FLAGS =						\
 	-D top_srcdir="$(top_srcdir)"				\
-	-D PACKAGE_TEXTURES_DIR="$(datadir)/quarry/textures"
+	-D PACKAGE_TEXTURES_DIR="$(pkgdatadir)/textures"
 
 include $(top_srcdir)/aux/list.make
 
@@ -146,7 +146,7 @@ BUILT_SOURCES =			\
 libguigtk_a_LIBADD = $(top_builddir)/src/gui-utils/libguiutils.a
 
 
-EXTRA_DIST = quarry-marshal.list
+EXTRA_DIST = quarry-marshal.glist
 
 DISTCLEANFILES = *~
 
