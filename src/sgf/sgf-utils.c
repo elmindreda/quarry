@@ -21,8 +21,8 @@
 
 
 #include "sgf.h"
-#include "utils.h"
 #include "board.h"
+#include "utils.h"
 
 #include <assert.h>
 
@@ -463,7 +463,7 @@ sgf_utils_set_handicap(SgfGameTree *tree, int handicap, int is_fixed)
 
       tree->current_node->move_color = SETUP_NODE;
       sgf_node_add_list_of_point_property(tree->current_node, tree,
-					  SGF_ADD_BLACK, handicap_stones);
+					  SGF_ADD_BLACK, handicap_stones, 0);
     }
   }
   else
@@ -472,7 +472,8 @@ sgf_utils_set_handicap(SgfGameTree *tree, int handicap, int is_fixed)
   sgf_node_add_text_property(tree->current_node, tree, SGF_HANDICAP,
 			     utils_duplicate_as_string(buffer,
 						       sprintf(buffer, "%d",
-							       handicap)));
+							       handicap)),
+			     1);
 }
 
 
@@ -492,7 +493,68 @@ sgf_utils_add_free_handicap_stones(SgfGameTree *tree,
 
   tree->current_node->move_color = SETUP_NODE;
   sgf_node_add_list_of_point_property(tree->current_node, tree,
-				      SGF_ADD_BLACK, handicap_stones);
+				      SGF_ADD_BLACK, handicap_stones, 0);
+}
+
+
+
+/* Normalize text for an SGF property: convert '\t' into appropriate
+ * number of spaces, convert '\v' and '\f' into a few linefeeds and,
+ * finally, trim end whitespace.
+ */
+char *
+sgf_utils_normalize_text(const char *text)
+{
+  const char *normalized_up_to;
+  int current_column;
+  StringBuffer buffer;
+  char *scan;
+
+  assert(text);
+
+  string_buffer_init(&buffer, 0x1000, 0x1000);
+
+  for (normalized_up_to = text, current_column = 0; *text; text++) {
+    if (IS_UTF8_STARTER(*text)) {
+      if (*text != '\n') {
+	current_column++;
+
+	if (*text == '\t' || *text == '\v' || *text == '\f') {
+	  string_buffer_cat_as_string(&buffer, normalized_up_to,
+				      text - normalized_up_to);
+	  normalized_up_to = text + 1;
+
+	  if (*text == '\t') {
+	    int tab_to_column = ROUND_UP(current_column, 8);
+
+	    string_buffer_add_characters(&buffer, ' ',
+					 tab_to_column - current_column);
+	    current_column = tab_to_column;
+	  }
+	  else {
+	    /* This is hardly important.  Insert a few empty lines. */
+	    string_buffer_add_characters(&buffer, '\n', 4);
+	    current_column = 0;
+	  }
+	}
+      }
+      else
+	current_column = 0;
+    }
+  }
+
+  string_buffer_cat_as_string(&buffer,
+			      normalized_up_to, text - normalized_up_to);
+
+  /* Trim end whitespace. */
+  for (scan = buffer.string + buffer.length; ; scan--) {
+    if (scan == buffer.string
+	|| (*(scan - 1) != ' ' && *(scan - 1) != '\n'))
+      break;
+  }
+
+  *scan = 0;
+  return utils_realloc(buffer.string, (scan + 1) - buffer.string);
 }
 
 
