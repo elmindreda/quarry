@@ -143,14 +143,22 @@ sysconfdir = @sysconfdir@
 target_alias = @target_alias@
 
 AM_CPPFLAGS = \
-	$(QUARRY_WARNINGS)		\
-					\
-	-I $(top_srcdir)/src		\
-	-I $(top_srcdir)/src/board	\
+	-D PACKAGE_DATA_DIR=\"$(datadir)/quarry\"	\
+							\
+	$(QUARRY_WARNINGS)				\
+							\
+	-I $(top_srcdir)/src				\
+	-I $(top_srcdir)/src/board			\
 	-I $(top_srcdir)/src/utils
 
 
 noinst_LIBRARIES = libguiutils.a
+
+BUILT_SOURCES = \
+	markup-theme-configuration.c	\
+					\
+	markup-theme-configuration.h
+
 
 libguiutils_a_SOURCES = \
 	configuration.c			\
@@ -165,6 +173,8 @@ libguiutils_a_SOURCES = \
 	time-control.h
 
 
+nodist_libguiutils_a_SOURCES = $(BUILT_SOURCES)
+
 noinst_PROGRAMS = parse-configuration
 
 parse_configuration_SOURCES = parse-configuration.c
@@ -177,7 +187,8 @@ parse_configuration_LDADD = \
 EXTRA_DIST = \
 	common-configuration-sections.list	\
 	common-configuration-values.list	\
-	common-configuration-defaults.list
+	common-configuration-defaults.list	\
+	markup-theme-configuration.list
 
 
 DISTCLEANFILES = *~
@@ -191,7 +202,10 @@ libguiutils_a_AR = $(AR) cru
 libguiutils_a_LIBADD =
 am_libguiutils_a_OBJECTS = configuration.$(OBJEXT) gui-utils.$(OBJEXT) \
 	tile-renderer.$(OBJEXT) time-control.$(OBJEXT)
-libguiutils_a_OBJECTS = $(am_libguiutils_a_OBJECTS)
+am__objects_1 = markup-theme-configuration.$(OBJEXT)
+nodist_libguiutils_a_OBJECTS = $(am__objects_1)
+libguiutils_a_OBJECTS = $(am_libguiutils_a_OBJECTS) \
+	$(nodist_libguiutils_a_OBJECTS)
 noinst_PROGRAMS = parse-configuration$(EXEEXT)
 PROGRAMS = $(noinst_PROGRAMS)
 
@@ -207,6 +221,7 @@ depcomp = $(SHELL) $(top_srcdir)/depcomp
 am__depfiles_maybe = depfiles
 @AMDEP_TRUE@DEP_FILES = ./$(DEPDIR)/configuration.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/gui-utils.Po \
+@AMDEP_TRUE@	./$(DEPDIR)/markup-theme-configuration.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/parse-configuration.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/tile-renderer.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/time-control.Po
@@ -216,9 +231,10 @@ CCLD = $(CC)
 LINK = $(CCLD) $(AM_CFLAGS) $(CFLAGS) $(AM_LDFLAGS) $(LDFLAGS) -o $@
 DIST_SOURCES = $(libguiutils_a_SOURCES) $(parse_configuration_SOURCES)
 DIST_COMMON = Makefile.am Makefile.in
-SOURCES = $(libguiutils_a_SOURCES) $(parse_configuration_SOURCES)
+SOURCES = $(libguiutils_a_SOURCES) $(nodist_libguiutils_a_SOURCES) $(parse_configuration_SOURCES)
 
-all: all-am
+all: $(BUILT_SOURCES)
+	$(MAKE) $(AM_MAKEFLAGS) all-am
 
 .SUFFIXES:
 .SUFFIXES: .c .o .obj
@@ -251,6 +267,7 @@ distclean-compile:
 
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/configuration.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gui-utils.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/markup-theme-configuration.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/parse-configuration.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tile-renderer.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/time-control.Po@am__quote@
@@ -395,6 +412,7 @@ distclean-generic:
 maintainer-clean-generic:
 	@echo "This command is intended for maintainers to use"
 	@echo "it deletes files that may require special tools to rebuild."
+	-test -z "$(BUILT_SOURCES)" || rm -f $(BUILT_SOURCES)
 clean: clean-am
 
 clean-am: clean-generic clean-noinstLIBRARIES clean-noinstPROGRAMS \
@@ -452,6 +470,15 @@ uninstall-am: uninstall-info-am
 	mostlyclean-compile mostlyclean-generic pdf pdf-am ps ps-am \
 	tags uninstall uninstall-am uninstall-info-am
 
+
+markup-theme-configuration.c markup-theme-configuration.h		\
+  : markup-theme-configuration.list parse-configuration$(EXEEXT)
+	./parse-configuration$(EXEEXT)					\
+	    markup-theme-configuration.list				\
+	    markup-theme-configuration.h markup-theme-configuration.c	\
+	  || (rm -f markup-theme-configuration.c			\
+		    markup-theme-configuration.h ;			\
+	      exit 1)
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.
 .NOEXPORT:

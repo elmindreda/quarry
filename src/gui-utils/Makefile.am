@@ -1,14 +1,32 @@
 # Process this file with Automake to produce `Makefile.in'.
 
-AM_CPPFLAGS = 				\
-	$(QUARRY_WARNINGS)		\
-					\
-	-I $(top_srcdir)/src		\
-	-I $(top_srcdir)/src/board	\
+AM_CPPFLAGS =						\
+	-D PACKAGE_DATA_DIR=\"$(datadir)/quarry\"	\
+							\
+	$(QUARRY_WARNINGS)				\
+							\
+	-I $(top_srcdir)/src				\
+	-I $(top_srcdir)/src/board			\
 	-I $(top_srcdir)/src/utils
 
 
 noinst_LIBRARIES = libguiutils.a
+
+BUILT_SOURCES =				\
+	markup-theme-configuration.c	\
+					\
+	markup-theme-configuration.h
+
+
+markup-theme-configuration.c markup-theme-configuration.h		\
+  : markup-theme-configuration.list parse-configuration$(EXEEXT)
+	./parse-configuration$(EXEEXT)					\
+	    markup-theme-configuration.list				\
+	    markup-theme-configuration.h markup-theme-configuration.c	\
+	  || (rm -f markup-theme-configuration.c			\
+		    markup-theme-configuration.h ;			\
+	      exit 1)
+
 
 libguiutils_a_SOURCES =			\
 	configuration.c			\
@@ -21,6 +39,8 @@ libguiutils_a_SOURCES =			\
 	gui-utils.h			\
 	tile-renderer.h			\
 	time-control.h
+
+nodist_libguiutils_a_SOURCES = $(BUILT_SOURCES)
 
 
 noinst_PROGRAMS = parse-configuration
@@ -35,6 +55,7 @@ parse_configuration_LDADD =			\
 EXTRA_DIST = 					\
 	common-configuration-sections.list	\
 	common-configuration-values.list	\
-	common-configuration-defaults.list
+	common-configuration-defaults.list	\
+	markup-theme-configuration.list
 
 DISTCLEANFILES = *~
