@@ -2230,6 +2230,15 @@ sgf_parse_board_size(SgfParsingData *data)
 
 /* FIXME: write this function. */
 SgfError
+sgf_parse_char_set(SgfParsingData *data)
+{
+  discard_values(data);
+  return SGF_SUCCESS;
+}
+
+
+/* FIXME: write this function. */
+SgfError
 sgf_parse_date(SgfParsingData *data)
 {
   begin_parsing_value(data);

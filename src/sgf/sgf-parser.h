@@ -152,6 +152,7 @@ DECLARE_VALUE_PARSER(sgf_parse_list_of_label);
 
 DECLARE_VALUE_PARSER(sgf_parse_application);
 DECLARE_VALUE_PARSER(sgf_parse_board_size);
+DECLARE_VALUE_PARSER(sgf_parse_char_set);
 DECLARE_VALUE_PARSER(sgf_parse_date);
 DECLARE_VALUE_PARSER(sgf_parse_figure);
 DECLARE_VALUE_PARSER(sgf_parse_file_format);

@@ -54,7 +54,7 @@ properties  SgfType property_info {
 	+ SGF_FIRST_ROOT_PROPERTY
   FF	SGF_FILE_FORMAT		not_stored	sgf_parse_file_format
   GM	SGF_GAME_TYPE		not_stored	sgf_parse_game_type
-  CA	SGF_CHAR_SET		simple_text	sgf_parse_simple_text
+  CA	SGF_CHAR_SET		not_stored	sgf_parse_char_set
   ST	SGF_STYLE		number		sgf_parse_style
   AP	SGF_APPLICATION		not_stored	sgf_parse_application
   SZ	SGF_BOARD_SIZE		not_stored	sgf_parse_board_size
