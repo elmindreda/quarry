@@ -1085,7 +1085,7 @@ freeze_on_empty_input (GtkFreezableSpinButton *freezable_spin_button,
     return FALSE;
 
   *new_value = 0.0;
-  gtk_freezable_spin_button_freeze (freezable_spin_button, "");
+  gtk_freezable_spin_button_freeze_and_stop_input (freezable_spin_button, "");
 
   return TRUE;
 }
