@@ -188,6 +188,14 @@ void		gtp_client_set_board_size
 		  (GtpClient *client,
 		   GtpClientResponseCallback response_callback,
 		   void *user_data, int board_size);
+void		gtp_client_set_fixed_handicap
+		  (GtpClient *client,
+		   GtpClientResponseCallback response_callback,
+		   void *user_data, int handicap);
+void		gtp_client_set_komi
+		  (GtpClient *client,
+		   GtpClientResponseCallback response_callback,
+		   void *user_data, double komi);
 
 void		gtp_client_play_move
 		  (GtpClient *client,

@@ -455,6 +455,30 @@ gtp_client_set_board_size(GtpClient *client,
 
 
 void
+gtp_client_set_fixed_handicap(GtpClient *client,
+			      GtpClientResponseCallback response_callback,
+			      void *user_data, int handicap)
+{
+  assert(client);
+
+  send_command(client, response_callback, user_data,
+	       "fixed_handicap %d", handicap);
+}
+
+
+void
+gtp_client_set_komi(GtpClient *client,
+		    GtpClientResponseCallback response_callback,
+		    void *user_data, double komi)
+{
+  assert(client);
+
+  send_command(client, response_callback, user_data,
+	       "komi %s", format_double(komi));
+}
+
+
+void
 gtp_client_play_move(GtpClient *client,
 		     GtpClientResponseCallback response_callback,
 		     void *user_data, int color, ...)
