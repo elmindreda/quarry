@@ -1,3 +1,69 @@
+2005-03-13  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* (Quarry version 0.1.13.)
+
+	* gui-gtk/Makefile.am: Rename `quarry-marshal.list' to
+	`quarry-marshal.glist' in `EXTRA_DIST' too.
+
+	* gui-gtk/gtk-goban-window.c (gtk_goban_window_init): Initialize
+	`time_controls' with NULL.
+	(gtk_goban_window_enter_game_mode): Replace `black_time_control'
+	and `white_time_control' arguments with single `time_control'.
+	(gtk_goban_window_resume_game): Remove `black_time_control' and
+	`white_time_control' arguments altogether.  Simply reuse time
+	controls created by set_current_tree().  Set time controls' states
+	after skipping played moves.
+	(leave_game_mode): Don't delete time controls.
+	(set_current_tree): Create and set time control using
+	time_control_new_from_sgf_node().
+	(set_time_controls): New function.
+	(update_children_for_new_node): When not in game mode, set clock's
+	displayed time from `goban_window->sgf_board_state'.
+	(update_window_title): Place ``modified'' string in brackets: too
+	many parentheses already.
+
+	* gui-utils/time-control.c (time_control_new_from_sgf_node)
+	(time_control_duplicate, time_control_save_settings_in_sgf_node)
+	(time_control_save_state_in_sgf_node)
+	(time_control_apply_defaults_if_needed, time_control_set_state):
+	New functions.  SGF saving functions are broken out of
+	begin_game() and move_has_been_played() correspondingly.
+	(time_control_is_short_on_time): Always add overtime length to the
+	remaining time.  Effectively, don't report ``short on time'' when
+	in the end of main time, but having a long overtime in reserve.
+
+	* gui-utils/Makefile.am (AM_CPPFLAGS): Add `src/sgf' to include
+	search path.
+	
+	* sgf/sgf-utils.c (sgf_utils_enter_tree): Initialize
+	`tree->board_state' with `board_state' argument.
+	(sgf_utils_go_down_in_tree): Remove `board_state' argument and use
+	`tree->board_state' instead.
+	(sgf_utils_go_up_in_tree): Likewise.
+	(sgf_utils_switch_to_variation): Likewise.
+	(sgf_utils_switch_to_given_variation): Likewise.
+	(sgf_utils_append_variation): Likewise.
+	(do_enter_tree): Remove `board_state' argument.  Initialize new
+	`tree->board_state' fields related to time control.
+	(descend_nodes): Remove `board_state' argument.  Track
+	`game_info_node' here and set new `game_info_node_depth' field as
+	appropriate.  Only check `PL' property value for setup nodes.
+	Call new find_time_control_data() function.
+	(ascend_nodes): Remove `board_state' argument.  Bug-fix: always
+	find `last_move_node' (could be erroneously set to NULL in rare
+	cases.)  Only check `PL' property value for setup nodes.  Simplify
+	`game_info_node' evaluation using `game_info_node_depth' field.
+	Call find_time_control_data().
+	(find_game_info_node): Remove function.
+	(find_time_control_data): New function.
+	(determine_final_color_to_play): Remove `board_state' argument.
+
+	* sgf/sgf-tree.c (sgf_game_tree_new): Initialize new `board_state'
+	field.
+	(sgf_game_tree_set_state): Handle new `board_state' field of
+	SgfGameTree and SgfBoardState structures.
+	(sgf_game_tree_get_state): Likewise.
+
 2005-03-12  Paul Pogonyshev  <pogonyshev@gmx.net>
 
 	* gui-gtk/gtk-preferences.c (create_background_table): Use

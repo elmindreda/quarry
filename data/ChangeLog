@@ -1,3 +1,11 @@
+2005-03-13  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* (Quarry version 0.1.13.)
+
+2005-03-13  Brenn Hill  <BrennHill@warpmail.net>
+
+	* textures/wood2.jpg: New file.
+
 2005-01-15  Paul Pogonyshev  <pogonyshev@gmx.net>
 
 	* (Quarry version 0.1.12.)
@@ -92,7 +100,7 @@
 Changes before the project registration on Gna! (2004-04-12) were not logged.
 
 
-  Copyright (C) 2004 Paul Pogonyshev.
+  Copyright (C) 2004, 2005 Paul Pogonyshev.
 
   Copying and distribution of this file, with or without modification,
   are permitted provided the copyright notice and this notice are preserved.

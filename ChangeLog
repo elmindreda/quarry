@@ -1,3 +1,12 @@
+2005-03-13  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* configure.ac: Quarry version 0.1.13.
+	* NEWS: Update.
+	* TODO: Update;
+
+	* THANKS: Thank Brenn Hill for the new woodgrain texture.
+	* README: Add legal information about `data/textures/wood2.jpg'.
+
 2005-03-12  Paul Pogonyshev  <pogonyshev@gmx.net>
 
 	* INSTALL: Add `BUILDING IN A SEPARATE DIRECTORY' section.

@@ -1,3 +1,7 @@
+2005-03-13  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* (Quarry version 0.1.13.)
+
 2005-01-15  Paul Pogonyshev  <pogonyshev@gmx.net>
 
 	* (Quarry version 0.1.12.)
@@ -40,7 +44,7 @@
 	* quarry-help.sed: New file.
 
 
-  Copyright (C) 2004 Paul Pogonyshev.
+  Copyright (C) 2004, 2005 Paul Pogonyshev.
 
   Copying and distribution of this file, with or without modification,
   are permitted provided the copyright notice and this notice are preserved.
