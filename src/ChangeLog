@@ -1,3 +1,42 @@
+2004-08-29  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* gui-gtk/gtk-new-game-dialog.c (begin_game): Use *cprintf()
+	functions when locale-specific formatting is not needed and is not
+	expected.
+	* gui-gtk/gtk-tile-set.c (scale_and_paint_svg_image): Likewise.
+	* gui-gtk/gtk-utils.c (time_spin_button_output): Likewise.
+	* gui-utils/configuration.c (write_section): Likewise.
+	* gui-utils/parse-configuration.c: Likewise.
+	* gtp/gtp-client.c (send_command): Likewise.
+	* sgf/parse-sgf-list.c: Likewise.
+	* sgf/sgf-diff-utils.c (do_generate_text_diff): Likewise.
+	* sgf/sgf-parser.c: Likewise.
+	* sgf/sgf-tree.c (sgf_node_get_handicap): Likewise.
+	* sgf/sgf-utils.c (sgf_utils_set_handicap): Likewise.
+	* sgf/sgf-writer.c: Likewise.
+	* board/board.c (game_format_point): Likewise.
+	* board/parse-game-list.c (game_list_parse_game2): Likewise.
+	* utils/parse-list.c (do_parse_lists): Likewise.
+
+	* utils/buffered-writer.c (buffered_writer_vprintf): Properly
+	handle cases when vsnprintf() returns -1.
+	(buffered_writer_printf, buffered_writer_vprintf): New functions.
+
+	* utils/string-buffer.c (string_buffer_vprintf): Properly handle
+	cases when vsnprintf() returns -1.
+	(string_buffer_cprintf, string_buffer_vcprintf): New functions.
+
+	* utils/utils.c (FORMAT_DOUBLE_DECIMALS): Remove macro (replaced
+	with new anonymous enumeration).
+	(utils_cprintf, utils_vcprintf, utils_ncprintf, utils_vncprintf):
+	New functions.
+	(utils_vprintf): Properly handle vsnprintf() return value after
+	the very first call.
+	(utils_format_double): Remove function (code is inherited by
+	utils_vncprintf()).
+	(utils_parse_double): Allow the string contain '+' as the first
+	character.
+
 2004-08-28  Paul Pogonyshev  <pogonyshev@gmx.net>
 
 	* (Quarry version 0.1.7.)
