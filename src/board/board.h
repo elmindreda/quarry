@@ -61,8 +61,8 @@
 typedef struct _BoardPoint	BoardPoint;
 
 struct _BoardPoint {
-  char		x;
-  char		y;
+  signed char	x;
+  signed char	y;
 };
 
 
