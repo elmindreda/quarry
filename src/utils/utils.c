@@ -1022,25 +1022,33 @@ utils_parse_double (const char *float_string, double *result)
   const char *scan = float_string;
   int is_negative = 0;
 
-  *result = 0.0;
+  if (result)
+    *result = 0.0;
 
   if (*scan == '+' || *scan == '-')
     is_negative = (*scan++ == '-');
 
-  while (*scan >= '0' && *scan <= '9')
-    *result = *result * 10 + (double) (*scan++ - '0');
+  while (*scan >= '0' && *scan <= '9') {
+    if (result)
+      *result = *result * 10 + (double) (*scan - '0');
+
+    scan++;
+  }
 
   if (*scan == '.') {
     double factor = 0.1;
 
     scan++;
     while (*scan >= '0' && *scan <= '9') {
-      *result += (double) (*(scan++) - '0') * factor;
+      if (result)
+	*result += (double) (*(scan) - '0') * factor;
+
+      scan++;
       factor /= 10.0;
     }
   }
 
-  if (is_negative)
+  if (is_negative && result)
     *result = - *result;
 
   return *scan == '\0';
