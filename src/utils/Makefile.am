@@ -12,7 +12,6 @@ noinst_LIBRARIES =	\
 
 libutils_a_SOURCES =		\
 	buffered-writer.c	\
-	format.c		\
 	getopt.c		\
 	getopt1.c		\
 	memory-pool.c		\
