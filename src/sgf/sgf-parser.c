@@ -978,7 +978,7 @@ complete_node_and_update_board (SgfParsingData *data, int is_leaf_node)
     if (data->node->move_color != EMPTY) {
       if (has_setup_add_properties
 	  || (sgf_node_get_color_property_value (data->node, SGF_TO_PLAY)
-	      == OTHER_COLOR (data->node->move_color))) {
+	      == data->node->move_color)) {
 	sgf_node_split (data->node, data->tree);
 	insert_error (data, SGF_ERROR_MIXED_SETUP_ADD_AND_MOVE_PROPERTIES,
 		      &data->node_error_position);
