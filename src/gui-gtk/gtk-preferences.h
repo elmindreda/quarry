@@ -70,11 +70,13 @@ struct _GtkEngineChain {
 };
 
 
-void		     gtk_preferences_init(void);
+void		     gtk_preferences_init (void);
 
-void		     gtk_preferences_dialog_present(gpointer page_to_select);
+void		     gtk_preferences_dialog_present (gpointer page_to_select);
 
-BoardAppearance *    game_to_board_appearance_structure(Game game);
+BoardAppearance *    game_to_board_appearance_structure (Game game);
+
+gboolean	     gtk_preferences_have_non_hidden_gtp_engine (void);
 
 GtkWidget *	     gtk_preferences_create_engine_selector
 		       (GtkGameIndex game_index, const gchar *engine_name,
