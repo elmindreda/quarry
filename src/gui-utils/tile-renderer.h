@@ -33,6 +33,7 @@ typedef struct _PieceParameters		PieceParameters;
 typedef struct _LightParameters		LightParameters;
 
 typedef struct _GoStonesParameters	GoStonesParameters;
+typedef struct _OthelloDisksParameters	OthelloDisksParameters;
 
 struct _PieceParameters {
   double	    ambiance_level;
@@ -59,11 +60,22 @@ struct _GoStonesParameters {
   PieceParameters   stones[NUM_COLORS];
 };
 
+struct _OthelloDisksParameters {
+  /* Othello-specific fields, describing shape of disks. */
+  double	    relative_disk_size;
+  double	    height_to_diameter_ratio;
+  double	    border_curve_size;
 
-/* FIXME: will need to be removed or replaced with game-specific
- *	  alternatives.
+  LightParameters   light;
+  PieceParameters   disks[NUM_COLORS];
+};
+
+
+/* FIXME: Will need to be removed or replaced with configuration
+ *	  variables.
  */
-extern const GoStonesParameters  go_stones_defaults;
+extern const GoStonesParameters	     go_stones_defaults;
+extern const OthelloDisksParameters  othello_disks_defaults;
 
 
 void		 render_go_stones(int cell_size,
@@ -73,6 +85,14 @@ void		 render_go_stones(int cell_size,
 				  unsigned char *white_pixel_data,
 				  int white_row_stride,
 				  int *stones_x_offset, int *stones_y_offset);
+void		 render_othello_disks(int cell_size,
+				      const OthelloDisksParameters *parameters,
+				      unsigned char *black_pixel_data,
+				      int black_row_stride,
+				      unsigned char *white_pixel_data,
+				      int white_row_stride,
+				      int *disks_x_offset,
+				      int *disks_y_offset);
 
 
 unsigned char *	 duplicate_and_adjust_alpha(int alpha_up, int alpha_down,
