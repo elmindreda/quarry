@@ -810,6 +810,7 @@ begin_game(GtkEnginesInstantiationStatus status, gpointer user_data)
   assert(status == ENGINES_INSTANTIATED);
 
   game_tree = sgf_game_tree_new_with_root(game, board_size, board_size, 1);
+  game_tree->char_set = utils_duplicate_string("UTF-8");
 
   for (k = 0; k < NUM_COLORS; k++) {
     GtpEngineListItem *engine_data =
