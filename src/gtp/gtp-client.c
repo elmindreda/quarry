@@ -795,16 +795,18 @@ store_protocol_version (GtpClient *client, int successful)
 	    || sscanf (client->response.first->text, "%d",
 		       &client->protocol_version));
 
-  if (client->protocol_version > 2) {
-    if (client->error_callback) {
-      client->error_callback (GTP_WARNING_FUTURE_GTP_VERSION,
-			      client->internal_response_index,
-			      client->user_data);
+  if (successful) {
+    if (client->protocol_version > 2) {
+      if (client->error_callback) {
+	client->error_callback (GTP_WARNING_FUTURE_GTP_VERSION,
+				client->internal_response_index,
+				client->user_data);
+      }
     }
-  }
-  else if (client->protocol_version < 1) {
-    result = 0;
-    client->protocol_version = 1;
+    else if (client->protocol_version < 1) {
+      result = 0;
+      client->protocol_version = 1;
+    }
   }
 
   return result;
