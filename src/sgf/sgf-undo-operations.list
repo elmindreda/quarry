@@ -1,0 +1,46 @@
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+# This file is part of Quarry                                     #
+#                                                                 #
+# Copyright (C) 2005 Paul Pogonyshev.                             #
+#                                                                 #
+# This program is free software; you can redistribute it and/or   #
+# modify it under the terms of the GNU General Public License as  #
+# published by the Free Software Foundation; either version 2 of  #
+# the License, or (at your option) any later version.             #
+#                                                                 #
+# This program is distributed in the hope that it will be useful, #
+# but WITHOUT ANY WARRANTY; without even the implied warranty of  #
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the   #
+# GNU General Public License for more details.                    #
+#                                                                 #
+# You should have received a copy of the GNU General Public       #
+# License along with this program; if not, write to the Free      #
+# Software Foundation, Inc., 59 Temple Place - Suite 330,         #
+# Boston, MA 02111-1307, USA.                                     #
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+
+
+mode undo_operations
+
+
+c_include "sgf-undo.h"
+
+
+operations  SgfUndoOperation sgf_undo_operations {
+  SGF_OPERATION_NEW_NODE
+		sgf_operation_delete_node
+		sgf_operation_add_node
+		sgf_operation_new_node_free_data
+
+  SGF_OPERATION_DELETE_NODE
+  		sgf_operation_add_node
+		sgf_operation_delete_node
+  		sgf_operation_delete_node_free_data
+
+  SGF_OPERATION_DELETE_NODE_CHILDREN
+		sgf_operation_delete_node_children_undo
+  		sgf_operation_delete_node_children_redo
+  		sgf_operation_delete_node_children_free_data
+
+  + SGF_NUM_OPERATIONS
+}

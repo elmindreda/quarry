@@ -158,8 +158,9 @@ AM_CPPFLAGS = \
 noinst_LIBRARIES = libsgf.a
 
 LIST_FILES = \
-	sgf-errors.list		\
-	sgf-properties.list
+	sgf-errors.list			\
+	sgf-properties.list		\
+	sgf-undo-operations.list
 
 
 PARSE_LIST_COMMAND = ./parse-sgf-list$(EXEEXT)
@@ -207,6 +208,7 @@ libsgf_a_SOURCES = \
 	sgf.h			\
 	sgf-parser.h		\
 	sgf-privates.h		\
+	sgf-undo.h		\
 	sgf-writer.h		\
 				\
 	$(LIST_FILES)
@@ -271,7 +273,8 @@ am__objects_1 =
 am_libsgf_a_OBJECTS = sgf-diff-utils.$(OBJEXT) sgf-parser.$(OBJEXT) \
 	sgf-tree.$(OBJEXT) sgf-tree-map.$(OBJEXT) sgf-utils.$(OBJEXT) \
 	sgf-writer.$(OBJEXT) $(am__objects_1)
-am__objects_2 = sgf-errors.$(OBJEXT) sgf-properties.$(OBJEXT)
+am__objects_2 = sgf-errors.$(OBJEXT) sgf-properties.$(OBJEXT) \
+	sgf-undo-operations.$(OBJEXT)
 am__objects_3 = $(am__objects_2) $(am__objects_1)
 nodist_libsgf_a_OBJECTS = $(am__objects_3)
 libsgf_a_OBJECTS = $(am_libsgf_a_OBJECTS) $(nodist_libsgf_a_OBJECTS)
@@ -306,8 +309,9 @@ am__depfiles_maybe = depfiles
 @AMDEP_TRUE@	./$(DEPDIR)/sgf-parser.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/sgf-properties.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/sgf-test.Po ./$(DEPDIR)/sgf-tree-map.Po \
-@AMDEP_TRUE@	./$(DEPDIR)/sgf-tree.Po ./$(DEPDIR)/sgf-utils.Po \
-@AMDEP_TRUE@	./$(DEPDIR)/sgf-writer.Po
+@AMDEP_TRUE@	./$(DEPDIR)/sgf-tree.Po \
+@AMDEP_TRUE@	./$(DEPDIR)/sgf-undo-operations.Po \
+@AMDEP_TRUE@	./$(DEPDIR)/sgf-utils.Po ./$(DEPDIR)/sgf-writer.Po
 COMPILE = $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) \
 	$(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
 CCLD = $(CC)
@@ -389,6 +393,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sgf-test.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sgf-tree-map.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sgf-tree.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sgf-undo-operations.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sgf-utils.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sgf-writer.Po@am__quote@
 
@@ -603,6 +608,8 @@ uninstall-am: uninstall-binPROGRAMS uninstall-info-am
 sgf-errors.c: sgf-errors.h
 
 sgf-properties.c: sgf-properties.h
+
+sgf-undo-operations.c: sgf-undo-operations.h
 
 # Make everything depend on the `Makefile' and the list parser.
 $(LIST_STAMP_FILES) : Makefile $(PARSE_LIST_COMMAND)

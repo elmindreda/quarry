@@ -11,9 +11,10 @@ AM_CPPFLAGS = 				\
 
 noinst_LIBRARIES = libsgf.a
 
-LIST_FILES =			\
-	sgf-errors.list		\
-	sgf-properties.list
+LIST_FILES =				\
+	sgf-errors.list			\
+	sgf-properties.list		\
+	sgf-undo-operations.list
 
 PARSE_LIST_COMMAND = ./parse-sgf-list$(EXEEXT)
 PARSE_LIST_FLAGS   =
@@ -23,6 +24,8 @@ PARSE_LIST_FLAGS   =
 sgf-errors.c: sgf-errors.h
 
 sgf-properties.c: sgf-properties.h
+
+sgf-undo-operations.c: sgf-undo-operations.h
 
 include $(top_srcdir)/aux/list.make
 
@@ -37,6 +40,7 @@ libsgf_a_SOURCES =		\
 	sgf.h			\
 	sgf-parser.h		\
 	sgf-privates.h		\
+	sgf-undo.h		\
 	sgf-writer.h		\
 				\
 	$(LIST_FILES)
