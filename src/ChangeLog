@@ -1,3 +1,25 @@
+2004-04-14  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* gui-utils/tile-set.c (tile_set_dump_recycle): Bugfix: don't
+	deadlock when performing "lazy" recycling.
+
+	* gui-gtk/gtk-utils.c (gtk_utils_set_menu_items_sensitive): New
+	function.
+
+	* gui-gtk/gtk-goban-window.c: Remove `navigate_goban' signal.
+	(gtk_goban_window_init): Add "Go" (as verb) sub-menu.  Replace
+	`navigate_goban' signal with generated `GtkAccelGroup' bindings.
+	(update_children_for_new_node): Set items of "Go" sub-menu
+	sensitive or insensitive depending on the node.
+
+	* gui-gtk/gtk-goban.c (gtk_goban_class_init): Initialize
+	`navigate' class member, even if GLib does that itself.
+	* gui-gtk/gtk-preferences.c (engine_selector_destroyed): Free
+	selector data, don't leak memory.
+
+	* board/amazons.c (amazons_is_legal_move): Bugfix: make function
+	work properly when "to" point is a null point.
+
 2004-04-13  Paul Pogonyshev  <pogonyshev@gmx.net>
 
 	* sgf/sgf-writer.c (do_write_point_or_rectangle): Fix typo ('['
