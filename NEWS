@@ -1,3 +1,20 @@
+--- New in Quarry 0.1.10 ---------------------------------------------
+
+* New useful feature: text search in comments.  Can be invaluable when
+  browsing through a very large game tree like a joseki dictionary or
+  a GNU Go debug trace.
+
+* Much improved displaying of SGF labels.  In particular, no more
+  black labels on black stones.
+
+* Two toolbars and a pseudo-toolbar are added.  Those who prefer more
+  window space can just hide the toolbars.
+
+* New markup theme "Bold."  Just like the default theme, but with
+  thicker lines.
+
+* Many bug-fixes and small improvements.
+
 --- New in Quarry 0.1.9 ----------------------------------------------
 
 * Compilation-time error with GTK+ 2.4 fixed (bug #898,
