@@ -157,6 +157,8 @@ static void
 gtk_goban_base_unrealize (GtkWidget *widget)
 {
   g_signal_emit (widget, goban_base_signals[FREE_SCREEN_RESOURCES], 0);
+
+  parent_class->unrealize (widget);
 }
 
 
