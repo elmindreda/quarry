@@ -75,8 +75,8 @@ struct _GtkSgfMarkupTileSet {
 
 GtkMainTileSet *       gtk_main_tile_set_create_or_reuse(gint tile_size,
 							 Game game);
-GtkSgfMarkupTileSet *  gtk_sgf_markup_tile_set_create_or_reuse
-			 (gint tile_size, Game game, const gchar *theme);
+GtkSgfMarkupTileSet *  gtk_sgf_markup_tile_set_create_or_reuse(gint tile_size,
+							       Game game);
 
 
 extern ObjectCache	gtk_main_tile_set_cache;

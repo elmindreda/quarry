@@ -20,6 +20,9 @@
 \* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 
+#include "gtk-configuration.h"
+#include "gtk-preferences.h"
+#include "markup-theme-configuration.h"
 #include "tile-renderer.h"
 #include "sgf.h"
 #include "board.h"
@@ -42,14 +45,17 @@ typedef struct _GtkMainTileSetKey	GtkMainTileSetKey;
 typedef struct _GtkSgfMarkupTileSetKey	GtkSgfMarkupTileSetKey;
 
 struct _GtkMainTileSetKey {
-  gint		tile_size;
-  Game		game;
+  gint		 tile_size;
+  Game		 game;
 };
 
 struct _GtkSgfMarkupTileSetKey {
-  gint		tile_size;
-  Game		game;
-  const gchar  *theme;
+  gint		 tile_size;
+
+  const gchar	*theme_directory;
+  gdouble	 scale;
+  QuarryColor	 colors[NUM_SGF_MARKUP_BACKGROUNDS];
+  gdouble	 opacity;
 };
 
 
@@ -71,7 +77,8 @@ static void *	    gtk_sgf_markup_tile_set_create
 static void	    gtk_sgf_markup_tile_set_delete
 		      (GtkSgfMarkupTileSet *tile_set);
 
-static GdkPixbuf *  scale_and_paint_svg_image(const gchar *filename,
+static GdkPixbuf *  scale_and_paint_svg_image(char *buffer,
+					      const char *buffer_end,
 					      gint tile_size, gdouble scale,
 					      QuarryColor color,
 					      gdouble opacity);
@@ -223,22 +230,42 @@ gtk_main_tile_set_delete(GtkMainTileSet *tile_set)
 
 
 GtkSgfMarkupTileSet *
-gtk_sgf_markup_tile_set_create_or_reuse(gint tile_size, Game game,
-					const gchar *theme)
+gtk_sgf_markup_tile_set_create_or_reuse(gint tile_size, Game game)
 {
-  /* For Go, markup can only be properly centered if it is
-   * odd-sized.
-   *
-   * FIXME: scale SVG contents up when decreasing size for Go.
-   */
-  const GtkSgfMarkupTileSetKey key
-    = { (game == GAME_GO ? (tile_size - 1) | 1 : tile_size), game, theme };
+  BoardAppearance *board_appearance = game_to_board_appearance_structure(game);
+  GtkSgfMarkupTileSetKey key;
+  MarkupThemeListItem *theme_item = NULL;
+  int k;
 
-  assert(tile_size > 0);
-  assert(theme);
+  if (board_appearance->markup_theme) {
+    theme_item = markup_theme_list_find(&markup_themes,
+					board_appearance->markup_theme);
+  }
+
+  if (!theme_item)
+    theme_item = markup_theme_list_find(&markup_themes, "Default");
+
+  assert(theme_item);
+
+  key.tile_size	      = tile_size;
+  key.theme_directory = theme_item->directory;
+  key.scale	      = CLAMP(board_appearance->markup_size, 0.2, 1.0);
+  key.opacity	      = CLAMP(board_appearance->markup_opacity, 0.2, 1.0);
 
   /* FIXME */
-  assert(strcmp(theme, "default") == 0);
+  if (board_appearance->markup_size_is_relative)
+    key.scale *= 0.91;
+
+  for (k = 0; k < NUM_SGF_MARKUP_BACKGROUNDS; k++)
+    key.colors[k] = board_appearance->markup_colors[k];
+
+  /* For Go, markup can only be properly centered if it is
+   * odd-sized.
+   */
+  if (game == GAME_GO && tile_size % 2 == 0) {
+    key.tile_size--;
+    key.scale = MIN(1.0, (key.scale * tile_size) / (tile_size - 1));
+  }
 
   return ((GtkSgfMarkupTileSet *)
 	  object_cache_create_or_reuse_object(&gtk_sgf_markup_tile_set_cache,
@@ -250,9 +277,20 @@ static int
 gtk_sgf_markup_tile_set_compare_keys(const GtkSgfMarkupTileSetKey *first_key,
 				     const GtkSgfMarkupTileSetKey *second_key)
 {
-  return (first_key->tile_size == second_key->tile_size
-	  && first_key->game == second_key->game
-	  && strcmp(first_key->theme, second_key->theme) == 0);
+  int k;
+
+  if (first_key->tile_size  != second_key->tile_size
+      || strcmp(first_key->theme_directory, second_key->theme_directory) != 0
+      || first_key->scale   != second_key->scale
+      || first_key->opacity != second_key->opacity)
+    return 0;
+
+  for (k = 0; k < NUM_SGF_MARKUP_BACKGROUNDS; k++) {
+    if (!QUARRY_COLORS_ARE_EQUAL(first_key->colors[k], second_key->colors[k]))
+      return 0;
+  }
+
+  return 1;
 }
 
 
@@ -260,10 +298,16 @@ static void *
 gtk_sgf_markup_tile_set_duplicate_key(const GtkSgfMarkupTileSetKey *key)
 {
   GtkSgfMarkupTileSetKey *key_copy = g_malloc(sizeof(GtkSgfMarkupTileSetKey));
+  int k;
 
-  key_copy->tile_size = key->tile_size;
-  key_copy->game      = key->game;
-  key_copy->theme     = key->theme;
+  key_copy->tile_size	    = key->tile_size;
+  key_copy->theme_directory = key->theme_directory;
+  key_copy->scale	    = key->scale;
+
+  for (k = 0; k < NUM_SGF_MARKUP_BACKGROUNDS; k++)
+    key_copy->colors[k] = key->colors[k];
+
+  key_copy->opacity = key->opacity;
 
   return key_copy;
 }
@@ -272,35 +316,59 @@ gtk_sgf_markup_tile_set_duplicate_key(const GtkSgfMarkupTileSetKey *key)
 static void *
 gtk_sgf_markup_tile_set_create(const GtkSgfMarkupTileSetKey *key)
 {
-  /* FIXME: replace with configurable settings; */
-  const QuarryColor color_on_empty_othello = { 0xcc, 0xee, 0xbb };
-  const QuarryColor color_on_empty_other = { 24, 96, 16 };
-  const QuarryColor color_on_black = { 255, 240, 220 };
-  const QuarryColor color_on_white = { 80, 80, 80 };
-
   static const gchar *svg_file_base_names[NUM_SGF_MARKUPS]
     = { "cross", "circle", "square", "triangle", "selected" };
 
   GtkSgfMarkupTileSet *tile_set = g_malloc(sizeof(GtkSgfMarkupTileSet));
   int k;
-  int i;
 
   tile_set->tile_size = key->tile_size;
 
   for (k = 0; k < NUM_SGF_MARKUPS; k++) {
     gchar *filename = g_strdup_printf((PACKAGE_DATA_DIR
 				       "/markup-themes/%s/%s.svg"),
-				      key->theme, svg_file_base_names[k]);
+				      key->theme_directory,
+				      svg_file_base_names[k]);
+    FILE *file = fopen(filename, "rb");
+    int i;
 
-    for (i = 0; i < NUM_SGF_MARKUP_BACKGROUNDS; i++) {
-      tile_set->tiles[k][i]
-	= scale_and_paint_svg_image(filename, key->tile_size, 0.6,
-				    (i == EMPTY ? (key->game == GAME_OTHELLO
-						   ? color_on_empty_othello
-						   : color_on_empty_other)
-				     : (i == BLACK
-					? color_on_black : color_on_white)),
-				    0.9);
+    if (file && fseek(file, 0, SEEK_END) != -1) {
+      int file_size = ftell(file);
+      char *buffer = g_malloc(file_size);
+
+      rewind(file);
+      assert(fread(buffer, file_size, 1, file) == 1);
+      fclose(file);
+
+      for (i = 0; i < NUM_SGF_MARKUP_BACKGROUNDS; i++) {
+	int j;
+
+	for (j = 0; j < i; j++) {
+	  if (QUARRY_COLORS_ARE_EQUAL(key->colors[j], key->colors[i]))
+	    break;
+	}
+
+	if (j == i) {
+	  tile_set->tiles[k][i] = scale_and_paint_svg_image(buffer,
+							    buffer + file_size,
+							    key->tile_size,
+							    key->scale,
+							    key->colors[i],
+							    key->opacity);
+	}
+	else {
+	  /* Reuse tile and add reference. */
+	  tile_set->tiles[k][i] = tile_set->tiles[k][j];
+	  g_object_ref(tile_set->tiles[k][i]);
+	}
+      }
+
+      g_free(buffer);
+    }
+    else {
+      /* GDK will print some warnings to stderr. */
+      for (i = 0; i < NUM_SGF_MARKUP_BACKGROUNDS; i++)
+	tile_set->tiles[k][i] = NULL;
     }
 
     g_free(filename);
@@ -326,204 +394,196 @@ gtk_sgf_markup_tile_set_delete(GtkSgfMarkupTileSet *tile_set)
 
 
 static GdkPixbuf *
-scale_and_paint_svg_image(const gchar *filename, gint tile_size, gdouble scale,
-			  QuarryColor color, gdouble opacity)
+scale_and_paint_svg_image(char *buffer, const char *buffer_end,
+			  gint tile_size,
+			  gdouble scale, QuarryColor color, gdouble opacity)
 {
-  GdkPixbuf *pixbuf = NULL;
-  FILE *file = fopen(filename, "rb");
+  GdkPixbuf *pixbuf;
+  const char *written_up_to;
+  char *scan;
+  RsvgHandle *rsvg_handle = rsvg_handle_new();
+  char color_string[8];
+  char *scale_string = g_strdup_printf(" scale(%s)", utils_format_double(scale));
+  const char *opacity_string = utils_format_double(opacity);
 
-  if (file && fseek(file, 0, SEEK_END) != -1) {
-    int file_size = ftell(file);
-    char *buffer = g_malloc(file_size);
-    const char *buffer_end = buffer + file_size;
-    const char *written_up_to;
-    char *scan;
-    RsvgHandle *rsvg_handle = rsvg_handle_new();
-    char color_string[8];
-    char *scale_string = g_strdup_printf(" scale(%s)", utils_format_double(scale));
-    const char *opacity_string = utils_format_double(opacity);
+  sprintf(color_string, "#%02x%02x%02x", color.red, color.green, color.blue);
 
-    sprintf(color_string, "#%02x%02x%02x", color.red, color.green, color.blue);
+  rsvg_handle_set_size_callback(rsvg_handle, set_pixbuf_size,
+				GINT_TO_POINTER(tile_size), NULL);
 
-    rewind(file);
-    assert(fread(buffer, file_size, 1, file) == 1);
-    fclose(file);
-
-    rsvg_handle_set_size_callback(rsvg_handle, set_pixbuf_size,
-				  GINT_TO_POINTER(tile_size), NULL);
-
-    for (scan = buffer, written_up_to = buffer;
-	 (scan < buffer_end
+  for (scan = buffer, written_up_to = buffer;
+       (scan < buffer_end
 	  && (scan = memchr(scan, '<', buffer_end - scan)) != NULL); ) {
-      scan++;
-      if (scan < buffer_end - 13 && memcmp(scan, "!-- [Quarry]", 12) == 0) {
-	int scale_this_tag = 0;
-	int blend_this_tag = 0;
-	StringList color_properties = STATIC_STRING_LIST;
+    scan++;
+    if (scan < buffer_end - 12 && memcmp(scan, "!-- [Quarry]", 12) == 0) {
+      int scale_this_tag = 0;
+      int blend_this_tag = 0;
+      StringList color_properties = STATIC_STRING_LIST;
 
-	while (1) {
-	  const char *keyword;
+      scan += 12;
+      while (1) {
+	const char *keyword;
 
-	  while (scan < buffer_end
-		 && (*scan == ' ' || *scan == '\t'
-		     || *scan == '\n' || *scan == '\r'))
-	    scan++;
+	while (scan < buffer_end
+	       && (*scan == ' ' || *scan == '\t'
+		   || *scan == '\n' || *scan == '\r'))
+	  scan++;
 
-	  keyword = scan;
-	  while (scan < buffer_end
-		 && *scan != ' ' && *scan != '\t'
-		 && *scan != '\n' && *scan != '\r' && *scan != '>')
-	    scan++;
+	keyword = scan;
+	while (scan < buffer_end
+	       && *scan != ' ' && *scan != '\t'
+	       && *scan != '\n' && *scan != '\r' && *scan != '>')
+	  scan++;
 
-	  if (scan < buffer_end && *scan != '>') {
-	    if (scan - keyword == 5 && memcmp(keyword, "scale", 5) == 0)
-	      scale_this_tag = 1;
-	    else if (scan - keyword == 5 && memcmp(keyword, "blend", 5) == 0)
-	      blend_this_tag = 1;
-	    else {
-	      string_list_add_from_buffer(&color_properties,
-					  keyword, scan - keyword);
-	    }
+	if (scan < buffer_end && *scan != '>') {
+	  if (scan - keyword == 5 && memcmp(keyword, "scale", 5) == 0)
+	    scale_this_tag = 1;
+	  else if (scan - keyword == 5 && memcmp(keyword, "blend", 5) == 0)
+	    blend_this_tag = 1;
+	  else {
+	    string_list_add_from_buffer(&color_properties,
+					keyword, scan - keyword);
 	  }
-	  else
-	    break;
 	}
+	else
+	  break;
+      }
 
-	scan = memchr(scan, '<', buffer_end - scan);
+      scan = memchr(scan, '<', buffer_end - scan);
+      while (scan < buffer_end
+	     && *scan != ' ' && *scan != '\t'
+	     && *scan != '\n' && *scan != '\r'
+	     && *scan != '>' && *scan != '/')
+	scan++;
+
+      while (1) {
+	const char *property_name;
+
+	while (scan < buffer_end
+	       && (*scan == ' ' || *scan == '\t'
+		   || *scan == '\n' || *scan == '\r'))
+	  scan++;
+
+	property_name = scan;
 	while (scan < buffer_end
 	       && *scan != ' ' && *scan != '\t'
 	       && *scan != '\n' && *scan != '\r'
-	       && *scan != '>' && *scan != '/')
-	    scan++;
+	       && *scan != '=' && *scan != '/' && *scan != '>')
+	  scan++;
 
-	while (1) {
-	  const char *property_name;
+	if (scan < buffer_end - 1 && *scan == '=' && *(scan + 1) == '"') {
+	  if (scale_this_tag && scan - property_name == 9
+	      && memcmp(property_name, "transform", 9) == 0) {
+	    scan += 2;
+	    while (scan < buffer_end && *scan != '"')
+	      scan++;
 
-	  while (scan < buffer_end
-		 && (*scan == ' ' || *scan == '\t'
-		     || *scan == '\n' || *scan == '\r'))
-	    scan++;
+	    assert(rsvg_handle_write(rsvg_handle,
+				     written_up_to, scan - written_up_to,
+				     NULL));
+	    written_up_to = scan;
 
-	  property_name = scan;
-	  while (scan < buffer_end
-		 && *scan != ' ' && *scan != '\t'
-		 && *scan != '\n' && *scan != '\r'
-		 && *scan != '=' && *scan != '/' && *scan != '>')
-	    scan++;
+	    assert(rsvg_handle_write(rsvg_handle, scale_string,
+				     strlen(scale_string), NULL));
 
-	  if (scan < buffer_end - 1 && *scan == '=' && *(scan + 1) == '"') {
-	    if (scale_this_tag && scan - property_name == 9
-		&& memcmp(property_name, "transform", 9) == 0) {
-	      scan += 2;
-	      while (scan < buffer_end && *scan != '"')
-		scan++;
-
-	      assert(rsvg_handle_write(rsvg_handle,
-				       written_up_to, scan - written_up_to,
-				       NULL));
-	      written_up_to = scan;
-
-	      assert(rsvg_handle_write(rsvg_handle, scale_string,
-				       strlen(scale_string), NULL));
-
-	      scale_this_tag = 0;
-	    }
-	    else if (blend_this_tag && scan - property_name == 7
-		     && memcmp(property_name, "opacity", 7) == 0) {
-	      scan += 2;
-	      assert(rsvg_handle_write(rsvg_handle,
-				       written_up_to, scan - written_up_to,
-				       NULL));
-
-	      while (scan < buffer_end && *scan != '"')
-		scan++;
-	      written_up_to = scan;
-
-	      assert(rsvg_handle_write(rsvg_handle, opacity_string,
-				       strlen(opacity_string), NULL));
-
-	      blend_this_tag = 0;
-	    }
-	    else {
-	      StringListItem *color_property;
-
-	      *scan = 0;
-	      color_property = string_list_find(&color_properties,
-						property_name);
-	      *scan = '=';
-	      scan += 2;
-
-	      if (color_property) {
-		string_list_delete_item(&color_properties, color_property);
-
-		assert(rsvg_handle_write(rsvg_handle,
-					 written_up_to, scan - written_up_to,
-					 NULL));
-
-		assert(rsvg_handle_write(rsvg_handle, color_string, 7, NULL));
-
-		while (scan < buffer_end && *scan != '"')
-		  scan++;
-		written_up_to = scan;
-	      }
-	    }
+	    scale_this_tag = 0;
+	  }
+	  else if (blend_this_tag && scan - property_name == 7
+		   && memcmp(property_name, "opacity", 7) == 0) {
+	    scan += 2;
+	    assert(rsvg_handle_write(rsvg_handle,
+				     written_up_to, scan - written_up_to,
+				     NULL));
 
 	    while (scan < buffer_end && *scan != '"')
 	      scan++;
-	    if (scan < buffer_end)
-	      scan++;
+	    written_up_to = scan;
+
+	    assert(rsvg_handle_write(rsvg_handle, opacity_string,
+				     strlen(opacity_string), NULL));
+
+	    blend_this_tag = 0;
 	  }
 	  else {
-	    if (scan < buffer_end
-		&& (*scan == '>' || *scan == '/')
-		&& (scale_this_tag || blend_this_tag)) {
+	    StringListItem *color_property;
+
+	    *scan = 0;
+	    color_property = string_list_find(&color_properties,
+					      property_name);
+	    *scan = '=';
+	    scan += 2;
+
+	    if (color_property) {
+	      string_list_delete_item(&color_properties, color_property);
+
 	      assert(rsvg_handle_write(rsvg_handle,
 				       written_up_to, scan - written_up_to,
 				       NULL));
+
+	      assert(rsvg_handle_write(rsvg_handle, color_string, 7, NULL));
+
+	      while (scan < buffer_end && *scan != '"')
+		scan++;
 	      written_up_to = scan;
+	    }
+	  }
 
-	      if (scale_this_tag) {
-		char *scale_full_string = g_strdup_printf(" transform=\"%s\"",
-							  scale_string + 1);
+	  while (scan < buffer_end && *scan != '"')
+	    scan++;
+	  if (scan < buffer_end)
+	    scan++;
+	}
+	else {
+	  if (scan < buffer_end
+	      && (*scan == '>' || *scan == '/')
+	      && (scale_this_tag || blend_this_tag)) {
+	    assert(rsvg_handle_write(rsvg_handle,
+				     written_up_to, scan - written_up_to,
+				     NULL));
+	    written_up_to = scan;
 
-		assert(rsvg_handle_write(rsvg_handle,
-					 scale_full_string,
-					 strlen(scale_full_string),
-					 NULL));
+	    if (scale_this_tag) {
+	      char *scale_full_string = g_strdup_printf(" transform=\"%s\"",
+							scale_string + 1);
 
-		g_free(scale_full_string);
-	      }
+	      assert(rsvg_handle_write(rsvg_handle,
+				       scale_full_string,
+				       strlen(scale_full_string),
+				       NULL));
 
-	      if (blend_this_tag) {
-		char *opacity_full_string = g_strdup_printf(" opacity=\"%s\"",
-							    opacity_string);
-
-		assert(rsvg_handle_write(rsvg_handle,
-					 opacity_full_string,
-					 strlen(opacity_full_string),
-					 NULL));
-
-		g_free(opacity_full_string);
-	      }
+	      g_free(scale_full_string);
 	    }
 
-	    break;
+	    if (blend_this_tag) {
+	      char *opacity_full_string = g_strdup_printf(" opacity=\"%s\"",
+							  opacity_string);
+
+	      assert(rsvg_handle_write(rsvg_handle,
+				       opacity_full_string,
+				       strlen(opacity_full_string),
+				       NULL));
+
+	      g_free(opacity_full_string);
+	    }
 	  }
+
+	  break;
 	}
       }
+
+      string_list_empty(&color_properties);
     }
-
-    assert(rsvg_handle_write(rsvg_handle,
-			     written_up_to, buffer_end - written_up_to, NULL));
-
-    assert(rsvg_handle_close(rsvg_handle, NULL));
-
-    pixbuf = rsvg_handle_get_pixbuf(rsvg_handle);
-
-    rsvg_handle_free(rsvg_handle);
-    g_free(scale_string);
-    g_free(buffer);
   }
+
+  assert(rsvg_handle_write(rsvg_handle,
+			   written_up_to, buffer_end - written_up_to, NULL));
+
+  assert(rsvg_handle_close(rsvg_handle, NULL));
+
+  pixbuf = rsvg_handle_get_pixbuf(rsvg_handle);
+
+  rsvg_handle_free(rsvg_handle);
+  g_free(scale_string);
 
   return pixbuf;
 }
