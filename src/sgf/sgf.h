@@ -223,14 +223,26 @@ void		 sgf_game_tree_delete(SgfGameTree *tree);
 
 void		 sgf_game_tree_set_game(SgfGameTree *tree, Game game);
 
+SgfGameTree *	 sgf_game_tree_duplicate(const SgfGameTree *tree);
+SgfGameTree *	 sgf_game_tree_duplicate_with_nodes(const SgfGameTree *tree);
+
 int		 sgf_game_tree_count_nodes(const SgfGameTree *tree);
 
 
-SgfNode*	 sgf_node_new(SgfGameTree *tree, SgfNode *parent);
+SgfNode *	 sgf_node_new(SgfGameTree *tree, SgfNode *parent);
 void		 sgf_node_delete(SgfNode *node, SgfGameTree *tree);
 
-SgfNode*	 sgf_node_append_child(SgfNode *node, SgfGameTree *tree);
+SgfNode *	 sgf_node_append_child(SgfNode *node, SgfGameTree *tree);
 
+SgfNode *	 sgf_node_duplicate(const SgfNode *node,
+				    SgfGameTree *tree, SgfNode *parent);
+SgfNode *	 sgf_node_duplicate_recursively(const SgfNode *node,
+						SgfGameTree *tree,
+						SgfNode *parent);
+SgfNode *	 sgf_node_duplicate_to_given_depth(const SgfNode *node,
+						   SgfGameTree *tree,
+						   SgfNode *parent,
+						   int depth);
 
 int		 sgf_node_find_property(SgfNode *node, SgfType type,
 					SgfProperty ***link);
@@ -295,7 +307,7 @@ int		 sgf_node_delete_property(SgfNode *node, SgfGameTree *tree,
 void		 sgf_node_split(SgfNode *node, SgfGameTree *tree);
 
 
-int		 sgf_node_count_sub_tree_nodes(const SgfNode *node);
+int		 sgf_node_count_subtree_nodes(const SgfNode *node);
 
 
 inline SgfProperty *
@@ -304,6 +316,9 @@ inline SgfProperty *
 inline void	 sgf_property_delete(SgfProperty *property, SgfGameTree *tree);
 void		 sgf_property_delete_at_link(SgfProperty **link,
 					     SgfGameTree *tree);
+
+SgfProperty *	 sgf_property_duplicate(const SgfProperty *property,
+					SgfGameTree *tree, SgfProperty *next);
 
 
 #define sgf_position_list_new(positions, num_positions)			\
@@ -316,14 +331,20 @@ void		 sgf_property_delete_at_link(SgfProperty **link,
 #define sgf_position_list_delete(list)					\
   board_position_list_delete(list)
 
-#define sgf_position_list_equal(list1, list2)				\
-  board_position_list_equal((list1), (list2))
+#define sgf_position_list_duplicate(position_list)			\
+  ((SgfPositionList *) board_position_list_duplicate(position_list))
+
+
+#define sgf_position_lists_are_equal(list1, list2)			\
+  board_position_lists_are_equal((list1), (list2))
 
 
 SgfLabelList *	 sgf_label_list_new(int num_labels,
 				    SgfPoint *points, char **labels);
 SgfLabelList *	 sgf_label_list_new_empty(int num_labels);
-void		 sgf_label_list_delete(SgfLabelList *label);
+void		 sgf_label_list_delete(SgfLabelList *list);
+
+SgfLabelList *	 sgf_label_list_duplicate(const SgfLabelList *list);
 
 
 
@@ -486,6 +507,13 @@ void	      sgf_utils_mark_territory_on_grid(const SgfGameTree *tree,
 					       char grid[BOARD_GRID_SIZE],
 					       char black_territory_mark,
 					       char white_territory_mark);
+
+
+
+/* `sgf-diff-utils.c' global functions. */
+
+SgfCollection *	 sgf_diff(const SgfCollection *from_collection,
+			  const SgfCollection *to_collection);
 
 
 #endif /* QUARRY_SGF_H */
