@@ -340,7 +340,7 @@ update_internal_view_port (SgfGameTree *tree,
 	else {
 	  do
 	    y_level[x++] = y;
-	  while (x <= branch_leaf_x);
+	  while (y_level[x] < y);
 
 	  x = line_pointer->x2;
 	}
@@ -371,6 +371,12 @@ update_internal_view_port (SgfGameTree *tree,
 
 	if (y >= y_level[last_valid_y_level])
 	  last_valid_y_level = x;
+	else {
+	  int x_scan;
+
+	  for (x_scan = x + 1; y_level[x_scan] < y; x_scan++)
+	    y_level[x_scan] = y;
+	}
 
 	if (IS_WITHIN_VIEW_PORT (x, y))
 	  WRITE_VIEW_PORT_NODE (x, y, node);
