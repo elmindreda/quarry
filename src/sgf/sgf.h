@@ -270,6 +270,9 @@ void		 sgf_game_tree_set_state (SgfGameTree *tree,
 SgfGameTree *	 sgf_game_tree_duplicate (const SgfGameTree *tree);
 SgfGameTree *	 sgf_game_tree_duplicate_with_nodes (const SgfGameTree *tree);
 
+SgfNode *	 sgf_game_tree_traverse_forward (const SgfGameTree *tree);
+SgfNode *	 sgf_game_tree_traverse_backward (const SgfGameTree *tree);
+
 int		 sgf_game_tree_count_nodes (const SgfGameTree *tree);
 
 
@@ -377,6 +380,10 @@ int		 sgf_node_delete_property (SgfNode *node, SgfGameTree *tree,
 					   SgfType type);
 
 void		 sgf_node_split (SgfNode *node, SgfGameTree *tree);
+
+
+SgfNode *	 sgf_node_traverse_forward (const SgfNode *node);
+SgfNode *	 sgf_node_traverse_backward (const SgfNode *node);
 
 
 int		 sgf_node_count_subtree_nodes (const SgfNode *node);
@@ -554,6 +561,8 @@ void	      sgf_utils_switch_to_variation (SgfGameTree *tree,
 void	      sgf_utils_switch_to_given_variation (SgfGameTree *tree,
 						   SgfNode *node,
 						   SgfBoardState *board_state);
+void	      sgf_utils_switch_to_given_node (SgfGameTree *tree, SgfNode *node,
+					      SgfBoardState *board_state);
 
 void	      sgf_utils_append_variation (SgfGameTree *tree,
 					  SgfBoardState *board_state,
