@@ -1,3 +1,50 @@
+2004-06-12  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* gui-gtk/gtk-goban-window.c (gtk_goban_window_init): Create clock
+	widgets for both players.
+	(gtk_goban_window_enter_game_mode): Take care of time control.
+	(initialize_gtp_player): Likewise.
+	(move_has_been_played): Likewise.
+	(generate_move_via_gtp, start_clock_if_needed): New functions.
+
+	* gui-gtk/gtk-clock.c, gui-gtk/gtk-clock.h: New files.
+
+	* gtp/gtp-client.c (COLOR_STRING): New macro.
+	(gtp_client_send_time_settings, gtp_client_send_time_left): New
+	functions.
+
+2004-06-10  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* gui-gtk/gtk-new-game-dialog.c (gtk_new_game_dialog_present): Add
+	time control parameters widgets.
+	(time_control_type_changed): New function.
+	(begin_game): Create `TimeControl' objects when needed.
+
+	* gui-gtk/gtk-utils.c (gtk_utils_create_time_spin_button)
+	(time_spin_button_output, time_spin_button_input): New functions.
+
+	* gui-gtk/gui-back-end.c (gui_back_end_timer_restart)
+	(gui_back_end_timer_delete)
+	(gui_back_end_timer_get_seconds_elapsed): New functions.
+
+	* gui-utils/time-control.c, gui-utils/time-control.h: New files.
+
+2004-06-06  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* gui-gtk/gtk-utils.c (gtk_utils_create_selector)
+	(gtk_utils_create_invisible_notebook): New functions.
+
+2004-06-01  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* gui-gtk/gtk-preferences.c (gtk_preferences_finalize): Remove.
+	(gtk_preferences_init): Register `gtp_engines_list_store' with
+	gui_back_end_register_object_to_finalize().
+
+	* gui-gtk/gui-back-end.c
+	(gui_back_end_register_object_to_finalize): New function.
+	(run_main_loop): Dereference objects from `objects_to_finalize'
+	list.
+
 2004-05-27  Paul Pogonyshev  <pogonyshev@gmx.net>
 
 	* gui-gtk/gtk-preferences.c (chain_client_initialized): Update
