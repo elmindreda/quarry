@@ -57,17 +57,6 @@ quarry-marshal.$(OBJEXT) : quarry-marshal.c quarry-marshal.h
 	  || (rm -f quarry-marshal.$(OBJEXT) ; exit 1)
 
 
-# FIXME: same as above (problem with GtkStockItem and
-#	 `-Wwrite-strings').
-quarry-stock.$(OBJEXT) : quarry-stock.c quarry-stock.h
-	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(I_CPPFLAGS)	\
-	      $(QUARRY_WARNINGS_REDUCED) $(QUARRY_FULL_GTK_CFLAGS)	\
-	      $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)			\
-	      -o quarry-stock.$(OBJEXT)					\
-	      -c quarry-stock.c						\
-	  || (rm -f quarry-stock.$(OBJEXT) ; exit 1)
-
-
 PARSE_CONFIGURATION =							\
 	$(top_srcdir)/src/gui-utils/parse-configuration$(EXEEXT)
 
