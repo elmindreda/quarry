@@ -314,7 +314,7 @@ gtk_new_game_dialog_present(void)
 
   for (k = 0; k < NUM_SUPPORTED_GAMES; k++) {
     TimeControlData *const time_control_data = data->time_control_data + k;
-    const TimeControlConfiguration *time_control_configuration;
+    const TimeControlConfiguration *time_control_configuration = NULL;
 
     GtkWidget *rules_vbox_widget;
     GtkBox *rules_vbox;
@@ -799,7 +799,7 @@ begin_game(GtkEnginesInstantiationStatus status, gpointer user_data)
   const char *engine_screen_names[NUM_COLORS];
   TimeControlData *const time_control_data = (data->time_control_data
 					      + game_index);
-  TimeControlConfiguration *time_control_configuration;
+  TimeControlConfiguration *time_control_configuration = NULL;
   TimeControl *black_time_control = NULL;
   TimeControl *white_time_control = NULL;
   SgfGameTree *game_tree;

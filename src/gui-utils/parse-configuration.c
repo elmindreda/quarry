@@ -508,11 +508,11 @@ configuration_parse_defaults2(StringBuffer *c_file_arrays,
   if (strcmp(field_name, "end") != 0) {
     char *full_field_name = NULL;
     int full_field_subscription_length;
-    ConfigurationValueType field_type;
+    ConfigurationValueType field_type = VALUE_TYPE_INVALID;
     const char *structure_type;
     const char *dispose_field_function = NULL;
     const char *dispose_field_prefix = "";
-    const char *default_value;
+    const char *default_value = NULL;
     char *multiline_string = NULL;
     const char *string_to_duplicate = NULL;
     char buffer[64];
