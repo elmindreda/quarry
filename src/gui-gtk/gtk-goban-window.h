@@ -3,6 +3,7 @@
  *                                                                 *
  * Copyright (C) 2003 Paul Pogonyshev.                             *
  * Copyright (C) 2004 Paul Pogonyshev and Martin Holters.          *
+ * Copyright (C) 2005 Paul Pogonyshev                              *
  *                                                                 *
  * This program is free software; you can redistribute it and/or   *
  * modify it under the terms of the GNU General Public License as  *
@@ -120,8 +121,11 @@ struct _GtkGobanWindow {
   SgfCollection		  *sgf_collection;
   SgfGameTree		  *current_tree;
 
+  /* NOTE: in file system encoding! */
   char			  *filename;
+
   GtkWindow		  *save_as_dialog;
+  gboolean		   adjourning_game;
 
   SgfNode		  *last_displayed_node;
   SgfNode		  *last_game_info_node;
@@ -160,6 +164,11 @@ GtkWidget *	gtk_goban_window_new(SgfCollection *sgf_collection,
 				     const char *filename);
 
 void		gtk_goban_window_enter_game_mode
+		  (GtkGobanWindow *goban_window,
+		   GtpClient *black_player, GtpClient *white_player,
+		   TimeControl *black_time_control,
+		   TimeControl *white_time_control);
+void		gtk_goban_window_resume_game
 		  (GtkGobanWindow *goban_window,
 		   GtpClient *black_player, GtpClient *white_player,
 		   TimeControl *black_time_control,

@@ -35,6 +35,7 @@
 #include "gtk-preferences.h"
 #include "gtk-qhbox.h"
 #include "gtk-qvbox.h"
+#include "gtk-resume-game-dialog.h"
 #include "gtk-sgf-tree-view.h"
 #include "gtk-utils.h"
 #include "quarry-marshal.h"
@@ -101,7 +102,8 @@ typedef void (* SpecialModeButtonClicked) (GtkGobanWindow *goban_window);
 
 enum {
   GTK_GOBAN_WINDOW_SAVE = 1,
-  GTK_GOBAN_WINDOW_SAVE_AS
+  GTK_GOBAN_WINDOW_SAVE_AS,
+  GTK_GOBAN_WINDOW_ADJOURN
 };
 
 
@@ -127,13 +129,16 @@ static void	 gtk_goban_window_finalize (GObject *object);
 static void	 force_minimal_width (GtkWidget *label,
 				      GtkRequisition *requisition);
 
+static void	 do_enter_game_mode (GtkGobanWindow *goban_window);
 static void	 leave_game_mode (GtkGobanWindow *goban_window);
 
 static void	 gtk_goban_window_save (GtkGobanWindow *goban_window,
 					guint callback_action);
+static gchar *	 suggest_filename (GtkGobanWindow *goban_window);
 static void	 save_file_as_response (GtkFileSelection *dialog,
 					gint response_id,
 					GtkGobanWindow *goban_window);
+static void	 game_has_been_adjourned (GtkGobanWindow *goban_window);
 
 static void	 show_find_dialog (GtkGobanWindow *goban_window);
 static void	 find_dialog_response (GtkGobanWindow *goban_window,
@@ -193,7 +198,7 @@ static void	 free_handicap_mode_done (GtkGobanWindow *goban_window);
 
 
 static void	 play_pass_move (GtkGobanWindow *goban_window);
-static void	 play_resign (GtkGobanWindow *goban_window);
+static void	 resign_game (GtkGobanWindow *goban_window);
 static void	 do_resign_game (GtkGobanWindow *goban_window);
 
 
@@ -243,17 +248,17 @@ static int	 find_variation_to_switch_to (GtkGobanWindow *goban_window,
 static void	 update_children_for_new_node (GtkGobanWindow *goban_window);
 
 static void	 update_game_information (GtkGobanWindow *goban_window);
-static void	 update_window_title (GtkGobanWindow *goban_window,
-				      const SgfNode *game_info_node);
+static void	 update_window_title (GtkGobanWindow *goban_window);
 static void	 update_player_information (const SgfNode *game_info_node,
 					    GtkLabel *player_label,
 					    SgfType name_property,
 					    SgfType rank_property,
 					    SgfType team_property);
-
 static void	 update_game_specific_information
-		   (GtkGobanWindow *goban_window);
-static void	 update_move_information (GtkGobanWindow *goban_window);
+		   (const GtkGobanWindow *goban_window);
+static void	 update_move_information (const GtkGobanWindow *goban_window);
+static void	 update_commands_sensitivity
+		   (const GtkGobanWindow *goban_window);
 
 static void	 fetch_comment_if_changed (GtkGobanWindow *goban_window,
 					   gboolean for_current_node);
@@ -278,7 +283,7 @@ static void	 player_is_out_of_time (GtkClock *clock,
 
 static GtkUtilsToolbarEntry toolbar_open = {
   N_("Open"),	N_("Open a game record"),		GTK_STOCK_OPEN,
-  (GtkUtilsToolbarEntryCallback)  gtk_parser_interface_present, 0
+  (GtkUtilsToolbarEntryCallback) gtk_parser_interface_present_default, 0
 };
 
 static GtkUtilsToolbarEntry toolbar_save = {
@@ -383,14 +388,17 @@ gtk_goban_window_init (GtkGobanWindow *goban_window)
 {
   static GtkItemFactoryEntry menu_entries[] = {
     { N_("/_File"), NULL, NULL, 0, "<Branch>" },
-    { N_("/File/New _Game..."),		"",
+    { N_("/File/_New Game..."),		"<ctrl>N",
       gtk_new_game_dialog_present,	0,
       "<StockItem>",			GTK_STOCK_NEW },
     { N_("/File/"), NULL, NULL, 0, "<Separator>" },
 
     { N_("/File/_Open..."),		"<ctrl>O",
-      gtk_parser_interface_present,	0,
+      gtk_parser_interface_present_default, 0,
       "<StockItem>",			GTK_STOCK_OPEN },
+    { N_("/File/_Resume Game..."),	"",
+      gtk_resume_game,			0,
+      "<Item>" },
     { N_("/File/"), NULL, NULL, 0, "<Separator>" },
 
     { N_("/File/_Save"),		"<ctrl>S",
@@ -399,6 +407,11 @@ gtk_goban_window_init (GtkGobanWindow *goban_window)
     { N_("/File/Save _As..."),		"<shift><ctrl>S",
       gtk_goban_window_save,		GTK_GOBAN_WINDOW_SAVE_AS,
       "<StockItem>",			GTK_STOCK_SAVE_AS },
+    { N_("/File/"), NULL, NULL, 0, "<Separator>" },
+
+    { N_("/File/_Close"),		"<ctrl>W",
+      gtk_widget_destroy,		0,
+      "<StockItem>",			GTK_STOCK_CLOSE },
 
 
     { N_("/_Edit"), NULL, NULL, 0, "<Branch>" },
@@ -454,8 +467,13 @@ gtk_goban_window_init (GtkGobanWindow *goban_window)
     { N_("/Play/"), NULL, NULL, 0, "<Separator>" },
 
     { N_("/Play/_Resign"),		NULL,
-      play_resign,			0,
+      resign_game,			0,
       "<Item>" },
+    { N_("/Play/"), NULL, NULL, 0, "<Separator>" },
+
+    { N_("/Play/_Adjourn Game"),	"",
+      gtk_goban_window_save,		GTK_GOBAN_WINDOW_ADJOURN,
+      "<StockItem>",			GTK_STOCK_SAVE },
 
 
     { N_("/_Go"), NULL, NULL, 0, "<Branch>" },
@@ -599,7 +617,7 @@ gtk_goban_window_init (GtkGobanWindow *goban_window)
   GTK_WIDGET_UNSET_FLAGS (goban_window->resign_button, GTK_CAN_FOCUS);
 
   g_signal_connect_swapped (goban_window->resign_button, "clicked",
-			    G_CALLBACK (play_resign), goban_window);
+			    G_CALLBACK (resign_game), goban_window);
 
   game_action_buttons_hbox
     = gtk_utils_pack_in_box (GTK_TYPE_HBUTTON_BOX, QUARRY_SPACING_SMALL,
@@ -828,6 +846,9 @@ gtk_goban_window_init (GtkGobanWindow *goban_window)
 }
 
 
+/* NOTE: `filename' must be in file system encoding and absolute path,
+ * if non-NULL!
+ */
 GtkWidget *
 gtk_goban_window_new (SgfCollection *sgf_collection, const char *filename)
 {
@@ -835,6 +856,7 @@ gtk_goban_window_new (SgfCollection *sgf_collection, const char *filename)
   GtkGobanWindow *goban_window = GTK_GOBAN_WINDOW (widget);
 
   assert (sgf_collection);
+  assert (!filename || g_path_is_absolute (filename));
 
   goban_window->board = NULL;
 
@@ -965,32 +987,72 @@ gtk_goban_window_enter_game_mode (GtkGobanWindow *goban_window,
     }
   }
 
-  if (black_player) {
+  do_enter_game_mode (goban_window);
+}
+
+
+/* FIXME: Get remaining time from the SGF tree and adjust time
+ *	  controls accordingly.
+ */
+void
+gtk_goban_window_resume_game (GtkGobanWindow *goban_window,
+			      GtpClient *black_player, GtpClient *white_player,
+			      TimeControl *black_time_control,
+			      TimeControl *white_time_control)
+{
+  assert (GTK_IS_GOBAN_WINDOW (goban_window));
+  assert (!goban_window->in_game_mode);
+
+  goban_window->in_game_mode		   = TRUE;
+  goban_window->players[BLACK_INDEX]	   = black_player;
+  goban_window->players[WHITE_INDEX]	   = white_player;
+  goban_window->time_controls[BLACK_INDEX] = black_time_control;
+  goban_window->time_controls[WHITE_INDEX] = white_time_control;
+
+  goban_window->game_position_board_state = &goban_window->sgf_board_state;
+
+  /* Resuming, skip'em played moves! */
+  sgf_utils_go_down_in_tree (goban_window->current_tree, -1,
+			     &goban_window->sgf_board_state);
+
+  do_enter_game_mode (goban_window);
+}
+
+
+static void
+do_enter_game_mode (GtkGobanWindow *goban_window)
+{
+  if (goban_window->players[BLACK_INDEX]) {
     goban_window->player_initialization_step[BLACK_INDEX]
       = INITIALIZATION_NOT_STARTED;
-    initialize_gtp_player (black_player, 1, goban_window);
+    initialize_gtp_player (goban_window->players[BLACK_INDEX], 1,
+			   goban_window);
   }
 
-  if (white_player) {
+  if (goban_window->players[WHITE_INDEX]) {
     goban_window->player_initialization_step[WHITE_INDEX]
       = INITIALIZATION_NOT_STARTED;
-    initialize_gtp_player (white_player, 1, goban_window);
+    initialize_gtp_player (goban_window->players[WHITE_INDEX], 1,
+			   goban_window);
   }
 
-  if (black_time_control && white_time_control) {
+  if (goban_window->time_controls[BLACK_INDEX]
+      && goban_window->time_controls[WHITE_INDEX]) {
     gtk_clock_use_time_control (goban_window->clocks[BLACK_INDEX],
-				black_time_control,
+				goban_window->time_controls[BLACK_INDEX],
 				((GtkClockOutOfTimeCallback)
 				 player_is_out_of_time),
 				goban_window);
     gtk_clock_use_time_control (goban_window->clocks[WHITE_INDEX],
-				white_time_control,
+				goban_window->time_controls[WHITE_INDEX],
 				((GtkClockOutOfTimeCallback)
 				 player_is_out_of_time),
 				goban_window);
   }
-  else
-    assert (!black_time_control && !white_time_control);
+  else {
+    assert (!goban_window->time_controls[BLACK_INDEX]
+	    && !goban_window->time_controls[WHITE_INDEX]);
+  }
 
   goban_window->last_displayed_node = NULL;
   update_children_for_new_node (goban_window);
@@ -1017,7 +1079,7 @@ leave_game_mode (GtkGobanWindow *goban_window)
     gtk_clock_use_time_control (goban_window->clocks[WHITE_INDEX], NULL,
 				NULL, NULL);
     time_control_delete (goban_window->time_controls[WHITE_INDEX]);
-    goban_window->time_controls[BLACK_INDEX] = NULL;
+    goban_window->time_controls[WHITE_INDEX] = NULL;
   }
 }
 
@@ -1025,17 +1087,35 @@ leave_game_mode (GtkGobanWindow *goban_window)
 static void
 gtk_goban_window_save (GtkGobanWindow *goban_window, guint callback_action)
 {
-  if (callback_action == GTK_GOBAN_WINDOW_SAVE && goban_window->filename) {
+  if (callback_action != GTK_GOBAN_WINDOW_SAVE_AS && goban_window->filename) {
     fetch_comment_if_changed (goban_window, TRUE);
     sgf_write_file (goban_window->filename, goban_window->sgf_collection,
 		    sgf_configuration.force_utf8);
+
+    if (callback_action == GTK_GOBAN_WINDOW_ADJOURN)
+      game_has_been_adjourned (goban_window);
   }
   else {
     /* "Save as..." command invoked or we don't have a filename. */
-    if (!goban_window->save_as_dialog) {
-      GtkWidget *file_selection = gtk_file_selection_new (_("Save As..."));
+    gboolean adjourning_game = (callback_action == GTK_GOBAN_WINDOW_ADJOURN);
 
-      goban_window->save_as_dialog = GTK_WINDOW (file_selection);
+    if (!goban_window->save_as_dialog
+	|| goban_window->adjourning_game != adjourning_game) {
+      GtkWidget *file_selection;
+      gchar *filename = suggest_filename (goban_window);
+
+      if (goban_window->save_as_dialog)
+	gtk_widget_destroy (GTK_WIDGET (goban_window->save_as_dialog));
+
+      file_selection = gtk_file_selection_new (adjourning_game
+					       ? _("Adjourn & Save As...")
+					       : _("Save As..."));
+      gtk_file_selection_set_filename (GTK_FILE_SELECTION (file_selection),
+				       filename);
+      g_free (filename);
+
+      goban_window->save_as_dialog  = GTK_WINDOW (file_selection);
+      goban_window->adjourning_game = adjourning_game;
       gtk_control_center_window_created (goban_window->save_as_dialog);
       gtk_utils_null_pointer_on_destroy (&goban_window->save_as_dialog, TRUE);
 
@@ -1050,6 +1130,69 @@ gtk_goban_window_save (GtkGobanWindow *goban_window, guint callback_action)
 
     gtk_window_present (goban_window->save_as_dialog);
   }
+}
+
+
+/* Returns a suggested filename for the current game record in
+ * encoding used by the file system.  The return value must be
+ * g_free'd.
+ */
+static gchar *
+suggest_filename (GtkGobanWindow *goban_window)
+{
+  const SgfNode *game_info_node = goban_window->sgf_board_state.game_info_node;
+  char *suggested_filename = NULL;
+
+  if (goban_window->filename)
+    return utils_duplicate_string (goban_window->filename);
+
+  if (game_info_node) {
+    const char *white_player
+      = sgf_node_get_text_property_value (game_info_node, SGF_PLAYER_WHITE);
+    const char *black_player
+      = sgf_node_get_text_property_value (game_info_node, SGF_PLAYER_BLACK);
+
+    if (white_player && black_player) {
+      suggested_filename = utils_cat_strings (NULL,
+					      white_player,
+					      " vs ", black_player, ".sgf",
+					      NULL);
+    }
+    else {
+      const char *game_name = sgf_node_get_text_property_value (game_info_node,
+								SGF_GAME_NAME);
+
+      if (game_name)
+	suggested_filename = utils_cat_strings (NULL, game_name, ".sgf", NULL);
+    }
+
+    if (suggested_filename) {
+      char *scan;
+      gchar *disk_encoded_filename;
+
+      /* For Windows spaces in names are standard anyway. */
+#ifndef G_OS_WIN32
+
+      for (scan = suggested_filename; *scan; scan++) {
+	/* It's difficult to provide sane alternative for other
+	 * characters shells have to escape in filenames, so we keep
+	 * those characters as they are.
+	 */
+	if (*scan == ' ')
+	  *scan = '-';
+      }
+
+#endif
+
+      disk_encoded_filename = g_filename_from_utf8 (suggested_filename, -1,
+						    NULL, NULL, NULL);
+      utils_free (suggested_filename);
+
+      return disk_encoded_filename;
+    }
+  }
+
+  return NULL;
 }
 
 
@@ -1072,15 +1215,44 @@ save_file_as_response (GtkFileSelection *dialog, gint response_id,
       g_free (goban_window->filename);
       goban_window->filename = g_strdup (filename);
 
-      if (need_window_title_update) {
-	update_window_title (goban_window,
-			     goban_window->sgf_board_state.game_info_node);
+      if (goban_window->adjourning_game) {
+	game_has_been_adjourned (goban_window);
+	return;
       }
+
+      if (need_window_title_update)
+	update_window_title (goban_window);
     }
   }
 
   if (response_id == GTK_RESPONSE_OK || response_id == GTK_RESPONSE_CANCEL)
     gtk_widget_destroy (GTK_WIDGET (dialog));
+}
+
+
+static void
+game_has_been_adjourned (GtkGobanWindow *goban_window)
+{
+  static const gchar *hint
+    = N_("You can later resume the game by pressing the `Resume Game' button "
+	 "in Quarry Control Center, or selecting `Resume Game' item from "
+	 " `File' menu.");
+
+  gchar *filename_in_utf8 = g_filename_to_utf8 (goban_window->filename, -1,
+						NULL, NULL, NULL);
+  gchar *message = g_strdup_printf (_("The game is adjourned and "
+				      "saved in file `%s'."),
+				    filename_in_utf8);
+
+  g_free (filename_in_utf8);
+
+  gtk_utils_create_message_dialog (NULL, GTK_STOCK_DIALOG_INFO,
+				   (GTK_UTILS_BUTTONS_OK
+				    | GTK_UTILS_DESTROY_ON_RESPONSE
+				    | GTK_UTILS_NON_MODAL_WINDOW),
+				   _(hint), message);
+
+  gtk_widget_destroy (GTK_WIDGET (goban_window));
 }
 
 
@@ -2052,12 +2224,12 @@ free_handicap_mode_done (GtkGobanWindow *goban_window)
 	  && position_lists[EMPTY] == NULL
 	  && position_lists[SPECIAL_ON_GRID_VALUE] == NULL);
 
-  free_handicap_has_been_placed (goban_window, position_lists[BLACK]);
-
   leave_special_mode (goban_window);
   set_goban_signal_handlers (goban_window,
 			     G_CALLBACK (playing_mode_pointer_moved),
 			     G_CALLBACK (playing_mode_goban_clicked));
+
+  free_handicap_has_been_placed (goban_window, position_lists[BLACK]);
 }
 
 
@@ -2096,12 +2268,12 @@ go_scoring_mode_done (GtkGobanWindow *goban_window)
 
   g_free (goban_window->dead_stones);
 
-  reenter_current_node (goban_window);
-
   leave_special_mode (goban_window);
   set_goban_signal_handlers (goban_window,
 			     G_CALLBACK (playing_mode_pointer_moved),
 			     G_CALLBACK (playing_mode_goban_clicked));
+
+  reenter_current_node (goban_window);
 }
 
 
@@ -2231,15 +2403,15 @@ play_pass_move (GtkGobanWindow *goban_window)
 			      goban_window->sgf_board_state.color_to_play,
 			      PASS_X, PASS_Y);
 
-  update_children_for_new_node (goban_window);
-
   if (goban_window->in_game_mode && IS_DISPLAYING_GAME_NODE (goban_window))
     move_has_been_played (goban_window);
+
+  update_children_for_new_node (goban_window);
 }
 
 
 static void
-play_resign (GtkGobanWindow *goban_window)
+resign_game (GtkGobanWindow *goban_window)
 {
   GtkWidget *question_dialog
     = gtk_utils_create_message_dialog (GTK_WINDOW (goban_window),
@@ -2456,10 +2628,10 @@ playing_mode_goban_clicked (GtkGobanWindow *goban_window,
 	}
       }
 
-      update_children_for_new_node (goban_window);
-
       if (goban_window->in_game_mode && IS_DISPLAYING_GAME_NODE (goban_window))
 	move_has_been_played (goban_window);
+
+      update_children_for_new_node (goban_window);
     }
 
     break;
@@ -2660,6 +2832,9 @@ navigate_goban (GtkGobanWindow *goban_window,
   SgfGameTree *current_tree = goban_window->current_tree;
   SgfNode *current_node = current_tree->current_node;
 
+  if (IS_IN_SPECIAL_MODE (goban_window))
+    return;
+
   /* Don't do anything if navigating the goban doesn't change
    * displayed node.
    */
@@ -2787,8 +2962,6 @@ update_children_for_new_node (GtkGobanWindow *goban_window)
   SgfNode *current_node = current_tree->current_node;
   char goban_markup[BOARD_GRID_SIZE];
   const char *comment;
-  int pass_sensitive;
-  int resign_sensitive;
 
   if (current_node == goban_window->last_displayed_node)
     return;
@@ -2840,62 +3013,7 @@ update_children_for_new_node (GtkGobanWindow *goban_window)
   gtk_sgf_tree_view_update_view_port (goban_window->sgf_tree_view);
   show_sgf_tree_view_automatically (goban_window, current_node);
 
-  pass_sensitive = (goban_window->board->game == GAME_GO
-		    && USER_CAN_PLAY_MOVES (goban_window)
-		    && !IS_IN_SPECIAL_MODE (goban_window));
-  gtk_utils_set_menu_items_sensitive (goban_window->item_factory,
-				      pass_sensitive,
-				      _("/Play/Pass"), NULL);
-  gtk_widget_set_sensitive (goban_window->pass_button, pass_sensitive);
-
-  resign_sensitive = (goban_window->in_game_mode
-		      && IS_DISPLAYING_GAME_NODE (goban_window)
-		      && USER_CAN_PLAY_MOVES (goban_window)
-		      && !IS_IN_SPECIAL_MODE (goban_window));
-  gtk_utils_set_menu_items_sensitive (goban_window->item_factory,
-				      resign_sensitive,
-				      _("/Play/Resign"), NULL);
-  gtk_widget_set_sensitive (goban_window->resign_button, resign_sensitive);
-
-  gtk_utils_set_menu_items_sensitive (goban_window->item_factory,
-				      current_node->parent != NULL,
-				      _("/Go/Previous Node"),
-				      _("/Go/Ten Nodes Backward"),
-				      _("/Go/Root Node"), NULL);
-  gtk_utils_set_toolbar_buttons_sensitive (goban_window->navigation_toolbar,
-					   current_node->parent != NULL,
-					   &navigation_toolbar_back,
-					   &navigation_toolbar_root, NULL);
-
-  gtk_utils_set_menu_items_sensitive (goban_window->item_factory,
-				      current_node->child != NULL,
-				      _("/Go/Next Node"),
-				      _("/Go/Ten Nodes Forward"),
-				      _("/Go/Variation Last Node"), NULL);
-  gtk_utils_set_toolbar_buttons_sensitive (goban_window->navigation_toolbar,
-					   current_node->child != NULL,
-					   &navigation_toolbar_forward,
-					   &navigation_toolbar_variation_end,
-					   NULL);
-
-  gtk_utils_set_menu_items_sensitive (goban_window->item_factory,
-				      (current_node->parent != NULL
-				       && (current_node->parent->child
-					   != current_node)),
-				      _("/Go/Previous Variation"), NULL);
-  gtk_utils_set_toolbar_buttons_sensitive
-    (goban_window->navigation_toolbar,
-     (current_node->parent != NULL
-      && current_node->parent->child != current_node),
-     &navigation_toolbar_previous_variation, NULL);
-
-  gtk_utils_set_menu_items_sensitive (goban_window->item_factory,
-				      current_node->next != NULL,
-				      _("/Go/Next Variation"), NULL);
-  gtk_utils_set_toolbar_buttons_sensitive (goban_window->navigation_toolbar,
-					   current_node->next != NULL,
-					   &navigation_toolbar_next_variation,
-					   NULL);
+  update_commands_sensitivity (goban_window);
 
   goban_window->switching_x = NULL_X;
   goban_window->switching_y = NULL_Y;
@@ -2909,7 +3027,7 @@ update_game_information (GtkGobanWindow *goban_window)
 {
   SgfNode *game_info_node = goban_window->sgf_board_state.game_info_node;
 
-  update_window_title (goban_window, game_info_node);
+  update_window_title (goban_window);
 
   update_player_information (game_info_node,
 			     goban_window->player_labels[BLACK_INDEX],
@@ -2928,13 +3046,12 @@ update_game_information (GtkGobanWindow *goban_window)
 
 
 static void
-update_window_title (GtkGobanWindow *goban_window,
-		     const SgfNode *game_info_node)
+update_window_title (GtkGobanWindow *goban_window)
 {
+  const SgfNode *game_info_node = goban_window->sgf_board_state.game_info_node;
   const char *game_name = NULL;
   char *string_to_free = NULL;
-  char *base_name = (goban_window->filename
-		     ? g_path_get_basename (goban_window->filename) : NULL);
+  char *base_name;
   char *title;
 
   if (game_info_node) {
@@ -2954,6 +3071,16 @@ update_window_title (GtkGobanWindow *goban_window,
       }
     }
   }
+
+  if (goban_window->filename) {
+    gchar *filename_in_utf8 = g_filename_to_utf8 (goban_window->filename, -1,
+						  NULL, NULL, NULL);
+
+    base_name = g_path_get_basename (filename_in_utf8);
+    g_free (filename_in_utf8);
+  }
+  else
+    base_name = NULL;
 
   if (game_name) {
     if (base_name) {
@@ -3009,7 +3136,7 @@ update_player_information (const SgfNode *game_info_node,
 
 
 static void
-update_game_specific_information (GtkGobanWindow *goban_window)
+update_game_specific_information (const GtkGobanWindow *goban_window)
 {
   const Board *board = goban_window->board;
   gchar *black_string;
@@ -3070,7 +3197,7 @@ update_game_specific_information (GtkGobanWindow *goban_window)
 
 
 static void
-update_move_information (GtkGobanWindow *goban_window)
+update_move_information (const GtkGobanWindow *goban_window)
 {
   const SgfNode *move_node = goban_window->sgf_board_state.last_move_node;
   const SgfNode *game_info_node = goban_window->sgf_board_state.game_info_node;
@@ -3177,6 +3304,84 @@ update_move_information (GtkGobanWindow *goban_window)
   }
 
   gtk_label_set_text (goban_window->move_information_label, buffer);
+}
+
+
+static void
+update_commands_sensitivity (const GtkGobanWindow *goban_window)
+{
+  const SgfNode *current_node = goban_window->current_tree->current_node;
+  gboolean pass_sensitive   = (goban_window->board->game == GAME_GO
+			       && USER_CAN_PLAY_MOVES (goban_window)
+			       && !IS_IN_SPECIAL_MODE (goban_window));
+  gboolean resign_sensitive = (goban_window->in_game_mode
+			       && IS_DISPLAYING_GAME_NODE (goban_window)
+			       && USER_CAN_PLAY_MOVES (goban_window)
+			       && !IS_IN_SPECIAL_MODE (goban_window));
+  gboolean previous_node_sensitive  = (current_node->parent != NULL
+				       && !IS_IN_SPECIAL_MODE (goban_window));
+  gboolean next_node_sensitive	    = (current_node->child != NULL
+				       && !IS_IN_SPECIAL_MODE (goban_window));
+  gboolean previous_variation_sensitive
+    = (current_node->parent != NULL
+       && current_node->parent->child != current_node
+       && !IS_IN_SPECIAL_MODE (goban_window));
+  gboolean next_variation_sensitive = (current_node->next != NULL
+				       && !IS_IN_SPECIAL_MODE (goban_window));
+
+  /* "Play" submenu. */
+  gtk_utils_set_menu_items_sensitive (goban_window->item_factory,
+				      pass_sensitive,
+				      _("/Play/Pass"), NULL);
+  gtk_widget_set_sensitive (goban_window->pass_button, pass_sensitive);
+
+  gtk_utils_set_menu_items_sensitive (goban_window->item_factory,
+				      resign_sensitive,
+				      _("/Play/Resign"), NULL);
+  gtk_widget_set_sensitive (goban_window->resign_button, resign_sensitive);
+
+  gtk_utils_set_menu_items_sensitive (goban_window->item_factory,
+				      (goban_window->in_game_mode
+				       && !IS_IN_SPECIAL_MODE (goban_window)),
+				      _("/Play/Adjourn Game"), NULL);
+
+  /* "Go" submenu. */
+  gtk_utils_set_menu_items_sensitive (goban_window->item_factory,
+				      previous_node_sensitive,
+				      _("/Go/Previous Node"),
+				      _("/Go/Ten Nodes Backward"),
+				      _("/Go/Root Node"), NULL);
+  gtk_utils_set_toolbar_buttons_sensitive (goban_window->navigation_toolbar,
+					   previous_node_sensitive,
+					   &navigation_toolbar_back,
+					   &navigation_toolbar_root, NULL);
+
+  gtk_utils_set_menu_items_sensitive (goban_window->item_factory,
+				      next_node_sensitive,
+				      _("/Go/Next Node"),
+				      _("/Go/Ten Nodes Forward"),
+				      _("/Go/Variation Last Node"), NULL);
+  gtk_utils_set_toolbar_buttons_sensitive (goban_window->navigation_toolbar,
+					   next_node_sensitive,
+					   &navigation_toolbar_forward,
+					   &navigation_toolbar_variation_end,
+					   NULL);
+
+  gtk_utils_set_menu_items_sensitive (goban_window->item_factory,
+				      previous_variation_sensitive,
+				      _("/Go/Previous Variation"), NULL);
+  gtk_utils_set_toolbar_buttons_sensitive
+    (goban_window->navigation_toolbar,
+     previous_variation_sensitive,
+     &navigation_toolbar_previous_variation, NULL);
+
+  gtk_utils_set_menu_items_sensitive (goban_window->item_factory,
+				      next_variation_sensitive,
+				      _("/Go/Next Variation"), NULL);
+  gtk_utils_set_toolbar_buttons_sensitive (goban_window->navigation_toolbar,
+					   next_variation_sensitive,
+					   &navigation_toolbar_next_variation,
+					   NULL);
 }
 
 
@@ -3326,7 +3531,7 @@ initialize_gtp_player (GtpClient *client, int successful,
 	  break;
 	}
 	else {
-	  if (client_color == BLACK) {
+	  if (client_color == BLACK || !goban_window->pending_free_handicap) {
 	    *initialization_step = INITIALIZATION_FREE_HANDICAP_PLACED;
 	    gtp_client_place_free_handicap (client,
 					    ((GtpClientFreeHandicapCallback)
@@ -3646,6 +3851,8 @@ enter_scoring_mode (GtkGobanWindow *goban_window)
 			     G_CALLBACK (go_scoring_mode_pointer_moved),
 			     G_CALLBACK (go_scoring_mode_goban_clicked));
 
+  update_commands_sensitivity (goban_window);
+
   update_territory_markup (goban_window);
 }
 
@@ -3688,6 +3895,8 @@ move_has_been_generated (GtpClient *client, int successful,
 				  color, x, y, move_data->amazons);
     }
 
+    move_has_been_played (goban_window);
+
     if (IS_DISPLAYING_GAME_NODE (goban_window))
       update_children_for_new_node (goban_window);
     else {
@@ -3698,8 +3907,6 @@ move_has_been_generated (GtpClient *client, int successful,
       show_sgf_tree_view_automatically
 	(goban_window, goban_window->game_position.current_node);
     }
-
-    move_has_been_played (goban_window);
   }
 }
 
