@@ -24,7 +24,8 @@
 #define QUARRY_GTK_GOBAN_H
 
 
-#include "gtk-tile-set-interface.h"
+#include "gtk-tile-set.h"
+#include "sgf.h"
 #include "board.h"
 #include "quarry.h"
 
@@ -162,7 +163,6 @@ struct _GtkGoban {
   int			 last_move_y;
 
   gint			 cell_size;
-  gint			 small_cell_size;
 
   PangoFontDescription  *font_description;
   gint			 font_size;
@@ -186,13 +186,16 @@ struct _GtkGoban {
   gint			 stones_top_margin;
   gint			 small_stones_left_margin;
   gint			 small_stones_top_margin;
+  gint			 sgf_markup_left_margin;
+  gint			 sgf_markup_top_margin;
 
   int			 num_hoshi_points;
   int			 hoshi_point_x[9];
   int			 hoshi_point_y[9];
 
-  TileSet		*main_tile_set;
-  TileSet		*small_tile_set;
+  GtkMainTileSet	*main_tile_set;
+  GtkMainTileSet	*small_tile_set;
+  GtkSgfMarkupTileSet	*sgf_markup_tile_set;
   GObject		*checkerboard_pattern_object;
 
   int			 pointer_x;

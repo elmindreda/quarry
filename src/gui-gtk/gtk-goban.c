@@ -23,7 +23,7 @@
 #include "gtk-configuration.h"
 #include "gtk-goban.h"
 #include "gtk-utils.h"
-#include "gtk-tile-set-interface.h"
+#include "gtk-tile-set.h"
 #include "quarry-marshal.h"
 #include "board.h"
 #include "game-info.h"
@@ -86,6 +86,8 @@ static gboolean	 gtk_goban_focus_in_or_out_event(GtkWidget *widget,
 						 GdkEventFocus *event);
 
 static void	 gtk_goban_finalize(GObject *object);
+
+static void	 unreference_cached_objects(GtkGoban *goban);
 
 static void	 set_goban_style_appearance(GtkGoban *goban);
 static void	 set_goban_non_style_appearance(GtkGoban *goban);
@@ -242,6 +244,7 @@ gtk_goban_init(GtkGoban *goban)
 
   goban->main_tile_set		     = NULL;
   goban->small_tile_set		     = NULL;
+  goban->sgf_markup_tile_set	     = NULL;
   goban->checkerboard_pattern_object = NULL;
 
   goban->last_move_x = NULL_X;
@@ -378,20 +381,20 @@ gtk_goban_size_allocate(GtkWidget *widget, GtkAllocation *allocation)
   if (horizontal_deficit < 0)
     cell_size -= (-horizontal_deficit + goban->width - 1) / goban->width;
 
-
   if (goban->cell_size != cell_size) {
+    int main_tile_size = cell_size - (goban->game == GAME_GO ? 0 : 1);
+
     goban->cell_size = cell_size;
-    goban->small_cell_size = (2 * cell_size - 1) / 3;
 
-    if (goban->main_tile_set)
-      tile_set_unreference(goban->main_tile_set);
-    if (goban->small_tile_set)
-      tile_set_unreference(goban->small_tile_set);
+    unreference_cached_objects(goban);
 
-    goban->main_tile_set = tile_set_create_or_reuse(cell_size,
-						    &tile_set_defaults);
-    goban->small_tile_set = tile_set_create_or_reuse(goban->small_cell_size,
-						     &tile_set_defaults);
+    goban->main_tile_set
+      = gtk_main_tile_set_create_or_reuse(main_tile_size, goban->game);
+    goban->small_tile_set
+      = gtk_main_tile_set_create_or_reuse((2 * cell_size - 1) / 3, goban->game);
+    goban->sgf_markup_tile_set
+      = gtk_sgf_markup_tile_set_create_or_reuse(main_tile_size, goban->game,
+						"default");
 
     set_goban_non_style_appearance(goban);
   }
@@ -427,21 +430,30 @@ gtk_goban_size_allocate(GtkWidget *widget, GtkAllocation *allocation)
 				 + (-0.5 + goban->height) * cell_size
 				 + vertical_padding);
 
-  goban->stones_left_margin = (goban->left_margin
-			       + goban->main_tile_set->stones_x_offset);
-  goban->stones_top_margin = (goban->top_margin
-			      + goban->main_tile_set->stones_y_offset);
-  if (goban->game != GAME_GO) {
+  goban->stones_left_margin = goban->left_margin;
+  goban->stones_top_margin = goban->top_margin;
+
+  if (goban->game == GAME_GO) {
+    goban->sgf_markup_left_margin
+      = goban->left_margin - goban->sgf_markup_tile_set->tile_size / 2;
+    goban->sgf_markup_top_margin
+      = goban->top_margin - goban->sgf_markup_tile_set->tile_size / 2;
+  }
+  else {
     goban->stones_left_margin += cell_size / 2;
     goban->stones_top_margin += cell_size / 2;
+
+    goban->sgf_markup_left_margin = goban->left_margin + 1;
+    goban->sgf_markup_top_margin = goban->top_margin + 1;
   }
 
   goban->small_stones_left_margin = (goban->stones_left_margin
-				     - goban->main_tile_set->stones_x_offset
 				     + goban->small_tile_set->stones_x_offset);
   goban->small_stones_top_margin = (goban->stones_top_margin
-				    - goban->main_tile_set->stones_y_offset
 				    + goban->small_tile_set->stones_y_offset);
+
+  goban->stones_left_margin += goban->main_tile_set->stones_x_offset;
+  goban->stones_top_margin += goban->main_tile_set->stones_y_offset;
 
   find_hoshi_points(goban);
 
@@ -656,10 +668,10 @@ gtk_goban_expose(GtkWidget *widget, GdkEventExpose *event)
 		     : MIN(goban->stones_top_margin, goban->top_margin + 1));
 
   if (checkerboard_pattern_mode == NO_CHECKERBOARD_PATTERN)
-    row_rectangle.height = goban->main_tile_set->cell_size;
+    row_rectangle.height = goban->cell_size;
   else {
     row_rectangle.height = (MAX((goban->stones_top_margin
-				 + goban->main_tile_set->cell_size),
+				 + goban->main_tile_set->tile_size),
 				goban->top_margin + 1 + cell_size)
 			    - row_rectangle.y);
   }
@@ -692,6 +704,7 @@ gtk_goban_expose(GtkWidget *widget, GdkEventExpose *event)
 	  int pos = POSITION(x, y);
 	  int tile = goban->grid[pos];
 	  int markup_tile = goban->goban_markup[pos] & GOBAN_MARKUP_TILE_MASK;
+	  int sgf_markup_tile = goban->sgf_markup[pos];
 
 	  if (checkerboard_pattern_mode != NO_CHECKERBOARD_PATTERN
 	      && (x + y) % 2 == 1) {
@@ -753,6 +766,19 @@ gtk_goban_expose(GtkWidget *widget, GdkEventExpose *event)
 			    0, 0,
 			    goban->small_stones_left_margin + x * cell_size,
 			    goban->small_stones_top_margin + y * cell_size,
+			    -1, -1,
+			    GDK_RGB_DITHER_NORMAL, 0, 0);
+	  }
+
+	  if (sgf_markup_tile != SGF_MARKUP_NONE) {
+	    gint background = (IS_STONE(goban->grid[pos])
+			       ? goban->grid[pos] : EMPTY);
+	    GdkPixbuf *pixbuf
+	      = goban->sgf_markup_tile_set->tiles[sgf_markup_tile][background];
+
+	    gdk_draw_pixbuf(window, gc, pixbuf, 0, 0,
+			    goban->sgf_markup_left_margin + x * cell_size,
+			    goban->sgf_markup_top_margin + y * cell_size,
 			    -1, -1,
 			    GDK_RGB_DITHER_NORMAL, 0, 0);
 	  }
@@ -957,16 +983,34 @@ gtk_goban_finalize(GObject *object)
   if (goban->font_description)
     pango_font_description_free(goban->font_description);
 
-  if (goban->main_tile_set)
-    tile_set_unreference(goban->main_tile_set);
-  if (goban->small_tile_set)
-    tile_set_unreference(goban->small_tile_set);
+  unreference_cached_objects(goban);
+
   if (goban->checkerboard_pattern_object)
     g_object_unref(goban->checkerboard_pattern_object);
 
   all_gobans = g_slist_remove(all_gobans, goban);
 
   G_OBJECT_CLASS(parent_class)->finalize(object);
+}
+
+
+static void
+unreference_cached_objects(GtkGoban *goban)
+{
+  if (goban->main_tile_set) {
+    object_cache_unreference_object(&gtk_main_tile_set_cache,
+				    goban->main_tile_set);
+  }
+
+  if (goban->small_tile_set) {
+    object_cache_unreference_object(&gtk_main_tile_set_cache,
+				    goban->small_tile_set);
+  }
+
+  if (goban->sgf_markup_tile_set) {
+    object_cache_unreference_object(&gtk_sgf_markup_tile_set_cache,
+				    goban->sgf_markup_tile_set);
+  }
 }
 
 
@@ -1117,13 +1161,16 @@ gtk_goban_update(GtkGoban *goban,
   if (GTK_WIDGET_REALIZED(widget)) {
     GdkRectangle rectangle_stone;
     GdkRectangle rectangle_markup;
+    GdkRectangle rectangle_sgf_markup;
     int x;
     int y;
 
-    rectangle_stone.width   = cell_size;
-    rectangle_stone.height  = cell_size;
-    rectangle_markup.width  = goban->small_cell_size;
-    rectangle_markup.height = goban->small_cell_size;
+    rectangle_stone.width	= goban->main_tile_set->tile_size;
+    rectangle_stone.height	= goban->main_tile_set->tile_size;
+    rectangle_markup.width	= goban->small_tile_set->tile_size;
+    rectangle_markup.height	= goban->small_tile_set->tile_size;
+    rectangle_sgf_markup.width	= goban->sgf_markup_tile_set->tile_size;
+    rectangle_sgf_markup.height = goban->sgf_markup_tile_set->tile_size;
 
     for (y = 0; y < goban->height; y++) {
       for (x = 0; x < goban->width; x++) {
@@ -1136,8 +1183,20 @@ gtk_goban_update(GtkGoban *goban,
 	  rectangle_stone.y = goban->stones_top_margin + y * cell_size;
 	  gdk_window_invalidate_rect(widget->window, &rectangle_stone, FALSE);
 
-	  goban->grid[pos] = grid[pos];
+	  goban->grid[pos]	   = grid[pos];
 	  goban->goban_markup[pos] = goban_markup[pos];
+	  goban->sgf_markup[pos]   = sgf_markup[pos];
+	}
+	else if (goban->sgf_markup[pos] != sgf_markup[pos]) {
+	  rectangle_sgf_markup.x = (goban->sgf_markup_left_margin
+				    + x * cell_size);
+	  rectangle_sgf_markup.y = (goban->sgf_markup_top_margin
+				    + y * cell_size);
+	  gdk_window_invalidate_rect(widget->window, &rectangle_sgf_markup,
+				     FALSE);
+
+	  goban->goban_markup[pos] = goban_markup[pos];
+	  goban->sgf_markup[pos] = sgf_markup[pos];
 	}
 	else if (goban->goban_markup[pos] != goban_markup[pos]) {
 	  rectangle_markup.x = goban->small_stones_left_margin + x * cell_size;
@@ -1152,6 +1211,7 @@ gtk_goban_update(GtkGoban *goban,
   else {
     memcpy(goban->grid, grid, sizeof(goban->grid));
     memcpy(goban->goban_markup, goban_markup, sizeof(goban->goban_markup));
+    memcpy(goban->sgf_markup, sgf_markup, sizeof(goban->sgf_markup));
   }
 
   if (goban->last_move_x != last_move_x || goban->last_move_y != last_move_y) {
@@ -1544,10 +1604,10 @@ set_overlay_data(GtkGoban *goban, int overlay_index,
     GdkRectangle rectangle_stone;
     GdkRectangle rectangle_markup;
 
-    rectangle_stone.width   = cell_size;
-    rectangle_stone.height  = cell_size;
-    rectangle_markup.width  = goban->small_cell_size;
-    rectangle_markup.height = goban->small_cell_size;
+    rectangle_stone.width   = goban->main_tile_set->tile_size;
+    rectangle_stone.height  = goban->main_tile_set->tile_size;
+    rectangle_markup.width  = goban->small_tile_set->tile_size;
+    rectangle_markup.height = goban->small_tile_set->tile_size;
 
     for (i = 0, j = 0; i < num_new_positions || j < num_old_positions;) {
       int pos;
