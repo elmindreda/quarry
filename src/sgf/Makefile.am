@@ -31,6 +31,7 @@ libsgf_a_SOURCES =		\
 	sgf-diff-utils.c	\
 	sgf-parser.c		\
 	sgf-tree.c		\
+	sgf-tree-map.c		\
 	sgf-utils.c		\
 	sgf-writer.c		\
 				\

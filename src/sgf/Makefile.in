@@ -168,6 +168,7 @@ libsgf_a_SOURCES = \
 	sgf-diff-utils.c	\
 	sgf-parser.c		\
 	sgf-tree.c		\
+	sgf-tree-map.c		\
 	sgf-utils.c		\
 	sgf-writer.c		\
 				\
@@ -233,7 +234,8 @@ LIBRARIES = $(noinst_LIBRARIES)
 libsgf_a_AR = $(AR) cru
 libsgf_a_LIBADD =
 am_libsgf_a_OBJECTS = sgf-diff-utils.$(OBJEXT) sgf-parser.$(OBJEXT) \
-	sgf-tree.$(OBJEXT) sgf-utils.$(OBJEXT) sgf-writer.$(OBJEXT)
+	sgf-tree.$(OBJEXT) sgf-tree-map.$(OBJEXT) sgf-utils.$(OBJEXT) \
+	sgf-writer.$(OBJEXT)
 am__objects_1 = sgf-errors.$(OBJEXT) sgf-properties.$(OBJEXT)
 nodist_libsgf_a_OBJECTS = $(am__objects_1)
 libsgf_a_OBJECTS = $(am_libsgf_a_OBJECTS) $(nodist_libsgf_a_OBJECTS)
@@ -267,8 +269,9 @@ am__depfiles_maybe = depfiles
 @AMDEP_TRUE@	./$(DEPDIR)/sgf-diff.Po ./$(DEPDIR)/sgf-errors.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/sgf-parser.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/sgf-properties.Po \
-@AMDEP_TRUE@	./$(DEPDIR)/sgf-test.Po ./$(DEPDIR)/sgf-tree.Po \
-@AMDEP_TRUE@	./$(DEPDIR)/sgf-utils.Po ./$(DEPDIR)/sgf-writer.Po
+@AMDEP_TRUE@	./$(DEPDIR)/sgf-test.Po ./$(DEPDIR)/sgf-tree-map.Po \
+@AMDEP_TRUE@	./$(DEPDIR)/sgf-tree.Po ./$(DEPDIR)/sgf-utils.Po \
+@AMDEP_TRUE@	./$(DEPDIR)/sgf-writer.Po
 COMPILE = $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) \
 	$(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
 CCLD = $(CC)
@@ -347,6 +350,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sgf-parser.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sgf-properties.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sgf-test.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sgf-tree-map.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sgf-tree.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sgf-utils.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sgf-writer.Po@am__quote@
