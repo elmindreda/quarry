@@ -96,28 +96,36 @@ sgf_collection_add_game_tree (SgfCollection *collection, SgfGameTree *tree)
 
 
 
-/* Dynamically allocate an SgfGametree structure. */
+/* Dynamically allocate an SgfGameTree structure. */
 SgfGameTree *
 sgf_game_tree_new (void)
 {
   SgfGameTree *tree = utils_malloc (sizeof (SgfGameTree));
 
   tree->previous = NULL;
-  tree->next = NULL;
+  tree->next	 = NULL;
 
-  tree->root = NULL;
+  tree->root	     = NULL;
   tree->current_node = NULL;
 
   tree->board = NULL;
 
   tree->char_set = NULL;
 
-  tree->application_name = NULL;
+  tree->application_name    = NULL;
   tree->application_version = NULL;
 
   tree->node_pool.item_size = 0;
 
   memory_pool_init (&tree->property_pool, sizeof (SgfProperty));
+
+  tree->user_data      = NULL;
+  tree->free_user_data = NULL;
+
+  tree->map_width = 0;
+
+  tree->view_port_nodes = NULL;
+  tree->view_port_lines = NULL;
 
   return tree;
 }
@@ -189,6 +197,12 @@ sgf_game_tree_delete (SgfGameTree *tree)
   utils_free (tree->application_name);
   utils_free (tree->application_version);
 
+  if (tree->free_user_data)
+    tree->free_user_data (tree->user_data);
+
+  utils_free (tree->view_port_nodes);
+  utils_free (tree->view_port_lines);
+
   utils_free (tree);
 }
 
@@ -241,9 +255,10 @@ sgf_game_tree_set_state (SgfGameTree *tree, Board *board, SgfNode *node,
 
 
 /* Create a copy of given game tree structure.  Nodes are not
- * duplicated (not even root).  Use
+ * duplicated (not even root.)  User data is not copied either.  Use
  * sgf_game_tree_duplicate_with_nodes() if you need a copy with all
- * nodes. */
+ * nodes.
+ */
 SgfGameTree *
 sgf_game_tree_duplicate (const SgfGameTree *tree)
 {
@@ -344,6 +359,20 @@ sgf_game_tree_count_nodes (const SgfGameTree *tree)
 }
 
 
+void
+sgf_game_tree_set_user_data (SgfGameTree *tree, void *user_data,
+			     SgfFreeDataCallback free_user_data)
+{
+  assert (!free_user_data || user_data);
+
+  if (tree->free_user_data)
+    tree->free_user_data (tree->user_data);
+
+  tree->user_data      = user_data;
+  tree->free_user_data = free_user_data;
+}
+
+
 
 /* Dynamically allocate an SgfNode structure and links it to the
  * specified parent node.
@@ -358,6 +387,8 @@ sgf_node_new (SgfGameTree *tree, SgfNode *parent)
   node->child		  = NULL;
   node->next		  = NULL;
   node->current_variation = NULL;
+
+  node->is_collapsed = 0;
 
   node->move_color = EMPTY;
 
