@@ -110,6 +110,12 @@ amazons_get_default_setup(int width, int height,
 }
 
 
+/* Determine if a move is legal according to specified rule set.  If
+ * "to" point is a null point, determine if there is any legal move
+ * for the amazon at "from".  Likewise, if the "shoot-arrow-to" point
+ * is a null point, determine if there is any legal move involving
+ * given "from" and "to" points (there is always at least one).
+ */
 int
 amazons_is_legal_move(const Board *board, BoardRuleSet rule_set,
 		      int color, va_list move)
@@ -140,7 +146,7 @@ amazons_is_legal_move(const Board *board, BoardRuleSet rule_set,
     return 1;
 
   if (IS_NULL_POINT(to_x, to_y))
-    return amazon_has_any_legal_move(grid, POSITION(to_x, to_y));
+    return amazon_has_any_legal_move(grid, from_pos);
 
   assert(ON_BOARD(board, to_x, to_y));
 
