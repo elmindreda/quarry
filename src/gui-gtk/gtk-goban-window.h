@@ -113,7 +113,7 @@ struct _GtkGobanWindow {
   char			  *filename;
   GtkWindow		  *save_as_dialog;
 
-  const SgfNode		  *last_displayed_node;
+  SgfNode		  *last_displayed_node;
   const SgfNode		  *last_game_info_node;
 
   int			   switching_x;

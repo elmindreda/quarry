@@ -167,6 +167,9 @@ static void	 update_game_specific_information
 		   (GtkGobanWindow *goban_window);
 static void	 update_move_information(GtkGobanWindow *goban_window);
 
+static void	 fetch_comment_if_changed(GtkGobanWindow *goban_window,
+					  gboolean for_current_node);
+
 static void	 initialize_gtp_player(GtpClient *client, int successful,
 				       GtkGobanWindow *goban_window, ...);
 
@@ -612,8 +615,10 @@ gtk_goban_window_save(GtkGobanWindow *goban_window, guint callback_action)
 			   GTK_STOCK_SAVE, GTK_RESPONSE_OK, NULL);
     gtk_dialog_set_default_response(GTK_DIALOG(warning_dialog),
 				    GTK_RESPONSE_OK);
-    if (gtk_dialog_run(GTK_DIALOG(warning_dialog)) == GTK_RESPONSE_OK)
+    if (gtk_dialog_run(GTK_DIALOG(warning_dialog)) == GTK_RESPONSE_OK) {
+      fetch_comment_if_changed(goban_window, TRUE);
       sgf_write_file(goban_window->filename, goban_window->sgf_collection, 0);
+    }
 
     gtk_widget_destroy(warning_dialog);
   }
@@ -647,6 +652,8 @@ save_file_as_response(GtkFileSelection *dialog, gint response_id,
 {
   if (response_id == GTK_RESPONSE_OK) {
     const gchar *filename = gtk_file_selection_get_filename(dialog);
+
+    fetch_comment_if_changed(goban_window, TRUE);
 
     if (sgf_write_file(filename, goban_window->sgf_collection, 0)) {
       g_free(goban_window->filename);
@@ -775,12 +782,13 @@ go_scoring_mode_done(GtkGobanWindow *goban_window)
   go_score_game(goban_window->board, goban_window->dead_stones, komi,
 		NULL, &detailed_score, &black_territory, &white_territory);
 
+  /* FIXME: Append or prepend comment, don't overwrite. */
   sgf_node_add_text_property(current_tree->current_node, current_tree,
-			     SGF_COMMENT, detailed_score);
+			     SGF_COMMENT, detailed_score, 1);
   sgf_node_add_list_of_point_property(current_tree->current_node, current_tree,
-				      SGF_BLACK_TERRITORY, black_territory);
+				      SGF_BLACK_TERRITORY, black_territory, 1);
   sgf_node_add_list_of_point_property(current_tree->current_node, current_tree,
-				      SGF_WHITE_TERRITORY, white_territory);
+				      SGF_WHITE_TERRITORY, white_territory, 1);
 
   g_free(goban_window->dead_stones);
 
@@ -807,6 +815,11 @@ set_current_tree(GtkGobanWindow *goban_window, SgfGameTree *sgf_tree)
 				  game_specific_info[BLACK_INDEX],
 				  game_specific_info[WHITE_INDEX], NULL);
   }
+
+  /* Won't work from update_children_for_new_node() below, because the
+   * tree is being changed.
+   */
+  fetch_comment_if_changed(goban_window, TRUE);
 
   goban_window->current_tree = sgf_tree;
   sgf_utils_enter_tree(sgf_tree, goban_window->board,
@@ -1355,6 +1368,8 @@ update_children_for_new_node(GtkGobanWindow *goban_window)
   if (current_node == goban_window->last_displayed_node)
     return;
 
+  fetch_comment_if_changed(goban_window, FALSE);
+
   reset_amazons_move_data(goban_window);
 
   if (!goban_window->last_displayed_node
@@ -1392,8 +1407,19 @@ update_children_for_new_node(GtkGobanWindow *goban_window)
   update_move_information(goban_window);
 
   comment = sgf_node_get_text_property_value(current_node, SGF_COMMENT);
-  gtk_text_buffer_set_text(goban_window->text_buffer,
-			   comment ? comment : "", -1);
+  if (comment) {
+    GtkTextIter end_iterator;
+
+    gtk_text_buffer_set_text(goban_window->text_buffer, comment, -1);
+
+    /* Add newline at the end of the comment, to ease editing. */
+    gtk_text_buffer_get_end_iter(goban_window->text_buffer, &end_iterator);
+    gtk_text_buffer_insert(goban_window->text_buffer, &end_iterator, "\n", 1);
+  }
+  else
+    gtk_text_buffer_set_text(goban_window->text_buffer, "", 0);
+
+  gtk_text_buffer_set_modified(goban_window->text_buffer, FALSE);
 
   gtk_utils_set_menu_items_sensitive(goban_window->item_factory,
 				     (goban_window->board->game == GAME_GO
@@ -1610,6 +1636,33 @@ update_move_information(GtkGobanWindow *goban_window)
 }
 
 
+static void
+fetch_comment_if_changed(GtkGobanWindow *goban_window,
+			 gboolean for_current_node)
+{
+  if (gtk_text_buffer_get_modified(goban_window->text_buffer)) {
+    GtkTextIter start_iterator;
+    GtkTextIter end_iterator;
+    gchar *new_comment;
+
+    gtk_text_buffer_get_bounds(goban_window->text_buffer,
+			       &start_iterator, &end_iterator);
+    new_comment = gtk_text_iter_get_text(&start_iterator, &end_iterator);
+
+    sgf_node_add_text_property((for_current_node
+				? goban_window->current_tree->current_node
+				: goban_window->last_displayed_node),
+			       goban_window->current_tree,
+			       SGF_COMMENT,
+			       sgf_utils_normalize_text(new_comment), 1);
+    g_free(new_comment);
+
+    gtk_text_buffer_set_modified(goban_window->text_buffer, FALSE);
+  }
+}
+
+
+
 static void
 initialize_gtp_player(GtpClient *client, int successful,
 		      GtkGobanWindow *goban_window, ...)
