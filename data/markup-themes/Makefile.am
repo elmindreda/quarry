@@ -1,7 +1,8 @@
 # Process this file with Automake to produce `Makefile.in'.
 
 SUBDIRS =		\
-	default
+	default		\
+	bold
 
 
 DISTCLEANFILES = *~
