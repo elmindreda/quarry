@@ -1,7 +1,9 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *\
  * This file is part of Quarry.                                    *
  *                                                                 *
- * Copyright (C) 2003, 2004, 2005 Paul Pogonyshev                  *
+ * Copyright (C) 2003 Paul Pogonyshev.                             *
+ * Copyright (C) 2004 Paul Pogonyshev and Martin Holters.          *
+ * Copyright (C) 2005 Paul Pogonyshev.                             *
  *                                                                 *
  * This program is free software; you can redistribute it and/or   *
  * modify it under the terms of the GNU General Public License as  *
@@ -20,6 +22,12 @@
 \* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 
+/* FIXME: Certain parts can be simplified by switching from explicit
+ *	  function calls to hooking to the new GtkSgfTreeSignalProxy
+ *	  signals.
+ */
+
+
 #include "gtk-goban-window.h"
 
 #include "gtk-clock.h"
@@ -36,6 +44,7 @@
 #include "gtk-qhbox.h"
 #include "gtk-qvbox.h"
 #include "gtk-resume-game-dialog.h"
+#include "gtk-sgf-tree-signal-proxy.h"
 #include "gtk-sgf-tree-view.h"
 #include "gtk-utils.h"
 #include "quarry-marshal.h"
@@ -2063,7 +2072,6 @@ show_or_hide_sgf_tree_view (GtkGobanWindow *goban_window,
       gtk_container_remove (GTK_CONTAINER (goban_window->vpaned),
 			    sgf_tree_view_parent);
     }
-
   }
 }
 
@@ -2114,9 +2122,8 @@ show_about_dialog (void)
     copyright_label = gtk_label_new (NULL);
     gtk_label_set_justify (GTK_LABEL (copyright_label), GTK_JUSTIFY_CENTER);
     gtk_label_set_markup (GTK_LABEL (copyright_label),
-			  _("<small>Copyright \xc2\xa9 2003 Paul Pogonyshev\n"
-			    "Copyright \xc2\xa9 2004 "
-			    "Paul Pogonyshev and Martin Holters</small>"));
+			  _("<small>Copyright \xc2\xa9 2003, 2004, 2005 "
+			    "Paul Pogonyshev and others</small>"));
 
     vbox = gtk_utils_pack_in_box (GTK_TYPE_VBOX, QUARRY_SPACING,
 				  quarry_label, GTK_UTILS_FILL,
@@ -2298,6 +2305,8 @@ set_current_tree (GtkGobanWindow *goban_window, SgfGameTree *sgf_tree)
    * tree is being changed.
    */
   fetch_comment_if_changed (goban_window, TRUE);
+
+  gtk_sgf_tree_signal_proxy_attach (sgf_tree);
 
   goban_window->current_tree = sgf_tree;
   sgf_utils_enter_tree (sgf_tree, goban_window->board,
@@ -2819,7 +2828,6 @@ sgf_tree_view_clicked (GtkGobanWindow *goban_window, SgfNode *sgf_node,
     if (sgf_node->child) {
       sgf_utils_set_node_is_collapsed (goban_window->current_tree, sgf_node,
 				       !sgf_node->is_collapsed);
-      gtk_sgf_tree_view_update_view_port (goban_window->sgf_tree_view);
     }
   }
 }
@@ -3010,7 +3018,6 @@ update_children_for_new_node (GtkGobanWindow *goban_window)
   comment = sgf_node_get_text_property_value (current_node, SGF_COMMENT);
   gtk_utils_set_text_buffer_text (goban_window->text_buffer, comment);
 
-  gtk_sgf_tree_view_update_view_port (goban_window->sgf_tree_view);
   show_sgf_tree_view_automatically (goban_window, current_node);
 
   update_commands_sensitivity (goban_window);
@@ -3903,7 +3910,6 @@ move_has_been_generated (GtpClient *client, int successful,
       goban_window->game_position.current_node = current_tree->current_node;
       sgf_game_tree_set_state (current_tree, &tree_state);
 
-      gtk_sgf_tree_view_update_view_port (goban_window->sgf_tree_view);
       show_sgf_tree_view_automatically
 	(goban_window, goban_window->game_position.current_node);
     }
