@@ -169,6 +169,7 @@ gtk_goban_class_init(GtkGobanClass *class)
 
   class->pointer_moved = NULL;
   class->goban_clicked = NULL;
+  class->navigate      = NULL;
 
   goban_style = gtk_style_new();
 
