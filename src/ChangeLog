@@ -1,3 +1,49 @@
+2004-04-23  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* gui-gtk/gtk-configuration.list: Add configuration variables for
+	game rules to "New Game Parameters" section.
+	* gui-gtk/gtk-new-game-dialog.c (gtk_new_game_dialog_present): Use
+	new configuration variables for initialization.
+	(begin_game): Set them when beginning new game.
+
+	* gui-utils/parse-configuration.c: Add support for configuration
+	variables of type `real'.
+	* gui-utils/configuration.c: Likewise.
+	* gui-utils/configuration.c: Complete support for configuration
+	variables of type `int' (reading from file).
+
+	* gui-gtk/gtk-goban-window.c (initialize_gtp_player): Add support
+	for fixed handicap and komi.
+	* gtp/gtp-client.c (gtp_client_set_fixed_handicap)
+	(gtp_client_set_komi): New functions.
+
+	* sgf/sgf-tree.c (sgf_node_get_komi): New function.
+
+	* gui-gtk/gtk-new-game-dialog.c: Implement game rules (partially).
+	(show_game_specific_rules, set_handicap_adjustment_limits): New
+	functions.
+	
+	* sgf/sgf-utils.c (sgf_utils_set_handicap): New function.
+	* board/go.c (go_get_max_fixed_handicap)
+	(go_get_fixed_handicap_stones): New functions.
+
+	* gui-gtk/gtk-utils.c (gtk_utils_create_spin_button): New
+	function.
+
+2004-04-22  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* gui-gtk/gtk-games.h (GTK_MIN_BOARD_SIZE, GTK_MAX_BOARD_SIZE):
+	New macros.
+
+	* quarry.h (MIN, MAX, ROUND_DOWN): New macros.  Use `#undef' to
+	avoid conflicts with GLib or whatever else.
+
+	* gui-gtk/gtk-utils.c (gtk_utils_create_titled_page): Don't use
+	gtk_widget_show_all() on page contents (too intrusive).
+	(gtk_utils_create_titled_page): Use gtk_utils_pack_in_box().
+	* gui-gtk/gtk-assistant.c (gtk_assistant_add_page): Show added
+	pages.
+
 2004-04-21  Paul Pogonyshev  <pogonyshev@gmx.net>
 
 	* sgf/sgf-diff-utils.c: New file with various functions for
