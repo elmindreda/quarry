@@ -1,3 +1,8 @@
+2004-12-12  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* configure.ac: Don't generate `Makefile's in `data/markup-themes'
+	subdirectories anymore.
+
 2004-11-30  Paul Pogonyshev  <pogonyshev@gmx.net>
 
 	* configure.ac: Quarry version 0.1.10.

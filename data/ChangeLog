@@ -1,3 +1,20 @@
+2004-12-12  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* markup-themes/filled: New directory.
+
+	* markup-themes/filled/circle.svg: New file.
+	* markup-themes/filled/cross.svg: New file.
+	* markup-themes/filled/square.svg: New file.
+	* markup-themes/filled/selected.svg: New file.
+	* markup-themes/filled/triangle.svg: New file.
+	* markup-themes/filled/theme.cfg: New file.
+
+	* markup-themes/Makefile.am: Don't recurse in subdirectories,
+	issue all commands right from `markup-themes' directory.
+
+	* markup-themes/default/Makefile.am: Remove file.
+	* markup-themes/bold/Makefile.am: Remove file.
+
 2004-11-30  Paul Pogonyshev  <pogonyshev@gmx.net>
 
 	* (Quarry version 0.1.10.)
