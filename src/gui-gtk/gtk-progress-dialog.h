@@ -72,6 +72,8 @@ struct _GtkProgressDialog {
   gint			      last_displayed_percentage;
 
   guint			      timeout_handler_id;
+
+  const gchar		     *help_link_id;
 };
 
 struct _GtkProgressDialogClass {
@@ -87,6 +89,8 @@ GtkWidget *	gtk_progress_dialog_new
 		   GtkProgressDialogCallback update_callback,
 		   GtkProgressDialogCallback cancel_callback,
 		   gpointer user_data);
+void		gtk_progress_dialog_set_help_link_id
+		  (GtkProgressDialog *dialog, const gchar *help_link_id);
 
 void		gtk_progress_dialog_set_fraction
 		  (GtkProgressDialog *progress_dialog,

@@ -26,8 +26,9 @@
 #if THREADS_SUPPORTED
 
 
-#include "gtk-progress-dialog.h"
 #include "gtk-control-center.h"
+#include "gtk-help.h"
+#include "gtk-progress-dialog.h"
 #include "gtk-utils.h"
 
 #include <gtk/gtk.h>
@@ -123,6 +124,8 @@ gtk_progress_dialog_init(GtkProgressDialog *progress_dialog)
   gtk_dialog_set_has_separator(&progress_dialog->dialog, FALSE);
 
   progress_dialog->last_displayed_percentage = 0;
+
+  progress_dialog->help_link_id = NULL;
 }
 
 
@@ -170,6 +173,18 @@ gtk_progress_dialog_new(GtkWindow *parent,
 }
 
 
+void
+gtk_progress_dialog_set_help_link_id(GtkProgressDialog *dialog,
+				     const gchar *help_link_id)
+{
+  assert(GTK_IS_PROGRESS_DIALOG(dialog));
+  assert(!dialog->help_link_id);
+
+  dialog->help_link_id = help_link_id;
+  gtk_dialog_add_button(&dialog->dialog, GTK_STOCK_HELP, GTK_RESPONSE_HELP);
+}
+
+
 static gboolean
 gtk_progress_dialog_update(GtkProgressDialog *progress_dialog)
 {
@@ -202,12 +217,16 @@ gtk_progress_dialog_response(GtkDialog *dialog, gint response_id)
 {
   GtkProgressDialog *progress_dialog = GTK_PROGRESS_DIALOG(dialog);
 
-  UNUSED(response_id);
-
-  if (progress_dialog->cancel_callback
-      && progress_dialog->cancel_callback(progress_dialog,
-					  progress_dialog->user_data))
-    gtk_widget_destroy(GTK_WIDGET(dialog));
+  if (response_id != GTK_RESPONSE_HELP) {
+    if (progress_dialog->cancel_callback
+	&& progress_dialog->cancel_callback(progress_dialog,
+					    progress_dialog->user_data))
+      gtk_widget_destroy(GTK_WIDGET(dialog));
+  }
+  else {
+    assert(progress_dialog->help_link_id);
+    gtk_help_display(progress_dialog->help_link_id);
+  }
 }
 
 
