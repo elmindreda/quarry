@@ -1,5 +1,12 @@
 2004-05-13  Paul Pogonyshev  <pogonyshev@gmx.net>
 
+	* README: Add information about GTP engines to `RUNNING QUARRY'
+	section.
+
+	* README: Add information about how to submit bug descriptions to
+	Gna! bug tracker.
+	* INSTALL: Likewise.
+
 	* configure.ac: Quarry version 0.1.4 (bug-fix version).
 
 2004-05-12  Paul Pogonyshev  <pogonyshev@gmx.net>
