@@ -34,6 +34,7 @@
 #include "gtk-parser-interface.h"
 
 #include "gtk-control-center.h"
+#include "gtk-file-dialog.h"
 #include "gtk-goban-window.h"
 #include "gtk-thread-interface.h"
 #include "gtk-utils.h"
@@ -68,7 +69,7 @@ static const gchar *not_sgf_file_error_hint =
      "make sure you select a proper SGF file.");
 
 
-static void	 open_file_response (GtkFileSelection *dialog,
+static void	 open_file_response (GtkWidget *file_dialog,
 				     gint response_id,
 				     GtkHandleParsedData callback);
 
@@ -88,34 +89,32 @@ gtk_parser_interface_present_default (void)
 void
 gtk_parser_interface_present (const gchar *title, GtkHandleParsedData callback)
 {
-  GtkWidget *file_selection;
+  GtkWidget *file_dialog
+    = gtk_file_dialog_new (title ? title : _("Open SGF File..."),
+			   NULL, TRUE, GTK_STOCK_OPEN,
+			   G_CALLBACK (open_file_response), callback);
 
-  file_selection = gtk_file_selection_new (title
-					   ? title : _("Open SGF File..."));
-  gtk_control_center_window_created (GTK_WINDOW (file_selection));
+  gtk_control_center_window_created (GTK_WINDOW (file_dialog));
 
-  gtk_utils_add_file_selection_response_handlers (file_selection, FALSE,
-						  (G_CALLBACK
-						   (open_file_response)),
-						  callback);
-  g_signal_connect (file_selection, "destroy",
+  g_signal_connect (file_dialog, "destroy",
 		    G_CALLBACK (gtk_control_center_window_destroyed), NULL);
 
-  gtk_window_present (GTK_WINDOW (file_selection));
+  gtk_window_present (GTK_WINDOW (file_dialog));
 }
 
 
 static void
-open_file_response (GtkFileSelection *dialog, gint response_id,
+open_file_response (GtkWidget *file_dialog, gint response_id,
 		    GtkHandleParsedData callback)
 {
   if (response_id == GTK_RESPONSE_OK) {
-    const gchar *filename = gtk_file_selection_get_filename (dialog);
+    gchar *filename = gtk_file_dialog_get_filename (file_dialog);
 
-    gtk_parse_sgf_file (filename, GTK_WINDOW (dialog), callback);
+    gtk_parse_sgf_file (filename, GTK_WINDOW (file_dialog), callback);
+    g_free (filename);
   }
   else if (response_id == GTK_RESPONSE_CANCEL)
-    gtk_widget_destroy (GTK_WIDGET (dialog));
+    gtk_widget_destroy (file_dialog);
 }
 
 
