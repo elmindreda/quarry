@@ -133,11 +133,13 @@ libguiutils_a_SOURCES = \
 	configuration.c			\
 	gui-utils.c			\
 	tile-set.c			\
+	time-control.c			\
 					\
 	configuration.h			\
 	configuration-internals.h	\
 	gui-utils.h			\
-	tile-set.h
+	tile-set.h			\
+	time-control.h
 
 
 noinst_PROGRAMS = parse-configuration
@@ -165,7 +167,7 @@ LIBRARIES = $(noinst_LIBRARIES)
 libguiutils_a_AR = $(AR) cru
 libguiutils_a_LIBADD =
 am_libguiutils_a_OBJECTS = configuration.$(OBJEXT) gui-utils.$(OBJEXT) \
-	tile-set.$(OBJEXT)
+	tile-set.$(OBJEXT) time-control.$(OBJEXT)
 libguiutils_a_OBJECTS = $(am_libguiutils_a_OBJECTS)
 noinst_PROGRAMS = parse-configuration$(EXEEXT)
 PROGRAMS = $(noinst_PROGRAMS)
@@ -183,7 +185,7 @@ am__depfiles_maybe = depfiles
 @AMDEP_TRUE@DEP_FILES = ./$(DEPDIR)/configuration.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/gui-utils.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/parse-configuration.Po \
-@AMDEP_TRUE@	./$(DEPDIR)/tile-set.Po
+@AMDEP_TRUE@	./$(DEPDIR)/tile-set.Po ./$(DEPDIR)/time-control.Po
 COMPILE = $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) \
 	$(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
 CCLD = $(CC)
@@ -227,6 +229,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gui-utils.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/parse-configuration.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tile-set.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/time-control.Po@am__quote@
 
 distclean-depend:
 	-rm -rf ./$(DEPDIR)

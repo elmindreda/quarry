@@ -14,11 +14,13 @@ libguiutils_a_SOURCES =			\
 	configuration.c			\
 	gui-utils.c			\
 	tile-set.c			\
+	time-control.c			\
 					\
 	configuration.h			\
 	configuration-internals.h	\
 	gui-utils.h			\
-	tile-set.h
+	tile-set.h			\
+	time-control.h
 
 
 noinst_PROGRAMS = parse-configuration
