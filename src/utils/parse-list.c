@@ -898,10 +898,10 @@ parse_thing(Thing thing, char **line, const char *type)
 	break;
 
       case FIELD_NAME:
-	expected_character = (isalpha(**line) || **line == '_'
+	expected_character = (isalpha(**line)
+			      || **line == '_' || ** line == '['
 			      || (*line != value && (isdigit(**line)
 						     || **line == '.'
-						     || **line == '['
 						     || **line == ']')));
 	break;
 
@@ -911,6 +911,10 @@ parse_thing(Thing thing, char **line, const char *type)
 
       case FLOATING_POINT_NUMBER:
 	expected_character = isdigit(**line) || **line == '.';
+	break;
+
+      case TIME_VALUE:
+	expected_character = isdigit(**line) || **line == ':' || **line == '.';
 	break;
 
       default:
