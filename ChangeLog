@@ -1,3 +1,10 @@
+2005-01-15  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* configure.ac: Quarry version 0.1.12.
+	* NEWS: Update.
+
+	* THANKS: New file.
+
 2005-01-06  Paul Pogonyshev  <pogonyshev@gmx.net>
 
 	* configure.ac: Quarry version 0.1.11.
@@ -180,7 +187,7 @@
 Changes before the project registration on Gna! (2004-04-12) were not logged.
 
 
-  Copyright (C) 2004 Paul Pogonyshev.
+  Copyright (C) 2004, 2005 Paul Pogonyshev.
 
   Copying and distribution of this file, with or without modification,
   are permitted provided the copyright notice and this notice are preserved.
