@@ -76,6 +76,8 @@ static gboolean	 gtk_goban_enter_notify_event(GtkWidget *widget,
 					      GdkEventCrossing *event);
 static gboolean	 gtk_goban_leave_notify_event(GtkWidget *widget,
 					      GdkEventCrossing *event);
+static gboolean	 gtk_goban_scroll_event(GtkWidget *widget,
+					GdkEventScroll *event);
 
 static gboolean	 gtk_goban_key_press_event(GtkWidget *widget,
 					   GdkEventKey *event);
@@ -182,6 +184,7 @@ gtk_goban_class_init(GtkGobanClass *class)
   widget_class->motion_notify_event  = gtk_goban_motion_notify_event;
   widget_class->enter_notify_event   = gtk_goban_enter_notify_event;
   widget_class->leave_notify_event   = gtk_goban_leave_notify_event;
+  widget_class->scroll_event	     = gtk_goban_scroll_event;
   widget_class->key_press_event	     = gtk_goban_key_press_event;
   widget_class->key_release_event    = gtk_goban_key_release_event;
   widget_class->focus_in_event	     = gtk_goban_focus_in_or_out_event;
@@ -300,6 +303,7 @@ gtk_goban_realize(GtkWidget *widget)
 			   | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK
 			   | GDK_POINTER_MOTION_MASK
 			   | GDK_LEAVE_NOTIFY_MASK | GDK_ENTER_NOTIFY_MASK
+			   | GDK_SCROLL_MASK
 			   | GDK_KEY_PRESS_MASK | GDK_KEY_RELEASE_MASK);
 
   GTK_WIDGET_SET_FLAGS(widget, GTK_REALIZED);
@@ -917,6 +921,48 @@ gtk_goban_leave_notify_event(GtkWidget *widget, GdkEventCrossing *event)
     goban->button_pressed = 0;
 
   set_feedback_data(goban, NULL_X, NULL_Y, NULL, GOBAN_FEEDBACK_NONE);
+
+  return FALSE;
+}
+
+
+/* Navigate goban in respond to mouse wheel movement.  Default is
+ * navigating back/forth by moves.  Shift causes switching between
+ * variations, Ctrl makes navigation fast.
+ */
+static gboolean
+gtk_goban_scroll_event(GtkWidget *widget, GdkEventScroll *event)
+{
+  gint direction;
+
+  switch (event->direction) {
+  case GDK_SCROLL_UP:
+    if (!(event->state & GDK_SHIFT_MASK)) {
+      direction = (event->state & GDK_CONTROL_MASK
+		   ? GOBAN_NAVIGATE_BACK_FAST : GOBAN_NAVIGATE_BACK);
+      break;
+    }
+
+  case GDK_SCROLL_LEFT:
+    direction = GOBAN_NAVIGATE_PREVIOUS_VARIATION;
+    break;
+
+  case GDK_SCROLL_DOWN:
+    if (!(event->state & GDK_SHIFT_MASK)) {
+      direction = (event->state & GDK_CONTROL_MASK
+		   ? GOBAN_NAVIGATE_FORWARD_FAST : GOBAN_NAVIGATE_FORWARD);
+      break;
+    }
+
+  case GDK_SCROLL_RIGHT:
+    direction = GOBAN_NAVIGATE_NEXT_VARIATION;
+    break;
+
+  default:
+    return FALSE;
+  }
+
+  g_signal_emit(G_OBJECT(widget), goban_signals[NAVIGATE], 0, direction);
 
   return FALSE;
 }
