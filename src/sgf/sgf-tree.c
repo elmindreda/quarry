@@ -22,6 +22,7 @@
 
 #include "sgf.h"
 #include "sgf-privates.h"
+#include "sgf-undo.h"
 #include "board.h"
 #include "utils.h"
 
@@ -112,6 +113,8 @@ sgf_game_tree_new (void)
   tree->board	    = NULL;
   tree->board_state = NULL;
 
+  tree->undo_history = NULL;
+
   tree->char_set = NULL;
 
   tree->application_name    = NULL;
@@ -184,6 +187,9 @@ sgf_game_tree_delete (SgfGameTree *tree)
     tree->notification_callback (tree, SGF_GAME_TREE_DELETED, tree->user_data);
 
   sgf_game_tree_invalidate_map (tree, NULL);
+
+  if (tree->undo_history)
+    sgf_undo_history_delete_dont_free_data (tree->undo_history);
 
 #if ENABLE_MEMORY_POOLS
 
@@ -450,27 +456,20 @@ sgf_node_delete (SgfNode *node, SgfGameTree *tree)
 }
 
 
-/* Create a new SGF node and append it as the last child of the given
- * node.
+/* Get the last child of given node (the first is `node->child'.)  Can
+ * return NULL if the node has no children at all.
  */
 SgfNode *
-sgf_node_append_child (SgfNode *node, SgfGameTree *tree)
+sgf_node_get_last_child (const SgfNode *node)
 {
-  SgfNode *child;
-  SgfNode **link;
+  SgfNode *last_child = node->child;
 
-  assert (node);
-  assert (tree);
+  if (last_child) {
+    while (last_child->next)
+      last_child = last_child->next;
+  }
 
-  child = sgf_node_new (tree, node);
-
-  link = &node->child;
-  while (*link)
-    link = & (*link)->next;
-
-  *link = child;
-
-  return child;
+  return last_child;
 }
 
 
@@ -638,13 +637,13 @@ sgf_node_find_unknown_property (SgfNode *node, char *id, int length,
 int
 sgf_node_is_game_info_node (const SgfNode *node)
 {
-  SgfProperty *const *link;
+  const SgfProperty *property;
 
   assert (node);
 
-  for (link = &node->properties; *link; link = & (*link)->next) {
-    if ((*link)->type >= SGF_FIRST_GAME_INFO_PROPERTY)
-      return (*link)->type <= SGF_LAST_GAME_INFO_PROPERTY;
+  for (property = node->properties; property; property = property->next) {
+    if (property->type >= SGF_FIRST_GAME_INFO_PROPERTY)
+      return property->type <= SGF_LAST_GAME_INFO_PROPERTY;
   }
 
   return 0;
@@ -664,13 +663,14 @@ sgf_node_is_game_info_node (const SgfNode *node)
 /* This macro is used in many of the below function. */
 #define GET_PROPERTY_VALUE(type_assertion, return_field, fail_value)	\
   do {									\
-    SgfProperty *const *link;						\
+    const SgfProperty *property;					\
     assert (node);							\
     assert (type_assertion);						\
-    for (link = &node->properties; *link && (*link)->type <= type;	\
-	 link = & (*link)->next) {					\
-      if ((*link)->type == type)					\
-	return (*link)->value.return_field;				\
+    for (property = node->properties;					\
+	 property && property->type <= type;				\
+	 property = property->next) {					\
+      if (property->type == type)					\
+	return property->value.return_field;				\
     }									\
     return fail_value;							\
   } while (0)
@@ -684,15 +684,15 @@ int
 sgf_node_get_number_property_value (const SgfNode *node, SgfType type,
 				    int *number)
 {
-  SgfProperty *const *link;
+  const SgfProperty *property;
 
   assert (node);
   assert (property_info[type].value_type == SGF_NUMBER);
 
-  for (link = &node->properties; *link && (*link)->type <= type;
-       link = & (*link)->next) {
-    if ((*link)->type == type) {
-      *number = (*link)->value.number;
+  for (property = node->properties; property && property->type <= type;
+       property = property->next) {
+    if (property->type == type) {
+      *number = property->value.number;
       return 1;
     }
   }
@@ -821,15 +821,15 @@ int
 sgf_node_get_real_property_value (const SgfNode *node, SgfType type,
 				  double *value)
 {
-  SgfProperty *const *link;
+  const SgfProperty *property;
 
   assert (node);
   assert (property_info[type].value_type == SGF_REAL);
 
-  for (link = &node->properties; *link && (*link)->type <= type;
-       link = & (*link)->next) {
-    if ((*link)->type == type) {
-      *value = * (*link)->value.real;
+  for (property = node->properties; property && property->type <= type;
+       property = property->next) {
+    if (property->type == type) {
+      *value = * property->value.real;
       return 1;
     }
   }
