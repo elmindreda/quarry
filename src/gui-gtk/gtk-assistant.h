@@ -55,6 +55,7 @@ struct _GtkAssistant {
   GtkWidget	  *back_button;
   GtkWidget	  *next_button;
   GtkWidget	  *finish_button;
+  GtkWidget	  *help_button;
 
   gpointer	   user_data;
 };
@@ -66,6 +67,8 @@ struct _GtkAssistantClass {
 
 typedef void (* GtkAssistantPageShownCallback) (gpointer user_data);
 typedef gboolean (* GtkAssistantPageAcceptableCallback) (gpointer user_data);
+typedef const gchar * (* GtkAssistantPageHelpLinkIDCallback)
+  (gpointer user_data);
 
 
 GtkType		gtk_assistant_get_type(void);
@@ -77,6 +80,13 @@ void		gtk_assistant_add_page
 		   const gchar *icon_stock_id, const gchar *title,
 		   GtkAssistantPageShownCallback shown_callback,
 		   GtkAssistantPageAcceptableCallback acceptable_callback);
+
+void		gtk_assistant_set_page_help_link_id(GtkAssistant *assistant,
+						    GtkWidget *page,
+						    const gchar *help_link_id);
+void		gtk_assistant_set_page_help_link_id_callback
+		  (GtkAssistant *assistant, GtkWidget *page,
+		   GtkAssistantPageHelpLinkIDCallback callback);
 
 void		gtk_assistant_set_finish_button(GtkAssistant *assistant,
 						const gchar *stock_id);
