@@ -1,3 +1,20 @@
+2004-08-11  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* gui-gtk/gtk-preferences.c: Split "Board Appearance" category
+	into three (one per game).
+	(gtk_preferences_dialog_present): Arrange preferences categories
+	in a tree rather than in a list.
+	(create_board_appearance_page): Remove function.
+	(create_go_board_appearance_page)
+	(create_amazons_board_appearance_page)
+	(create_othello_board_appearance_page)
+	(create_board_appearance_widgets)
+	(create_board_appearance_notebook_page): New
+	functions (essentially, inherit the code of removed
+	create_board_appearance_page()).
+	(gtk_preferences_dialog_change_page): Take care not to switch to
+	nonexistent pages.
+
 2004-08-10  Paul Pogonyshev  <pogonyshev@gmx.net>
 
 	* board/go.c (go_mark_territory_on_grid): Detect false eyes that
