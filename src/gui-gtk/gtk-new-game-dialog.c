@@ -159,9 +159,8 @@ gtk_new_game_dialog_present(void)
   }
 
   /* Hint about engine/game (non-)compatibility. */
-  label = gtk_label_new(_(hint_text));
+  label = gtk_utils_create_left_aligned_label(_(hint_text));
   gtk_label_set_line_wrap(GTK_LABEL(label), TRUE);
-  gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.0);
 
   /* Pack the radio buttons and the hint next to each other. */
   hbox = gtk_utils_pack_in_box(GTK_TYPE_HBOX, QUARRY_SPACING_VERY_BIG,
@@ -190,7 +189,8 @@ gtk_new_game_dialog_present(void)
       gtk_toggle_button_set_active(data->player_radio_buttons[k][1], TRUE);
 
     /* Text entry for human's name. */
-    entry = gtk_utils_create_entry(new_game_configuration.player_names[k]);
+    entry = gtk_utils_create_entry(new_game_configuration.player_names[k],
+				   RETURN_ACTIVATES_DEFAULT);
     data->human_name_entries[k] = GTK_ENTRY(entry);
     gtk_utils_set_sensitive_on_toggle(data->player_radio_buttons[k][0], entry);
 
@@ -321,23 +321,15 @@ gtk_new_game_dialog_present(void)
     GtkWidget *rules_vbox_widget;
     GtkBox *rules_vbox;
     GtkWidget *board_size_spin_button;
-    GtkWidget *board_size_label;
-    GtkWidget *time_control_type_label;
     GtkWidget *time_control_type;
     GtkWidget *time_control_notebook;
     GtkWidget *check_button;
-    GtkWidget *game_time_limit_label;
     GtkWidget *game_time_limit_spin_button;
-    GtkWidget *move_time_limit_label;
     GtkWidget *move_time_limit_spin_button;
-    GtkWidget *main_time_label;
     GtkWidget *main_time_spin_button;
-    GtkWidget *overtime_period_label;
     GtkWidget *overtime_period_spin_button;
-    GtkWidget *moves_per_overtime_label;
     GtkWidget *moves_per_overtime_spin_button;
     GtkWidget *time_control_named_vbox;
-    GtkSizeGroup *labels_size_group;
     GtkSizeGroup *spin_buttons_size_group;
     char rules_vbox_title[64];
 
@@ -362,12 +354,12 @@ gtk_new_game_dialog_present(void)
     /* Board size spin button and a label for it. */
     board_size_spin_button = gtk_utils_create_spin_button(data->board_sizes[k],
 							  0.0, 0, TRUE);
-    board_size_label = gtk_utils_create_mnemonic_label(_("Board _size:"),
-						       board_size_spin_button);
+    label = gtk_utils_create_mnemonic_label(_("Board _size:"),
+					    board_size_spin_button);
 
     /* Pack them into a box and add to "Game Rules" box. */
     hbox = gtk_utils_pack_in_box(GTK_TYPE_HBOX, QUARRY_SPACING,
-				 board_size_label, 0,
+				 label, 0,
 				 board_size_spin_button, GTK_UTILS_FILL, NULL);
     gtk_box_pack_start(rules_vbox, hbox, FALSE, TRUE, 0);
 
@@ -378,13 +370,12 @@ gtk_new_game_dialog_present(void)
 						  (sizeof(time_control_types)
 						   / sizeof(const gchar *)),
 						  -1);
-    time_control_type_label
-      = gtk_utils_create_mnemonic_label(_("Time control _type:"),
-					time_control_type);
+    label = gtk_utils_create_mnemonic_label(_("Time control _type:"),
+					    time_control_type);
 
     /* Pack the selector and the label together. */
     hbox = gtk_utils_pack_in_box(GTK_TYPE_HBOX, QUARRY_SPACING,
-				 time_control_type_label, 0,
+				 label, 0,
 				 time_control_type, GTK_UTILS_FILL, NULL);
 
     /* A notebook with a page for each type of time control. */
@@ -424,12 +415,11 @@ gtk_new_game_dialog_present(void)
     game_time_limit_spin_button
       = gtk_utils_create_time_spin_button(time_control_data->game_time_limit,
 					  60.0);
-    game_time_limit_label
-      = gtk_utils_create_mnemonic_label(_("Time _limit for game:"),
-					game_time_limit_spin_button);
+    label = gtk_utils_create_mnemonic_label(_("Time _limit for game:"),
+					    game_time_limit_spin_button);
 
     hbox = gtk_utils_pack_in_box(GTK_TYPE_HBOX, QUARRY_SPACING,
-				 game_time_limit_label, GTK_UTILS_FILL,
+				 label, GTK_UTILS_FILL,
 				 game_time_limit_spin_button, GTK_UTILS_FILL,
 				 gtk_label_new(_("(per player)")),
 				 GTK_UTILS_FILL,
@@ -445,12 +435,11 @@ gtk_new_game_dialog_present(void)
     move_time_limit_spin_button
       = gtk_utils_create_time_spin_button(time_control_data->move_time_limit,
 					  5.0);
-    move_time_limit_label
-      = gtk_utils_create_mnemonic_label(_("Time _limit for move:"),
-					move_time_limit_spin_button);
+    label = gtk_utils_create_mnemonic_label(_("Time _limit for move:"),
+					    move_time_limit_spin_button);
 
     hbox = gtk_utils_pack_in_box(GTK_TYPE_HBOX, QUARRY_SPACING,
-				 move_time_limit_label, GTK_UTILS_FILL,
+				 label, GTK_UTILS_FILL,
 				 move_time_limit_spin_button, GTK_UTILS_FILL,
 				 NULL);
     gtk_notebook_append_page(time_control_data->notebook,
@@ -463,11 +452,11 @@ gtk_new_game_dialog_present(void)
 
     main_time_spin_button
       = gtk_utils_create_time_spin_button(time_control_data->main_time, 60.0);
-    main_time_label = gtk_utils_create_mnemonic_label(_("_Main time:"),
-						      main_time_spin_button);
+    label = gtk_utils_create_mnemonic_label(_("_Main time:"),
+					    main_time_spin_button);
 
     hboxes[0] = gtk_utils_pack_in_box(GTK_TYPE_HBOX, QUARRY_SPACING,
-				      main_time_label, GTK_UTILS_FILL,
+				      label, GTK_UTILS_FILL,
 				      main_time_spin_button, GTK_UTILS_FILL,
 				      NULL);
 
@@ -479,12 +468,11 @@ gtk_new_game_dialog_present(void)
     overtime_period_spin_button
       = gtk_utils_create_time_spin_button(time_control_data->overtime_period,
 					  60.0);
-    overtime_period_label
-      = gtk_utils_create_mnemonic_label(_("_Overtime period length:"),
-					overtime_period_spin_button);
+    label = gtk_utils_create_mnemonic_label(_("_Overtime period length:"),
+					    overtime_period_spin_button);
 
     hboxes[1] = gtk_utils_pack_in_box(GTK_TYPE_HBOX, QUARRY_SPACING,
-				      overtime_period_label, GTK_UTILS_FILL,
+				      label, GTK_UTILS_FILL,
 				      overtime_period_spin_button,
 				      GTK_UTILS_FILL,
 				      NULL);
@@ -497,12 +485,11 @@ gtk_new_game_dialog_present(void)
     moves_per_overtime_spin_button
       = gtk_utils_create_spin_button(time_control_data->moves_per_overtime,
 				     0.0, 0, TRUE);
-    moves_per_overtime_label
-      = gtk_utils_create_mnemonic_label(_("Mo_ves per overtime:"),
-					moves_per_overtime_spin_button);
+    label = gtk_utils_create_mnemonic_label(_("Mo_ves per overtime:"),
+					    moves_per_overtime_spin_button);
 
     hboxes[2] = gtk_utils_pack_in_box(GTK_TYPE_HBOX, QUARRY_SPACING,
-				      moves_per_overtime_label, GTK_UTILS_FILL,
+				      label, GTK_UTILS_FILL,
 				      moves_per_overtime_spin_button,
 				      GTK_UTILS_FILL,
 				      NULL);
@@ -523,14 +510,7 @@ gtk_new_game_dialog_present(void)
 						->type));
     }
 
-    /* Align everything nicely with size groups. */
-    labels_size_group
-      = gtk_utils_create_size_group(GTK_SIZE_GROUP_HORIZONTAL,
-				    board_size_label, time_control_type_label,
-				    game_time_limit_label,
-				    move_time_limit_label,
-				    main_time_label, overtime_period_label,
-				    moves_per_overtime_label, NULL);
+    /* Align spin buttons nicely. */
     spin_buttons_size_group
       = gtk_utils_create_size_group(GTK_SIZE_GROUP_HORIZONTAL,
 				    board_size_spin_button,
@@ -577,8 +557,7 @@ gtk_new_game_dialog_present(void)
 					  GTK_UTILS_FILL,
 					  NULL);
 
-	/* Force proper alignment of handicap widgets. */
-	gtk_size_group_add_widget(labels_size_group, radio_buttons[i]);
+	/* Force proper alignment of handicap spin buttons. */
 	gtk_size_group_add_widget(spin_buttons_size_group,
 				  handicap_spin_buttons[i]);
       }
@@ -612,7 +591,6 @@ gtk_new_game_dialog_present(void)
 				   NULL);
       gtk_box_pack_start(rules_vbox, hbox, FALSE, TRUE, 0);
 
-      gtk_size_group_add_widget(labels_size_group, label);
       gtk_size_group_add_widget(spin_buttons_size_group, komi_spin_button);
     }
 
@@ -624,6 +602,9 @@ gtk_new_game_dialog_present(void)
 				  time_control_named_vbox, GTK_UTILS_FILL,
 				  NULL);
     gtk_notebook_append_page(data->games_notebook, vbox1, NULL);
+
+    /* Align all labels in one call. */
+    gtk_utils_align_left_widgets(GTK_CONTAINER(vbox1), NULL);
   }
 
   /* Finally, add the game rules notebook as an assistant page. */
