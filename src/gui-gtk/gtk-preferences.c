@@ -205,8 +205,8 @@ static void	    engine_selector_destroyed (GtkEngineSelectorData *data);
 
 #if GTK_2_4_OR_LATER
 
-#define prepare_to_rebuild_menus ()
-#define rebuild_all_menus ()
+#define prepare_to_rebuild_menus()
+#define rebuild_all_menus()
 
 static void	    set_pixbuf_cell_image
 		      (GtkCellLayout *cell_layout, GtkCellRenderer *cell,
