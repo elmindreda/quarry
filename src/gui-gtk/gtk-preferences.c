@@ -128,69 +128,69 @@ struct _GtkChainEngineData {
 };
 
 
-static void	    handle_drag_and_drop(GtkTreeModel *gtp_engines_tree_model,
-					 GtkTreePath *tree_path,
-					 GtkTreeIter *iterator);
+static void	    handle_drag_and_drop (GtkTreeModel *gtp_engines_tree_model,
+					  GtkTreePath *tree_path,
+					  GtkTreeIter *iterator);
 
 
-static GtkWidget *  create_gtp_engines_page(void);
-static GtkWidget *  create_saving_sgf_page(void);
-static GtkWidget *  create_go_board_appearance_page(void);
-static GtkWidget *  create_amazons_board_appearance_page(void);
-static GtkWidget *  create_othello_board_appearance_page(void);
+static GtkWidget *  create_gtp_engines_page (void);
+static GtkWidget *  create_saving_sgf_page (void);
+static GtkWidget *  create_go_board_appearance_page (void);
+static GtkWidget *  create_amazons_board_appearance_page (void);
+static GtkWidget *  create_othello_board_appearance_page (void);
 
-static GtkWidget *  create_background_table(GtkGameIndex game_index,
-					    gint num_table_rows);
-static GtkWidget *  create_markup_box(GtkGameIndex game_index,
-				      const gchar *labels[4]);
+static GtkWidget *  create_background_table (GtkGameIndex game_index,
+					     gint num_table_rows);
+static GtkWidget *  create_markup_box (GtkGameIndex game_index,
+				       const gchar *labels[4]);
 static GtkWidget *  create_board_appearance_notebook_page
 		      (GtkWidget *background_widget, GtkWidget *markup_widget);
 
 
 static void	    gtk_preferences_dialog_change_page
 		      (GtkTreeSelection *selection, GtkNotebook *notebook);
-static void	    gtk_preferences_dialog_response(GtkWindow *window,
-						    gint response_id);
-static void	    gtk_preferences_dialog_destroy(GtkWindow *window);
+static void	    gtk_preferences_dialog_response (GtkWindow *window,
+						     gint response_id);
+static void	    gtk_preferences_dialog_destroy (GtkWindow *window);
 
 static void	    gtk_preferences_dialog_update_gtp_engine_info
 		      (GtkTreeSelection *selection);
 
-static void	    do_remove_gtp_engine(void);
-static void	    do_move_gtp_engine(gpointer move_upwards);
+static void	    do_remove_gtp_engine (void);
+static void	    do_move_gtp_engine (gpointer move_upwards);
 
 static GSList *	    find_gtp_engine_dialog_by_engine_data
 		      (GtpEngineListItem *engine_data);
 
 
-static void	    gtk_gtp_engine_dialog_present(gpointer new_engine);
+static void	    gtk_gtp_engine_dialog_present (gpointer new_engine);
 
-static void	    gtk_gtp_engine_dialog_destroy(GtkWindow *window,
-						  GtkEngineDialogData *data);
-static void	    gtk_gtp_engine_dialog_response(GtkWindow *window,
-						   gint response_id,
+static void	    gtk_gtp_engine_dialog_destroy (GtkWindow *window,
 						   GtkEngineDialogData *data);
+static void	    gtk_gtp_engine_dialog_response (GtkWindow *window,
+						    gint response_id,
+						    GtkEngineDialogData *data);
 
-static void	    client_initialized(GtpClient *client, void *user_data);
-static void	    client_deleted(GtpClient *client, GError *shutdown_reason,
-				   void *user_data);
+static void	    client_initialized (GtpClient *client, void *user_data);
+static void	    client_deleted (GtpClient *client, GError *shutdown_reason,
+				    void *user_data);
 
-static gboolean	    show_progress_dialog(GtkProgressDialog *progress_dialog,
-					 gpointer user_data);
-static gboolean	    cancel_engine_query(GtkProgressDialog *progress_dialog,
-					GtkEngineDialogData *data);
+static gboolean	    show_progress_dialog (GtkProgressDialog *progress_dialog,
+					  gpointer user_data);
+static gboolean	    cancel_engine_query (GtkProgressDialog *progress_dialog,
+					 GtkEngineDialogData *data);
 
-static void	    store_toggle_setting(GtkToggleButton *toggle_button,
-					 int *value_storage);
+static void	    store_toggle_setting (GtkToggleButton *toggle_button,
+					  int *value_storage);
 
-static void	    update_board_background_texture(GtkEntry *entry,
-						    GdkEvent *event,
-						    gpointer game_index);
-static void	    update_board_markup(GtkWidget *widget,
-					gpointer game_index);
-static void	    update_board_appearance(GtkWidget *widget, 
-					    gpointer value_storage);
-static void	    use_theme_default_size(UseThemeDefaultSizeData *data);
+static gboolean	    update_board_background_texture (GtkEntry *entry,
+						     GdkEventFocus *event,
+						     gpointer game_index);
+static void	    update_board_markup (GtkWidget *widget,
+					 gpointer game_index);
+static void	    update_board_appearance (GtkWidget *widget,
+					     gpointer value_storage);
+static void	    use_theme_default_size (UseThemeDefaultSizeData *data);
 static void	    use_theme_default_opacity
 		      (UseThemeDefaultOpacityData *data);
 
@@ -199,34 +199,33 @@ static inline BoardAppearance *
 		      (GtkGameIndex game_index);
 
 
-static void	    engine_selector_changed(GtkWidget *selector,
-					    GtkEngineSelectorData *data);
-static void	    engine_selector_destroyed(GtkEngineSelectorData *data);
+static void	    engine_selector_changed (GtkWidget *selector,
+					     GtkEngineSelectorData *data);
+static void	    engine_selector_destroyed (GtkEngineSelectorData *data);
 
 #if GTK_2_4_OR_LATER
 
-#define prepare_to_rebuild_menus()
-#define rebuild_all_menus()
+#define prepare_to_rebuild_menus ()
+#define rebuild_all_menus ()
 
-static void	    set_pixbuf_cell_image(GtkCellLayout *cell_layout,
-					  GtkCellRenderer *cell,
-					  GtkTreeModel *gtp_engines_tree_model,
-					  GtkTreeIter *iterator,
-					  gpointer data);
+static void	    set_pixbuf_cell_image
+		      (GtkCellLayout *cell_layout, GtkCellRenderer *cell,
+		       GtkTreeModel *gtp_engines_tree_model,
+		       GtkTreeIter *iterator, gpointer data);
 
 #else
 
-static void	    prepare_to_rebuild_menus(void);
-static void	    rebuild_all_menus(void);
-static void	    build_and_attach_menu(GtkWidget *option_menu,
-					  GtkGameIndex game_index);
+static void	    prepare_to_rebuild_menus (void);
+static void	    rebuild_all_menus (void);
+static void	    build_and_attach_menu (GtkWidget *option_menu,
+					   GtkGameIndex game_index);
 
 #endif
 
 
-static void	    chain_client_initialized(GtpClient *client,
-					     void *user_data);
-static void	    update_engine_screen_name(GtpEngineListItem *engine_data);
+static void	    chain_client_initialized (GtpClient *client,
+					      void *user_data);
+static void	    update_engine_screen_name (GtpEngineListItem *engine_data);
 static void	    find_gtp_tree_model_iterator_by_engines_data
 		      (const GtpEngineListItem *engine_data,
 		       GtkTreeIter *iterator);
@@ -286,89 +285,89 @@ static GSList		 *gtp_engine_dialogs = NULL;
 
 
 void
-gtk_preferences_init(void)
+gtk_preferences_init (void)
 {
   GtpEngineListItem *engine_data;
 
 #if GTK_2_4_OR_LATER
-  gtp_engines_list_store = gtk_list_store_new(ENGINES_NUM_COLUMNS,
-					      G_TYPE_POINTER, G_TYPE_STRING,
-					      G_TYPE_STRING);
+  gtp_engines_list_store = gtk_list_store_new (ENGINES_NUM_COLUMNS,
+					       G_TYPE_POINTER, G_TYPE_STRING,
+					       G_TYPE_STRING);
 #else
-  gtp_engines_list_store = gtk_list_store_new(ENGINES_NUM_COLUMNS,
-					      G_TYPE_POINTER, G_TYPE_STRING);
+  gtp_engines_list_store = gtk_list_store_new (ENGINES_NUM_COLUMNS,
+					       G_TYPE_POINTER, G_TYPE_STRING);
 #endif
 
   for (engine_data = gtp_engines.first; engine_data;
        engine_data = engine_data->next) {
     GtkTreeIter iterator;
 
-    gtk_list_store_append(gtp_engines_list_store, &iterator);
+    gtk_list_store_append (gtp_engines_list_store, &iterator);
 
 #if GTK_2_4_OR_LATER
-    gtk_list_store_set(gtp_engines_list_store, &iterator,
-		       ENGINES_DATA, engine_data,
-		       ENGINES_NAME, engine_data->screen_name,
-		       ENGINES_COMMAND_LINE, engine_data->command_line, -1);
+    gtk_list_store_set (gtp_engines_list_store, &iterator,
+			ENGINES_DATA, engine_data,
+			ENGINES_NAME, engine_data->screen_name,
+			ENGINES_COMMAND_LINE, engine_data->command_line, -1);
 #else
-    gtk_list_store_set(gtp_engines_list_store, &iterator,
-		       ENGINES_DATA, engine_data,
-		       ENGINES_NAME, engine_data->screen_name, -1);
+    gtk_list_store_set (gtp_engines_list_store, &iterator,
+			ENGINES_DATA, engine_data,
+			ENGINES_NAME, engine_data->screen_name, -1);
 #endif
   }
 
-  g_signal_connect(GTK_TREE_MODEL(gtp_engines_list_store), "row-changed",
-		   G_CALLBACK(handle_drag_and_drop), NULL);
+  g_signal_connect (GTK_TREE_MODEL (gtp_engines_list_store), "row-changed",
+		    G_CALLBACK (handle_drag_and_drop), NULL);
 
-  gui_back_end_register_object_to_finalize(gtp_engines_list_store);
+  gui_back_end_register_object_to_finalize (gtp_engines_list_store);
 }
 
 
 static void
-handle_drag_and_drop(GtkTreeModel *gtp_engines_tree_model,
-		     GtkTreePath *tree_path, GtkTreeIter *iterator)
+handle_drag_and_drop (GtkTreeModel *gtp_engines_tree_model,
+		      GtkTreePath *tree_path, GtkTreeIter *iterator)
 {
   GtpEngineListItem *engine_data;
   GtpEngineListItem *notch = NULL;
 
-  gtk_tree_model_get(gtp_engines_tree_model, iterator,
-		     ENGINES_DATA, &engine_data, -1);
+  gtk_tree_model_get (gtp_engines_tree_model, iterator,
+		      ENGINES_DATA, &engine_data, -1);
 
-  if (gtk_tree_path_prev(tree_path)) {
+  if (gtk_tree_path_prev (tree_path)) {
     GtkTreeIter notch_iterator;
 
-    gtk_tree_model_get_iter(gtp_engines_tree_model,
-			    &notch_iterator, tree_path);
-    gtk_tree_model_get(gtp_engines_tree_model, &notch_iterator,
-		       ENGINES_DATA, &notch, -1);
+    gtk_tree_model_get_iter (gtp_engines_tree_model,
+			     &notch_iterator, tree_path);
+    gtk_tree_model_get (gtp_engines_tree_model, &notch_iterator,
+			ENGINES_DATA, &notch, -1);
 
     /* Restore tree path just in case GTK+ needs it. */
-    gtk_tree_path_next(tree_path);
+    gtk_tree_path_next (tree_path);
   }
 
-  prepare_to_rebuild_menus();
-  string_list_move(&gtp_engines, engine_data, notch);
-  rebuild_all_menus();
+  prepare_to_rebuild_menus ();
+  string_list_move (&gtp_engines, engine_data, notch);
+  rebuild_all_menus ();
 }
 
 
 void
-gtk_preferences_dialog_present(gpointer page_to_select)
+gtk_preferences_dialog_present (gpointer page_to_select)
 {
   int k;
   int category_to_select;
   int subcategory_to_select;
   GtkTreePath *tree_path;
-  gint page_to_select_gint = (GPOINTER_TO_INT(page_to_select) >= 0
-			      ? GPOINTER_TO_INT(page_to_select)
+  gint page_to_select_gint = (GPOINTER_TO_INT (page_to_select) >= 0
+			      ? GPOINTER_TO_INT (page_to_select)
 			      : last_selected_page);
 
   if (!preferences_dialog) {
-    GtkWidget *dialog = gtk_dialog_new_with_buttons(_("Preferences"), NULL, 0,
-						    GTK_STOCK_CLOSE,
-						    GTK_RESPONSE_CLOSE,
-						    GTK_STOCK_HELP,
-						    GTK_RESPONSE_HELP, NULL);
+    GtkWidget *dialog = gtk_dialog_new_with_buttons (_("Preferences"), NULL, 0,
+						     GTK_STOCK_CLOSE,
+						     GTK_RESPONSE_CLOSE,
+						     GTK_STOCK_HELP,
+						     GTK_RESPONSE_HELP, NULL);
     GtkTreeStore *categories;
     GtkWidget *category_list;
     GtkWidget *label;
@@ -381,61 +380,62 @@ gtk_preferences_dialog_present(gpointer page_to_select)
     GtkTreeIter category_parent;
     int page_index;
 
-    preferences_dialog = GTK_WINDOW(dialog);
-    gtk_control_center_window_created(preferences_dialog);
-    gtk_dialog_set_default_response(GTK_DIALOG(preferences_dialog),
-				    GTK_RESPONSE_CLOSE);
+    preferences_dialog = GTK_WINDOW (dialog);
+    gtk_control_center_window_created (preferences_dialog);
+    gtk_dialog_set_default_response (GTK_DIALOG (preferences_dialog),
+				     GTK_RESPONSE_CLOSE);
 
-    g_signal_connect(preferences_dialog, "response",
-		     G_CALLBACK(gtk_preferences_dialog_response), NULL);
-    g_signal_connect(preferences_dialog, "destroy",
-		     G_CALLBACK(gtk_preferences_dialog_destroy), NULL);
+    g_signal_connect (preferences_dialog, "response",
+		      G_CALLBACK (gtk_preferences_dialog_response), NULL);
+    g_signal_connect (preferences_dialog, "destroy",
+		      G_CALLBACK (gtk_preferences_dialog_destroy), NULL);
 
-    categories = gtk_tree_store_new(CATEGORIES_NUM_COLUMNS,
-				    G_TYPE_INT,
+    categories = gtk_tree_store_new (CATEGORIES_NUM_COLUMNS,
+				     G_TYPE_INT,
 #if GTK_2_2_OR_LATER
-				    G_TYPE_STRING,
+				     G_TYPE_STRING,
 #endif
-				    G_TYPE_STRING);
+				     G_TYPE_STRING);
 
-    category_list = gtk_tree_view_new_with_model(GTK_TREE_MODEL(categories));
-    category_tree_view = GTK_TREE_VIEW(category_list);
-    gtk_tree_view_set_headers_visible(category_tree_view, FALSE);
-    g_object_unref(categories);
+    category_list = gtk_tree_view_new_with_model (GTK_TREE_MODEL (categories));
+    category_tree_view = GTK_TREE_VIEW (category_list);
+    gtk_tree_view_set_headers_visible (category_tree_view, FALSE);
+    g_object_unref (categories);
 
-    label = gtk_utils_create_mnemonic_label(_("Categor_y:"), category_list);
+    label = gtk_utils_create_mnemonic_label (_("Categor_y:"), category_list);
 
-    vbox = gtk_utils_pack_in_box(GTK_TYPE_VBOX, QUARRY_SPACING_SMALL,
-				 label, GTK_UTILS_FILL,
-				 gtk_utils_sink_widget(category_list),
-				 GTK_UTILS_PACK_DEFAULT, NULL);
+    vbox = gtk_utils_pack_in_box (GTK_TYPE_VBOX, QUARRY_SPACING_SMALL,
+				  label, GTK_UTILS_FILL,
+				  gtk_utils_sink_widget (category_list),
+				  GTK_UTILS_PACK_DEFAULT, NULL);
 
 #if GTK_2_2_OR_LATER
-    renderer = gtk_cell_renderer_pixbuf_new();
-    column = gtk_tree_view_column_new_with_attributes(NULL, renderer,
-						      "stock-id",
-						      CATEGORIES_ICON,
-						      NULL);
-    gtk_tree_view_append_column(category_tree_view, column);
+    renderer = gtk_cell_renderer_pixbuf_new ();
+    column = gtk_tree_view_column_new_with_attributes (NULL, renderer,
+						       "stock-id",
+						       CATEGORIES_ICON,
+						       NULL);
+    gtk_tree_view_append_column (category_tree_view, column);
 #endif
 
-    renderer = gtk_cell_renderer_text_new();
-    column = gtk_tree_view_column_new_with_attributes(NULL, renderer,
-						      "markup",
-						      CATEGORIES_TEXT,
-						      NULL);
-    gtk_tree_view_append_column(category_tree_view, column);
+    renderer = gtk_cell_renderer_text_new ();
+    column = gtk_tree_view_column_new_with_attributes (NULL, renderer,
+						       "markup",
+						       CATEGORIES_TEXT,
+						       NULL);
+    gtk_tree_view_append_column (category_tree_view, column);
 
-    notebook_widget = gtk_utils_create_invisible_notebook();
-    notebook = GTK_NOTEBOOK(notebook_widget);
+    notebook_widget = gtk_utils_create_invisible_notebook ();
+    notebook = GTK_NOTEBOOK (notebook_widget);
 
-    g_signal_connect(gtk_tree_view_get_selection(category_tree_view),
-		     "changed", G_CALLBACK(gtk_preferences_dialog_change_page),
-		     notebook);
+    g_signal_connect (gtk_tree_view_get_selection (category_tree_view),
+		      "changed",
+		      G_CALLBACK (gtk_preferences_dialog_change_page),
+		      notebook);
 
     for (k = 0, page_index = 0;
-	 k < (sizeof(preferences_dialog_categories)
-	      / sizeof(PreferencesDialogCategory));
+	 k < (sizeof preferences_dialog_categories
+	      / sizeof (PreferencesDialogCategory));
 	 k++) {
       GtkTreeIter iterator;
       const PreferencesDialogCategory *category_data
@@ -444,41 +444,41 @@ gtk_preferences_dialog_present(gpointer page_to_select)
 
       if (category_data->create_page) {
 	GtkWidget *page
-	  = gtk_utils_create_titled_page(category_data->create_page(),
-					 category_data->page_icon_stock_id,
-					 _(category_data->page_title));
+	  = gtk_utils_create_titled_page (category_data->create_page (),
+					  category_data->page_icon_stock_id,
+					  _(category_data->page_title));
 
-	gtk_notebook_append_page(notebook, page, NULL);
+	gtk_notebook_append_page (notebook, page, NULL);
 
-	gtk_tree_store_append(categories, &iterator, &category_parent);
+	gtk_tree_store_append (categories, &iterator, &category_parent);
 	this_page_index = page_index++;
       }
       else {
-	gtk_tree_store_append(categories, &category_parent, NULL);
+	gtk_tree_store_append (categories, &category_parent, NULL);
 	iterator = category_parent;
 	this_page_index = -1;
       }
 
-      gtk_tree_store_set(categories, &iterator,
-			 CATEGORIES_PAGE_INDEX, this_page_index,
+      gtk_tree_store_set (categories, &iterator,
+			  CATEGORIES_PAGE_INDEX, this_page_index,
 #if GTK_2_2_OR_LATER
-			 CATEGORIES_ICON, category_data->tree_icon_stock_id,
+			  CATEGORIES_ICON, category_data->tree_icon_stock_id,
 #endif
-			 CATEGORIES_TEXT, _(category_data->tree_title), -1);
+			  CATEGORIES_TEXT, _(category_data->tree_title), -1);
     }
 
-    gtk_tree_view_expand_all(category_tree_view);
+    gtk_tree_view_expand_all (category_tree_view);
 
-    hbox = gtk_utils_pack_in_box(GTK_TYPE_HBOX, QUARRY_SPACING,
-				 vbox, GTK_UTILS_FILL,
-				 gtk_vseparator_new(), GTK_UTILS_FILL,
-				 notebook_widget, GTK_UTILS_PACK_DEFAULT,
-				 NULL);
-    gtk_utils_standardize_dialog(GTK_DIALOG(dialog), hbox);
-    gtk_widget_show_all(hbox);
+    hbox = gtk_utils_pack_in_box (GTK_TYPE_HBOX, QUARRY_SPACING,
+				  vbox, GTK_UTILS_FILL,
+				  gtk_vseparator_new (), GTK_UTILS_FILL,
+				  notebook_widget, GTK_UTILS_PACK_DEFAULT,
+				  NULL);
+    gtk_utils_standardize_dialog (GTK_DIALOG (dialog), hbox);
+    gtk_widget_show_all (hbox);
   }
 
-  assert(page_to_select_gint < NUM_PREFERENCES_DIALOG_PAGES);
+  assert (page_to_select_gint < NUM_PREFERENCES_DIALOG_PAGES);
 
   for (category_to_select = -1, subcategory_to_select = -1, k = 0;
        page_to_select_gint >= 0; k++) {
@@ -493,24 +493,24 @@ gtk_preferences_dialog_present(gpointer page_to_select)
   }
 
 #if GTK_2_2_OR_LATER
-  tree_path = gtk_tree_path_new_from_indices(category_to_select,
-					     subcategory_to_select, -1);
+  tree_path = gtk_tree_path_new_from_indices (category_to_select,
+					      subcategory_to_select, -1);
 #else
-  tree_path = gtk_tree_path_new();
+  tree_path = gtk_tree_path_new ();
 
-  gtk_tree_path_append_index(tree_path, category_to_select);
-  gtk_tree_path_append_index(tree_path, subcategory_to_select);
+  gtk_tree_path_append_index (tree_path, category_to_select);
+  gtk_tree_path_append_index (tree_path, subcategory_to_select);
 #endif
 
-  gtk_tree_view_set_cursor(category_tree_view, tree_path, NULL, FALSE);
-  gtk_tree_path_free(tree_path);
+  gtk_tree_view_set_cursor (category_tree_view, tree_path, NULL, FALSE);
+  gtk_tree_path_free (tree_path);
 
-  gtk_window_present(preferences_dialog);
+  gtk_window_present (preferences_dialog);
 }
 
 
 static GtkWidget *
-create_gtp_engines_page(void)
+create_gtp_engines_page (void)
 {
   GtkWidget *gtp_engines_widget;
   GtkWidget *label;
@@ -528,138 +528,140 @@ create_gtp_engines_page(void)
   GtkWidget *command_line_hbox;
 
   gtp_engines_widget
-    = gtk_tree_view_new_with_model(GTK_TREE_MODEL(gtp_engines_list_store));
-  gtp_engines_tree_view = GTK_TREE_VIEW(gtp_engines_widget);
-  gtk_tree_view_set_headers_visible(gtp_engines_tree_view, FALSE);
-  gtk_tree_view_set_reorderable(gtp_engines_tree_view, TRUE);
+    = gtk_tree_view_new_with_model (GTK_TREE_MODEL (gtp_engines_list_store));
+  gtp_engines_tree_view = GTK_TREE_VIEW (gtp_engines_widget);
+  gtk_tree_view_set_headers_visible (gtp_engines_tree_view, FALSE);
+  gtk_tree_view_set_reorderable (gtp_engines_tree_view, TRUE);
 
-  renderer = gtk_cell_renderer_text_new();
-  column = gtk_tree_view_column_new_with_attributes(NULL, renderer,
-						    "text", ENGINES_NAME,
-						    NULL);
-  gtk_tree_view_append_column(gtp_engines_tree_view, column);
+  renderer = gtk_cell_renderer_text_new ();
+  column = gtk_tree_view_column_new_with_attributes (NULL, renderer,
+						     "text", ENGINES_NAME,
+						     NULL);
+  gtk_tree_view_append_column (gtp_engines_tree_view, column);
 
-  scrolled_window = gtk_utils_make_widget_scrollable(gtp_engines_widget,
-						     GTK_POLICY_AUTOMATIC,
-						     GTK_POLICY_AUTOMATIC);
+  scrolled_window = gtk_utils_make_widget_scrollable (gtp_engines_widget,
+						      GTK_POLICY_AUTOMATIC,
+						      GTK_POLICY_AUTOMATIC);
 
-  label = gtk_utils_create_mnemonic_label(_("_List of GTP engines:"),
-					  gtp_engines_widget);
+  label = gtk_utils_create_mnemonic_label (_("_List of GTP engines:"),
+					   gtp_engines_widget);
 
-  add_gtp_engine = gtk_button_new_from_stock(GTK_STOCK_ADD);
-  g_signal_connect_swapped(add_gtp_engine, "clicked",
-			   G_CALLBACK(gtk_gtp_engine_dialog_present),
-			   GINT_TO_POINTER(TRUE));
+  add_gtp_engine = gtk_button_new_from_stock (GTK_STOCK_ADD);
+  g_signal_connect_swapped (add_gtp_engine, "clicked",
+			    G_CALLBACK (gtk_gtp_engine_dialog_present),
+			    GINT_TO_POINTER (TRUE));
 
-  modify_gtp_engine = gtk_button_new_from_stock(QUARRY_STOCK_MODIFY);
-  g_signal_connect_swapped(modify_gtp_engine, "clicked",
-			   G_CALLBACK(gtk_gtp_engine_dialog_present),
-			   GINT_TO_POINTER(FALSE));
+  modify_gtp_engine = gtk_button_new_from_stock (QUARRY_STOCK_MODIFY);
+  g_signal_connect_swapped (modify_gtp_engine, "clicked",
+			    G_CALLBACK (gtk_gtp_engine_dialog_present),
+			    GINT_TO_POINTER (FALSE));
 
-  remove_gtp_engine = gtk_button_new_from_stock(GTK_STOCK_REMOVE);
-  g_signal_connect(remove_gtp_engine, "clicked",
-		   G_CALLBACK(do_remove_gtp_engine), NULL);
+  remove_gtp_engine = gtk_button_new_from_stock (GTK_STOCK_REMOVE);
+  g_signal_connect (remove_gtp_engine, "clicked",
+		    G_CALLBACK (do_remove_gtp_engine), NULL);
 
-  move_gtp_engine_up = gtk_button_new_from_stock(QUARRY_STOCK_MOVE_UP);
-  g_signal_connect_swapped(move_gtp_engine_up, "clicked",
-			   G_CALLBACK(do_move_gtp_engine),
-			   GINT_TO_POINTER(TRUE));
+  move_gtp_engine_up = gtk_button_new_from_stock (QUARRY_STOCK_MOVE_UP);
+  g_signal_connect_swapped (move_gtp_engine_up, "clicked",
+			    G_CALLBACK (do_move_gtp_engine),
+			    GINT_TO_POINTER (TRUE));
 
-  move_gtp_engine_down = gtk_button_new_from_stock(QUARRY_STOCK_MOVE_DOWN);
-  g_signal_connect_swapped(move_gtp_engine_down, "clicked",
-			   G_CALLBACK(do_move_gtp_engine),
-			   GINT_TO_POINTER(FALSE));
+  move_gtp_engine_down = gtk_button_new_from_stock (QUARRY_STOCK_MOVE_DOWN);
+  g_signal_connect_swapped (move_gtp_engine_down, "clicked",
+			    G_CALLBACK (do_move_gtp_engine),
+			    GINT_TO_POINTER (FALSE));
 
-  button_box = gtk_utils_pack_in_box(GTK_TYPE_VBUTTON_BOX,
-				     QUARRY_SPACING_SMALL,
-				     add_gtp_engine, 0, modify_gtp_engine, 0,
-				     remove_gtp_engine, 0,
-				     move_gtp_engine_up, 0,
-				     move_gtp_engine_down, 0, NULL);
-  gtk_button_box_set_layout(GTK_BUTTON_BOX(button_box), GTK_BUTTONBOX_START);
+  button_box = gtk_utils_pack_in_box (GTK_TYPE_VBUTTON_BOX,
+				      QUARRY_SPACING_SMALL,
+				      add_gtp_engine, 0, modify_gtp_engine, 0,
+				      remove_gtp_engine, 0,
+				      move_gtp_engine_up, 0,
+				      move_gtp_engine_down, 0, NULL);
+  gtk_button_box_set_layout (GTK_BUTTON_BOX (button_box), GTK_BUTTONBOX_START);
 
-  gtk_button_box_set_child_secondary(GTK_BUTTON_BOX(button_box),
-				     move_gtp_engine_up, TRUE);
-  gtk_button_box_set_child_secondary(GTK_BUTTON_BOX(button_box),
-				     move_gtp_engine_down, TRUE);
+  gtk_button_box_set_child_secondary (GTK_BUTTON_BOX (button_box),
+				      move_gtp_engine_up, TRUE);
+  gtk_button_box_set_child_secondary (GTK_BUTTON_BOX (button_box),
+				      move_gtp_engine_down, TRUE);
 
-  hbox = gtk_utils_pack_in_box(GTK_TYPE_HBOX, QUARRY_SPACING,
-			       scrolled_window, GTK_UTILS_PACK_DEFAULT,
-			       button_box, GTK_UTILS_FILL, NULL);
+  hbox = gtk_utils_pack_in_box (GTK_TYPE_HBOX, QUARRY_SPACING,
+				scrolled_window, GTK_UTILS_PACK_DEFAULT,
+				button_box, GTK_UTILS_FILL, NULL);
 
-  vbox = gtk_utils_pack_in_box(GTK_TYPE_VBOX, QUARRY_SPACING_SMALL,
-			       label, GTK_UTILS_FILL,
-			       hbox, GTK_UTILS_PACK_DEFAULT, NULL);
+  vbox = gtk_utils_pack_in_box (GTK_TYPE_VBOX, QUARRY_SPACING_SMALL,
+				label, GTK_UTILS_FILL,
+				hbox, GTK_UTILS_PACK_DEFAULT, NULL);
 
-  label		  = gtk_utils_create_left_aligned_label(_("Name:"));
-  info_label	  = gtk_utils_create_left_aligned_label(NULL);
-  gtp_engine_name = GTK_LABEL(info_label);
-  gtk_label_set_selectable(gtp_engine_name, TRUE);
+  label		  = gtk_utils_create_left_aligned_label (_("Name:"));
+  info_label	  = gtk_utils_create_left_aligned_label (NULL);
+  gtp_engine_name = GTK_LABEL (info_label);
+  gtk_label_set_selectable (gtp_engine_name, TRUE);
 
-  name_hbox = gtk_utils_pack_in_box(GTK_TYPE_HBOX, QUARRY_SPACING,
-				    label, GTK_UTILS_FILL,
-				    info_label, GTK_UTILS_PACK_DEFAULT, NULL);
+  name_hbox = gtk_utils_pack_in_box (GTK_TYPE_HBOX, QUARRY_SPACING,
+				     label, GTK_UTILS_FILL,
+				     info_label, GTK_UTILS_PACK_DEFAULT, NULL);
 
-  label		     = gtk_utils_create_left_aligned_label(_("Version:"));
-  info_label	     = gtk_utils_create_left_aligned_label(NULL);
-  gtp_engine_version = GTK_LABEL(info_label);
-  gtk_label_set_selectable(gtp_engine_version, TRUE);
+  label		     = gtk_utils_create_left_aligned_label (_("Version:"));
+  info_label	     = gtk_utils_create_left_aligned_label (NULL);
+  gtp_engine_version = GTK_LABEL (info_label);
+  gtk_label_set_selectable (gtp_engine_version, TRUE);
 
-  version_hbox = gtk_utils_pack_in_box(GTK_TYPE_HBOX, QUARRY_SPACING,
-				       label, GTK_UTILS_FILL,
-				       info_label, GTK_UTILS_PACK_DEFAULT,
-				       NULL);
-
-  label
-    = gtk_utils_create_left_aligned_label(_("Supported game(s):"));
-  info_label		     = gtk_utils_create_left_aligned_label(NULL);
-  gtp_engine_supported_games = GTK_LABEL(info_label);
-  gtk_label_set_selectable(gtp_engine_supported_games, TRUE);
-
-  supported_games_hbox = gtk_utils_pack_in_box(GTK_TYPE_HBOX, QUARRY_SPACING,
-					       label, GTK_UTILS_FILL,
-					       info_label,
-					       GTK_UTILS_PACK_DEFAULT,
-					       NULL);
+  version_hbox = gtk_utils_pack_in_box (GTK_TYPE_HBOX, QUARRY_SPACING,
+					label, GTK_UTILS_FILL,
+					info_label, GTK_UTILS_PACK_DEFAULT,
+					NULL);
 
   label
-    = gtk_utils_create_left_aligned_label(_("Command line:"));
-  info_label		  = gtk_utils_create_left_aligned_label(NULL);
-  gtp_engine_command_line = GTK_LABEL(info_label);
-  gtk_label_set_selectable(gtp_engine_command_line, TRUE);
+    = gtk_utils_create_left_aligned_label (_("Supported game (s):"));
+  info_label		     = gtk_utils_create_left_aligned_label (NULL);
+  gtp_engine_supported_games = GTK_LABEL (info_label);
+  gtk_label_set_selectable (gtp_engine_supported_games, TRUE);
 
-  command_line_hbox = gtk_utils_pack_in_box(GTK_TYPE_HBOX, QUARRY_SPACING,
-					    label, GTK_UTILS_FILL,
-					    info_label, GTK_UTILS_PACK_DEFAULT,
-					    NULL);
+  supported_games_hbox = gtk_utils_pack_in_box (GTK_TYPE_HBOX, QUARRY_SPACING,
+						label, GTK_UTILS_FILL,
+						info_label,
+						GTK_UTILS_PACK_DEFAULT,
+						NULL);
 
-  gtp_engine_info = gtk_utils_pack_in_box(GTK_TYPE_NAMED_VBOX,
-					  QUARRY_SPACING_SMALL,
-					  name_hbox, GTK_UTILS_FILL,
-					  version_hbox, GTK_UTILS_FILL,
-					  supported_games_hbox, GTK_UTILS_FILL,
-					  command_line_hbox, GTK_UTILS_FILL,
-					  NULL);
-  gtk_named_vbox_set_label_text(GTK_NAMED_VBOX(gtp_engine_info),
-				_("GTP Engine Information"));
+  label
+    = gtk_utils_create_left_aligned_label (_("Command line:"));
+  info_label		  = gtk_utils_create_left_aligned_label (NULL);
+  gtp_engine_command_line = GTK_LABEL (info_label);
+  gtk_label_set_selectable (gtp_engine_command_line, TRUE);
 
-  gtk_utils_align_left_widgets(GTK_CONTAINER(gtp_engine_info), NULL);
+  command_line_hbox = gtk_utils_pack_in_box (GTK_TYPE_HBOX, QUARRY_SPACING,
+					     label, GTK_UTILS_FILL,
+					     info_label,
+					     GTK_UTILS_PACK_DEFAULT,
+					     NULL);
+
+  gtp_engine_info = gtk_utils_pack_in_box (GTK_TYPE_NAMED_VBOX,
+					   QUARRY_SPACING_SMALL,
+					   name_hbox, GTK_UTILS_FILL,
+					   version_hbox, GTK_UTILS_FILL,
+					   supported_games_hbox,
+					   GTK_UTILS_FILL,
+					   command_line_hbox, GTK_UTILS_FILL,
+					   NULL);
+  gtk_named_vbox_set_label_text (GTK_NAMED_VBOX (gtp_engine_info),
+				 _("GTP Engine Information"));
+
+  gtk_utils_align_left_widgets (GTK_CONTAINER (gtp_engine_info), NULL);
 
   gtp_engines_tree_selection
-    = gtk_tree_view_get_selection(gtp_engines_tree_view);
-  g_signal_connect(gtp_engines_tree_selection, "changed",
-		   G_CALLBACK(gtk_preferences_dialog_update_gtp_engine_info),
-		   NULL);
-  gtk_preferences_dialog_update_gtp_engine_info(gtp_engines_tree_selection);
+    = gtk_tree_view_get_selection (gtp_engines_tree_view);
+  g_signal_connect (gtp_engines_tree_selection, "changed",
+		    G_CALLBACK (gtk_preferences_dialog_update_gtp_engine_info),
+		    NULL);
+  gtk_preferences_dialog_update_gtp_engine_info (gtp_engines_tree_selection);
 
-  return gtk_utils_pack_in_box(GTK_TYPE_VBOX, QUARRY_SPACING_BIG,
-			       vbox, GTK_UTILS_PACK_DEFAULT,
-			       gtp_engine_info, GTK_UTILS_FILL, NULL);
+  return gtk_utils_pack_in_box (GTK_TYPE_VBOX, QUARRY_SPACING_BIG,
+				vbox, GTK_UTILS_PACK_DEFAULT,
+				gtp_engine_info, GTK_UTILS_FILL, NULL);
 }
 
 
 static GtkWidget *
-create_saving_sgf_page(void)
+create_saving_sgf_page (void)
 {
   static const gchar *radio_labels[2] = { N_("Always use UTF-8 (recommended)"),
 					  N_("Preserve original encoding") };
@@ -673,29 +675,30 @@ create_saving_sgf_page(void)
   GtkWidget *label;
   GtkWidget *named_vbox;
 
-  gtk_utils_create_radio_chain(radio_buttons, radio_labels, 2);
+  gtk_utils_create_radio_chain (radio_buttons, radio_labels, 2);
   if (!sgf_configuration.force_utf8)
-    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(radio_buttons[1]), TRUE);
+    gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (radio_buttons[1]), TRUE);
 
-  g_signal_connect(radio_buttons[0], "toggled",
-		   G_CALLBACK(store_toggle_setting),
-		   &sgf_configuration.force_utf8);
+  g_signal_connect (radio_buttons[0], "toggled",
+		    G_CALLBACK (store_toggle_setting),
+		    &sgf_configuration.force_utf8);
 
-  label = gtk_utils_create_left_aligned_label(_(hint));
-  gtk_label_set_line_wrap(GTK_LABEL(label), TRUE);
+  label = gtk_utils_create_left_aligned_label (_(hint));
+  gtk_label_set_line_wrap (GTK_LABEL (label), TRUE);
 
-  named_vbox = gtk_utils_pack_in_box(GTK_TYPE_NAMED_VBOX, QUARRY_SPACING_SMALL,
-				     radio_buttons[0], GTK_UTILS_FILL,
-				     radio_buttons[1], GTK_UTILS_FILL,
-				     label, GTK_UTILS_FILL, NULL);
-  gtk_named_vbox_set_label_text(GTK_NAMED_VBOX(named_vbox), _("Encoding"));
+  named_vbox = gtk_utils_pack_in_box (GTK_TYPE_NAMED_VBOX,
+				      QUARRY_SPACING_SMALL,
+				      radio_buttons[0], GTK_UTILS_FILL,
+				      radio_buttons[1], GTK_UTILS_FILL,
+				      label, GTK_UTILS_FILL, NULL);
+  gtk_named_vbox_set_label_text (GTK_NAMED_VBOX (named_vbox), _("Encoding"));
 
   return named_vbox;
 }
 
 
 static GtkWidget *
-create_go_board_appearance_page(void)
+create_go_board_appearance_page (void)
 {
   static const gchar *labels[4] = {
     N_("_Relative to stone size"),
@@ -704,15 +707,15 @@ create_go_board_appearance_page(void)
     N_("On _empty intersections:")
   };
 
-  GtkWidget *background_table = create_background_table(GTK_GAME_GO, 3);
-  GtkWidget *markup_box = create_markup_box(GTK_GAME_GO, labels);
+  GtkWidget *background_table = create_background_table (GTK_GAME_GO, 3);
+  GtkWidget *markup_box = create_markup_box (GTK_GAME_GO, labels);
 
-  return create_board_appearance_notebook_page(background_table, markup_box);
+  return create_board_appearance_notebook_page (background_table, markup_box);
 }
 
 
 static GtkWidget *
-create_amazons_board_appearance_page(void)
+create_amazons_board_appearance_page (void)
 {
   static const gchar *labels[4] = {
     N_("_Relative to amazon size"),
@@ -721,9 +724,9 @@ create_amazons_board_appearance_page(void)
     N_("On _empty fields:")
   };
 
-  GtkWidget *background_table = create_background_table(GTK_GAME_AMAZONS, 5);
-  GtkTable *table = GTK_TABLE(background_table);
-  GtkWidget *markup_box = create_markup_box(GTK_GAME_AMAZONS, labels);
+  GtkWidget *background_table = create_background_table (GTK_GAME_AMAZONS, 5);
+  GtkTable *table = GTK_TABLE (background_table);
+  GtkWidget *markup_box = create_markup_box (GTK_GAME_AMAZONS, labels);
   QuarryColor *quarry_color
     = &amazons_board_appearance.checkerboard_pattern_color;
   GdkColor color;
@@ -732,46 +735,46 @@ create_amazons_board_appearance_page(void)
   double opacity = amazons_board_appearance.checkerboard_pattern_opacity;
   GtkWidget *scale;
 
-  gtk_table_set_row_spacing(table, 3, QUARRY_SPACING);
+  gtk_table_set_row_spacing (table, 3, QUARRY_SPACING);
 
-  gtk_utils_set_gdk_color(&color, *quarry_color);
-  color_button = gtk_color_button_new_with_color(&color);
-  gtk_color_button_set_title(GTK_COLOR_BUTTON(color_button),
-			     _("Pick Checkerboard Pattern Color"));
+  gtk_utils_set_gdk_color (&color, *quarry_color);
+  color_button = gtk_color_button_new_with_color (&color);
+  gtk_color_button_set_title (GTK_COLOR_BUTTON (color_button),
+			      _("Pick Checkerboard Pattern Color"));
 
-  g_signal_connect(color_button, "color-set",
-		   G_CALLBACK(update_board_appearance),
-		   &amazons_board_appearance.checkerboard_pattern_color);
+  g_signal_connect (color_button, "color-set",
+		    G_CALLBACK (update_board_appearance),
+		    &amazons_board_appearance.checkerboard_pattern_color);
 
-  gtk_table_attach(table, color_button, 1, 2, 2, 3,
-		   GTK_EXPAND | GTK_FILL, 0, 0, 0);
+  gtk_table_attach (table, color_button, 1, 2, 2, 3,
+		    GTK_EXPAND | GTK_FILL, 0, 0, 0);
 
-  label = gtk_utils_create_mnemonic_label(_("Checkerboard _pattern color:"),
-					  color_button);
-  gtk_table_attach(table, label, 0, 1, 2, 3, GTK_FILL, 0, 0, 0);
+  label = gtk_utils_create_mnemonic_label (_("Checkerboard _pattern color:"),
+					   color_button);
+  gtk_table_attach (table, label, 0, 1, 2, 3, GTK_FILL, 0, 0, 0);
 
-  scale = gtk_hscale_new_with_range(0.0, 1.0, 0.05);
-  gtk_scale_set_draw_value(GTK_SCALE(scale), FALSE);
-  gtk_range_set_update_policy(GTK_RANGE(scale), GTK_UPDATE_DELAYED);
-  gtk_range_set_value(GTK_RANGE(scale), opacity);
+  scale = gtk_hscale_new_with_range (0.0, 1.0, 0.05);
+  gtk_scale_set_draw_value (GTK_SCALE (scale), FALSE);
+  gtk_range_set_update_policy (GTK_RANGE (scale), GTK_UPDATE_DELAYED);
+  gtk_range_set_value (GTK_RANGE (scale), opacity);
 
-  g_signal_connect(scale, "value-changed",
-		   G_CALLBACK(update_board_appearance),
-		   &amazons_board_appearance.checkerboard_pattern_opacity);
+  g_signal_connect (scale, "value-changed",
+		    G_CALLBACK (update_board_appearance),
+		    &amazons_board_appearance.checkerboard_pattern_opacity);
 
-  gtk_table_attach(table, scale, 1, 2, 3, 4,
-		   GTK_EXPAND | GTK_FILL, 0, 0, 0);
+  gtk_table_attach (table, scale, 1, 2, 3, 4,
+		    GTK_EXPAND | GTK_FILL, 0, 0, 0);
 
-  label = gtk_utils_create_mnemonic_label(_("Checkerboard pattern _opacity:"),
-					  scale);
-  gtk_table_attach(table, label, 0, 1, 3, 4, GTK_FILL, 0, 0, 0);
+  label = gtk_utils_create_mnemonic_label (_("Checkerboard pattern _opacity:"),
+					   scale);
+  gtk_table_attach (table, label, 0, 1, 3, 4, GTK_FILL, 0, 0, 0);
 
-  return create_board_appearance_notebook_page(background_table, markup_box);
+  return create_board_appearance_notebook_page (background_table, markup_box);
 }
 
 
 static GtkWidget *
-create_othello_board_appearance_page(void)
+create_othello_board_appearance_page (void)
 {
   static const gchar *labels[4] = {
     N_("_Relative to disk size"),
@@ -780,22 +783,22 @@ create_othello_board_appearance_page(void)
     N_("On _empty fields:")
   };
 
-  GtkWidget *background_table = create_background_table(GTK_GAME_OTHELLO, 3);
-  GtkWidget *markup_box = create_markup_box(GTK_GAME_OTHELLO, labels);
+  GtkWidget *background_table = create_background_table (GTK_GAME_OTHELLO, 3);
+  GtkWidget *markup_box = create_markup_box (GTK_GAME_OTHELLO, labels);
 
-  return create_board_appearance_notebook_page(background_table, markup_box);
+  return create_board_appearance_notebook_page (background_table, markup_box);
 }
 
 
 static GtkWidget *
-create_background_table(GtkGameIndex game_index, gint num_table_rows)
+create_background_table (GtkGameIndex game_index, gint num_table_rows)
 {
   static const gchar *radio_button_labels[2] = { N_("Use _texture:"),
 						 N_("Use _solid color:") };
   BoardAppearance *board_appearance
-    = game_index_to_board_appearance_structure(game_index);
-  GtkWidget *table_widget = gtk_table_new(num_table_rows, 3, FALSE);
-  GtkTable *table = GTK_TABLE(table_widget);
+    = game_index_to_board_appearance_structure (game_index);
+  GtkWidget *table_widget = gtk_table_new (num_table_rows, 3, FALSE);
+  GtkTable *table = GTK_TABLE (table_widget);
   GdkColor color;
   GtkWidget *radio_buttons[2];
   GtkWidget *label;
@@ -803,89 +806,89 @@ create_background_table(GtkGameIndex game_index, gint num_table_rows)
   GtkWidget *button;
   GtkWidget *color_button;
 
-  gtk_table_set_row_spacings(table, QUARRY_SPACING_SMALL);
-  gtk_table_set_row_spacing(table, 1, QUARRY_SPACING);
+  gtk_table_set_row_spacings (table, QUARRY_SPACING_SMALL);
+  gtk_table_set_row_spacing (table, 1, QUARRY_SPACING);
 
-  gtk_table_set_col_spacing(table, 0, QUARRY_SPACING);
-  gtk_table_set_col_spacing(table, 1, QUARRY_SPACING_SMALL);
+  gtk_table_set_col_spacing (table, 0, QUARRY_SPACING);
+  gtk_table_set_col_spacing (table, 1, QUARRY_SPACING_SMALL);
 
-  gtk_utils_create_radio_chain(radio_buttons, radio_button_labels, 2);
+  gtk_utils_create_radio_chain (radio_buttons, radio_button_labels, 2);
   if (!board_appearance->use_background_texture)
-    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(radio_buttons[1]), TRUE);
+    gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (radio_buttons[1]), TRUE);
 
-  g_signal_connect(radio_buttons[0], "toggled",
-		   G_CALLBACK(update_board_appearance),
-		   &board_appearance->use_background_texture);
+  g_signal_connect (radio_buttons[0], "toggled",
+		    G_CALLBACK (update_board_appearance),
+		    &board_appearance->use_background_texture);
 
-  gtk_table_attach(table, radio_buttons[0], 0, 1, 0, 1, GTK_FILL, 0, 0, 0);
-  gtk_table_attach(table, radio_buttons[1], 0, 1, 1, 2, GTK_FILL, 0, 0, 0);
+  gtk_table_attach (table, radio_buttons[0], 0, 1, 0, 1, GTK_FILL, 0, 0, 0);
+  gtk_table_attach (table, radio_buttons[1], 0, 1, 1, 2, GTK_FILL, 0, 0, 0);
 
-  entry = gtk_utils_create_entry(board_appearance->background_texture,
-				 RETURN_DEFAULT_MODE);
-  gtk_utils_set_sensitive_on_toggle(GTK_TOGGLE_BUTTON(radio_buttons[0]),
-				    entry);
+  entry = gtk_utils_create_entry (board_appearance->background_texture,
+				  RETURN_DEFAULT_MODE);
+  gtk_utils_set_sensitive_on_toggle (GTK_TOGGLE_BUTTON (radio_buttons[0]),
+				     entry);
 
-  g_signal_connect(entry, "focus-out-event",
-		   G_CALLBACK(update_board_background_texture),
-		   GINT_TO_POINTER(game_index));
+  g_signal_connect (entry, "focus-out-event",
+		    G_CALLBACK (update_board_background_texture),
+		    GINT_TO_POINTER (game_index));
 
-  gtk_table_attach(table, entry, 1, 2, 0, 1, GTK_EXPAND | GTK_FILL, 0, 0, 0);
+  gtk_table_attach (table, entry, 1, 2, 0, 1, GTK_EXPAND | GTK_FILL, 0, 0, 0);
 
-  button = gtk_utils_create_browse_button(FALSE, entry, FALSE,
-					  _("Choose a Background Texture..."),
-					  ((GtkUtilsBrowsingDoneCallback)
-					   update_board_background_texture),
-					  GINT_TO_POINTER(game_index));
-  gtk_utils_set_sensitive_on_toggle(GTK_TOGGLE_BUTTON(radio_buttons[0]),
-				    button);
+  button = gtk_utils_create_browse_button (FALSE, entry, FALSE,
+					   _("Choose a Background Texture..."),
+					   ((GtkUtilsBrowsingDoneCallback)
+					    update_board_background_texture),
+					   GINT_TO_POINTER (game_index));
+  gtk_utils_set_sensitive_on_toggle (GTK_TOGGLE_BUTTON (radio_buttons[0]),
+				     button);
 
-  gtk_table_attach(table, button, 2, 3, 0, 1, GTK_FILL, 0, GTK_FILL, 0);
+  gtk_table_attach (table, button, 2, 3, 0, 1, GTK_FILL, 0, GTK_FILL, 0);
 
-  gtk_utils_set_gdk_color(&color, board_appearance->background_color);
-  color_button = gtk_color_button_new_with_color(&color);
-  gtk_color_button_set_title(GTK_COLOR_BUTTON(color_button),
-			     _("Pick Background Color"));
-  gtk_utils_set_sensitive_on_toggle(GTK_TOGGLE_BUTTON(radio_buttons[1]),
-				    color_button);
+  gtk_utils_set_gdk_color (&color, board_appearance->background_color);
+  color_button = gtk_color_button_new_with_color (&color);
+  gtk_color_button_set_title (GTK_COLOR_BUTTON (color_button),
+			      _("Pick Background Color"));
+  gtk_utils_set_sensitive_on_toggle (GTK_TOGGLE_BUTTON (radio_buttons[1]),
+				     color_button);
 
-  g_signal_connect(color_button, "color-set",
-		   G_CALLBACK(update_board_appearance),
-		   &board_appearance->background_color);
+  g_signal_connect (color_button, "color-set",
+		    G_CALLBACK (update_board_appearance),
+		    &board_appearance->background_color);
 
-  gtk_table_attach(table, color_button, 1, 2, 1, 2,
-		   GTK_EXPAND | GTK_FILL, 0, 0, 0);
+  gtk_table_attach (table, color_button, 1, 2, 1, 2,
+		    GTK_EXPAND | GTK_FILL, 0, 0, 0);
 
-  gtk_utils_set_gdk_color(&color, board_appearance->grid_and_labels_color);
-  color_button = gtk_color_button_new_with_color(&color);
-  gtk_color_button_set_title(GTK_COLOR_BUTTON(color_button),
-			     _("Pick Color for Grid and Labels"));
+  gtk_utils_set_gdk_color (&color, board_appearance->grid_and_labels_color);
+  color_button = gtk_color_button_new_with_color (&color);
+  gtk_color_button_set_title (GTK_COLOR_BUTTON (color_button),
+			      _("Pick Color for Grid and Labels"));
 
-  g_signal_connect(color_button, "color-set",
-		   G_CALLBACK(update_board_appearance),
-		   &board_appearance->grid_and_labels_color);
+  g_signal_connect (color_button, "color-set",
+		    G_CALLBACK (update_board_appearance),
+		    &board_appearance->grid_and_labels_color);
 
-  gtk_table_attach(table, color_button,
-		   1, 2, num_table_rows - 1, num_table_rows,
-		   GTK_EXPAND | GTK_FILL, 0, 0, 0);
+  gtk_table_attach (table, color_button,
+		    1, 2, num_table_rows - 1, num_table_rows,
+		    GTK_EXPAND | GTK_FILL, 0, 0, 0);
 
-  label = gtk_utils_create_mnemonic_label(_("_Grid and labels color:"),
-					  color_button);
-  gtk_table_attach(table, label, 0, 1, num_table_rows - 1, num_table_rows,
-		   GTK_FILL, 0, 0, 0);
+  label = gtk_utils_create_mnemonic_label (_("_Grid and labels color:"),
+					   color_button);
+  gtk_table_attach (table, label, 0, 1, num_table_rows - 1, num_table_rows,
+		    GTK_FILL, 0, 0, 0);
 
   return table_widget;
 }
 
 
 static GtkWidget *
-create_markup_box(GtkGameIndex game_index, const gchar *labels[4])
+create_markup_box (GtkGameIndex game_index, const gchar *labels[4])
 {
   UseThemeDefaultSizeData *size_data
-    = g_malloc(sizeof(UseThemeDefaultSizeData));
+    = g_malloc (sizeof (UseThemeDefaultSizeData));
   UseThemeDefaultOpacityData *opacity_data
-    = g_malloc(sizeof(UseThemeDefaultOpacityData));
+    = g_malloc (sizeof (UseThemeDefaultOpacityData));
   BoardAppearance *board_appearance
-    = game_index_to_board_appearance_structure(game_index);
+    = game_index_to_board_appearance_structure (game_index);
   GtkWidget *selector;
   GtkWidget *label1;
   GtkWidget *theme_hbox;
@@ -902,263 +905,267 @@ create_markup_box(GtkGameIndex game_index, const gchar *labels[4])
   GtkSizeGroup *size_group;
   int k;
 
-  selector = gtk_utils_create_selector_from_string_list(&markup_themes,
-							(board_appearance
-							 ->markup_theme));
-  g_signal_connect(selector, "changed",
-		   G_CALLBACK(update_board_markup),
-		   GINT_TO_POINTER(game_index));
+  selector = gtk_utils_create_selector_from_string_list (&markup_themes,
+							 (board_appearance
+							  ->markup_theme));
+  g_signal_connect (selector, "changed",
+		    G_CALLBACK (update_board_markup),
+		    GINT_TO_POINTER (game_index));
 
-  label1 = gtk_utils_create_mnemonic_label(_("_Theme:"), selector);
+  label1 = gtk_utils_create_mnemonic_label (_("_Theme:"), selector);
 
-  theme_hbox = gtk_utils_pack_in_box(GTK_TYPE_HBOX, 0,
-				     label1, 0, gtk_label_new("    "), 0,
-				     selector, GTK_UTILS_FILL | QUARRY_SPACING,
-				     NULL);
+  theme_hbox = gtk_utils_pack_in_box (GTK_TYPE_HBOX, 0,
+				      label1, 0, gtk_label_new ("    "), 0,
+				      selector,
+				      GTK_UTILS_FILL | QUARRY_SPACING,
+				      NULL);
 
-  scale = gtk_hscale_new_with_range(0.2, 1.0, 0.05);
-  gtk_scale_set_draw_value(GTK_SCALE(scale), FALSE);
-  gtk_range_set_update_policy(GTK_RANGE(scale), GTK_UPDATE_DELAYED);
-  gtk_range_set_value(GTK_RANGE(scale), board_appearance->markup_size);
+  scale = gtk_hscale_new_with_range (0.2, 1.0, 0.05);
+  gtk_scale_set_draw_value (GTK_SCALE (scale), FALSE);
+  gtk_range_set_update_policy (GTK_RANGE (scale), GTK_UPDATE_DELAYED);
+  gtk_range_set_value (GTK_RANGE (scale), board_appearance->markup_size);
 
-  g_signal_connect(scale, "value-changed",
-		   G_CALLBACK(update_board_appearance),
-		   &board_appearance->markup_size);
+  g_signal_connect (scale, "value-changed",
+		    G_CALLBACK (update_board_appearance),
+		    &board_appearance->markup_size);
 
-  label2 = gtk_utils_create_mnemonic_label(_("_Size:"), scale);
+  label2 = gtk_utils_create_mnemonic_label (_("_Size:"), scale);
 
-  hbox = gtk_utils_pack_in_box(GTK_TYPE_HBOX, QUARRY_SPACING,
-			       label2, 0, scale, GTK_UTILS_PACK_DEFAULT, NULL);
+  hbox = gtk_utils_pack_in_box (GTK_TYPE_HBOX, QUARRY_SPACING,
+				label2, 0, scale, GTK_UTILS_PACK_DEFAULT,
+				NULL);
 
-  check_button = gtk_check_button_new_with_mnemonic(_(labels[0]));
+  check_button = gtk_check_button_new_with_mnemonic (_(labels[0]));
   if (board_appearance->markup_size_is_relative)
-    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(check_button), TRUE);
+    gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (check_button), TRUE);
 
-  g_signal_connect(check_button, "toggled",
-		   G_CALLBACK(update_board_appearance),
-		   &board_appearance->markup_size_is_relative);
+  g_signal_connect (check_button, "toggled",
+		    G_CALLBACK (update_board_appearance),
+		    &board_appearance->markup_size_is_relative);
 
-  vbox = gtk_utils_pack_in_box(GTK_TYPE_VBOX, QUARRY_SPACING_SMALL,
-			       hbox, GTK_UTILS_FILL,
-			       check_button, GTK_UTILS_FILL, NULL);
+  vbox = gtk_utils_pack_in_box (GTK_TYPE_VBOX, QUARRY_SPACING_SMALL,
+				hbox, GTK_UTILS_FILL,
+				check_button, GTK_UTILS_FILL, NULL);
 
-  button = gtk_button_new_with_mnemonic(_("Theme _default"));
+  button = gtk_button_new_with_mnemonic (_("Theme _default"));
 
   size_data->game_index	   = game_index;
-  size_data->range	   = GTK_RANGE(scale);
-  size_data->toggle_button = GTK_TOGGLE_BUTTON(check_button);
+  size_data->range	   = GTK_RANGE (scale);
+  size_data->toggle_button = GTK_TOGGLE_BUTTON (check_button);
 
-  g_signal_connect_swapped(button, "clicked",
-			   G_CALLBACK(use_theme_default_size), size_data);
-  g_signal_connect_swapped(button, "destroy", G_CALLBACK(g_free), size_data);
+  g_signal_connect_swapped (button, "clicked",
+			    G_CALLBACK (use_theme_default_size), size_data);
+  g_signal_connect_swapped (button, "destroy", G_CALLBACK (g_free), size_data);
 
-  hbox = gtk_utils_pack_in_box(GTK_TYPE_HBOX, QUARRY_SPACING,
-			       vbox, GTK_UTILS_PACK_DEFAULT,
-			       gtk_utils_align_widget(button, 0.5, 0.5),
-			       GTK_UTILS_FILL,
-			       NULL);
+  hbox = gtk_utils_pack_in_box (GTK_TYPE_HBOX, QUARRY_SPACING,
+				vbox, GTK_UTILS_PACK_DEFAULT,
+				gtk_utils_align_widget (button, 0.5, 0.5),
+				GTK_UTILS_FILL,
+				NULL);
 
-  size_named_vbox = gtk_named_vbox_new(_("Markup Size"), FALSE, 0);
-  gtk_box_pack_start_defaults(GTK_BOX(size_named_vbox), hbox);
+  size_named_vbox = gtk_named_vbox_new (_("Markup Size"), FALSE, 0);
+  gtk_box_pack_start_defaults (GTK_BOX (size_named_vbox), hbox);
 
-  scale = gtk_hscale_new_with_range(0.2, 1.0, 0.05);
-  gtk_scale_set_draw_value(GTK_SCALE(scale), FALSE);
-  gtk_range_set_update_policy(GTK_RANGE(scale), GTK_UPDATE_DELAYED);
-  gtk_range_set_value(GTK_RANGE(scale), board_appearance->markup_opacity);
+  scale = gtk_hscale_new_with_range (0.2, 1.0, 0.05);
+  gtk_scale_set_draw_value (GTK_SCALE (scale), FALSE);
+  gtk_range_set_update_policy (GTK_RANGE (scale), GTK_UPDATE_DELAYED);
+  gtk_range_set_value (GTK_RANGE (scale), board_appearance->markup_opacity);
 
-  g_signal_connect(scale, "value-changed",
-		   G_CALLBACK(update_board_appearance),
-		   &board_appearance->markup_opacity);
+  g_signal_connect (scale, "value-changed",
+		    G_CALLBACK (update_board_appearance),
+		    &board_appearance->markup_opacity);
 
-  label3 = gtk_utils_create_mnemonic_label(_("_Opacity:"), scale);
+  label3 = gtk_utils_create_mnemonic_label (_("_Opacity:"), scale);
 
-  button = gtk_button_new_with_mnemonic(_("Theme de_fault"));
+  button = gtk_button_new_with_mnemonic (_("Theme de_fault"));
 
   opacity_data->game_index = game_index;
-  opacity_data->range	   = GTK_RANGE(scale);
+  opacity_data->range	   = GTK_RANGE (scale);
 
-  g_signal_connect_swapped(button, "clicked",
-			   G_CALLBACK(use_theme_default_opacity),
-			   opacity_data);
-  g_signal_connect_swapped(button, "destroy", G_CALLBACK(g_free),
-			   opacity_data);
+  g_signal_connect_swapped (button, "clicked",
+			    G_CALLBACK (use_theme_default_opacity),
+			    opacity_data);
+  g_signal_connect_swapped (button, "destroy", G_CALLBACK (g_free),
+			    opacity_data);
 
-  hbox = gtk_utils_pack_in_box(GTK_TYPE_HBOX, QUARRY_SPACING,
-			       label3, 0, scale, GTK_UTILS_PACK_DEFAULT,
-			       button, GTK_UTILS_FILL, NULL);
+  hbox = gtk_utils_pack_in_box (GTK_TYPE_HBOX, QUARRY_SPACING,
+				label3, 0, scale, GTK_UTILS_PACK_DEFAULT,
+				button, GTK_UTILS_FILL, NULL);
 
-  gtk_utils_create_size_group(GTK_SIZE_GROUP_HORIZONTAL,
-			      label1, label2, label3, NULL);
+  gtk_utils_create_size_group (GTK_SIZE_GROUP_HORIZONTAL,
+			       label1, label2, label3, NULL);
 
-  opacity_named_vbox = gtk_named_vbox_new(_("Markup Opacity"), FALSE, 0);
-  gtk_box_pack_start_defaults(GTK_BOX(opacity_named_vbox), hbox);
+  opacity_named_vbox = gtk_named_vbox_new (_("Markup Opacity"), FALSE, 0);
+  gtk_box_pack_start_defaults (GTK_BOX (opacity_named_vbox), hbox);
 
-  color_named_vbox = gtk_named_vbox_new(_("Markup Color"),
-					FALSE, QUARRY_SPACING_SMALL);
+  color_named_vbox = gtk_named_vbox_new (_("Markup Color"),
+					 FALSE, QUARRY_SPACING_SMALL);
 
-  size_group = gtk_size_group_new(GTK_SIZE_GROUP_HORIZONTAL);
+  size_group = gtk_size_group_new (GTK_SIZE_GROUP_HORIZONTAL);
 
   for (k = 0; k < NUM_SGF_MARKUP_BACKGROUNDS; k++) {
     GdkColor color;
     GtkWidget *color_button;
     int color_index = (NUM_SGF_MARKUP_BACKGROUNDS - 1) - k;
 
-    gtk_utils_set_gdk_color(&color,
-			    board_appearance->markup_colors[color_index]);
-    color_button = gtk_color_button_new_with_color(&color);
-    gtk_color_button_set_title(GTK_COLOR_BUTTON(color_button),
-			       _("Pick Color for Markup"));
+    gtk_utils_set_gdk_color (&color,
+			     board_appearance->markup_colors[color_index]);
+    color_button = gtk_color_button_new_with_color (&color);
+    gtk_color_button_set_title (GTK_COLOR_BUTTON (color_button),
+				_("Pick Color for Markup"));
 
-    g_signal_connect(color_button, "color-set",
-		     G_CALLBACK(update_board_appearance),
-		     &board_appearance->markup_colors[color_index]);
+    g_signal_connect (color_button, "color-set",
+		      G_CALLBACK (update_board_appearance),
+		      &board_appearance->markup_colors[color_index]);
 
-    label1 = gtk_utils_create_mnemonic_label(_(labels[1 + k]), color_button);
+    label1 = gtk_utils_create_mnemonic_label (_(labels[1 + k]), color_button);
 
-    hbox = gtk_utils_pack_in_box(GTK_TYPE_HBOX, QUARRY_SPACING,
-				 label1, 0,
-				 color_button, GTK_UTILS_PACK_DEFAULT, NULL);
-    gtk_box_pack_start_defaults(GTK_BOX(color_named_vbox), hbox);
+    hbox = gtk_utils_pack_in_box (GTK_TYPE_HBOX, QUARRY_SPACING,
+				  label1, 0,
+				  color_button, GTK_UTILS_PACK_DEFAULT, NULL);
+    gtk_box_pack_start_defaults (GTK_BOX (color_named_vbox), hbox);
 
-    gtk_size_group_add_widget(size_group, label1);
+    gtk_size_group_add_widget (size_group, label1);
   }
 
-  return gtk_utils_pack_in_box(GTK_TYPE_VBOX, QUARRY_SPACING_BIG,
-			       theme_hbox, GTK_UTILS_FILL,
-			       size_named_vbox, GTK_UTILS_FILL,
-			       opacity_named_vbox, GTK_UTILS_FILL,
-			       color_named_vbox, GTK_UTILS_FILL, NULL);
+  return gtk_utils_pack_in_box (GTK_TYPE_VBOX, QUARRY_SPACING_BIG,
+				theme_hbox, GTK_UTILS_FILL,
+				size_named_vbox, GTK_UTILS_FILL,
+				opacity_named_vbox, GTK_UTILS_FILL,
+				color_named_vbox, GTK_UTILS_FILL, NULL);
 }
 
 
 static GtkWidget *
-create_board_appearance_notebook_page(GtkWidget *background_widget,
-				      GtkWidget *markup_widget)
+create_board_appearance_notebook_page (GtkWidget *background_widget,
+				       GtkWidget *markup_widget)
 {
-  GtkWidget *notebook_widget = gtk_notebook_new();
-  GtkNotebook *notebook = GTK_NOTEBOOK(notebook_widget);
+  GtkWidget *notebook_widget = gtk_notebook_new ();
+  GtkNotebook *notebook = GTK_NOTEBOOK (notebook_widget);
 
-  gtk_container_set_border_width(GTK_CONTAINER(background_widget),
-				 QUARRY_SPACING);
-  gtk_container_set_border_width(GTK_CONTAINER(markup_widget), QUARRY_SPACING);
+  gtk_container_set_border_width (GTK_CONTAINER (background_widget),
+				  QUARRY_SPACING);
+  gtk_container_set_border_width (GTK_CONTAINER (markup_widget),
+				  QUARRY_SPACING);
 
-  gtk_notebook_append_page(notebook, background_widget,
-			   gtk_label_new(_("Background")));
-  gtk_notebook_append_page(notebook, markup_widget,
-			   gtk_label_new(_("Markup")));
+  gtk_notebook_append_page (notebook, background_widget,
+			    gtk_label_new (_("Background")));
+  gtk_notebook_append_page (notebook, markup_widget,
+			    gtk_label_new (_("Markup")));
 
   return notebook_widget;
 }
 
 
 static void
-gtk_preferences_dialog_change_page(GtkTreeSelection *selection,
-				   GtkNotebook *notebook)
+gtk_preferences_dialog_change_page (GtkTreeSelection *selection,
+				    GtkNotebook *notebook)
 {
   GtkTreeIter iterator;
   GtkTreeModel *categories_tree_model;
 
-  if (gtk_tree_selection_get_selected(selection, &categories_tree_model,
-				      &iterator)) {
+  if (gtk_tree_selection_get_selected (selection, &categories_tree_model,
+				       &iterator)) {
     gint page_index;
 
-    gtk_tree_model_get(categories_tree_model, &iterator,
-		       CATEGORIES_PAGE_INDEX, &page_index, -1);
+    gtk_tree_model_get (categories_tree_model, &iterator,
+			CATEGORIES_PAGE_INDEX, &page_index, -1);
     if (page_index != -1) {
       last_selected_page = page_index;
-      gtk_notebook_set_current_page(notebook, last_selected_page);
+      gtk_notebook_set_current_page (notebook, last_selected_page);
     }
   }
 }
 
 
 static void
-gtk_preferences_dialog_response(GtkWindow *window, gint response_id)
+gtk_preferences_dialog_response (GtkWindow *window, gint response_id)
 {
-  assert(window == preferences_dialog);
+  assert (window == preferences_dialog);
 
   if (response_id == GTK_RESPONSE_HELP) {
     switch (last_selected_page) {
     case PREFERENCES_PAGE_GTP_ENGINES:
-      gtk_help_display("preferences-gtp-engines");
+      gtk_help_display ("preferences-gtp-engines");
       break;
 
     case PREFERENCES_PAGE_SGF_SAVING:
-      gtk_help_display("preferences-saving-game-records");
+      gtk_help_display ("preferences-saving-game-records");
       break;
 
     case PREFERENCES_PAGE_GO_BOARD_APPEARANCE:
-      gtk_help_display("preferences-go-board-appearance");
+      gtk_help_display ("preferences-go-board-appearance");
       break;
 
     case PREFERENCES_PAGE_AMAZONS_BOARD_APPEARANCE:
-      gtk_help_display("preferences-amazons-board-appearance");
+      gtk_help_display ("preferences-amazons-board-appearance");
       break;
 
     case PREFERENCES_PAGE_OTHELLO_BOARD_APPEARANCE:
-      gtk_help_display("preferences-othello-board-appearance");
+      gtk_help_display ("preferences-othello-board-appearance");
       break;
 
     default:
-      assert(0);
+      assert (0);
     }
   }
   else
-    gtk_widget_destroy(GTK_WIDGET(preferences_dialog));
+    gtk_widget_destroy (GTK_WIDGET (preferences_dialog));
 }
 
 
 static void
-gtk_preferences_dialog_destroy(GtkWindow *window)
+gtk_preferences_dialog_destroy (GtkWindow *window)
 {
-  assert(window == preferences_dialog);
+  assert (window == preferences_dialog);
 
-  if (gtk_control_center_window_destroyed(window))
+  if (gtk_control_center_window_destroyed (window))
     preferences_dialog = NULL;
 }
 
 
 static void
-gtk_preferences_dialog_update_gtp_engine_info(GtkTreeSelection *selection)
+gtk_preferences_dialog_update_gtp_engine_info (GtkTreeSelection *selection)
 {
   GtkTreeModel *gtp_engines_tree_model;
   GtkTreeIter iterator;
   GtpEngineListItem *engine_data = NULL;
   char *supported_games = NULL;
 
-  if (gtk_tree_selection_get_selected(selection, &gtp_engines_tree_model,
-				      &iterator)) {
-    gtk_tree_model_get(gtp_engines_tree_model, &iterator,
-		       ENGINES_DATA, &engine_data, -1);
-    supported_games = string_list_implode(&engine_data->supported_games, ", ");
+  if (gtk_tree_selection_get_selected (selection, &gtp_engines_tree_model,
+				       &iterator)) {
+    gtk_tree_model_get (gtp_engines_tree_model, &iterator,
+			ENGINES_DATA, &engine_data, -1);
+    supported_games = string_list_implode (&engine_data->supported_games,
+					   ", ");
   }
 
-  gtk_widget_set_sensitive(modify_gtp_engine, engine_data != NULL);
-  gtk_widget_set_sensitive(remove_gtp_engine, engine_data != NULL);
+  gtk_widget_set_sensitive (modify_gtp_engine, engine_data != NULL);
+  gtk_widget_set_sensitive (remove_gtp_engine, engine_data != NULL);
 
-  gtk_widget_set_sensitive(move_gtp_engine_up,
-			   (engine_data != NULL
-			    && engine_data != gtp_engines.first));
-  gtk_widget_set_sensitive(move_gtp_engine_down,
-			   (engine_data != NULL
-			    && engine_data != gtp_engines.last));
+  gtk_widget_set_sensitive (move_gtp_engine_up,
+			    (engine_data != NULL
+			     && engine_data != gtp_engines.first));
+  gtk_widget_set_sensitive (move_gtp_engine_down,
+			    (engine_data != NULL
+			     && engine_data != gtp_engines.last));
 
-  gtk_widget_set_sensitive(gtp_engine_info, engine_data != NULL);
+  gtk_widget_set_sensitive (gtp_engine_info, engine_data != NULL);
 
-  gtk_label_set_text(gtp_engine_name,
-		     (engine_data ? engine_data->name : NULL));
-  gtk_label_set_text(gtp_engine_version,
-		     (engine_data ? engine_data->version : NULL));
-  gtk_label_set_text(gtp_engine_supported_games, supported_games);
-  gtk_label_set_text(gtp_engine_command_line,
-		     (engine_data ? engine_data->command_line : NULL));
+  gtk_label_set_text (gtp_engine_name,
+		      (engine_data ? engine_data->name : NULL));
+  gtk_label_set_text (gtp_engine_version,
+		      (engine_data ? engine_data->version : NULL));
+  gtk_label_set_text (gtp_engine_supported_games, supported_games);
+  gtk_label_set_text (gtp_engine_command_line,
+		      (engine_data ? engine_data->command_line : NULL));
 
-  utils_free(supported_games);
+  utils_free (supported_games);
 }
 
 
 static void
-do_remove_gtp_engine(void)
+do_remove_gtp_engine (void)
 {
   GtkTreeModel *gtp_engines_tree_model;
   GtkTreeIter iterator;
@@ -1171,13 +1178,13 @@ do_remove_gtp_engine(void)
   GSList *item;
   GtkTreePath *tree_path;
 
-  assert(gtk_tree_selection_get_selected(gtp_engines_tree_selection,
-					 &gtp_engines_tree_model,
-					 &iterator));
-  gtk_tree_model_get(gtp_engines_tree_model, &iterator,
-		     ENGINES_DATA, &engine_data, -1);
+  assert (gtk_tree_selection_get_selected (gtp_engines_tree_selection,
+					   &gtp_engines_tree_model,
+					   &iterator));
+  gtk_tree_model_get (gtp_engines_tree_model, &iterator,
+		      ENGINES_DATA, &engine_data, -1);
 
-  item = find_gtp_engine_dialog_by_engine_data(engine_data);
+  item = find_gtp_engine_dialog_by_engine_data (engine_data);
 #if !GTK_2_4_OR_LATER
   deleting_last_item = (engine_data->next == NULL);
 #endif
@@ -1187,50 +1194,50 @@ do_remove_gtp_engine(void)
 
     if (data->progress_dialog) {
       data->engine_deleted = TRUE;
-      gtk_schedule_gtp_client_deletion(data->client);
+      gtk_schedule_gtp_client_deletion (data->client);
     }
 
-    gtk_widget_destroy(GTK_WIDGET(data->window));
+    gtk_widget_destroy (GTK_WIDGET (data->window));
   }
 
-  prepare_to_rebuild_menus();
-  string_list_delete_item(&gtp_engines, engine_data);
-  rebuild_all_menus();
+  prepare_to_rebuild_menus ();
+  string_list_delete_item (&gtp_engines, engine_data);
+  rebuild_all_menus ();
 
 #if !GTK_2_4_OR_LATER
 
-  if (string_list_is_empty(&gtp_engines)) {
+  if (string_list_is_empty (&gtp_engines)) {
     for (item = gtp_engine_selectors; item; item = item->next) {
       GtkEngineSelectorData *data = (GtkEngineSelectorData *) (item->data);
 
-      data->callback(data->selector, data->user_data);
+      data->callback (data->selector, data->user_data);
     }
   }
 
 #endif
 
-  tree_path = gtk_tree_model_get_path(gtp_engines_tree_model, &iterator);
+  tree_path = gtk_tree_model_get_path (gtp_engines_tree_model, &iterator);
 
 #if GTK_2_4_OR_LATER
 
-  if (!gtk_list_store_remove(gtp_engines_list_store, &iterator))
-    gtk_tree_path_prev(tree_path);
+  if (!gtk_list_store_remove (gtp_engines_list_store, &iterator))
+    gtk_tree_path_prev (tree_path);
 
 #else
 
-  gtk_list_store_remove(gtp_engines_list_store, &iterator);
+  gtk_list_store_remove (gtp_engines_list_store, &iterator);
   if (deleting_last_item)
-    gtk_tree_path_prev(tree_path);
+    gtk_tree_path_prev (tree_path);
 
 #endif
 
-  gtk_tree_view_set_cursor(gtp_engines_tree_view, tree_path, NULL, FALSE);
-  gtk_tree_path_free(tree_path);
+  gtk_tree_view_set_cursor (gtp_engines_tree_view, tree_path, NULL, FALSE);
+  gtk_tree_path_free (tree_path);
 }
 
 
 static void
-do_move_gtp_engine(gpointer move_upwards)
+do_move_gtp_engine (gpointer move_upwards)
 {
   GtkTreeModel *gtp_engines_tree_model;
   GtkTreeIter first_iterator;
@@ -1239,65 +1246,67 @@ do_move_gtp_engine(gpointer move_upwards)
   GtpEngineListItem *second_engine_data;
   GtkTreePath *tree_path;
 
-  assert(gtk_tree_selection_get_selected(gtp_engines_tree_selection,
-					 &gtp_engines_tree_model,
-					 &first_iterator));
-  gtk_tree_model_get(gtp_engines_tree_model, &first_iterator,
-		     ENGINES_DATA, &first_engine_data, -1);
+  assert (gtk_tree_selection_get_selected (gtp_engines_tree_selection,
+					   &gtp_engines_tree_model,
+					   &first_iterator));
+  gtk_tree_model_get (gtp_engines_tree_model, &first_iterator,
+		      ENGINES_DATA, &first_engine_data, -1);
 
-  tree_path = gtk_tree_model_get_path(gtp_engines_tree_model, &first_iterator);
+  tree_path = gtk_tree_model_get_path (gtp_engines_tree_model,
+				       &first_iterator);
 
-  prepare_to_rebuild_menus();
+  prepare_to_rebuild_menus ();
 
-  if (GPOINTER_TO_INT(move_upwards)) {
-    string_list_swap_with_previous(&gtp_engines, first_engine_data);
+  if (GPOINTER_TO_INT (move_upwards)) {
+    string_list_swap_with_previous (&gtp_engines, first_engine_data);
     second_engine_data = first_engine_data->next;
 
-    gtk_tree_path_prev(tree_path);
+    gtk_tree_path_prev (tree_path);
   }
   else {
     second_engine_data = first_engine_data->next;
-    string_list_swap_with_next(&gtp_engines, first_engine_data);
+    string_list_swap_with_next (&gtp_engines, first_engine_data);
 
-    gtk_tree_path_next(tree_path);
+    gtk_tree_path_next (tree_path);
   }
 
-  rebuild_all_menus();
+  rebuild_all_menus ();
 
-  gtk_tree_model_get_iter(gtp_engines_tree_model, &second_iterator, tree_path);
+  gtk_tree_model_get_iter (gtp_engines_tree_model, &second_iterator,
+			   tree_path);
 
 #if GTK_2_2_OR_LATER
 
-  gtk_tree_path_free(tree_path);
+  gtk_tree_path_free (tree_path);
 
-  gtk_list_store_swap(gtp_engines_list_store,
-		      &first_iterator, &second_iterator);
-  gtk_preferences_dialog_update_gtp_engine_info(gtp_engines_tree_selection);
+  gtk_list_store_swap (gtp_engines_list_store,
+		       &first_iterator, &second_iterator);
+  gtk_preferences_dialog_update_gtp_engine_info (gtp_engines_tree_selection);
 
 #else /* not GTK_2_2_OR_LATER */
 
-  g_signal_handlers_block_by_func(gtp_engines_list_store,
-				  handle_drag_and_drop, NULL);
+  g_signal_handlers_block_by_func (gtp_engines_list_store,
+				   handle_drag_and_drop, NULL);
 
-  gtk_list_store_set(gtp_engines_list_store, &first_iterator,
-		     ENGINES_DATA, second_engine_data,
-		     ENGINES_NAME, second_engine_data->screen_name, -1);
-  gtk_list_store_set(gtp_engines_list_store, &second_iterator,
-		     ENGINES_DATA, first_engine_data,
-		     ENGINES_NAME, first_engine_data->screen_name, -1);
+  gtk_list_store_set (gtp_engines_list_store, &first_iterator,
+		      ENGINES_DATA, second_engine_data,
+		      ENGINES_NAME, second_engine_data->screen_name, -1);
+  gtk_list_store_set (gtp_engines_list_store, &second_iterator,
+		      ENGINES_DATA, first_engine_data,
+		      ENGINES_NAME, first_engine_data->screen_name, -1);
 
-  g_signal_handlers_unblock_by_func(gtp_engines_list_store,
-				    handle_drag_and_drop, NULL);
+  g_signal_handlers_unblock_by_func (gtp_engines_list_store,
+				     handle_drag_and_drop, NULL);
 
-  gtk_tree_view_set_cursor(gtp_engines_tree_view, tree_path, NULL, FALSE);
-  gtk_tree_path_free(tree_path);
+  gtk_tree_view_set_cursor (gtp_engines_tree_view, tree_path, NULL, FALSE);
+  gtk_tree_path_free (tree_path);
 
 #endif /* not GTK_2_2_OR_LATER */
 }
 
 
 static GSList *
-find_gtp_engine_dialog_by_engine_data(GtpEngineListItem *engine_data)
+find_gtp_engine_dialog_by_engine_data (GtpEngineListItem *engine_data)
 {
   GSList *item;
 
@@ -1311,7 +1320,7 @@ find_gtp_engine_dialog_by_engine_data(GtpEngineListItem *engine_data)
 
 
 static void
-gtk_gtp_engine_dialog_present(gpointer new_engine)
+gtk_gtp_engine_dialog_present (gpointer new_engine)
 {
   static const gchar *hint_text
     = N_("You can use `%n' and `%v' strings in <i>Screen name</i> field. "
@@ -1321,7 +1330,7 @@ gtk_gtp_engine_dialog_present(gpointer new_engine)
   GtpEngineListItem *engine_data = NULL;
   GtkEngineDialogData *data;
   GtkTreeModel *gtp_engines_tree_model
-    = GTK_TREE_MODEL(gtp_engines_list_store);
+    = GTK_TREE_MODEL (gtp_engines_list_store);
   GtkTreeIter iterator;
   GSList *item;
 
@@ -1332,203 +1341,204 @@ gtk_gtp_engine_dialog_present(gpointer new_engine)
   GtkWidget *entry;
   GtkWidget *label;
 
-  if (!GPOINTER_TO_INT(new_engine)) {
-    assert(gtk_tree_selection_get_selected(gtp_engines_tree_selection,
-					   NULL, &iterator));
-    gtk_tree_model_get(gtp_engines_tree_model, &iterator,
-		       ENGINES_DATA, &engine_data, -1);
+  if (!GPOINTER_TO_INT (new_engine)) {
+    assert (gtk_tree_selection_get_selected (gtp_engines_tree_selection,
+					     NULL, &iterator));
+    gtk_tree_model_get (gtp_engines_tree_model, &iterator,
+			ENGINES_DATA, &engine_data, -1);
   }
 
-  item = find_gtp_engine_dialog_by_engine_data(engine_data);
+  item = find_gtp_engine_dialog_by_engine_data (engine_data);
   if (item) {
     data = (GtkEngineDialogData *) (item->data);
 
-    gtk_window_present(data->window);
+    gtk_window_present (data->window);
     if (data->progress_dialog)
-      gtk_window_present(GTK_WINDOW(data->progress_dialog));
+      gtk_window_present (GTK_WINDOW (data->progress_dialog));
 
     return;
   }
 
-  data = g_malloc(sizeof(GtkEngineDialogData));
+  data = g_malloc (sizeof (GtkEngineDialogData));
   data->engine_data	= engine_data;
   data->engine_deleted	= FALSE;
   data->progress_dialog = NULL;
 
-  gtp_engine_dialogs = g_slist_prepend(gtp_engine_dialogs, data);
+  gtp_engine_dialogs = g_slist_prepend (gtp_engine_dialogs, data);
 
-  dialog = gtk_dialog_new_with_buttons((engine_data
-					? _("Modify GTP Engine Information")
-					: _("New GTP Engine")),
-				       NULL, 0,
-				       GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
-				       NULL);
-  data->window = GTK_WINDOW(dialog);
-  gtk_control_center_window_created(data->window);
+  dialog = gtk_dialog_new_with_buttons ((engine_data
+					 ? _("Modify GTP Engine Information")
+					 : _("New GTP Engine")),
+					NULL, 0,
+					GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
+					NULL);
+  data->window = GTK_WINDOW (dialog);
+  gtk_control_center_window_created (data->window);
 
-  gtk_utils_make_window_only_horizontally_resizable(data->window);
+  gtk_utils_make_window_only_horizontally_resizable (data->window);
 
-  button = gtk_dialog_add_button(GTK_DIALOG(dialog),
-				 (engine_data ? GTK_STOCK_OK : GTK_STOCK_ADD),
-				 GTK_RESPONSE_OK);
-  gtk_dialog_set_default_response(GTK_DIALOG(dialog), GTK_RESPONSE_OK);
+  button = gtk_dialog_add_button (GTK_DIALOG (dialog),
+				  (engine_data ? GTK_STOCK_OK : GTK_STOCK_ADD),
+				  GTK_RESPONSE_OK);
+  gtk_dialog_set_default_response (GTK_DIALOG (dialog), GTK_RESPONSE_OK);
 
-  g_signal_connect(dialog, "destroy",
-		   G_CALLBACK(gtk_gtp_engine_dialog_destroy), data);
-  g_signal_connect(dialog, "response",
-		   G_CALLBACK(gtk_gtp_engine_dialog_response), data);
+  g_signal_connect (dialog, "destroy",
+		    G_CALLBACK (gtk_gtp_engine_dialog_destroy), data);
+  g_signal_connect (dialog, "response",
+		    G_CALLBACK (gtk_gtp_engine_dialog_response), data);
 
-  table_widget = gtk_table_new(3, 3, FALSE);
-  table = GTK_TABLE(table_widget);
-  gtk_table_set_row_spacing(table, 0, QUARRY_SPACING);
-  gtk_table_set_row_spacing(table, 1, QUARRY_SPACING_SMALL);
-  gtk_table_set_col_spacing(table, 0, QUARRY_SPACING);
-  gtk_table_set_col_spacing(table, 1, QUARRY_SPACING_SMALL);
+  table_widget = gtk_table_new (3, 3, FALSE);
+  table = GTK_TABLE (table_widget);
+  gtk_table_set_row_spacing (table, 0, QUARRY_SPACING);
+  gtk_table_set_row_spacing (table, 1, QUARRY_SPACING_SMALL);
+  gtk_table_set_col_spacing (table, 0, QUARRY_SPACING);
+  gtk_table_set_col_spacing (table, 1, QUARRY_SPACING_SMALL);
 
 #if GTK_2_4_OR_LATER
 
-  entry = gtk_combo_box_entry_new_with_model(gtp_engines_tree_model,
-					     ENGINES_COMMAND_LINE);
+  entry = gtk_combo_box_entry_new_with_model (gtp_engines_tree_model,
+					      ENGINES_COMMAND_LINE);
   if (engine_data)
-    gtk_combo_box_set_active_iter(GTK_COMBO_BOX(entry), &iterator);
+    gtk_combo_box_set_active_iter (GTK_COMBO_BOX (entry), &iterator);
 
-  data->command_line_entry = GTK_ENTRY(GTK_BIN(entry)->child);
-  gtk_entry_set_activates_default(data->command_line_entry, TRUE);
+  data->command_line_entry = GTK_ENTRY (GTK_BIN (entry)->child);
+  gtk_entry_set_activates_default (data->command_line_entry, TRUE);
 
 #else
-  entry = gtk_utils_create_entry((engine_data
-				  ? engine_data->command_line : NULL),
-				 RETURN_ACTIVATES_DEFAULT);
-  data->command_line_entry = GTK_ENTRY(entry);
+  entry = gtk_utils_create_entry ((engine_data
+				   ? engine_data->command_line : NULL),
+				  RETURN_ACTIVATES_DEFAULT);
+  data->command_line_entry = GTK_ENTRY (entry);
 #endif
 
-  gtk_utils_set_sensitive_on_input(data->command_line_entry, button);
-  gtk_table_attach(table, entry, 1, 2, 0, 1, GTK_EXPAND | GTK_FILL, 0, 0, 0);
+  gtk_utils_set_sensitive_on_input (data->command_line_entry, button);
+  gtk_table_attach (table, entry, 1, 2, 0, 1, GTK_EXPAND | GTK_FILL, 0, 0, 0);
 
-  label = gtk_utils_create_mnemonic_label(_("Command _line:"), entry);
-  gtk_table_attach(table, label, 0, 1, 0, 1, GTK_FILL, 0, 0, 0);
+  label = gtk_utils_create_mnemonic_label (_("Command _line:"), entry);
+  gtk_table_attach (table, label, 0, 1, 0, 1, GTK_FILL, 0, 0, 0);
 
-  button = gtk_utils_create_browse_button(TRUE,
-					  GTK_WIDGET(data->command_line_entry),
-					  TRUE, _("Choose GTP Engine..."),
-					  NULL, NULL);
-  gtk_table_attach(table, button, 2, 3, 0, 1, GTK_FILL, 0, 0, 0);
+  button
+    = gtk_utils_create_browse_button (TRUE,
+				      GTK_WIDGET (data->command_line_entry),
+				      TRUE, _("Choose GTP Engine..."),
+				      NULL, NULL);
+  gtk_table_attach (table, button, 2, 3, 0, 1, GTK_FILL, 0, 0, 0);
 
   entry
-    = gtk_utils_create_entry((engine_data && engine_data->screen_name_format
-			      ? engine_data->screen_name_format : "%n %v"),
-			     RETURN_ACTIVATES_DEFAULT);
-  data->name_entry = GTK_ENTRY(entry);
-  gtk_table_attach(table, entry, 1, 2, 1, 2, GTK_EXPAND | GTK_FILL, 0, 0, 0);
+    = gtk_utils_create_entry ((engine_data && engine_data->screen_name_format
+			       ? engine_data->screen_name_format : "%n %v"),
+			      RETURN_ACTIVATES_DEFAULT);
+  data->name_entry = GTK_ENTRY (entry);
+  gtk_table_attach (table, entry, 1, 2, 1, 2, GTK_EXPAND | GTK_FILL, 0, 0, 0);
 
-  label = gtk_utils_create_mnemonic_label(_("Screen _name:"), entry);
-  gtk_table_attach(table, label, 0, 1, 1, 2, GTK_FILL, 0, 0, 0);
+  label = gtk_utils_create_mnemonic_label (_("Screen _name:"), entry);
+  gtk_table_attach (table, label, 0, 1, 1, 2, GTK_FILL, 0, 0, 0);
 
-  label = gtk_utils_create_left_aligned_label(NULL);
-  gtk_label_set_line_wrap(GTK_LABEL(label), TRUE);
-  gtk_label_set_markup(GTK_LABEL(label), _(hint_text));
-  gtk_table_attach(table, label, 0, 2, 2, 3, GTK_EXPAND | GTK_FILL, 0, 0, 0);
+  label = gtk_utils_create_left_aligned_label (NULL);
+  gtk_label_set_line_wrap (GTK_LABEL (label), TRUE);
+  gtk_label_set_markup (GTK_LABEL (label), _(hint_text));
+  gtk_table_attach (table, label, 0, 2, 2, 3, GTK_EXPAND | GTK_FILL, 0, 0, 0);
 
-  gtk_utils_standardize_dialog(GTK_DIALOG(dialog), table_widget);
+  gtk_utils_standardize_dialog (GTK_DIALOG (dialog), table_widget);
 
-  gtk_widget_show_all(dialog);
+  gtk_widget_show_all (dialog);
 }
 
 
 static void
-gtk_gtp_engine_dialog_destroy(GtkWindow *window, GtkEngineDialogData *data)
+gtk_gtp_engine_dialog_destroy (GtkWindow *window, GtkEngineDialogData *data)
 {
-  if (gtk_control_center_window_destroyed(window)) {
-    GSList *item = find_gtp_engine_dialog_by_engine_data(data->engine_data);
+  if (gtk_control_center_window_destroyed (window)) {
+    GSList *item = find_gtp_engine_dialog_by_engine_data (data->engine_data);
 
-    assert(item);
-    gtp_engine_dialogs = g_slist_delete_link(gtp_engine_dialogs, item);
-    g_free(data);
+    assert (item);
+    gtp_engine_dialogs = g_slist_delete_link (gtp_engine_dialogs, item);
+    g_free (data);
   }
 }
 
 
 static void
-gtk_gtp_engine_dialog_response(GtkWindow *window, gint response_id,
-			       GtkEngineDialogData *data)
+gtk_gtp_engine_dialog_response (GtkWindow *window, gint response_id,
+				GtkEngineDialogData *data)
 {
   if (response_id == GTK_RESPONSE_OK) {
-    const gchar *command_line = gtk_entry_get_text(data->command_line_entry);
+    const gchar *command_line = gtk_entry_get_text (data->command_line_entry);
 
     if (!data->engine_data
 	|| !data->engine_data->command_line
-	|| strcmp(data->engine_data->command_line, command_line) != 0) {
+	|| strcmp (data->engine_data->command_line, command_line) != 0) {
       GError *error = NULL;
 
-      data->client = gtk_create_gtp_client(command_line,
-					   client_initialized, client_deleted,
-					   data, &error);
+      data->client = gtk_create_gtp_client (command_line,
+					    client_initialized, client_deleted,
+					    data, &error);
       if (data->client) {
 	data->progress_dialog
-	  = gtk_progress_dialog_new(window, "Quarry",
-				    _("Querying engine's "
-				      "name, version and known commands..."),
-				    show_progress_dialog,
-				    ((GtkProgressDialogCallback)
-				     cancel_engine_query),
-				    data);
+	  = gtk_progress_dialog_new (window, "Quarry",
+				     _("Querying engine's "
+				       "name, version and known commands..."),
+				     show_progress_dialog,
+				     ((GtkProgressDialogCallback)
+				      cancel_engine_query),
+				     data);
 	/* FIXME: I'd like this to display
 	 *	  `preferences-gtp-engine-information-dialog-freeze'.
 	 *	  Do newer versions of `yelp' still have this bug?
 	 */
 	gtk_progress_dialog_set_help_link_id
-	  (GTK_PROGRESS_DIALOG(data->progress_dialog),
+	  (GTK_PROGRESS_DIALOG (data->progress_dialog),
 	   "preferences-gtp-engine-information-dialog");
-	g_object_ref(data->progress_dialog);
+	g_object_ref (data->progress_dialog);
 
-	gtp_client_setup_connection(data->client);
+	gtp_client_setup_connection (data->client);
       }
       else {
-	gtk_utils_create_message_dialog(window, GTK_STOCK_DIALOG_ERROR,
-					(GTK_UTILS_BUTTONS_OK
-					 | GTK_UTILS_DESTROY_ON_RESPONSE),
-					_("Please make sure you typed "
-					  "engine's filename correctly and "
-					  "that you have permission to "
-					  "execute it."),
-					error->message);
-	g_error_free(error);
+	gtk_utils_create_message_dialog (window, GTK_STOCK_DIALOG_ERROR,
+					 (GTK_UTILS_BUTTONS_OK
+					  | GTK_UTILS_DESTROY_ON_RESPONSE),
+					 _("Please make sure you typed "
+					   "engine's filename correctly and "
+					   "that you have permission to "
+					   "execute it."),
+					 error->message);
+	g_error_free (error);
 
-	gtk_widget_grab_focus(GTK_WIDGET(data->command_line_entry));
+	gtk_widget_grab_focus (GTK_WIDGET (data->command_line_entry));
       }
     }
     else {
-      const gchar *name = gtk_entry_get_text(data->name_entry);
+      const gchar *name = gtk_entry_get_text (data->name_entry);
 
       if (! *name)
 	name = "%n %v";
 
-      configuration_set_string_value(&data->engine_data->screen_name_format,
-				     name);
-      update_engine_screen_name(data->engine_data);
+      configuration_set_string_value (&data->engine_data->screen_name_format,
+				      name);
+      update_engine_screen_name (data->engine_data);
 
-      gtk_widget_destroy(GTK_WIDGET(window));
+      gtk_widget_destroy (GTK_WIDGET (window));
     }
   }
   else if (response_id == GTK_RESPONSE_CANCEL)
-    gtk_widget_destroy(GTK_WIDGET(window));
+    gtk_widget_destroy (GTK_WIDGET (window));
 }
 
 
 static void
-client_initialized(GtpClient *client, void *user_data)
+client_initialized (GtpClient *client, void *user_data)
 {
   GtkWidget *progress_dialog
     = ((GtkEngineDialogData *) user_data)->progress_dialog;
 
-  gtp_client_quit(client);
-  gtk_label_set_text(GTK_PROGRESS_DIALOG(progress_dialog)->label,
-		     _("Waiting for the engine to quit..."));
+  gtp_client_quit (client);
+  gtk_label_set_text (GTK_PROGRESS_DIALOG (progress_dialog)->label,
+		      _("Waiting for the engine to quit..."));
 }
 
 
 static void
-client_deleted(GtpClient *client, GError *shutdown_reason, void *user_data)
+client_deleted (GtpClient *client, GError *shutdown_reason, void *user_data)
 {
   GtkEngineDialogData *data = (GtkEngineDialogData *) user_data;
   GtkWidget *progress_dialog = data->progress_dialog;
@@ -1546,85 +1556,87 @@ client_deleted(GtpClient *client, GError *shutdown_reason, void *user_data)
       GtkTreePath *tree_path;
       GSList *item;
 
-      command_line = gtk_entry_get_text(data->command_line_entry);
-      name = gtk_entry_get_text(data->name_entry);
+      command_line = gtk_entry_get_text (data->command_line_entry);
+      name = gtk_entry_get_text (data->name_entry);
       if (! *name)
 	name = "%n %v";
 
-      screen_name = utils_special_printf(name,
-					 'n', client->engine_name,
-					 'v', client->engine_version, 0);
+      screen_name = utils_special_printf (name,
+					  'n', client->engine_name,
+					  'v', client->engine_version, 0);
 
       if (engine_data) {
-	utils_free(engine_data->screen_name);
+	utils_free (engine_data->screen_name);
 	engine_data->screen_name = screen_name;
       }
       else {
-	string_list_add_ready(&gtp_engines, screen_name);
-	configuration_init_repeatable_section(gtp_engines_section,
-					      gtp_engines.last);
+	string_list_add_ready (&gtp_engines, screen_name);
+	configuration_init_repeatable_section (gtp_engines_section,
+					       gtp_engines.last);
 
 	engine_data = gtp_engines.last;
       }
 
-      configuration_set_string_value(&engine_data->screen_name_format, name);
-      configuration_set_string_value(&engine_data->name, client->engine_name);
-      configuration_set_string_value(&engine_data->version,
-				     client->engine_version);
+      configuration_set_string_value (&engine_data->screen_name_format, name);
+      configuration_set_string_value (&engine_data->name, client->engine_name);
+      configuration_set_string_value (&engine_data->version,
+				      client->engine_version);
       configuration_set_string_list_value_steal_strings
 	(&engine_data->supported_games, &client->supported_games);
-      configuration_set_string_value(&engine_data->command_line, command_line);
+      configuration_set_string_value (&engine_data->command_line,
+				      command_line);
 
       if (data->engine_data)
-	find_gtp_tree_model_iterator_by_engines_data(engine_data, &iterator);
+	find_gtp_tree_model_iterator_by_engines_data (engine_data, &iterator);
       else {
-	g_signal_handlers_block_by_func(gtp_engines_list_store,
-					handle_drag_and_drop, NULL);
-	gtk_list_store_append(gtp_engines_list_store, &iterator);
+	g_signal_handlers_block_by_func (gtp_engines_list_store,
+					 handle_drag_and_drop, NULL);
+	gtk_list_store_append (gtp_engines_list_store, &iterator);
       }
 
 #if GTK_2_4_OR_LATER
-      gtk_list_store_set(gtp_engines_list_store, &iterator,
-			 ENGINES_DATA, engine_data,
-			 ENGINES_NAME, screen_name,
-			 ENGINES_COMMAND_LINE, engine_data->command_line,
-			 -1);
+      gtk_list_store_set (gtp_engines_list_store, &iterator,
+			  ENGINES_DATA, engine_data,
+			  ENGINES_NAME, screen_name,
+			  ENGINES_COMMAND_LINE, engine_data->command_line,
+			  -1);
 #else
-      gtk_list_store_set(gtp_engines_list_store, &iterator,
-			 ENGINES_DATA, engine_data,
-			 ENGINES_NAME, screen_name, -1);
+      gtk_list_store_set (gtp_engines_list_store, &iterator,
+			  ENGINES_DATA, engine_data,
+			  ENGINES_NAME, screen_name, -1);
 #endif
 
-      prepare_to_rebuild_menus();
-      rebuild_all_menus();
+      prepare_to_rebuild_menus ();
+      rebuild_all_menus ();
 
       if (!data->engine_data) {
-	g_signal_handlers_unblock_by_func(gtp_engines_list_store,
-					  handle_drag_and_drop, NULL);
+	g_signal_handlers_unblock_by_func (gtp_engines_list_store,
+					   handle_drag_and_drop, NULL);
 
-	if (string_list_is_single_string(&gtp_engines)) {
+	if (string_list_is_single_string (&gtp_engines)) {
 	  for (item = gtp_engine_selectors; item; item = item->next) {
 	    GtkEngineSelectorData *data = ((GtkEngineSelectorData *)
 					   (item->data));
 
-	    data->callback(data->selector, data->user_data);
+	    data->callback (data->selector, data->user_data);
 
 #if GTK_2_4_OR_LATER
-	    gtk_combo_box_set_active(GTK_COMBO_BOX(data->selector), 0);
+	    gtk_combo_box_set_active (GTK_COMBO_BOX (data->selector), 0);
 #endif
 	  }
 	}
       }
 
       tree_path
-	= gtk_tree_model_get_path(GTK_TREE_MODEL(gtp_engines_list_store),
-				  &iterator);
-      gtk_tree_view_set_cursor(gtp_engines_tree_view, tree_path, NULL, FALSE);
-      gtk_tree_path_free(tree_path);
+	= gtk_tree_model_get_path (GTK_TREE_MODEL (gtp_engines_list_store),
+				   &iterator);
+      gtk_tree_view_set_cursor (gtp_engines_tree_view, tree_path, NULL, FALSE);
+      gtk_tree_path_free (tree_path);
 
-      gtk_preferences_dialog_update_gtp_engine_info(gtp_engines_tree_selection);
+      gtk_preferences_dialog_update_gtp_engine_info
+	(gtp_engines_tree_selection);
 
-      gtk_widget_destroy(GTK_WIDGET(data->window));
+      gtk_widget_destroy (GTK_WIDGET (data->window));
     }
     else {
       static const gchar *hint
@@ -1632,45 +1644,46 @@ client_deleted(GtpClient *client, GError *shutdown_reason, void *user_data)
 	     "disconnected. Please verify command line, including options, "
 	     "and consult engine's documentation if needed.");
 
-      gtk_progress_dialog_recover_parent(GTK_PROGRESS_DIALOG(progress_dialog));
+      gtk_progress_dialog_recover_parent
+	(GTK_PROGRESS_DIALOG (progress_dialog));
       data->progress_dialog = NULL;
 
-      gtk_widget_grab_focus(GTK_WIDGET(data->command_line_entry));
+      gtk_widget_grab_focus (GTK_WIDGET (data->command_line_entry));
 
       if (shutdown_reason) {
-	gtk_utils_create_message_dialog(data->window, GTK_STOCK_DIALOG_ERROR,
-					(GTK_UTILS_BUTTONS_OK
-					 | GTK_UTILS_DESTROY_ON_RESPONSE),
-					_(hint),
-					_("Lost connection to GTP Engine "
-					  "(%s)."),
-					shutdown_reason->message);
+	gtk_utils_create_message_dialog (data->window, GTK_STOCK_DIALOG_ERROR,
+					 (GTK_UTILS_BUTTONS_OK
+					  | GTK_UTILS_DESTROY_ON_RESPONSE),
+					 _(hint),
+					 _("Lost connection to GTP Engine "
+					   "(%s)."),
+					 shutdown_reason->message);
       }
     }
   }
 
-  gtk_widget_destroy(progress_dialog);
-  g_object_unref(progress_dialog);
+  gtk_widget_destroy (progress_dialog);
+  g_object_unref (progress_dialog);
 }
 
 
 static gboolean
-show_progress_dialog(GtkProgressDialog *progress_dialog, gpointer user_data)
+show_progress_dialog (GtkProgressDialog *progress_dialog, gpointer user_data)
 {
-  UNUSED(user_data);
+  UNUSED (user_data);
 
-  gtk_widget_show(GTK_WIDGET(progress_dialog));
+  gtk_widget_show (GTK_WIDGET (progress_dialog));
   return FALSE;
 }
 
 
 static gboolean
-cancel_engine_query(GtkProgressDialog *progress_dialog,
-		    GtkEngineDialogData *data)
+cancel_engine_query (GtkProgressDialog *progress_dialog,
+		     GtkEngineDialogData *data)
 {
-  UNUSED(progress_dialog);
+  UNUSED (progress_dialog);
 
-  gtk_schedule_gtp_client_deletion(data->client);
+  gtk_schedule_gtp_client_deletion (data->client);
 
   return TRUE;
 }
@@ -1678,50 +1691,53 @@ cancel_engine_query(GtkProgressDialog *progress_dialog,
 
 
 static void
-store_toggle_setting(GtkToggleButton *toggle_button, int *value_storage)
+store_toggle_setting (GtkToggleButton *toggle_button, int *value_storage)
 {
-  *value_storage = gtk_toggle_button_get_active(toggle_button);
+  *value_storage = gtk_toggle_button_get_active (toggle_button);
 }
 
 
-static void
-update_board_background_texture(GtkEntry *entry, GdkEvent *event,
-				gpointer game_index)
+static gboolean
+update_board_background_texture (GtkEntry *entry, GdkEventFocus *event,
+				 gpointer game_index)
 {
   BoardAppearance *board_appearance
-    = game_index_to_board_appearance_structure(GPOINTER_TO_INT(game_index));
-  const gchar *new_texture = gtk_entry_get_text(entry);
+    = game_index_to_board_appearance_structure (GPOINTER_TO_INT (game_index));
+  const gchar *new_texture = gtk_entry_get_text (entry);
 
-  UNUSED(event);
+  UNUSED (event);
 
   if (!board_appearance->background_texture
-      || strcmp(new_texture, board_appearance->background_texture) != 0) {
-    configuration_set_string_value(&board_appearance->background_texture,
-				   new_texture);
+      || strcmp (new_texture, board_appearance->background_texture) != 0) {
+    configuration_set_string_value (&board_appearance->background_texture,
+				    new_texture);
 
-    gtk_goban_update_appearance(index_to_game[GPOINTER_TO_INT(game_index)]);
+    gtk_goban_update_appearance (index_to_game[GPOINTER_TO_INT (game_index)]);
   }
+
+  return FALSE;
 }
 
 
 static void
-update_board_markup(GtkWidget *widget, gpointer game_index)
+update_board_markup (GtkWidget *widget, gpointer game_index)
 {
   BoardAppearance *board_appearance
-    = game_index_to_board_appearance_structure(GPOINTER_TO_INT (game_index));
-  gint selected_theme_index = gtk_utils_get_selector_active_item_index(widget);
+    = game_index_to_board_appearance_structure (GPOINTER_TO_INT (game_index));
+  gint selected_theme_index
+    = gtk_utils_get_selector_active_item_index (widget);
   MarkupThemeListItem *selected_theme
-    = markup_theme_list_get_item(&markup_themes, selected_theme_index);
+    = markup_theme_list_get_item (&markup_themes, selected_theme_index);
 
-  if (strcmp(board_appearance->markup_theme, selected_theme->name) != 0) {
+  if (strcmp (board_appearance->markup_theme, selected_theme->name) != 0) {
     board_appearance->markup_theme = selected_theme->name;
-    gtk_goban_update_appearance(index_to_game[GPOINTER_TO_INT(game_index)]);
+    gtk_goban_update_appearance (index_to_game[GPOINTER_TO_INT (game_index)]);
   }
 }
 
 
 static void
-update_board_appearance(GtkWidget *widget, gpointer value_storage)
+update_board_appearance (GtkWidget *widget, gpointer value_storage)
 {
   Game game;
 
@@ -1732,68 +1748,69 @@ update_board_appearance(GtkWidget *widget, gpointer value_storage)
 	   && value_storage < ((gpointer) (&amazons_board_appearance + 1)))
     game = GAME_AMAZONS;
   else if ((gpointer) &othello_board_appearance <= value_storage
-      && value_storage < (gpointer) (&othello_board_appearance + 1))
+	   && value_storage < (gpointer) (&othello_board_appearance + 1))
     game = GAME_OTHELLO;
   else
-    assert(0);
+    assert (0);
 
   if ((gpointer) &go_board_appearance < value_storage
       && value_storage < (gpointer) (&go_board_appearance + 1))
     game = GAME_GO;
 
-  if (GTK_IS_RANGE(widget))
-    * (double *) value_storage = gtk_range_get_value(GTK_RANGE(widget));
-  else if (GTK_IS_TOGGLE_BUTTON(widget)) {
+  if (GTK_IS_RANGE (widget))
+    * (double *) value_storage = gtk_range_get_value (GTK_RANGE (widget));
+  else if (GTK_IS_TOGGLE_BUTTON (widget)) {
     * (int *) value_storage
-      = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget));
+      = gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (widget));
   }
-  else if (GTK_IS_COLOR_BUTTON(widget)) {
+  else if (GTK_IS_COLOR_BUTTON (widget)) {
     GdkColor gdk_color;
     QuarryColor quarry_color;
 
-    gtk_color_button_get_color(GTK_COLOR_BUTTON(widget), &gdk_color);
-    gtk_utils_set_quarry_color(&quarry_color, &gdk_color);
+    gtk_color_button_get_color (GTK_COLOR_BUTTON (widget), &gdk_color);
+    gtk_utils_set_quarry_color (&quarry_color, &gdk_color);
 
-    if (QUARRY_COLORS_ARE_EQUAL(quarry_color, * (QuarryColor *) value_storage))
+    if (QUARRY_COLORS_ARE_EQUAL (quarry_color,
+				 * (QuarryColor *) value_storage))
       return;
 
     * (QuarryColor *) value_storage = quarry_color;
   }
   else
-    assert(0);
+    assert (0);
 
-  gtk_goban_update_appearance(game);
+  gtk_goban_update_appearance (game);
 }
 
 
 static void
-use_theme_default_size(UseThemeDefaultSizeData *data)
+use_theme_default_size (UseThemeDefaultSizeData *data)
 {
   BoardAppearance *board_appearance
-    = game_index_to_board_appearance_structure(data->game_index);
+    = game_index_to_board_appearance_structure (data->game_index);
   MarkupThemeListItem *current_theme
-    = markup_theme_list_find(&markup_themes, board_appearance->markup_theme);
+    = markup_theme_list_find (&markup_themes, board_appearance->markup_theme);
 
-  gtk_range_set_value(data->range, current_theme->default_size);
-  gtk_toggle_button_set_active(data->toggle_button,
-			       current_theme->size_is_relative);
+  gtk_range_set_value (data->range, current_theme->default_size);
+  gtk_toggle_button_set_active (data->toggle_button,
+				current_theme->size_is_relative);
 }
 
 
 static void
-use_theme_default_opacity(UseThemeDefaultOpacityData *data)
+use_theme_default_opacity (UseThemeDefaultOpacityData *data)
 {
   BoardAppearance *board_appearance
-    = game_index_to_board_appearance_structure(data->game_index);
+    = game_index_to_board_appearance_structure (data->game_index);
   MarkupThemeListItem *current_theme
-    = markup_theme_list_find(&markup_themes, board_appearance->markup_theme);
+    = markup_theme_list_find (&markup_themes, board_appearance->markup_theme);
 
-  gtk_range_set_value(data->range, current_theme->default_opacity);
+  gtk_range_set_value (data->range, current_theme->default_opacity);
 }
 
 
 BoardAppearance *
-game_to_board_appearance_structure(Game game)
+game_to_board_appearance_structure (Game game)
 {
   if (game == GAME_GO)
     return &go_board_appearance;
@@ -1804,12 +1821,12 @@ game_to_board_appearance_structure(Game game)
   if (game == GAME_OTHELLO)
     return &othello_board_appearance;
 
-  assert(0);
+  assert (0);
 }
 
 
 static inline BoardAppearance *
-game_index_to_board_appearance_structure(GtkGameIndex game_index)
+game_index_to_board_appearance_structure (GtkGameIndex game_index)
 {
   if (game_index == GTK_GAME_GO)
     return &go_board_appearance;
@@ -1820,47 +1837,47 @@ game_index_to_board_appearance_structure(GtkGameIndex game_index)
   if (game_index == GTK_GAME_OTHELLO)
     return &othello_board_appearance;
 
-  assert(0);
+  assert (0);
 }
 
 
 
 GtkWidget *
-gtk_preferences_create_engine_selector(GtkGameIndex game_index,
-				       const gchar *engine_name,
-				       GtkEngineChanged callback,
-				       gpointer user_data)
+gtk_preferences_create_engine_selector (GtkGameIndex game_index,
+					const gchar *engine_name,
+					GtkEngineChanged callback,
+					gpointer user_data)
 {
-  GtkEngineSelectorData *data = g_malloc(sizeof(GtkEngineSelectorData));
+  GtkEngineSelectorData *data = g_malloc (sizeof (GtkEngineSelectorData));
   GtpEngineListItem *engine_data = (engine_name
-				    ? gtp_engine_list_find(&gtp_engines,
-							   engine_name)
+				    ? gtp_engine_list_find (&gtp_engines,
+							    engine_name)
 				    : NULL);
 #if GTK_2_4_OR_LATER
 
   GtkWidget *widget
-    = gtk_combo_box_new_with_model(GTK_TREE_MODEL(gtp_engines_list_store));
-  GtkCellRenderer *cell = gtk_cell_renderer_text_new();
+    = gtk_combo_box_new_with_model (GTK_TREE_MODEL (gtp_engines_list_store));
+  GtkCellRenderer *cell = gtk_cell_renderer_text_new ();
 
-  gtk_cell_layout_pack_start(GTK_CELL_LAYOUT(widget), cell, FALSE);
-  gtk_cell_layout_add_attribute(GTK_CELL_LAYOUT(widget), cell,
-				"text", ENGINES_NAME);
+  gtk_cell_layout_pack_start (GTK_CELL_LAYOUT (widget), cell, FALSE);
+  gtk_cell_layout_add_attribute (GTK_CELL_LAYOUT (widget), cell,
+				 "text", ENGINES_NAME);
 
-  data->pixbuf_cell = gtk_cell_renderer_pixbuf_new();
-  g_object_set(data->pixbuf_cell, "xpad", QUARRY_SPACING_SMALL, NULL);
-  gtk_cell_layout_pack_start(GTK_CELL_LAYOUT(widget), data->pixbuf_cell,
-			     FALSE);
+  data->pixbuf_cell = gtk_cell_renderer_pixbuf_new ();
+  g_object_set (data->pixbuf_cell, "xpad", QUARRY_SPACING_SMALL, NULL);
+  gtk_cell_layout_pack_start (GTK_CELL_LAYOUT (widget), data->pixbuf_cell,
+			      FALSE);
 
-  gtk_cell_layout_set_cell_data_func(GTK_CELL_LAYOUT(widget),
-				     data->pixbuf_cell,
-				     set_pixbuf_cell_image,
-				     GINT_TO_POINTER(game_index), NULL);
+  gtk_cell_layout_set_cell_data_func (GTK_CELL_LAYOUT (widget),
+				      data->pixbuf_cell,
+				      set_pixbuf_cell_image,
+				      GINT_TO_POINTER (game_index), NULL);
 
 #else /* not GTK_2_4_OR_LATER */
 
-  GtkWidget *widget = gtk_option_menu_new();
+  GtkWidget *widget = gtk_option_menu_new ();
 
-  build_and_attach_menu(widget, game_index);
+  build_and_attach_menu (widget, game_index);
   data->selector_game_index = game_index;
 
 #endif /* not GTK_2_4_OR_LATER */
@@ -1868,47 +1885,47 @@ gtk_preferences_create_engine_selector(GtkGameIndex game_index,
   data->callback  = callback;
   data->selector  = widget;
   data->user_data = user_data;
-  gtp_engine_selectors = g_slist_prepend(gtp_engine_selectors, data);
+  gtp_engine_selectors = g_slist_prepend (gtp_engine_selectors, data);
 
-  gtk_preferences_set_engine_selector_selection(widget, engine_data);
+  gtk_preferences_set_engine_selector_selection (widget, engine_data);
 
-  g_signal_connect(widget, "changed",
-		   G_CALLBACK(engine_selector_changed), data);
-  g_signal_connect_swapped(widget, "destroy",
-			   G_CALLBACK(engine_selector_destroyed), data);
+  g_signal_connect (widget, "changed",
+		    G_CALLBACK (engine_selector_changed), data);
+  g_signal_connect_swapped (widget, "destroy",
+			    G_CALLBACK (engine_selector_destroyed), data);
 
   return widget;
 }
 
 
 void
-gtk_preferences_set_engine_selector_game_index(GtkWidget *selector,
-					       GtkGameIndex game_index)
+gtk_preferences_set_engine_selector_game_index (GtkWidget *selector,
+						GtkGameIndex game_index)
 {
   GSList *item;
 
-  assert(0 <= game_index && game_index < NUM_SUPPORTED_GAMES);
+  assert (0 <= game_index && game_index < NUM_SUPPORTED_GAMES);
 
   for (item = gtp_engine_selectors; ; item = item->next) {
     GtkEngineSelectorData *data = (GtkEngineSelectorData *) (item->data);
 
-    assert(item);
+    assert (item);
 
     if (data->selector == selector) {
 #if GTK_2_4_OR_LATER
-      gtk_cell_layout_set_cell_data_func(GTK_CELL_LAYOUT(selector),
-					 data->pixbuf_cell,
-					 set_pixbuf_cell_image,
-					 GINT_TO_POINTER(game_index), NULL);
+      gtk_cell_layout_set_cell_data_func (GTK_CELL_LAYOUT (selector),
+					  data->pixbuf_cell,
+					  set_pixbuf_cell_image,
+					  GINT_TO_POINTER (game_index), NULL);
 #else
       if (game_index != data->selector_game_index) {
-	g_signal_handlers_block_by_func(data->selector,
-					engine_selector_changed, data);
+	g_signal_handlers_block_by_func (data->selector,
+					 engine_selector_changed, data);
 
-	build_and_attach_menu(data->selector, game_index);
+	build_and_attach_menu (data->selector, game_index);
 
-	g_signal_handlers_unblock_by_func(data->selector,
-					  engine_selector_changed, data);
+	g_signal_handlers_unblock_by_func (data->selector,
+					   engine_selector_changed, data);
       }
 
       data->selector_game_index = game_index;
@@ -1921,13 +1938,13 @@ gtk_preferences_set_engine_selector_game_index(GtkWidget *selector,
 
 
 void
-gtk_preferences_set_engine_selector_selection(GtkWidget *selector,
-					      GtpEngineListItem *engine_data)
+gtk_preferences_set_engine_selector_selection (GtkWidget *selector,
+					       GtpEngineListItem *engine_data)
 {
   gint engine_to_select;
 
   if (engine_data) {
-    engine_to_select = string_list_get_item_index(&gtp_engines, engine_data);
+    engine_to_select = string_list_get_item_index (&gtp_engines, engine_data);
 
     if (engine_to_select == -1)
       engine_to_select = 0;
@@ -1936,34 +1953,34 @@ gtk_preferences_set_engine_selector_selection(GtkWidget *selector,
     engine_to_select = 0;
 
 #if GTK_2_4_OR_LATER
-  gtk_combo_box_set_active(GTK_COMBO_BOX(selector), engine_to_select);
+  gtk_combo_box_set_active (GTK_COMBO_BOX (selector), engine_to_select);
 #else
-  gtk_option_menu_set_history(GTK_OPTION_MENU(selector), engine_to_select);
+  gtk_option_menu_set_history (GTK_OPTION_MENU (selector), engine_to_select);
 #endif
 }
 
 
 GtpEngineListItem *
-gtk_preferences_get_engine_selector_selection(GtkWidget *selector)
+gtk_preferences_get_engine_selector_selection (GtkWidget *selector)
 {
-  gint selected_engine = gtk_utils_get_selector_active_item_index(selector);
+  gint selected_engine = gtk_utils_get_selector_active_item_index (selector);
 
-  return gtp_engine_list_get_item(&gtp_engines, selected_engine);
+  return gtp_engine_list_get_item (&gtp_engines, selected_engine);
 }
 
 
 static void
-engine_selector_changed(GtkWidget *selector, GtkEngineSelectorData *data)
+engine_selector_changed (GtkWidget *selector, GtkEngineSelectorData *data)
 {
-  data->callback(selector, data->user_data);
+  data->callback (selector, data->user_data);
 }
 
 
 static void
-engine_selector_destroyed(GtkEngineSelectorData *data)
+engine_selector_destroyed (GtkEngineSelectorData *data)
 {
-  gtp_engine_selectors = g_slist_remove(gtp_engine_selectors, data);
-  g_free(data);
+  gtp_engine_selectors = g_slist_remove (gtp_engine_selectors, data);
+  g_free (data);
 }
 
 
@@ -1971,23 +1988,23 @@ engine_selector_destroyed(GtkEngineSelectorData *data)
 
 
 static void
-set_pixbuf_cell_image(GtkCellLayout *cell_layout, GtkCellRenderer *cell,
-		      GtkTreeModel *gtp_engines_tree_model,
-		      GtkTreeIter *iterator,
-		      gpointer data)
+set_pixbuf_cell_image (GtkCellLayout *cell_layout, GtkCellRenderer *cell,
+		       GtkTreeModel *gtp_engines_tree_model,
+		       GtkTreeIter *iterator,
+		       gpointer data)
 {
   GtpEngineListItem *engine_data;
   const gchar *stock_id;
 
-  UNUSED(cell_layout);
+  UNUSED (cell_layout);
 
-  gtk_tree_model_get(gtp_engines_tree_model, iterator,
-		     ENGINES_DATA, &engine_data, -1);
-  stock_id = (gtk_games_engine_supports_game(engine_data,
-					     GPOINTER_TO_INT(data))
+  gtk_tree_model_get (gtp_engines_tree_model, iterator,
+		      ENGINES_DATA, &engine_data, -1);
+  stock_id = (gtk_games_engine_supports_game (engine_data,
+					      GPOINTER_TO_INT (data))
 	      ? GTK_STOCK_YES : GTK_STOCK_NO);
 
-  g_object_set(cell, "stock-id", stock_id, NULL);
+  g_object_set (cell, "stock-id", stock_id, NULL);
 }
 
 
@@ -1995,7 +2012,7 @@ set_pixbuf_cell_image(GtkCellLayout *cell_layout, GtkCellRenderer *cell,
 
 
 static void
-prepare_to_rebuild_menus(void)
+prepare_to_rebuild_menus (void)
 {
   GSList *item;
 
@@ -2003,61 +2020,61 @@ prepare_to_rebuild_menus(void)
     GtkEngineSelectorData *data = (GtkEngineSelectorData *) (item->data);
 
     data->last_selection
-      = gtk_preferences_get_engine_selector_selection(data->selector);
+      = gtk_preferences_get_engine_selector_selection (data->selector);
   }
 }
 
 
 static void
-rebuild_all_menus(void)
+rebuild_all_menus (void)
 {
   GSList *item;
 
   for (item = gtp_engine_selectors; item; item = item->next) {
     GtkEngineSelectorData *data = (GtkEngineSelectorData *) (item->data);
 
-    g_signal_handlers_block_by_func(data->selector,
-				    engine_selector_changed, data);
+    g_signal_handlers_block_by_func (data->selector,
+				     engine_selector_changed, data);
 
-    build_and_attach_menu(data->selector, data->selector_game_index);
-    gtk_preferences_set_engine_selector_selection(data->selector,
-						  data->last_selection);
+    build_and_attach_menu (data->selector, data->selector_game_index);
+    gtk_preferences_set_engine_selector_selection (data->selector,
+						   data->last_selection);
 
-    g_signal_handlers_unblock_by_func(data->selector,
-				      engine_selector_changed, data);
+    g_signal_handlers_unblock_by_func (data->selector,
+				       engine_selector_changed, data);
   }
 }
 
 
 static void
-build_and_attach_menu(GtkWidget *option_menu, GtkGameIndex game_index)
+build_and_attach_menu (GtkWidget *option_menu, GtkGameIndex game_index)
 {
-  GtkWidget *menu = gtk_menu_new();
+  GtkWidget *menu = gtk_menu_new ();
   GtpEngineListItem *engine_data;
 
   for (engine_data = gtp_engines.first; engine_data;
        engine_data = engine_data->next) {
-    gboolean engine_supports_game = gtk_games_engine_supports_game(engine_data,
-								   game_index);
-    GtkWidget *menu_item = gtk_menu_item_new();
+    gboolean engine_supports_game
+      = gtk_games_engine_supports_game (engine_data, game_index);
+    GtkWidget *menu_item = gtk_menu_item_new ();
     GtkWidget *icon;
     GtkWidget *hbox;
 
-    icon = gtk_image_new_from_stock((engine_supports_game
-				     ? GTK_STOCK_YES : GTK_STOCK_NO),
-				    GTK_ICON_SIZE_MENU);
+    icon = gtk_image_new_from_stock ((engine_supports_game
+				      ? GTK_STOCK_YES : GTK_STOCK_NO),
+				     GTK_ICON_SIZE_MENU);
 
-    hbox = gtk_utils_pack_in_box(GTK_TYPE_HBOX, QUARRY_SPACING_SMALL,
-				 gtk_label_new(engine_data->screen_name),
-				 GTK_UTILS_FILL,
-				 icon, GTK_UTILS_FILL, NULL);
+    hbox = gtk_utils_pack_in_box (GTK_TYPE_HBOX, QUARRY_SPACING_SMALL,
+				  gtk_label_new (engine_data->screen_name),
+				  GTK_UTILS_FILL,
+				  icon, GTK_UTILS_FILL, NULL);
 
-    gtk_container_add(GTK_CONTAINER(menu_item), hbox);
-    gtk_menu_shell_append(GTK_MENU_SHELL(menu), menu_item);
+    gtk_container_add (GTK_CONTAINER (menu_item), hbox);
+    gtk_menu_shell_append (GTK_MENU_SHELL (menu), menu_item);
   }
 
-  gtk_widget_show_all(menu);
-  gtk_option_menu_set_menu(GTK_OPTION_MENU(option_menu), menu);
+  gtk_widget_show_all (menu);
+  gtk_option_menu_set_menu (GTK_OPTION_MENU (option_menu), menu);
 }
 
 
@@ -2068,10 +2085,10 @@ build_and_attach_menu(GtkWidget *option_menu, GtkGameIndex game_index)
 
 GtkEngineChain *
 gtk_preferences_create_engines_instantiation_chain
-		(GtkWindow *parent_window,
-		 GtkEnginesInstantiated callback, gpointer user_data)
+  (GtkWindow *parent_window, GtkEnginesInstantiated callback,
+   gpointer user_data)
 {
-  GtkEngineChain *engine_chain = g_malloc(sizeof(GtkEngineChain));
+  GtkEngineChain *engine_chain = g_malloc (sizeof (GtkEngineChain));
 
   engine_chain->parent_window = parent_window;
 
@@ -2086,50 +2103,51 @@ gtk_preferences_create_engines_instantiation_chain
 
 
 void
-gtk_preferences_instantiate_selected_engine(GtkEngineChain *engine_chain,
-					    GtkWidget *selector,
-					    GtpClient **gtp_client)
+gtk_preferences_instantiate_selected_engine (GtkEngineChain *engine_chain,
+					     GtkWidget *selector,
+					     GtpClient **gtp_client)
 {
-  assert(engine_chain);
-  assert(selector);
-  assert(gtp_client);
+  assert (engine_chain);
+  assert (selector);
+  assert (gtp_client);
 
   if (!engine_chain->have_error) {
     GtpEngineListItem *engine_data
-      = gtk_preferences_get_engine_selector_selection(selector);
+      = gtk_preferences_get_engine_selector_selection (selector);
     GError *error = NULL;
     GtkChainEngineData *chain_engine_data
-      = g_malloc(sizeof(GtkChainEngineData));
+      = g_malloc (sizeof (GtkChainEngineData));
 
-    assert(engine_data);
+    assert (engine_data);
 
     chain_engine_data->engine_data = engine_data;
     chain_engine_data->engine_chain = engine_chain;
 
-    *gtp_client = gtk_create_gtp_client(engine_data->command_line,
-					((GtpClientInitializedCallback)
-					 chain_client_initialized),
-					NULL, chain_engine_data, &error);
+    *gtp_client = gtk_create_gtp_client (engine_data->command_line,
+					 ((GtpClientInitializedCallback)
+					  chain_client_initialized),
+					 NULL, chain_engine_data, &error);
 
     if (*gtp_client) {
-      gtp_client_setup_connection(*gtp_client);
+      gtp_client_setup_connection (*gtp_client);
 
       engine_chain->chain_engine_datum
-	= g_slist_prepend(engine_chain->chain_engine_datum, chain_engine_data);
+	= g_slist_prepend (engine_chain->chain_engine_datum,
+			   chain_engine_data);
     }
     else {
-      g_free(chain_engine_data);
+      g_free (chain_engine_data);
 
-      gtk_utils_create_message_dialog(engine_chain->parent_window,
-				      GTK_STOCK_DIALOG_ERROR,
-				      (GTK_UTILS_BUTTONS_OK
-				       | GTK_UTILS_DESTROY_ON_RESPONSE),
-				      _("Perhaps engine's binary has been "
-					"deleted or changed. You will "
-					"probably need to alter engine's "
-					"command line in preferences dialog"),
-				      error->message);
-      g_error_free(error);
+      gtk_utils_create_message_dialog (engine_chain->parent_window,
+				       GTK_STOCK_DIALOG_ERROR,
+				       (GTK_UTILS_BUTTONS_OK
+					| GTK_UTILS_DESTROY_ON_RESPONSE),
+				       _("Perhaps engine's binary has been "
+					 "deleted or changed. You will "
+					 "probably need to alter engine's "
+					 "command line in preferences dialog"),
+				       error->message);
+      g_error_free (error);
 
       engine_chain->have_error = TRUE;
     }
@@ -2138,71 +2156,72 @@ gtk_preferences_instantiate_selected_engine(GtkEngineChain *engine_chain,
 
 
 void
-gtk_preferences_do_instantiate_engines(GtkEngineChain *engine_chain)
+gtk_preferences_do_instantiate_engines (GtkEngineChain *engine_chain)
 {
   if (engine_chain->chain_engine_datum != NULL) {
   }
   else {
     if (engine_chain->instantiation_callback) {
-      engine_chain->instantiation_callback(ENGINES_INSTANTIATED,
-					   engine_chain->user_data);
+      engine_chain->instantiation_callback (ENGINES_INSTANTIATED,
+					    engine_chain->user_data);
     }
 
-    g_free(engine_chain);
+    g_free (engine_chain);
   }
 }
 
 
 static void
-chain_client_initialized(GtpClient *client, void *user_data)
+chain_client_initialized (GtpClient *client, void *user_data)
 {
   GtkChainEngineData *chain_engine_data = (GtkChainEngineData *) user_data;
   GtkEngineChain *engine_chain = chain_engine_data->engine_chain;
   GtpEngineListItem *engine_data = chain_engine_data->engine_data;
 
-  configuration_set_string_value(&engine_data->name, client->engine_name);
-  configuration_set_string_value(&engine_data->version,
-				 client->engine_version);
+  configuration_set_string_value (&engine_data->name, client->engine_name);
+  configuration_set_string_value (&engine_data->version,
+				  client->engine_version);
 
-  update_engine_screen_name(engine_data);
+  update_engine_screen_name (engine_data);
 
-  configuration_set_string_list_value(&engine_data->supported_games,
-				      &client->supported_games);
+  configuration_set_string_list_value (&engine_data->supported_games,
+				       &client->supported_games);
 
   engine_chain->chain_engine_datum
-    = g_slist_remove(engine_chain->chain_engine_datum, chain_engine_data);
-  g_free(chain_engine_data);
+    = g_slist_remove (engine_chain->chain_engine_datum, chain_engine_data);
+  g_free (chain_engine_data);
 
   if (engine_chain->chain_engine_datum == NULL) {
     if (engine_chain->instantiation_callback) {
-      engine_chain->instantiation_callback(ENGINES_INSTANTIATED,
-					   engine_chain->user_data);
+      engine_chain->instantiation_callback (ENGINES_INSTANTIATED,
+					    engine_chain->user_data);
     }
 
-    g_free(engine_chain);
+    g_free (engine_chain);
   }
 }
 
 
 static void
-update_engine_screen_name(GtpEngineListItem *engine_data)
+update_engine_screen_name (GtpEngineListItem *engine_data)
 {
-  char *new_screen_name = utils_special_printf(engine_data->screen_name_format,
-					       'n', engine_data->name,
-					       'v', engine_data->version, 0);
+  char *new_screen_name
+    = utils_special_printf (engine_data->screen_name_format,
+			    'n', engine_data->name,
+			    'v', engine_data->version, 0);
 
-  if (strcmp(engine_data->screen_name, new_screen_name) != 0) {
+  if (strcmp (engine_data->screen_name, new_screen_name) != 0) {
     GtkTreeIter iterator;
 
-    utils_free(engine_data->screen_name);
+    utils_free (engine_data->screen_name);
     engine_data->screen_name = new_screen_name;
 
-    find_gtp_tree_model_iterator_by_engines_data(engine_data, &iterator);
-    gtk_list_store_set(gtp_engines_list_store, &iterator,
-		       ENGINES_NAME, new_screen_name, -1);
+    find_gtp_tree_model_iterator_by_engines_data (engine_data, &iterator);
+    gtk_list_store_set (gtp_engines_list_store, &iterator,
+			ENGINES_NAME, new_screen_name, -1);
   }
   else
-    utils_free(new_screen_name);
+    utils_free (new_screen_name);
 }
 
 
@@ -2212,14 +2231,14 @@ find_gtp_tree_model_iterator_by_engines_data
 		 GtkTreeIter *iterator)
 {
   GtkTreeModel *gtp_engines_tree_model
-    = GTK_TREE_MODEL(gtp_engines_list_store);
+    = GTK_TREE_MODEL (gtp_engines_list_store);
   GtpEngineListItem *this_engine_data;
 
-  gtk_tree_model_get_iter_first(gtp_engines_tree_model, iterator);
-  while (gtk_tree_model_get(gtp_engines_tree_model, iterator,
-			    ENGINES_DATA, &this_engine_data, -1),
+  gtk_tree_model_get_iter_first (gtp_engines_tree_model, iterator);
+  while (gtk_tree_model_get (gtp_engines_tree_model, iterator,
+			     ENGINES_DATA, &this_engine_data, -1),
 	 this_engine_data != engine_data)
-    gtk_tree_model_iter_next(gtp_engines_tree_model, iterator);
+    gtk_tree_model_iter_next (gtp_engines_tree_model, iterator);
 }
 
 

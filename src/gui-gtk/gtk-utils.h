@@ -24,6 +24,7 @@
 #define QUARRY_GTK_UTILS_H
 
 
+#include "gtk-freezable-spin-button.h"
 #include "utils.h"
 #include "quarry.h"
 
@@ -62,10 +63,10 @@
 #define gdk_draw_pixbuf(drawable, gc, pixbuf,				\
 			src_x, src_y, dest_x, dest_y, width, height,	\
 			dither, x_dither, y_dither)			\
-  gdk_pixbuf_render_to_drawable((pixbuf), (drawable), (gc),		\
-				(src_x), (src_y), (dest_x), (dest_y),	\
-				(width), (height),			\
-				(dither), (x_dither), (y_dither))
+  gdk_pixbuf_render_to_drawable ((pixbuf), (drawable), (gc),		\
+				 (src_x), (src_y), (dest_x), (dest_y),	\
+				 (width), (height),			\
+				 (dither), (x_dither), (y_dither))
 
 /* Certain functions are not present in GTK+ 2.0 */
 #define gtk_window_set_skip_taskbar_hint(window, setting)
@@ -113,12 +114,12 @@ typedef enum {
 
 
 /* This is the same as the prototype of the `focus-out-event' handler
- * since this callback basically does the same job.  Note that
+ * since this callback should basically do the same job.  Note that
  * `dummy_event' will be `NULL'.
  */
-typedef void (* GtkUtilsBrowsingDoneCallback) (GtkEntry *entry,
-					       GdkEvent *dummy_event,
-					       gpointer user_data);
+typedef gboolean (* GtkUtilsBrowsingDoneCallback) (GtkEntry *entry,
+						   GdkEventFocus *dummy_event,
+						   gpointer user_data);
 
 
 #define GTK_UTILS_EXPAND		(1 << 16)
@@ -130,10 +131,10 @@ typedef void (* GtkUtilsBrowsingDoneCallback) (GtkEntry *entry,
 #define GTK_UTILS_PACK_PADDING_MASK	0xFFFF
 
 
-void		gtk_utils_add_similar_bindings(GtkBindingSet *binding_set,
-					       const gchar *signal_name,
-					       GtkUtilsBindingInfo *bindings,
-					       gint num_bindings);
+void		gtk_utils_add_similar_bindings (GtkBindingSet *binding_set,
+						const gchar *signal_name,
+						GtkUtilsBindingInfo *bindings,
+						gint num_bindings);
 
 
 #if GTK_2_2_OR_LATER
@@ -148,92 +149,105 @@ void		gtk_utils_make_window_only_horizontally_resizable
 #endif
 
 
-void		gtk_utils_standardize_dialog(GtkDialog *dialog,
+void		gtk_utils_standardize_dialog (GtkDialog *dialog,
 					      GtkWidget *contents);
 GtkWidget *	gtk_utils_create_message_dialog
 		  (GtkWindow *parent, const gchar *icon_stock_id,
 		   GtkUtilsMessageDialogFlags flags,
 		   const gchar *hint, const gchar *message_format_string, ...);
-void		gtk_utils_workaround_focus_bug(GtkWindow *window);
+void		gtk_utils_workaround_focus_bug (GtkWindow *window);
 
 void		gtk_utils_add_file_selection_response_handlers
 		  (GtkWidget *file_selection, gboolean saving_file,
 		   GCallback response_callback, gpointer user_data);
 
-GtkWidget *	gtk_utils_create_titled_page(GtkWidget *contents,
-					     const gchar *icon_stock_id,
-					     const gchar *title);
+GtkWidget *	gtk_utils_create_titled_page (GtkWidget *contents,
+					      const gchar *icon_stock_id,
+					      const gchar *title);
 
-GtkWidget *	gtk_utils_pack_in_box(GType box_type, gint spacing, ...);
-GtkWidget *	gtk_utils_align_widget(GtkWidget *widget,
-				       gfloat x_alignment, gfloat y_alignment);
-GtkWidget *	gtk_utils_sink_widget(GtkWidget *widget);
+GtkWidget *	gtk_utils_pack_in_box (GType box_type, gint spacing, ...);
+GtkWidget *	gtk_utils_align_widget (GtkWidget *widget,
+					gfloat x_alignment,
+					gfloat y_alignment);
+GtkWidget *	gtk_utils_sink_widget (GtkWidget *widget);
 GtkWidget *	gtk_utils_make_widget_scrollable
 		  (GtkWidget *widget,
 		   GtkPolicyType hscrollbar_policy,
 		   GtkPolicyType vscrollbar_policy);
 
-GtkWidget *	gtk_utils_create_left_aligned_label(const gchar *label_text);
-GtkWidget *	gtk_utils_create_mnemonic_label(const gchar *label_text,
-						GtkWidget *mnemonic_widget);
-GtkWidget *	gtk_utils_create_entry(const gchar *text,
-				       GtkUtilsEntryActivationMode mode);
+GtkWidget *	gtk_utils_create_left_aligned_label (const gchar *label_text);
+GtkWidget *	gtk_utils_create_mnemonic_label (const gchar *label_text,
+						 GtkWidget *mnemonic_widget);
+GtkWidget *	gtk_utils_create_entry (const gchar *text,
+					GtkUtilsEntryActivationMode mode);
 GtkWidget *	gtk_utils_create_browse_button
 		  (gboolean with_text,
 		   GtkWidget *associated_entry, gboolean is_command_line_entry,
 		   const gchar *browsing_dialog_caption,
 		   GtkUtilsBrowsingDoneCallback callback, gpointer user_data);
-GtkWidget *	gtk_utils_create_spin_button(GtkAdjustment *adjustment,
-					     gdouble climb_rate,
-					     guint num_digits,
-					     gboolean snap_to_ticks);
-GtkWidget *	gtk_utils_create_time_spin_button(GtkAdjustment *adjustment,
-						  gdouble climb_rate);
-GtkWidget *	gtk_utils_create_selector(const gchar **items, gint num_items,
-					  gint selected_item);
+GtkWidget *	gtk_utils_create_spin_button (GtkAdjustment *adjustment,
+					      gdouble climb_rate,
+					      guint num_digits,
+					      gboolean snap_to_ticks);
+GtkWidget *	gtk_utils_create_freezable_spin_button
+		  (GtkAdjustment *adjustment, gdouble climb_rate,
+		   guint num_digits, gboolean snap_to_ticks);
+void		gtk_utils_convert_to_time_spin_button
+		  (GtkSpinButton *spin_button);
+GtkWidget *	gtk_utils_create_time_spin_button (GtkAdjustment *adjustment,
+						   gdouble climb_rate);
+GtkWidget *	gtk_utils_create_selector (const gchar **items, gint num_items,
+					   gint selected_item);
 GtkWidget *	gtk_utils_create_selector_from_string_list
 		  (void *abstract_list, const gchar *selected_item);
-GtkWidget *	gtk_utils_create_invisible_notebook(void);
+GtkWidget *	gtk_utils_create_invisible_notebook (void);
 
-void		gtk_utils_create_radio_chain(GtkWidget **radio_buttons,
-					     const gchar **label_texts,
-					     gint num_radio_buttons);
-GtkSizeGroup *	gtk_utils_create_size_group(GtkSizeGroupMode mode, ...);
-GtkSizeGroup *  gtk_utils_align_left_widgets(GtkContainer *container,
-					     GtkSizeGroup *size_group);
+void		gtk_utils_create_radio_chain (GtkWidget **radio_buttons,
+					      const gchar **label_texts,
+					      gint num_radio_buttons);
+GtkSizeGroup *	gtk_utils_create_size_group (GtkSizeGroupMode mode, ...);
+GtkSizeGroup *  gtk_utils_align_left_widgets (GtkContainer *container,
+					      GtkSizeGroup *size_group);
+
+void		gtk_utils_set_text_buffer_text (GtkTextBuffer *text_buffer,
+						const gchar *text);
 
 
 void		gtk_utils_set_sensitive_on_toggle
 		  (GtkToggleButton *toggle_button, GtkWidget *widget);
-void		gtk_utils_set_sensitive_on_input(GtkEntry *entry,
-						 GtkWidget *widget);
+void		gtk_utils_set_sensitive_on_input (GtkEntry *entry,
+						  GtkWidget *widget);
 
-void		gtk_utils_set_widgets_visible(gboolean visible, ...);
-void		gtk_utils_set_menu_items_sensitive(GtkItemFactory *item_factory,
-						   gboolean are_sensitive, ...);
+void		gtk_utils_freeze_on_empty_input
+		  (GtkFreezableSpinButton *freezable_spin_button);
 
 
-void		gtk_utils_set_gdk_color(GdkColor *gdk_color,
-					QuarryColor quarry_color);
-void		gtk_utils_set_quarry_color(QuarryColor *quarry_color,
-					   const GdkColor *gdk_color);
+void		gtk_utils_set_widgets_visible (gboolean visible, ...);
+void		gtk_utils_set_menu_items_sensitive
+		  (GtkItemFactory *item_factory, gboolean are_sensitive, ...);
+
+
+void		gtk_utils_set_gdk_color (GdkColor *gdk_color,
+					 QuarryColor quarry_color);
+void		gtk_utils_set_quarry_color (QuarryColor *quarry_color,
+					    const GdkColor *gdk_color);
 
 
 #if GTK_2_4_OR_LATER
 
 #define gtk_utils_get_selector_active_item_index(selector)		\
-  gtk_combo_box_get_active(GTK_COMBO_BOX(selector))
+  gtk_combo_box_get_active (GTK_COMBO_BOX (selector))
 
 #define gtk_utils_set_selector_active_item_index(selector, index)	\
-  gtk_combo_box_set_active(GTK_COMBO_BOX(selector), (index))
+  gtk_combo_box_set_active (GTK_COMBO_BOX (selector), (index))
 
 #else
 
 #define gtk_utils_get_selector_active_item_index(selector)		\
-  gtk_option_menu_get_history(GTK_OPTION_MENU(selector))
+  gtk_option_menu_get_history (GTK_OPTION_MENU (selector))
 
 #define gtk_utils_set_selector_active_item_index(selector, index)	\
-  gtk_option_menu_set_history(GTK_OPTION_MENU(selector), (index))
+  gtk_option_menu_set_history (GTK_OPTION_MENU (selector), (index))
 
 #endif
 
