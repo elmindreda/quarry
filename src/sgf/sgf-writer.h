@@ -28,6 +28,7 @@
 #include "utils.h"
 #include "quarry.h"
 
+#include <iconv.h>
 #include <stdio.h>
 
 
@@ -35,12 +36,13 @@
 #define FILL_BREAK_POINT	(FILL_COLUMN - 15)
 
 
-typedef struct _SgfWriting	SgfWritingData;
+typedef struct _SgfWritingData	SgfWritingData;
 
-struct _SgfWriting {
+struct _SgfWritingData {
   BufferedWriter   writer;
 
   SgfGameTree	  *tree;
+  iconv_t	   utf8_to_tree_encoding;
   void (* do_write_move) (SgfWritingData *data, SgfNode *node);
 };
 

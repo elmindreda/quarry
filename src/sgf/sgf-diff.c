@@ -59,7 +59,7 @@ main(int argc, char *argv[])
     sgf_collection_delete(second_collection);
 
     if (difference) {
-      sgf_write_file(NULL, difference);
+      sgf_write_file(NULL, difference, 1);
       sgf_collection_delete(difference);
     }
   }

@@ -611,7 +611,7 @@ gtk_goban_window_save(GtkGobanWindow *goban_window, guint callback_action)
     gtk_dialog_set_default_response(GTK_DIALOG(warning_dialog),
 				    GTK_RESPONSE_OK);
     if (gtk_dialog_run(GTK_DIALOG(warning_dialog)) == GTK_RESPONSE_OK)
-      sgf_write_file(goban_window->filename, goban_window->sgf_collection);
+      sgf_write_file(goban_window->filename, goban_window->sgf_collection, 0);
 
     gtk_widget_destroy(warning_dialog);
   }
@@ -646,7 +646,7 @@ save_file_as_response(GtkFileSelection *dialog, gint response_id,
   if (response_id == GTK_RESPONSE_OK) {
     const gchar *filename = gtk_file_selection_get_filename(dialog);
 
-    if (sgf_write_file(filename, goban_window->sgf_collection)) {
+    if (sgf_write_file(filename, goban_window->sgf_collection, 0)) {
       g_free(goban_window->filename);
       goban_window->filename = g_strdup(filename);
     }

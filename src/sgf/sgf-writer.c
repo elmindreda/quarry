@@ -28,10 +28,13 @@
 
 #include <assert.h>
 #include <ctype.h>
+#include <iconv.h>
 #include <stdio.h>
+#include <string.h>
 
 
-static void	    write_game_tree(SgfWritingData *data, SgfGameTree *tree);
+static void	    write_game_tree(SgfWritingData *data, SgfGameTree *tree,
+				    int force_utf8);
 static void	    write_node_sequence(SgfWritingData *data, SgfNode *node);
 
 
@@ -53,14 +56,14 @@ static int	    do_write_text(SgfWritingData *data, const char *text,
  * FIXME: add proper comment and actually write this function.
  */
 int
-sgf_write_file(const char *filename, SgfCollection *collection)
+sgf_write_file(const char *filename, SgfCollection *collection, int force_utf8)
 {
   SgfWritingData data;
 
   if (buffered_writer_init(&data.writer, filename, 0x4000)) {
     for (data.tree = collection->first_tree; data.tree;
 	 data.tree = data.tree->next) {
-      write_game_tree(&data, data.tree);
+      write_game_tree(&data, data.tree, 1||force_utf8);
       if (data.tree->next)
 	buffered_writer_add_newline(&data.writer);
 
@@ -77,7 +80,7 @@ sgf_write_file(const char *filename, SgfCollection *collection)
 
 
 static void
-write_game_tree(SgfWritingData *data, SgfGameTree *tree)
+write_game_tree(SgfWritingData *data, SgfGameTree *tree, int force_utf8)
 {
   SgfNode *root = tree->root;
   const BoardPositionList *root_black_stones;
@@ -86,10 +89,15 @@ write_game_tree(SgfWritingData *data, SgfGameTree *tree)
   BoardPositionList *white_stones;
   int default_setup_hidden = 0;
 
-  buffered_writer_printf(&data->writer,
-			 ("(;GM[%d]FF[4]\nAP[" PACKAGE_NAME
-			  ":" PACKAGE_VERSION "]\n"),
-			 tree->game);
+  buffered_writer_printf(&data->writer, "(;GM[%d]FF[4]\n", tree->game);
+
+  if (force_utf8 || tree->char_set) {
+    buffered_writer_printf(&data->writer, "CA[%s]\n",
+			   (force_utf8 ? "UTF-8" : tree->char_set));
+  }
+
+  buffered_writer_cat_string(&data->writer,
+			     "AP[" PACKAGE_NAME ":" PACKAGE_VERSION "]\n");
 
   if (tree->board_width == tree->board_height)
     buffered_writer_printf(&data->writer, "SZ[%d]\n", tree->board_width);
@@ -132,7 +140,19 @@ write_game_tree(SgfWritingData *data, SgfGameTree *tree)
   else
     assert(0);
 
+  if (force_utf8 || (tree->char_set && strcmp(tree->char_set, "UTF-8") == 0))
+    data->utf8_to_tree_encoding = NULL;
+  else {
+    data->utf8_to_tree_encoding = iconv_open((tree->char_set
+					      ? tree->char_set : "ISO-8859-1"),
+					     "UTF-8");
+    assert(data->utf8_to_tree_encoding != (iconv_t) (-1));
+  }
+
   write_node_sequence(data, root);
+
+  if (data->utf8_to_tree_encoding)
+    iconv_close(data->utf8_to_tree_encoding);
 
   if (data->writer.column > 0)
     buffered_writer_add_newline(&data->writer);
@@ -331,21 +351,33 @@ static int
 do_write_text(SgfWritingData *data, const char *text, int simple)
 {
   const char *lookahead;
+  const char *written_up_to;
   int columns_left = FILL_COLUMN - data->writer.column;
   int multi_line_value = 0;
 
+  buffered_writer_set_iconv_handle(&data->writer, data->utf8_to_tree_encoding);
+
   for (lookahead = text; ; lookahead++) {
+    if (!IS_UTF8_STARTER(*lookahead))
+      continue;
+
     columns_left--;
     if (*lookahead == ']' || *lookahead == '\\')
       columns_left--;
 
     if ((*lookahead == ' ' && (columns_left >= 0 || simple))
 	|| *lookahead == '\n' || ! *lookahead) {
-      while (text < lookahead) {
-	if (*text == ']' || *text == '\\')
+      for (written_up_to = text; text < lookahead; text++) {
+	if (*text == ']' || *text == '\\') {
+	  buffered_writer_cat_as_string(&data->writer,
+					written_up_to, text - written_up_to);
+	  written_up_to = text;
 	  buffered_writer_add_character(&data->writer, '\\');
-	buffered_writer_add_character(&data->writer, *text++);
+	}
       }
+
+      buffered_writer_cat_as_string(&data->writer,
+				    written_up_to, text - written_up_to);
 
       if (*lookahead == '\n') {
 	buffered_writer_add_newline(&data->writer);
@@ -383,11 +415,17 @@ do_write_text(SgfWritingData *data, const char *text, int simple)
 	    line_limit = lookahead - 1;
 	}
 
-	while (text < line_limit) {
-	  if (*text == ']' || *text == '\\')
+	for (written_up_to = text; text < line_limit; text++) {
+	  if (*text == ']' || *text == '\\') {
+	    buffered_writer_cat_as_string(&data->writer,
+					  written_up_to, text - written_up_to);
+	    written_up_to = text;
 	    buffered_writer_add_character(&data->writer, '\\');
-	  buffered_writer_add_character(&data->writer, *text++);
+	  }
 	}
+
+	buffered_writer_cat_as_string(&data->writer,
+				      written_up_to, text - written_up_to);
 
 	buffered_writer_add_character(&data->writer, '\\');
 	columns_left--;
@@ -398,6 +436,8 @@ do_write_text(SgfWritingData *data, const char *text, int simple)
       multi_line_value = 1;
     }
   }
+
+  buffered_writer_set_iconv_handle(&data->writer, NULL);
 
   return multi_line_value;
 }
@@ -421,17 +461,28 @@ void
 sgf_write_fake_simple_text(SgfWritingData *data, SgfValue value)
 {
   const char *text;
+  const char *written_up_to;
 
   buffered_writer_add_character(&data->writer, '[');
 
-  for (text = value.text; *text; text++) {
-    if (*text == '\\' || *text == ']')
+  buffered_writer_set_iconv_handle(&data->writer, data->utf8_to_tree_encoding);
+
+  for (text = value.text, written_up_to = text; *text; text++) {
+    if (*text == '\\' || *text == ']') {
+      buffered_writer_cat_as_string(&data->writer,
+				    written_up_to, text - written_up_to);
+      written_up_to = text;
+
       buffered_writer_add_character(&data->writer, '\\');
-    buffered_writer_add_character(&data->writer, *text);
+    }
   }
 
-  buffered_writer_add_character(&data->writer, ']');
+  buffered_writer_cat_as_string(&data->writer, written_up_to,
+				text - written_up_to);
 
+  buffered_writer_set_iconv_handle(&data->writer, NULL);
+
+  buffered_writer_add_character(&data->writer, ']');
   buffered_writer_add_newline(&data->writer);
 }
 
@@ -595,35 +646,40 @@ sgf_write_unknown(SgfWritingData *data, SgfValue value)
   while (*text != '[');
 
   do {
+    const char *lookahead;
+
     buffered_writer_add_character(&data->writer, '[');
 
-    while (*++text != ']') {
-      if (*text == '\\')
-	buffered_writer_add_character(&data->writer, *text++);
-
-      if (*text != '\n')
-	buffered_writer_add_character(&data->writer, *text);
-      else {
-	buffered_writer_add_newline(&data->writer);
+    for (lookahead = text; *++lookahead !=']';) {
+      if (*lookahead == '\\')
+	lookahead++;
+      if (*lookahead == '\n')
 	need_newline = 1;
-      }
     }
 
+    buffered_writer_set_iconv_handle(&data->writer,
+				     data->utf8_to_tree_encoding);
+    buffered_writer_cat_as_string(&data->writer, text, lookahead - text);
+    buffered_writer_set_iconv_handle(&data->writer, NULL);
+
     buffered_writer_add_character(&data->writer, ']');
-    if (*++text) {
-      const char *lookahead;
+
+    text = lookahead + 1;
+    if (*text) {
       int columns_left = FILL_COLUMN - data->writer.column - 1;
 
       for (lookahead = text + 1; *lookahead != ']' && *lookahead != '\n';
 	   lookahead++) {
-	if (*lookahead == '\\') {
-	  if (--columns_left >= 0 && *++lookahead == '\n')
-	    break;
-	}
+	if (IS_UTF8_STARTER(*lookahead)) {
+	  if (*lookahead == '\\') {
+	    if (--columns_left >= 0 && *++lookahead == '\n')
+	      break;
+	  }
 
-	if (--columns_left < 0) {
-	  buffered_writer_add_newline(&data->writer);
-	  break;
+	  if (--columns_left < 0) {
+	    buffered_writer_add_newline(&data->writer);
+	    break;
+	  }
 	}
       }
 
