@@ -1,4 +1,29 @@
+2004-10-03  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* gui-gtk/gtk-goban.c (gtk_goban_set_parameters): Reset `grid',
+	`goban_markup', `sgf_markup' and `sgf_labels'.  Free `sgf_labels'
+	strings if needed.
+	(gtk_goban_expose): Render SGF labels.
+	(gtk_goban_finalize): Free `sgf_labels' strings if needed.
+	(gtk_goban_update): New argument `sgf_label_list'.  Use
+	grid_copy() instead of memcpy().
+
+	* gui-gtk/gtk-goban.h (KEEP_SGF_LABELS): New macro.
+
+	* board/board.c (DO_FILL_GRID, DO_COPY_GRID): New macros.
+	(board_fill_grid, board_fill_int_grid): Remove functions.
+	(grid_fill, int_grid_fill, pointer_grid_fill): New functions,
+	inherit removed functions' code.
+	(grid_copy, int_grid_copy, pointer_grid_copy): New functions.
+	* board/board.h (uint_grid_fill, board_fill_grid)
+	(board_fill_int_grid, board_fill_pointer_grid, uint_grid_copy):
+	New macros.
+
 2004-09-13  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* gui-gtk/gtk-utils.c (gtk_utils_workaround_focus_bug): New
+	function.
+	* gui-gtk/gtk-assistant.c (gtk_assistant_response): Use it.
 
 	* gui-gtk/gtk-goban-window.c (USER_IS_TO_PLAY): New macro.
 	(gtk_goban_window_enter_game_mode): Use USER_IS_TO_PLAY() instead
