@@ -1,7 +1,7 @@
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 # This file is part of Quarry                                     #
 #                                                                 #
-# Copyright (C) 2003, 2004 Paul Pogonyshev.                       #
+# Copyright (C) 2003, 2004, 2005 Paul Pogonyshev.                 #
 #                                                                 #
 # This program is free software; you can redistribute it and/or   #
 # modify it under the terms of the GNU General Public License as  #
@@ -98,8 +98,36 @@ include_list $top_srcdir$/src/gui-utils/common-configuration-values.list
 
 
 values  - gtk_ui_section_values {
+  "Use GtkFileChooser if possible" use_gtk_file_chooser		boolean
+
   "Show main toolbar"		show_main_toolbar		boolean
+  "Main toolbar style"		main_toolbar_style		enumeration
+								new
+    TOOLBAR_STYLE_DEFAULT	"Default" "Desktop" "Desktop default"
+				"System" "System default"
+    TOOLBAR_STYLE_BOTH		"Both" "Both vertically" "Vertically"
+				"Text below icons"
+    TOOLBAR_STYLE_BOTH_HORIZONTALLY  "Both horizontally" "Horizontally"
+				"Text besides icons"
+				"Text besides important icons"
+    TOOLBAR_STYLE_ICONS_ONLY	"Icons only" "Icons"
+    TOOLBAR_STYLE_TEXT_ONLY	"Text only" "Text"
+  end
+
   "Show navigation toolbar"	show_navigation_toolbar		boolean
+  "Navigation toolbar style"	navigation_toolbar_style	enumeration
+								existing
+    TOOLBAR_STYLE_DEFAULT	"Default" "Desktop" "Desktop default"
+				"System" "System default"
+    TOOLBAR_STYLE_BOTH		"Both" "Both vertically" "Vertically"
+				"Text below icons"
+    TOOLBAR_STYLE_BOTH_HORIZONTALLY  "Both horizontally" "Horizontally"
+				"Text besides icons"
+				"Text besides important icons"
+    TOOLBAR_STYLE_ICONS_ONLY	"Icons only" "Icons"
+    TOOLBAR_STYLE_TEXT_ONLY	"Text only" "Text"
+  end
+
   "Show game action buttons"	show_game_action_buttons	boolean
 }
 
@@ -180,8 +208,14 @@ include_list $top_srcdir$/src/gui-utils/common-configuration-defaults.list
 
 
 defaults  - gtk_ui_defaults {
+  use_gtk_file_chooser			boolean		true
+
   show_main_toolbar			boolean		true
+  main_toolbar_style			enumeration	TOOLBAR_STYLE_DEFAULT
+
   show_navigation_toolbar		boolean		true
+  navigation_toolbar_style		enumeration	TOOLBAR_STYLE_DEFAULT
+
   show_game_action_buttons		boolean		true
 }
 
