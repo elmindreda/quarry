@@ -22,6 +22,7 @@
 
 #include "gtk-configuration.h"
 #include "gtk-goban.h"
+#include "gtk-preferences.h"
 #include "gtk-utils.h"
 #include "gtk-tile-set.h"
 #include "quarry-marshal.h"
@@ -397,8 +398,7 @@ gtk_goban_size_allocate(GtkWidget *widget, GtkAllocation *allocation)
     goban->small_tile_set
       = gtk_main_tile_set_create_or_reuse((2 * cell_size - 1) / 3, goban->game);
     goban->sgf_markup_tile_set
-      = gtk_sgf_markup_tile_set_create_or_reuse(main_tile_size, goban->game,
-						"default");
+      = gtk_sgf_markup_tile_set_create_or_reuse(main_tile_size, goban->game);
 
     set_goban_non_style_appearance(goban);
   }
@@ -1064,17 +1064,9 @@ unreference_cached_objects(GtkGoban *goban)
 static void
 set_goban_style_appearance(GtkGoban *goban)
 {
-  const BoardAppearance *board_appearance;
+  const BoardAppearance *board_appearance
+    = game_to_board_appearance_structure(goban->game);
   GtkRcStyle *rc_style = gtk_rc_style_new();
-
-  if (goban->game == GAME_GO)
-    board_appearance = &go_board_appearance;
-  else if (goban->game == GAME_AMAZONS)
-    board_appearance = &amazons_board_appearance.board_appearance;
-  else if (goban->game == GAME_OTHELLO)
-    board_appearance = &othello_board_appearance;
-  else
-    assert(0);
 
   rc_style->color_flags[GTK_STATE_NORMAL] = GTK_RC_FG | GTK_RC_BG;
   gtk_utils_set_gdk_color(&rc_style->fg[GTK_STATE_NORMAL],
@@ -1095,12 +1087,17 @@ set_goban_style_appearance(GtkGoban *goban)
 static void
 set_goban_non_style_appearance(GtkGoban *goban)
 {
+  Game game = goban->game;
+
+  if (goban->cell_size == 0)
+    return;
+
   if (goban->checkerboard_pattern_object) {
     g_object_unref(goban->checkerboard_pattern_object);
     goban->checkerboard_pattern_object = NULL;
   }
 
-  if (goban->game == GAME_AMAZONS && GTK_WIDGET_REALIZED(goban)
+  if (game == GAME_AMAZONS && GTK_WIDGET_REALIZED(goban)
       && goban->cell_size > 0) {
     QuarryColor color = amazons_board_appearance.checkerboard_pattern_color;
     double opacity = amazons_board_appearance.checkerboard_pattern_opacity;
@@ -1155,6 +1152,13 @@ set_goban_non_style_appearance(GtkGoban *goban)
       }
     }
   }
+
+  object_cache_unreference_object(&gtk_sgf_markup_tile_set_cache,
+				  goban->sgf_markup_tile_set);
+  goban->sgf_markup_tile_set
+    = gtk_sgf_markup_tile_set_create_or_reuse((goban->cell_size
+					       - (game == GAME_GO ? 0 : 1)),
+					      game);
 }
 
 
