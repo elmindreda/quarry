@@ -5,7 +5,9 @@ FILES =			\
 	cross.svg	\
 	selected.svg	\
 	square.svg	\
-	triangle.svg
+	triangle.svg	\
+			\
+	theme.cfg
 
 
 filesdir = $(datadir)/quarry/markup-themes/default
