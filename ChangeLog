@@ -1,3 +1,7 @@
+2004-10-22  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* configure.ac: Generate `Makefile' in `data/markup-themes/bold'.
+
 2004-10-14  Paul Pogonyshev  <pogonyshev@gmx.net>
 
 	* configure.ac: Quarry version 0.1.9.

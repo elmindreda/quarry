@@ -1,3 +1,15 @@
+2004-10-22  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* markup-themes/bold: New directory.
+
+	* markup-themes/bold/Makefile.am: New file.
+	* markup-themes/bold/circle.svg: New file.
+	* markup-themes/bold/cross.svg: New file.
+	* markup-themes/bold/square.svg: New file.
+	* markup-themes/bold/selected.svg: New file.
+	* markup-themes/bold/triangle.svg: New file.
+	* markup-themes/bold/theme.cfg: New file.
+
 2004-10-14  Paul Pogonyshev  <pogonyshev@gmx.net>
 
 	* (Quarry version 0.1.9.)
