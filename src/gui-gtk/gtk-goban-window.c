@@ -31,6 +31,7 @@
 #include "gtk-qvbox.h"
 #include "gtk-utils.h"
 #include "quarry-marshal.h"
+#include "quarry-stock.h"
 #include "gui-utils.h"
 #include "gtp-client.h"
 #include "sgf.h"
@@ -53,6 +54,25 @@
 	->players[COLOR_INDEX((goban_window)				\
 			      ->sgf_board_state.color_to_play)]))
 
+#define GTP_ENGINE_CAN_PLAY_MOVES(goban_window, color)			\
+  ((goban_window)->players[COLOR_INDEX(color)]				\
+   && ((goban_window)->player_initialization_step[COLOR_INDEX(color)]	\
+       == INITIALIZATION_COMPLETE))
+
+
+enum {
+  INITIALIZATION_NOT_STARTED,
+  INITIALIZATION_GAME_SET,
+  INITIALIZATION_BOARD_SIZE_SET,
+  INITIALIZATION_FIXED_HANDICAP_SET,
+  INITIALIZATION_FREE_HANDICAP_PLACED,
+  INITIALIZATION_HANDICAP_SET,
+  INITIALIZATION_COMPLETE
+};
+
+
+typedef void (* SpecialModeButtonClicked) (GtkGobanWindow *goban_window);
+
 
 enum {
   GTK_GOBAN_WINDOW_SAVE = 1,
@@ -73,6 +93,14 @@ static void	 save_file_as_response(GtkFileSelection *dialog,
 				       GtkGobanWindow *goban_window);
 static void	 save_file_as_destroy(GtkGobanWindow *goban_window);
 
+static void	 enter_special_mode(GtkGobanWindow *goban_window,
+				    const gchar *hint,
+				    SpecialModeButtonClicked done_callback,
+				    SpecialModeButtonClicked cancel_callback);
+static void	 leave_special_mode(GtkGobanWindow *goban_window);
+
+static void	 free_handicap_mode_done(GtkGobanWindow *goban_window);
+
 static void	 play_pass_move(GtkGobanWindow *goban_window);
 
 
@@ -82,13 +110,24 @@ static void	 set_current_tree(GtkGobanWindow *goban_window,
 static void	 cancel_amazons_move(GtkGobanWindow *goban_window);
 static void	 reset_amazons_move_data(GtkGobanWindow *goban_window);
 
+static void	 set_goban_signal_handlers(GtkGobanWindow *goban_window,
+					   GCallback pointer_moved_handler,
+					   GCallback goban_clicked_handler);
+
 static GtkGobanPointerFeedback
 		 playing_mode_pointer_moved(GtkGobanWindow *goban_window,
 					    GtkGobanPointerData *data);
 static void	 playing_mode_goban_clicked(GtkGobanWindow *goban_window,
 					    GtkGobanClickData *data);
-static void	 playing_mode_navigate_goban(GtkGobanWindow *goban_window,
-					     GtkGobanNavigationCommand command);
+
+static GtkGobanPointerFeedback
+		 free_handicap_mode_pointer_moved(GtkGobanWindow *goban_window,
+						  GtkGobanPointerData *data);
+static void	 free_handicap_mode_goban_clicked(GtkGobanWindow *goban_window,
+						  GtkGobanClickData *data);
+
+static void	 navigate_goban(GtkGobanWindow *goban_window,
+				GtkGobanNavigationCommand command);
 
 static int	 find_variation_to_switch_to(GtkGobanWindow *goban_window,
 					     int x, int y,
@@ -107,12 +146,13 @@ static int	 update_player_information
 
 static void	 update_move_information(GtkGobanWindow *goban_window);
 
-static void	 initialize_gtp_player(GtkGobanWindow *goban_window,
-				       GtpClient *client);
-static void	 gtp_player_initialized_for_game(GtpClient *player,
-						 int successful,
-						 GtkGobanWindow *goban_window);
-static void	 move_has_been_played(GtkGobanWindow *goban_window, int color);
+static void	 initialize_gtp_player(GtpClient *client, int successful,
+				       GtkGobanWindow *goban_window, ...);
+
+static void	 free_handicap_has_been_placed
+		   (GtkGobanWindow *goban_window,
+		    BoardPositionList *handicap_stones);
+static void	 move_has_been_played(GtkGobanWindow *goban_window);
 static void	 move_has_been_generated(GtpClient *client, int successful,
 					 GtkGobanWindow *goban_window,
 					 int color, int x, int y,
@@ -120,6 +160,10 @@ static void	 move_has_been_generated(GtpClient *client, int successful,
 
 
 static GtkWindowClass  *parent_class;
+
+static guint		clicked_signal_id;
+static guint		pointer_moved_signal_id;
+static guint		goban_clicked_signal_id;
 
 
 GtkType
@@ -178,33 +222,31 @@ gtk_goban_window_init(GtkGobanWindow *goban_window)
     { "/Play/_Pass",		NULL,		  play_pass_move,
       1,			    "<Item>" },
 
-    /* FIXME: At some point these should be generalized for not
-     *	      playing mode only.
-     */
     { "/_Go",			NULL,		  NULL, 0, "<Branch>" },
-    { "/Go/_Next Node",		"<alt>Right",	  playing_mode_navigate_goban,
+    { "/Go/_Next Node",		"<alt>Right",	  navigate_goban,
       GOBAN_NAVIGATE_FORWARD,	    "<StockItem>",  GTK_STOCK_GO_FORWARD },
-    { "/Go/_Previous Node",	"<alt>Left",	  playing_mode_navigate_goban,
+    { "/Go/_Previous Node",	"<alt>Left",	  navigate_goban,
       GOBAN_NAVIGATE_BACK,	    "<StockItem>",  GTK_STOCK_GO_BACK },
-    { "/Go/Ten Nodes _Forward",	"<alt>Page_Down", playing_mode_navigate_goban,
+    { "/Go/Ten Nodes _Forward",	"<alt>Page_Down", navigate_goban,
       GOBAN_NAVIGATE_FORWARD_FAST,  "<Item>" },
-    { "/Go/Ten Nodes _Backward", "<alt>Page_Up",  playing_mode_navigate_goban,
+    { "/Go/Ten Nodes _Backward", "<alt>Page_Up",  navigate_goban,
       GOBAN_NAVIGATE_BACK_FAST,	    "<Item>" },
     { "/Go/",			NULL,		  NULL, 0, "<Separator>" },
-    { "/Go/_Root Node",		"<alt>Home",	  playing_mode_navigate_goban,
+    { "/Go/_Root Node",		"<alt>Home",	  navigate_goban,
       GOBAN_NAVIGATE_ROOT,	    "<StockItem>",  GTK_STOCK_GOTO_FIRST },
-    { "/Go/Variation _Last Node", "<alt>End",	  playing_mode_navigate_goban,
+    { "/Go/Variation _Last Node", "<alt>End",	  navigate_goban,
       GOBAN_NAVIGATE_VARIATION_END, "<StockItem>",  GTK_STOCK_GOTO_LAST },
     { "/Go/",			NULL,		  NULL, 0, "<Separator>" },
-    { "/Go/Ne_xt Variation",	"<alt>Down",	  playing_mode_navigate_goban,
+    { "/Go/Ne_xt Variation",	"<alt>Down",	  navigate_goban,
       GOBAN_NAVIGATE_NEXT_VARIATION, "<StockItem>", GTK_STOCK_GO_DOWN },
-    { "/Go/Pre_vious Variation", "<alt>Up",	  playing_mode_navigate_goban,
+    { "/Go/Pre_vious Variation", "<alt>Up",	  navigate_goban,
       GOBAN_NAVIGATE_PREVIOUS_VARIATION, "<StockItem>", GTK_STOCK_GO_UP },
   };
 
   GtkWidget *goban;
   GtkWidget *frame;
   GtkWidget *table;
+  GtkWidget *hbox;
   GtkWidget *text_view;
   GtkWidget *scrolled_window;
   GtkWidget *vbox;
@@ -219,15 +261,11 @@ gtk_goban_window_init(GtkGobanWindow *goban_window)
   goban = gtk_goban_new();
   goban_window->goban = GTK_GOBAN(goban);
 
-  g_signal_connect_swapped(goban, "pointer-moved",
-			   G_CALLBACK(playing_mode_pointer_moved),
-			   goban_window);
-  g_signal_connect_swapped(goban, "goban-clicked",
-			   G_CALLBACK(playing_mode_goban_clicked),
-			   goban_window);
+  set_goban_signal_handlers(goban_window,
+			    G_CALLBACK(playing_mode_pointer_moved),
+			    G_CALLBACK(playing_mode_goban_clicked));
   g_signal_connect_swapped(goban, "navigate",
-			   G_CALLBACK(playing_mode_navigate_goban),
-			   goban_window);
+			   G_CALLBACK(navigate_goban), goban_window);
 
   /* Frame to make goban look sunken. */
   frame = gtk_utils_sink_widget(goban);
@@ -253,18 +291,34 @@ gtk_goban_window_init(GtkGobanWindow *goban_window)
     label = gtk_label_new(NULL);
     gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
     gtk_box_pack_start(GTK_BOX(named_vbox), label, FALSE, TRUE, 0);
-    goban_window->player_information[k].player_label = GTK_LABEL(label);
+    goban_window->players_information[k].player_label = GTK_LABEL(label);
   }
 
   /* Alignment widget to keep the table centered in sidebar. */
   goban_window->player_table_alignment = gtk_utils_align_widget(table,
 								0.5, 0.5);
 
-  /* Separate players and move information. */
-  goban_window->hseparator = gtk_hseparator_new();
+  /* Separate players' and move informations. */
+  goban_window->players_information_hseparator = gtk_hseparator_new();
 
   /* Move information label. */
-  goban_window->move_info_label = gtk_label_new(NULL);
+  goban_window->move_information_label = gtk_label_new(NULL);
+
+  goban_window->mode_information_hseparator = gtk_hseparator_new();
+
+  /* A label with hints about special window modes. */
+  goban_window->mode_hint_label = gtk_label_new(NULL);
+  gtk_label_set_line_wrap(GTK_LABEL(goban_window->mode_hint_label), TRUE);
+  gtk_label_set_justify(GTK_LABEL(goban_window->mode_hint_label),
+			GTK_JUSTIFY_CENTER);
+
+  /* Buttons for ending specil window modes. */
+  goban_window->done_button = gtk_button_new_from_stock(QUARRY_STOCK_DONE);
+  goban_window->cancel_button = gtk_button_new_from_stock(GTK_STOCK_CANCEL);
+
+  hbox = gtk_utils_pack_in_box(GTK_TYPE_HBUTTON_BOX, QUARRY_SPACING_SMALL,
+			       goban_window->done_button, 0,
+			       goban_window->cancel_button, 0, NULL);
 
   /* Multipurpose text view. */
   text_view = gtk_text_view_new();
@@ -284,8 +338,16 @@ gtk_goban_window_init(GtkGobanWindow *goban_window)
   vbox = gtk_utils_pack_in_box(GTK_TYPE_VBOX, QUARRY_SPACING_GOBAN_WINDOW,
 			       goban_window->player_table_alignment,
 			       GTK_UTILS_FILL,
-			       goban_window->hseparator, GTK_UTILS_FILL,
-			       goban_window->move_info_label, GTK_UTILS_FILL,
+			       goban_window->players_information_hseparator,
+			       GTK_UTILS_FILL,
+			       goban_window->move_information_label,
+			       GTK_UTILS_FILL,
+			       goban_window->mode_information_hseparator,
+			       GTK_UTILS_FILL,
+			       goban_window->mode_hint_label,
+			       GTK_UTILS_FILL | QUARRY_SPACING_SMALL,
+			       gtk_utils_align_widget(hbox, 0.5, 0.5),
+			       GTK_UTILS_FILL,
 			       scrolled_window, GTK_UTILS_PACK_DEFAULT, NULL);
 
   /* Horizontal box containing goban and sidebar. */
@@ -322,11 +384,20 @@ gtk_goban_window_init(GtkGobanWindow *goban_window)
   /* Show everything but the window itself. */
   gtk_widget_show_all(vbox);
 
+  /* Look up here when the classes are certainly loaded. */
+  clicked_signal_id	  = g_signal_lookup("clicked", GTK_TYPE_BUTTON);
+  pointer_moved_signal_id = g_signal_lookup("pointer-moved", GTK_TYPE_GOBAN);
+  goban_clicked_signal_id = g_signal_lookup("goban-clicked", GTK_TYPE_GOBAN);
+
+  /* But hide special mode section again. */
+  leave_special_mode(goban_window);
+
   goban_window->board = NULL;
 
-  goban_window->in_game_mode	     = FALSE;
-  goban_window->players[BLACK_INDEX] = NULL;
-  goban_window->players[WHITE_INDEX] = NULL;
+  goban_window->in_game_mode	      = FALSE;
+  goban_window->pending_free_handicap = 0;
+  goban_window->players[BLACK_INDEX]  = NULL;
+  goban_window->players[WHITE_INDEX]  = NULL;
 
   goban_window->filename = NULL;
   goban_window->save_as_dialog = NULL;
@@ -361,6 +432,9 @@ gtk_goban_window_enter_game_mode(GtkGobanWindow *goban_window,
 				 GtpClient *black_player,
 				 GtpClient *white_player)
 {
+  const SgfGameTree *game_tree;
+  int handicap = -1;
+
   assert(GTK_IS_GOBAN_WINDOW(goban_window));
   assert(!goban_window->in_game_mode);
 
@@ -368,14 +442,40 @@ gtk_goban_window_enter_game_mode(GtkGobanWindow *goban_window,
   goban_window->players[BLACK_INDEX] = black_player;
   goban_window->players[WHITE_INDEX] = white_player;
 
+  game_tree = goban_window->current_tree;
+  handicap = sgf_node_get_handicap(game_tree->current_node);
+
+  if (handicap > 0
+      && !sgf_node_get_list_of_point_property_value(game_tree->current_node,
+						    SGF_ADD_BLACK)) {
+    goban_window->pending_free_handicap = handicap;
+    goban_window->num_handicap_stones_placed = 0;
+
+    if (!black_player) {
+      gchar *hint = g_strdup_printf(("Please set up %d (or less)\n"
+				     "stones of free handicap"),
+				    handicap);
+
+      gtk_widget_set_sensitive(goban_window->done_button, FALSE);
+      enter_special_mode(goban_window, hint, free_handicap_mode_done, NULL);
+      g_free(hint);
+
+      set_goban_signal_handlers(goban_window,
+				G_CALLBACK(free_handicap_mode_pointer_moved),
+				G_CALLBACK(free_handicap_mode_goban_clicked));
+    }
+  }
+
   if (black_player) {
-    goban_window->player_initialized[BLACK_INDEX] = FALSE;
-    initialize_gtp_player(goban_window, black_player);
+    goban_window->player_initialization_step[BLACK_INDEX]
+      = INITIALIZATION_NOT_STARTED;
+    initialize_gtp_player(black_player, 1, goban_window);
   }
 
   if (white_player) {
-    goban_window->player_initialized[WHITE_INDEX] = FALSE;
-    initialize_gtp_player(goban_window, white_player);
+    goban_window->player_initialization_step[WHITE_INDEX]
+      = INITIALIZATION_NOT_STARTED;
+    initialize_gtp_player(white_player, 1, goban_window);
   }
 }
 
@@ -465,6 +565,70 @@ save_file_as_destroy(GtkGobanWindow *goban_window)
 }
 
 
+
+static void
+enter_special_mode(GtkGobanWindow *goban_window, const gchar *hint,
+		   SpecialModeButtonClicked done_callback,
+		   SpecialModeButtonClicked cancel_callback)
+{
+  gtk_label_set_text(GTK_LABEL(goban_window->mode_hint_label), hint);
+
+  gtk_widget_show(goban_window->mode_information_hseparator);
+  gtk_widget_show(goban_window->mode_hint_label);
+
+  gtk_widget_show(goban_window->done_button);
+  g_signal_connect_swapped(goban_window->done_button, "clicked",
+			   G_CALLBACK(done_callback), goban_window);
+
+  if (cancel_callback) {
+    gtk_widget_show(goban_window->cancel_button);
+    g_signal_connect_swapped(goban_window->cancel_button, "clicked",
+			     G_CALLBACK(cancel_callback), goban_window);
+  }
+}
+
+
+static void
+leave_special_mode(GtkGobanWindow *goban_window)
+{
+  g_signal_handlers_disconnect_matched(goban_window->done_button,
+				       G_SIGNAL_MATCH_ID | G_SIGNAL_MATCH_DATA,
+				       clicked_signal_id, 0, NULL, NULL,
+				       goban_window);
+  g_signal_handlers_disconnect_matched(goban_window->cancel_button,
+				       G_SIGNAL_MATCH_ID | G_SIGNAL_MATCH_DATA,
+				       clicked_signal_id, 0, NULL, NULL,
+				       goban_window);
+
+  gtk_widget_hide(goban_window->mode_information_hseparator);
+  gtk_widget_hide(goban_window->mode_hint_label);
+  gtk_widget_hide(goban_window->done_button);
+  gtk_widget_hide(goban_window->cancel_button);
+}
+
+
+static void
+free_handicap_mode_done(GtkGobanWindow *goban_window)
+{
+  BoardPositionList *position_lists[NUM_ON_GRID_VALUES];
+
+  gtk_goban_diff_against_grid(goban_window->goban, goban_window->board->grid,
+			      position_lists);
+  assert((position_lists[BLACK]->num_positions
+	  == goban_window->num_handicap_stones_placed)
+	 && position_lists[WHITE] == NULL
+	 && position_lists[EMPTY] == NULL
+	 && position_lists[SPECIAL_ON_GRID_VALUE] == NULL);
+
+  free_handicap_has_been_placed(goban_window, position_lists[BLACK]);
+
+  leave_special_mode(goban_window);
+  set_goban_signal_handlers(goban_window,
+			    G_CALLBACK(playing_mode_pointer_moved),
+			    G_CALLBACK(playing_mode_goban_clicked));
+}
+
+
 static void
 set_current_tree(GtkGobanWindow *goban_window, SgfGameTree *sgf_tree)
 {
@@ -489,15 +653,14 @@ set_current_tree(GtkGobanWindow *goban_window, SgfGameTree *sgf_tree)
 static void
 play_pass_move(GtkGobanWindow *goban_window)
 {
-  int color_to_play = goban_window->sgf_board_state.color_to_play;
-
   assert(goban_window->board->game == GAME_GO
 	 && USER_CAN_PLAY_MOVES(goban_window));
 
   sgf_utils_append_move_variation(goban_window->current_tree,
 				  &goban_window->sgf_board_state,
-				  color_to_play, PASS_X, PASS_Y);
-  move_has_been_played(goban_window, color_to_play);
+				  goban_window->sgf_board_state.color_to_play,
+				  PASS_X, PASS_Y);
+  move_has_been_played(goban_window);
 
   update_children_for_new_node(goban_window);
 }
@@ -534,6 +697,28 @@ reset_amazons_move_data(GtkGobanWindow *goban_window)
 }
 
 
+
+static void
+set_goban_signal_handlers(GtkGobanWindow *goban_window,
+			  GCallback pointer_moved_handler,
+			  GCallback goban_clicked_handler)
+{
+  g_signal_handlers_disconnect_matched(goban_window->goban,
+				       G_SIGNAL_MATCH_ID | G_SIGNAL_MATCH_DATA,
+				       pointer_moved_signal_id, 0, NULL, NULL,
+				       goban_window);
+  g_signal_handlers_disconnect_matched(goban_window->goban,
+				       G_SIGNAL_MATCH_ID | G_SIGNAL_MATCH_DATA,
+				       goban_clicked_signal_id, 0, NULL, NULL,
+				       goban_window);
+
+  g_signal_connect_swapped(goban_window->goban, "pointer-moved",
+			   pointer_moved_handler, goban_window);
+  g_signal_connect_swapped(goban_window->goban, "goban-clicked",
+			   goban_clicked_handler, goban_window);
+}
+
+
 static GtkGobanPointerFeedback
 playing_mode_pointer_moved(GtkGobanWindow *goban_window,
 			   GtkGobanPointerData *data)
@@ -550,7 +735,7 @@ playing_mode_pointer_moved(GtkGobanWindow *goban_window,
 	if (goban_window->board->game != GAME_AMAZONS) {
 	  if (board_is_legal_move(goban_window->board, RULE_SET_DEFAULT,
 				  color_to_play, data->x, data->y))
-	    return GOBAN_FEEDBACK_MOVE_DEFAULT + COLOR_INDEX(color_to_play);
+	    return GOBAN_FEEDBACK_MOVE + COLOR_INDEX(color_to_play);
 	}
 	else {
 	  if (goban_window->amazons_move_stage == SELECTING_QUEEN) {
@@ -572,7 +757,7 @@ playing_mode_pointer_moved(GtkGobanWindow *goban_window,
 				  goban_window->amazons_to_y,
 				  goban_window->amazons_move)) {
 	    if (goban_window->amazons_move_stage == SELECTING_QUEEN)
-	      return GOBAN_FEEDBACK_MOVE_DEFAULT + COLOR_INDEX(color_to_play);
+	      return GOBAN_FEEDBACK_MOVE + COLOR_INDEX(color_to_play);
 	    else if (goban_window->amazons_move_stage == MOVING_QUEEN)
 	      return GOBAN_FEEDBACK_GHOST + COLOR_INDEX(color_to_play);
 	    else
@@ -652,7 +837,7 @@ playing_mode_goban_clicked(GtkGobanWindow *goban_window,
 	}
       }
 
-      move_has_been_played(goban_window, color_to_play);
+      move_has_been_played(goban_window);
     }
     else
       return;
@@ -684,9 +869,64 @@ playing_mode_goban_clicked(GtkGobanWindow *goban_window,
 }
 
 
+static GtkGobanPointerFeedback
+free_handicap_mode_pointer_moved(GtkGobanWindow *goban_window,
+				 GtkGobanPointerData *data)
+{
+  switch (data->button) {
+  case 0:
+    if (!(data->modifiers & GDK_SHIFT_MASK)) {
+      int contents = gtk_goban_get_grid_contents(goban_window->goban,
+						 data->x, data->y);
+
+      if (contents == BLACK
+	  || (contents == EMPTY
+	      && (goban_window->num_handicap_stones_placed
+		  < goban_window->pending_free_handicap)))
+	return GOBAN_FEEDBACK_ADD_BLACK_OR_REMOVE;
+    }
+
+    break;
+
+  case 1:
+    return GOBAN_FEEDBACK_PRESS_DEFAULT;
+  }
+
+  return GOBAN_FEEDBACK_NONE;
+}
+
+
 static void
-playing_mode_navigate_goban(GtkGobanWindow *goban_window,
-			    GtkGobanNavigationCommand command)
+free_handicap_mode_goban_clicked(GtkGobanWindow *goban_window,
+				 GtkGobanClickData *data)
+{
+  if (data->button == 1
+      && data->feedback_tile != TILE_NONE
+      && !(data->modifiers & GDK_SHIFT_MASK)) {
+    int contents = gtk_goban_get_grid_contents(goban_window->goban,
+					       data->x, data->y);
+
+    if (contents == EMPTY) {
+      contents = BLACK;
+      goban_window->num_handicap_stones_placed++;
+    }
+    else if (contents == BLACK) {
+      contents = EMPTY;
+      goban_window->num_handicap_stones_placed--;
+    }
+    else
+      assert(0);
+
+    gtk_goban_set_grid_contents(goban_window->goban,
+				data->x, data->y, contents);
+    gtk_widget_set_sensitive(goban_window->done_button,
+			     goban_window->num_handicap_stones_placed >= 2);
+  }
+}
+
+
+static void
+navigate_goban(GtkGobanWindow *goban_window, GtkGobanNavigationCommand command)
 {
   SgfGameTree *current_tree = goban_window->current_tree;
 
@@ -851,13 +1091,15 @@ update_game_information(GtkGobanWindow *goban_window)
   update_window_title(goban_window, game_info_node);
 
   if (update_player_information(game_info_node,
-				goban_window->player_information + BLACK_INDEX,
+				(goban_window->players_information
+				 + BLACK_INDEX),
 				SGF_PLAYER_BLACK, SGF_BLACK_RANK,
 				SGF_BLACK_TEAM))
     have_any_player_information = 1;
 
   if (update_player_information(game_info_node,
-				goban_window->player_information + WHITE_INDEX,
+				(goban_window->players_information
+				 + WHITE_INDEX),
 				SGF_PLAYER_WHITE, SGF_WHITE_RANK,
 				SGF_WHITE_TEAM))
     have_any_player_information = 1;
@@ -865,12 +1107,12 @@ update_game_information(GtkGobanWindow *goban_window)
   if (have_any_player_information
       && !GTK_WIDGET_VISIBLE(goban_window->player_table_alignment)) {
     gtk_widget_show(goban_window->player_table_alignment);
-    gtk_widget_show(goban_window->hseparator);
+    gtk_widget_show(goban_window->players_information_hseparator);
   }
   else if (!have_any_player_information
 	   && GTK_WIDGET_VISIBLE(goban_window->player_table_alignment)) {
     gtk_widget_hide(goban_window->player_table_alignment);
-    gtk_widget_hide(goban_window->hseparator);
+    gtk_widget_hide(goban_window->players_information_hseparator);
   }
 
   goban_window->last_game_info_node = game_info_node;
@@ -964,96 +1206,224 @@ update_move_information(GtkGobanWindow *goban_window)
   else
     strcpy(buffer + length, "; game over");
 
-  gtk_label_set_text(GTK_LABEL(goban_window->move_info_label), buffer);
+  gtk_label_set_text(GTK_LABEL(goban_window->move_information_label), buffer);
 }
 
 
 static void
-initialize_gtp_player(GtkGobanWindow *goban_window, GtpClient *client)
+initialize_gtp_player(GtpClient *client, int successful,
+		      GtkGobanWindow *goban_window, ...)
 {
   const SgfGameTree *game_tree = goban_window->current_tree;
+  const SgfNode *root_node = game_tree->root;
+  int client_color = (client == goban_window->players[BLACK_INDEX]
+		      ? BLACK : WHITE);
+  int *initialization_step = (goban_window->player_initialization_step
+			      + COLOR_INDEX(client_color));
 
-  if (gtp_client_is_known_command(client, "set_game"))
-    gtp_client_set_game(client, NULL, NULL, game_tree->game);
+  /* FIXME */
+  assert(successful);
 
-  assert(game_tree->board_width == game_tree->board_height);
-
-  if (game_tree->game == GAME_GO) {
-    int handicap;
-    double komi;
-
-    gtp_client_set_board_size(client, NULL, NULL, game_tree->board_width);
-
-    handicap = sgf_node_get_handicap(game_tree->current_node);
-    if (handicap != -1)
-      gtp_client_set_fixed_handicap(client, NULL, NULL, handicap);
-
-    assert(sgf_node_get_komi(game_tree->current_node, &komi));
-    gtp_client_set_komi(client,
-			((GtpClientResponseCallback)
-			 gtp_player_initialized_for_game),
-			goban_window, komi);
+  /* These special cases are needed to avoid nasty `goto's in `switch'
+   * block below.
+   */
+  if (*initialization_step == INITIALIZATION_FIXED_HANDICAP_SET) {
+    /* FIXME: Validate handicap position. */
+    *initialization_step = INITIALIZATION_HANDICAP_SET;
   }
-  else {
+  else if (*initialization_step == INITIALIZATION_FREE_HANDICAP_PLACED) {
+    va_list arguments;
+
+    va_start(arguments, goban_window);
+    free_handicap_has_been_placed(goban_window,
+				  va_arg(arguments, BoardPositionList *));
+    va_end(arguments);
+
+    *initialization_step = INITIALIZATION_HANDICAP_SET;
+  }
+
+  /* Note that `case' branches here often fall through to next ones.
+   * Often certain initializations are just not needed at all.
+   */
+  switch (*initialization_step) {
+  case INITIALIZATION_NOT_STARTED:
+    if (gtp_client_is_known_command(client, "set_game")) {
+      *initialization_step = INITIALIZATION_GAME_SET;
+      gtp_client_set_game(client,
+			  (GtpClientResponseCallback) initialize_gtp_player,
+			  goban_window, game_tree->game);
+      break;
+    }
+
+  case  INITIALIZATION_GAME_SET:
+    *initialization_step = INITIALIZATION_BOARD_SIZE_SET;
+
+    assert(game_tree->board_width == game_tree->board_height);
     gtp_client_set_board_size(client,
 			      ((GtpClientResponseCallback)
-			       gtp_player_initialized_for_game),
+			       initialize_gtp_player),
 			      goban_window, game_tree->board_width);
+    break;
+
+  case INITIALIZATION_BOARD_SIZE_SET:
+    if (game_tree->game == GAME_GO) {
+      int handicap = sgf_node_get_handicap(root_node);
+
+      if (handicap != -1) {
+	gboolean is_fixed_handicap = FALSE;
+	const BoardPositionList *handicap_stones = NULL;
+
+	if (handicap > 0) {
+	  handicap_stones
+	    = sgf_node_get_list_of_point_property_value(root_node,
+							SGF_ADD_BLACK);
+	  if (handicap_stones) {
+	    BoardPositionList *fixed_handicap_stones
+	      = go_get_fixed_handicap_stones(game_tree->board_width,
+					     game_tree->board_height,
+					     handicap);
+
+	    if (board_position_lists_are_equal(fixed_handicap_stones,
+					       handicap_stones))
+	      is_fixed_handicap = TRUE;
+
+	    board_position_list_delete(fixed_handicap_stones);
+	  }
+	}
+	else
+	  is_fixed_handicap = TRUE;
+
+	if (is_fixed_handicap) {
+	  *initialization_step = INITIALIZATION_FIXED_HANDICAP_SET;
+	  gtp_client_set_fixed_handicap(client,
+					((GtpClientResponseCallback)
+					 initialize_gtp_player),
+					goban_window, handicap);
+	  break;
+	}
+	else {
+	  if (client_color == BLACK) {
+	    *initialization_step = INITIALIZATION_FREE_HANDICAP_PLACED;
+	    gtp_client_place_free_handicap(client,
+					   ((GtpClientFreeHandicapCallback)
+					    initialize_gtp_player),
+					   goban_window, handicap);
+	    break;
+	  }
+	  else {
+	    /* Note that if `handicap_stones' are not set, then free
+	     * handicap placement has not been performed yet by the
+	     * black player (either another engine or the user).  In
+	     * this case we just skip this step for now.  When the
+	     * placement is determined, handicap will be set for this
+	     * client from free_handicap_has_been_placed().
+	     */
+	    if (handicap_stones) {
+	      gtp_client_set_free_handicap(client, NULL, NULL,
+					   handicap_stones);
+	    }
+	  }
+	}
+      }
+    }
+
+  case INITIALIZATION_HANDICAP_SET:
+    if (game_tree->game == GAME_GO) {
+      double komi;
+
+      if (!sgf_node_get_komi(game_tree->current_node, &komi)) {
+	/* Recently suggested default komi is 6.5, but if a game lacks
+	 * `KM' property it is more likely to be old.
+	 */
+	komi = (sgf_node_get_handicap(root_node) > 0 ? 0.5 : 5.5);
+      }
+
+      gtp_client_set_komi(client, NULL, NULL, komi);
+    }
+
+    *initialization_step = INITIALIZATION_COMPLETE;
+
+    {
+      const SgfNode *node;
+
+      for (node = root_node; node; node = node->current_variation) {
+	if (IS_STONE(node->move_color)) {
+	  gtp_client_play_move_from_sgf_node(client, NULL, NULL,
+					     game_tree, node);
+	}
+      }
+    }
+
+    if (client_color == goban_window->sgf_board_state.color_to_play) {
+      gtp_client_generate_move(client,
+			       (GtpClientMoveCallback) move_has_been_generated,
+			       goban_window, client_color);
+    }
+
+    break;
+
+  default:
+    /* Must never happen. */
+    assert(0);
   }
 }
 
 
 static void
-gtp_player_initialized_for_game(GtpClient *player, int successful,
-				GtkGobanWindow *goban_window)
+free_handicap_has_been_placed(GtkGobanWindow *goban_window,
+			      BoardPositionList *handicap_stones)
+{
+  sgf_utils_add_free_handicap_stones(goban_window->current_tree,
+				     handicap_stones);
+
+  /* FIXME: Generalize. */
+  sgf_utils_enter_tree(goban_window->current_tree, goban_window->board,
+		       &goban_window->sgf_board_state);
+  goban_window->last_displayed_node = NULL;
+  update_children_for_new_node(goban_window);
+
+  if (GTP_ENGINE_CAN_PLAY_MOVES(goban_window, WHITE)) {
+    /* The engine is initialized, but since free handicap placement
+     * only became known at this point, the engine doesn't know about
+     * it yet.
+     */
+    gtp_client_set_free_handicap(goban_window->players[WHITE_INDEX],
+				 NULL, NULL, handicap_stones);
+
+    gtp_client_generate_move(goban_window->players[WHITE_INDEX],
+			     (GtpClientMoveCallback) move_has_been_generated,
+			     goban_window, WHITE);
+  }
+}
+
+
+static void
+move_has_been_played(GtkGobanWindow *goban_window)
 {
   const SgfNode *move_node = goban_window->sgf_board_state.last_move_node;
   int color_to_play = goban_window->sgf_board_state.color_to_play;
-  int client_color;
 
-  assert(successful);
+  if (GTP_ENGINE_CAN_PLAY_MOVES(goban_window,
+				OTHER_COLOR(move_node->move_color))) {
+    GtpClient *other_player
+      = goban_window->players[COLOR_INDEX(OTHER_COLOR(move_node->move_color))];
 
-  if (player == goban_window->players[BLACK_INDEX])
-    client_color = BLACK;
-  else if (player == goban_window->players[WHITE_INDEX])
-    client_color = WHITE;
-  else
-    assert(0);
-
-  goban_window->player_initialized[COLOR_INDEX(client_color)] = TRUE;
-
-  if (move_node) {
-    gtp_client_play_move_from_sgf_node(player, NULL, NULL,
+    /* Other player is a GTP engine which is already initialized.
+     * Inform it about the move that has just been played.
+     */
+    gtp_client_play_move_from_sgf_node(other_player, NULL, NULL,
 				       goban_window->current_tree, move_node);
   }
 
-  if (client_color == color_to_play) {
-    gtp_client_generate_move(player,
+  if (!board_is_game_over(goban_window->board, RULE_SET_DEFAULT,
+			  color_to_play)
+      && GTP_ENGINE_CAN_PLAY_MOVES(goban_window, color_to_play)) {
+    /* If the next move is to be played by a GTP engine and the engine
+     * is ready, ask for a move now.
+     */
+    gtp_client_generate_move(goban_window->players[COLOR_INDEX(color_to_play)],
 			     (GtpClientMoveCallback) move_has_been_generated,
 			     goban_window, color_to_play);
-  }
-}
-
-
-static void
-move_has_been_played(GtkGobanWindow *goban_window, int color)
-{
-  int other_color_index = COLOR_INDEX(OTHER_COLOR(color));
-  GtpClient *player = goban_window->players[other_color_index];
-
-  if (player && goban_window->player_initialized[other_color_index]) {
-    const SgfNode *move_node = goban_window->sgf_board_state.last_move_node;
-    int color_to_play = goban_window->sgf_board_state.color_to_play;
-
-    gtp_client_play_move_from_sgf_node(player, NULL, NULL,
-				       goban_window->current_tree, move_node);
-
-    if (!board_is_game_over(goban_window->board, RULE_SET_DEFAULT,
-			    color_to_play)) {
-      gtp_client_generate_move(player,
-			       (GtpClientMoveCallback) move_has_been_generated,
-			       goban_window, color_to_play);
-    }
   }
 }
 
@@ -1080,7 +1450,7 @@ move_has_been_generated(GtpClient *client, int successful,
 
     update_children_for_new_node(goban_window);
 
-    move_has_been_played(goban_window, color);
+    move_has_been_played(goban_window);
   }
 }
 

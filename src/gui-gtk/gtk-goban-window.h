@@ -72,18 +72,23 @@ struct _GtkGobanWindow {
   GtkItemFactory	  *item_factory;
   GtkGoban		  *goban;
   GtkWidget		  *player_table_alignment;
-  GtkPlayerInformation	   player_information[NUM_COLORS];
-  GtkWidget		  *hseparator;
-  GtkWidget		  *move_info_label;
+  GtkPlayerInformation	   players_information[NUM_COLORS];
+  GtkWidget		  *players_information_hseparator;
+  GtkWidget		  *move_information_label;
+  GtkWidget		  *mode_information_hseparator;
+  GtkWidget		  *mode_hint_label;
+  GtkWidget		  *done_button;
+  GtkWidget		  *cancel_button;
   GtkTextBuffer		  *text_buffer;
-
 
   Board			  *board;
   SgfBoardState		   sgf_board_state;
 
   gboolean		   in_game_mode;
+  gint			   pending_free_handicap;
+  gint			   num_handicap_stones_placed;
   GtpClient		  *players[NUM_COLORS];
-  gboolean		   player_initialized[NUM_COLORS];
+  gboolean		   player_initialization_step[NUM_COLORS];
 
   int			   amazons_move_stage;
   int			   amazons_to_x;
