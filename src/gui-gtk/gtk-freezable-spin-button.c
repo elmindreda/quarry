@@ -36,6 +36,8 @@ static void	 gtk_freezable_spin_button_init
 
 static gboolean	 gtk_freezable_spin_button_output
 		   (GtkFreezableSpinButton *spin_button);
+static gint	 gtk_freezable_spin_button_input
+		   (GtkFreezableSpinButton *spin_button, gdouble *new_value);
 
 static void	 gtk_freezable_spin_button_change_value
 		   (GtkSpinButton *spin_button, GtkScrollType scroll_type);
@@ -44,6 +46,8 @@ static void	 gtk_freezable_spin_button_changed (GtkEditable *editable);
 
 static GtkSpinButtonClass  *parent_class;
 static GtkEditableClass    *parent_editable_interface;
+
+static guint		    input_signal_id;
 
 
 GtkType
@@ -91,6 +95,8 @@ gtk_freezable_spin_button_class_init (GtkFreezableSpinButtonClass *class)
   parent_class = g_type_class_peek_parent (class);
   parent_editable_interface = g_type_interface_peek (parent_class,
 						     GTK_TYPE_EDITABLE);
+
+  input_signal_id = g_signal_lookup ("input", GTK_TYPE_SPIN_BUTTON);
 }
 
 
@@ -106,6 +112,7 @@ gtk_freezable_spin_button_init (GtkFreezableSpinButton *spin_button)
 {
   /* Unfrozen by default. */
   spin_button->freezing_string = NULL;
+  spin_button->is_in_output = FALSE;
 }
 
 
@@ -120,12 +127,14 @@ gtk_freezable_spin_button_new (GtkAdjustment *adjustment,
   gtk_spin_button_configure (GTK_SPIN_BUTTON (spin_button),
 			     adjustment, climb_rate, digits);
 
-  /* The reason to connect it on each object instead of redefining in
-   * class virtual table is that this object is created as
-   * `G_RUN_LAST', but we need our handler to run first.
+  /* The reason to connect on each object instead of redefining in
+   * class virtual table is that these signals are created as
+   * `G_RUN_LAST', but we need our handlers to run first.
    */
   g_signal_connect (spin_button, "output",
 		    G_CALLBACK (gtk_freezable_spin_button_output), NULL);
+  g_signal_connect (spin_button, "input",
+		    G_CALLBACK (gtk_freezable_spin_button_input), NULL);
 
   return spin_button;
 }
@@ -139,8 +148,27 @@ gtk_freezable_spin_button_output (GtkFreezableSpinButton *spin_button)
     return FALSE;
   }
 
+  spin_button->is_in_output = TRUE;
   gtk_entry_set_text (GTK_ENTRY (spin_button), spin_button->freezing_string);
+  spin_button->is_in_output = FALSE;
+
   return TRUE;
+}
+
+
+static gint
+gtk_freezable_spin_button_input (GtkFreezableSpinButton *spin_button,
+				 gdouble *new_value)
+{
+  if (spin_button->freezing_string) {
+    /* No input, this is not a real spin button right now. */
+    g_signal_stop_emission (spin_button, input_signal_id, 0);
+    *new_value = 0.0;
+
+    return TRUE;
+  }
+
+  return FALSE;
 }
 
 
@@ -160,7 +188,7 @@ gtk_freezable_spin_button_changed (GtkEditable *editable)
 {
   GtkFreezableSpinButton *spin_button = GTK_FREEZABLE_SPIN_BUTTON (editable);
 
-  if (spin_button->freezing_string) {
+  if (spin_button->freezing_string && !spin_button->is_in_output) {
     const gchar *entry_text = gtk_entry_get_text (GTK_ENTRY (editable));
 
     if (strcmp (entry_text, spin_button->freezing_string) != 0)
@@ -190,6 +218,17 @@ gtk_freezable_spin_button_freeze (GtkFreezableSpinButton *spin_button,
   assert (GTK_IS_FREEZABLE_SPIN_BUTTON (spin_button));
 
   spin_button->freezing_string = freezing_string;
+}
+
+
+void
+gtk_freezable_spin_button_freeze_and_stop_input
+  (GtkFreezableSpinButton *spin_button, const gchar *freezing_string)
+{
+  assert (freezing_string);
+
+  gtk_freezable_spin_button_freeze (spin_button, freezing_string);
+  g_signal_stop_emission (spin_button, input_signal_id, 0);
 }
 
 

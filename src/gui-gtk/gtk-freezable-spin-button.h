@@ -58,6 +58,7 @@ struct _GtkFreezableSpinButton {
   GtkSpinButton	       spin_button;
 
   const gchar	      *freezing_string;
+  gboolean	       is_in_output;
 };
 
 struct _GtkFreezableSpinButtonClass {
@@ -76,6 +77,9 @@ const gchar *	gtk_freezable_spin_button_get_freezing_string
 		  (GtkFreezableSpinButton *spin_button);
 
 void		gtk_freezable_spin_button_freeze
+		  (GtkFreezableSpinButton *spin_button,
+		   const gchar *freezing_string);
+void		gtk_freezable_spin_button_freeze_and_stop_input
 		  (GtkFreezableSpinButton *spin_button,
 		   const gchar *freezing_string);
 
