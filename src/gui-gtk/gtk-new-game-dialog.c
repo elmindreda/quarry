@@ -76,22 +76,24 @@ struct _NewGameDialogData {
 };
 
 
-static void	     update_game_and_players_page(GtkWidget *widget,
-						  gpointer user_data);
-static void	     swap_players(NewGameDialogData *data);
-static GtkGameIndex  get_selected_game(NewGameDialogData *data);
+static void	      update_game_and_players_page(GtkWidget *widget,
+						   gpointer user_data);
+static void	      swap_players(NewGameDialogData *data);
+static GtkGameIndex   get_selected_game(NewGameDialogData *data);
 
-static void	     show_game_specific_rules(NewGameDialogData *data);
-static void	     set_handicap_adjustment_limits
-		       (GtkAdjustment *board_size_adjustment,
-			NewGameDialogData *data);
+static void	      show_game_specific_rules(NewGameDialogData *data);
+static void	      set_handicap_adjustment_limits
+			(GtkAdjustment *board_size_adjustment,
+			 NewGameDialogData *data);
 
-static void	     time_control_type_changed(GtkWidget *selector,
-					       GtkNotebook *notebook);
+static void	      time_control_type_changed(GtkWidget *selector,
+						GtkNotebook *notebook);
 
-static gboolean	     instantiate_players(NewGameDialogData *data);
-static void	     begin_game(GtkEnginesInstantiationStatus status,
-				gpointer user_data);
+static const gchar *  get_game_rules_help_link_id(NewGameDialogData *data);
+
+static gboolean	      instantiate_players(NewGameDialogData *data);
+static void	      begin_game(GtkEnginesInstantiationStatus status,
+				 gpointer user_data);
 
 
 void
@@ -175,8 +177,8 @@ gtk_new_game_dialog_present(void)
   /* Create identical set of controls for each of the players. */
   for (k = 0; k < NUM_COLORS; k++) {
     static const char *radio_labels[NUM_COLORS][2]
-      = { { N_("H_uman"), N_("Compu_ter") },
-	  { N_("_Human"), N_("Com_puter") } };
+      = { { N_("Hu_man"), N_("Compu_ter") },
+	  { N_("H_uman"), N_("Com_puter") } };
 
     GtkWidget *entry;
     const char *engine_name = new_game_configuration.engine_names[k];
@@ -236,7 +238,7 @@ gtk_new_game_dialog_present(void)
 			      vbox1, NULL);
 
   /* Button which opens "Preferences" dialog at "GTP Engines" page. */
-  button = gtk_button_new_with_mnemonic(_("_Manage Engine List"));
+  button = gtk_button_new_with_mnemonic(_("Manage _Engine List"));
   g_signal_connect_swapped(button, "clicked",
 			   G_CALLBACK(gtk_preferences_dialog_present),
 			   GINT_TO_POINTER(PREFERENCES_PAGE_GTP_ENGINES));
@@ -286,6 +288,8 @@ gtk_new_game_dialog_present(void)
   gtk_assistant_add_page(data->assistant, game_and_players_page,
 			 GTK_STOCK_REFRESH, _("Game &amp; Players"),
 			 NULL, NULL);
+  gtk_assistant_set_page_help_link_id(data->assistant, game_and_players_page,
+				      "new-game-dialog-game-and-players");
   gtk_widget_show_all(game_and_players_page);
 
   if (game_index != -1)
@@ -615,6 +619,9 @@ gtk_new_game_dialog_present(void)
 			  show_game_specific_rules),
 			 ((GtkAssistantPageAcceptableCallback)
 			  instantiate_players));
+  gtk_assistant_set_page_help_link_id_callback
+    (data->assistant, games_notebook,
+     (GtkAssistantPageHelpLinkIDCallback) get_game_rules_help_link_id);
   gtk_widget_show_all(games_notebook);
 
   gtk_widget_show(assistant);
@@ -745,6 +752,25 @@ time_control_type_changed(GtkWidget *selector, GtkNotebook *notebook)
   gint time_control_type = gtk_utils_get_selector_active_item_index(selector);
 
   gtk_notebook_set_current_page(notebook, time_control_type);
+}
+
+
+static const gchar *
+get_game_rules_help_link_id(NewGameDialogData *data)
+{
+  switch (get_selected_game(data)) {
+  case GTK_GAME_GO:
+    return "new-game-dialog-go-rules";
+
+  case GTK_GAME_AMAZONS:
+    return "new-game-dialog-amazons-rules";
+
+  case GTK_GAME_OTHELLO:
+    return "new-game-dialog-othello-rules";
+
+  default:
+    assert(0);
+  }
 }
 
 
