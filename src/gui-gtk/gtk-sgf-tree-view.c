@@ -1,7 +1,7 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *\
  * This file is part of Quarry.                                    *
  *                                                                 *
- * Copyright (C) 2004 Paul Pogonyshev.                             *
+ * Copyright (C) 2004, 2005 Paul Pogonyshev                        *
  *                                                                 *
  * This program is free software; you can redistribute it and/or   *
  * modify it under the terms of the GNU General Public License as  *
@@ -20,6 +20,7 @@
 \* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 
+#include "gtk-configuration.h"
 #include "gtk-goban-base.h"
 #include "gtk-sgf-tree-view.h"
 #include "gtk-tile-set.h"
@@ -85,7 +86,9 @@ static void	 scroll_adjustment_value_changed (GtkSgfTreeView *view);
 
 static void	 update_view_port (GtkSgfTreeView *view);
 static gboolean	 update_view_port_and_maybe_move_or_resize_window
-		   (GtkSgfTreeView *view);
+		   (GtkSgfTreeView *view,
+		    gint original_hadjustment_value,
+		    gint original_vadjustment_value);
 
 
 static GtkGobanBaseClass  *parent_class;
@@ -166,8 +169,8 @@ gtk_sgf_tree_view_class_init (GtkSgfTreeViewClass *class)
 		    G_STRUCT_OFFSET (GtkSgfTreeViewClass,
 				     sgf_tree_view_clicked),
 		    NULL, NULL,
-		    quarry_marshal_VOID__POINTER,
-		    G_TYPE_NONE, 1, G_TYPE_POINTER);
+		    quarry_marshal_VOID__POINTER_INT,
+		    G_TYPE_NONE, 2, G_TYPE_POINTER, G_TYPE_INT);
 }
 
 
@@ -175,7 +178,6 @@ static void
 gtk_sgf_tree_view_init (GtkSgfTreeView *view)
 {
   /* FIXME */
-  gtk_goban_base_set_game (GTK_GOBAN_BASE (view), GAME_GO);
   gtk_goban_base_set_cell_size (GTK_GOBAN_BASE (view), DEFAULT_CELL_SIZE);
 
   view->hadjustment		  = NULL;
@@ -183,6 +185,9 @@ gtk_sgf_tree_view_init (GtkSgfTreeView *view)
   view->ignore_adjustment_changes = FALSE;
 
   view->current_tree = NULL;
+
+  view->map_width  = 1;
+  view->map_height = 1;
 }
 
 
@@ -206,8 +211,12 @@ gtk_sgf_tree_view_realize (GtkWidget *widget)
   if (!view->hadjustment || !view->vadjustment)
     gtk_sgf_tree_view_set_scroll_adjustments (view, NULL, NULL);
 
-  if (view->current_tree)
+  if (view->current_tree) {
+    sgf_game_tree_get_map_dimensions (view->current_tree,
+				      &view->map_width, &view->map_height);
+
     update_view_port (view);
+  }
 
   GTK_WIDGET_SET_FLAGS (widget, GTK_REALIZED);
 
@@ -252,14 +261,8 @@ gtk_sgf_tree_view_size_request (GtkWidget *widget, GtkRequisition *requisition)
   GtkSgfTreeView *view = GTK_SGF_TREE_VIEW (widget);
   gint full_cell_size = FULL_CELL_SIZE (view);
 
-  if (view->current_tree) {
-    requisition->width  = view->current_tree->map_width * full_cell_size;
-    requisition->height = view->current_tree->map_height * full_cell_size;
-  }
-  else {
-    requisition->width = full_cell_size;
-    requisition->width = full_cell_size;
-  }
+  requisition->width  = view->map_width  * full_cell_size;
+  requisition->height = view->map_height * full_cell_size;
 }
 
 
@@ -270,7 +273,8 @@ gtk_sgf_tree_view_size_allocate (GtkWidget *widget, GtkAllocation  *allocation)
 
   GTK_WIDGET_CLASS (parent_class)->size_allocate (widget, allocation);
 
-  update_view_port_and_maybe_move_or_resize_window (view);
+  update_view_port_and_maybe_move_or_resize_window
+    (view, (gint) view->hadjustment->value, (gint) view->vadjustment->value);
 }
 
 
@@ -340,7 +344,12 @@ gtk_sgf_tree_view_expose (GtkWidget *widget, GdkEventExpose *event)
     gint stones_left_margin = (full_cell_size / 2
 			       + view->base.main_tile_set->stones_x_offset);
     gint stones_top_margin = (full_cell_size / 2
-			      + view->base.main_tile_set->stones_x_offset);
+			      + view->base.main_tile_set->stones_y_offset);
+
+    /* FIXME: Something is not aligned well... */
+    gint sgf_markup_margin = ((full_cell_size
+			       - view->base.sgf_markup_tile_set->tile_size)
+			      / 2) + 1;
 
     GdkWindow *window = view->output_window;
     GdkGC *gc = widget->style->fg_gc[GTK_STATE_NORMAL];
@@ -456,6 +465,19 @@ gtk_sgf_tree_view_expose (GtkWidget *widget, GdkEventExpose *event)
 	       stones_top_margin + y * full_cell_size,
 	       -1, -1, GDK_RGB_DITHER_NORMAL, 0, 0);
 	  }
+
+	  if (sgf_node->is_collapsed) {
+	    gint background = (sgf_node->move_color != SETUP_NODE
+			       ? sgf_node->move_color : EMPTY);
+
+	    gdk_draw_pixbuf (window, gc,
+			     (view->base.sgf_markup_tile_set
+			      ->tiles[SGF_MARKUP_CROSS][background]),
+			     0, 0,
+			     sgf_markup_margin + x * full_cell_size,
+			     sgf_markup_margin + y * full_cell_size,
+			     -1, -1, GDK_RGB_DITHER_NORMAL, 0, 0);
+	  }
 	}
       }
     }
@@ -471,7 +493,7 @@ gtk_sgf_tree_view_expose (GtkWidget *widget, GdkEventExpose *event)
 static gboolean
 gtk_sgf_tree_view_button_press_event (GtkWidget *widget, GdkEventButton *event)
 {
-  if (event->button == 1) {
+  if (event->button == 1 || event->button == 3) {
     GtkSgfTreeView *view = GTK_SGF_TREE_VIEW (widget);
     gint full_cell_size = FULL_CELL_SIZE (view);
     gint x;
@@ -498,7 +520,7 @@ static gboolean
 gtk_sgf_tree_view_button_release_event (GtkWidget *widget,
 					GdkEventButton *event)
 {
-  if (event->button == 1) {
+  if (event->button == 1 || event->button == 3) {
     GtkSgfTreeView *view = GTK_SGF_TREE_VIEW (widget);
     gint full_cell_size = FULL_CELL_SIZE (view);
     gint x;
@@ -521,7 +543,7 @@ gtk_sgf_tree_view_button_release_event (GtkWidget *widget,
 	if (clicked_node) {
 	  g_signal_emit (G_OBJECT (view),
 			 sgf_tree_view_signals[SGF_TREE_VIEW_CLICKED], 0,
-			 clicked_node);
+			 clicked_node, event->button);
 	}
       }
     }
@@ -540,6 +562,12 @@ gtk_sgf_tree_view_unrealize (GtkWidget *widget)
 
   gdk_window_set_user_data (view->output_window, NULL);
   gdk_window_destroy (view->output_window);
+
+  utils_free (view->view_port_nodes);
+  utils_free (view->view_port_lines);
+
+  view->view_port_nodes = NULL;
+  view->view_port_lines = NULL;
 
   GTK_WIDGET_CLASS (parent_class)->unrealize (widget);
 }
@@ -565,9 +593,6 @@ gtk_sgf_tree_view_finalize (GObject *object)
   disconnect_adjustment (view, view->hadjustment);
   disconnect_adjustment (view, view->vadjustment);
 
-  utils_free (view->view_port_nodes);
-  utils_free (view->view_port_lines);
-
   G_OBJECT_CLASS (parent_class)->finalize (object);
 }
 
@@ -581,7 +606,7 @@ gtk_sgf_tree_view_set_sgf_tree (GtkSgfTreeView *view, SgfGameTree *sgf_tree)
 
   view->current_tree = sgf_tree;
 
-  sgf_game_tree_activate_map (sgf_tree);
+  gtk_goban_base_set_game (GTK_GOBAN_BASE (view), sgf_tree->game);
 
   if (!view->hadjustment || !view->vadjustment)
     gtk_sgf_tree_view_set_scroll_adjustments (view, NULL, NULL);
@@ -597,13 +622,130 @@ gtk_sgf_tree_view_update_view_port (GtkSgfTreeView *view)
     SgfNode **view_port_nodes = view->view_port_nodes;
     SgfNode *tree_current_node = view->tree_current_node;
     SgfGameTreeMapLine *view_port_lines = view->view_port_lines;
-
-    assert (view->current_tree);
+    gint view_x = (gint) view->hadjustment->value;
+    gint view_y = (gint) view->vadjustment->value;
 
     view->view_port_nodes = NULL;
     view->view_port_lines = NULL;
 
-    if (!update_view_port_and_maybe_move_or_resize_window (view)
+    assert (view->current_tree);
+
+    if (game_tree_view.track_current_node == TRACK_CURRENT_NODE_ALWAYS
+	|| ((game_tree_view.track_current_node
+	     == TRACK_CURRENT_NODE_AUTOMATICALLY)
+	    && sgf_game_tree_node_is_within_view_port (view->current_tree,
+						       view->tree_current_node,
+						       view->view_port_x0,
+						       view->view_port_y0,
+						       view->view_port_x1,
+						       view->view_port_y1,
+						       NULL, NULL))) {
+      /* See if we need to move view port to keep the current node
+       * within it.
+       */
+
+      gint view_width  = GTK_WIDGET (view)->allocation.width;
+      gint view_height = GTK_WIDGET (view)->allocation.height;
+      gint full_cell_size = FULL_CELL_SIZE (view);
+      gint current_node_x;
+      gint current_node_y;
+
+      sgf_game_tree_get_node_coordinates (view->current_tree,
+					  view->current_tree->current_node,
+					  &current_node_x, &current_node_y);
+      current_node_x *= full_cell_size;
+      current_node_y *= full_cell_size;
+
+      if (current_node_x < view_x
+	  || view_x + view_width - full_cell_size < current_node_x
+	  || (view_width > 4 * full_cell_size
+	      && (current_node_x < view_x + full_cell_size
+		  || (view_x + view_width - 2 * full_cell_size
+		      < current_node_x)))
+	  || current_node_y < view_y
+	  || view_y + view_height - full_cell_size < current_node_y
+	  || (view_height > 4 * full_cell_size
+	      && (current_node_y < view_y + full_cell_size
+		  || (view_y + view_height - 2 * full_cell_size
+		      < current_node_y)))) {
+	view->ignore_adjustment_changes = TRUE;
+
+	if (game_tree_view.center_on_current_node) {
+	  view->hadjustment->value
+	    = (((current_node_x - (2 * view_width - 3 * full_cell_size) / 4)
+		/ full_cell_size)
+	       * full_cell_size);
+	  view->vadjustment->value
+	    = (((current_node_y - (2 * view_height - 3 * full_cell_size) / 4)
+		/ full_cell_size)
+	       * full_cell_size);
+	}
+	else {
+	  if (view_width > 4 * full_cell_size) {
+	    if (view_x > current_node_x - full_cell_size)
+	      view->hadjustment->value = current_node_x - full_cell_size;
+	    else {
+	      gint minimal_value = (((current_node_x - view_width
+				      + (8 * full_cell_size) / 3)
+				     / full_cell_size)
+				    * full_cell_size);
+
+	      if (view_x < minimal_value)
+		view->hadjustment->value = minimal_value;
+	    }
+	  }
+	  else {
+	    if (view_x > current_node_x)
+	      view->hadjustment->value = current_node_x;
+	    else {
+	      gint minimal_value = (((current_node_x - view_width
+				      + (5 * full_cell_size) / 3)
+				     / full_cell_size)
+				    * full_cell_size);
+
+	      if (view_x < minimal_value)
+		view->hadjustment->value = minimal_value;
+	    }
+	  }
+
+	  if (view_height > 4 * full_cell_size) {
+	    if (view_y > current_node_y - full_cell_size)
+	      view->vadjustment->value = current_node_y - full_cell_size;
+	    else {
+	      gint minimal_value = (((current_node_y - view_height
+				      + (8 * full_cell_size) / 3)
+				     / full_cell_size)
+				    * full_cell_size);
+
+	      if (view_y < minimal_value)
+		view->vadjustment->value = minimal_value;
+	    }
+	  }
+	  else {
+	    if (view_y > current_node_y)
+	      view->vadjustment->value = current_node_y;
+	    else {
+	      gint minimal_value = (((current_node_y - view_height
+				      + 2 * full_cell_size)
+				     / full_cell_size)
+				    * full_cell_size);
+
+	      if (view_y < minimal_value)
+		view->vadjustment->value = minimal_value;
+	    }
+	  }
+	}
+
+	gtk_adjustment_value_changed (view->hadjustment);
+	gtk_adjustment_value_changed (view->vadjustment);
+
+	/* FIXME: Suboptimal. */
+	gtk_widget_queue_draw (GTK_WIDGET (view));
+      }
+    }
+
+    if (!update_view_port_and_maybe_move_or_resize_window (view,
+							   view_x, view_y)
 	&& (!view_port_nodes || !view_port_lines
 	    || (memcmp (view->view_port_nodes, view_port_nodes,
 			((view->view_port_x1 - view->view_port_x0)
@@ -659,20 +801,14 @@ configure_adjustment (GtkSgfTreeView *view, gboolean horizontal)
   gboolean value_has_changed = FALSE;
   gint page_size = (horizontal
 		    ? widget->allocation.width : widget->allocation.height);
-  gint upper = page_size;
   gint full_cell_size = FULL_CELL_SIZE (view);
+  gint upper = MAX (((horizontal ? view->map_width : view->map_height)
+		     * full_cell_size),
+		    page_size);
 
   if (adjustment->lower != 0.0) {
     adjustment->lower = 0.0;
     adjustment_has_changed = TRUE;
-  }
-
-  if (view->current_tree) {
-    upper = MAX (upper,
-		 (horizontal
-		  ? view->current_tree->map_width
-		  : view->current_tree->map_height)
-		 * full_cell_size);
   }
 
   if ((gint) adjustment->upper != upper) {
@@ -765,27 +901,29 @@ update_view_port (GtkSgfTreeView *view)
   utils_free (view->view_port_nodes);
   utils_free (view->view_port_lines);
 
-  sgf_game_tree_update_view_port (view->current_tree,
-				  view->view_port_x0, view->view_port_y0,
-				  view->view_port_x1, view->view_port_y1,
-				  &view->view_port_nodes,
-				  &view->view_port_lines,
-				  &view->num_view_port_lines);
+  sgf_game_tree_fill_map_view_port (view->current_tree,
+				    view->view_port_x0, view->view_port_y0,
+				    view->view_port_x1, view->view_port_y1,
+				    &view->view_port_nodes,
+				    &view->view_port_lines,
+				    &view->num_view_port_lines);
+
   view->tree_current_node = view->current_tree->current_node;
 }
 
 
 static gboolean
-update_view_port_and_maybe_move_or_resize_window (GtkSgfTreeView *view)
+update_view_port_and_maybe_move_or_resize_window
+  (GtkSgfTreeView *view,
+   gint original_hadjustment_value, gint original_vadjustment_value)
 {
   gint original_hadjustment_upper = view->hadjustment->upper;
   gint original_vadjustment_upper = view->vadjustment->upper;
-  gint original_hadjustment_value = view->hadjustment->value;
-  gint original_vadjustment_value = view->vadjustment->value;
   gboolean need_to_resize_window;
   gboolean need_to_move_window;
 
-  update_view_port (view);
+  sgf_game_tree_get_map_dimensions (view->current_tree,
+				    &view->map_width, &view->map_height);
 
   view->ignore_adjustment_changes = TRUE;
 
@@ -803,34 +941,36 @@ update_view_port_and_maybe_move_or_resize_window (GtkSgfTreeView *view)
 			   || (original_vadjustment_value
 			       != (gint) view->vadjustment->value));
 
-  if (need_to_move_window)
+  if (GTK_WIDGET_REALIZED (view)) {
     update_view_port (view);
 
-  if (GTK_WIDGET_REALIZED (GTK_WIDGET (view))
-      && (need_to_resize_window || need_to_move_window)) {
-    if (need_to_resize_window) {
-      if (need_to_move_window) {
-	gdk_window_move_resize (view->output_window,
-				- (gint) view->hadjustment->value,
-				- (gint) view->vadjustment->value,
-				(gint) view->hadjustment->upper,
-				(gint) view->vadjustment->upper);
+    if (need_to_resize_window || need_to_move_window) {
+      if (need_to_resize_window) {
+	if (need_to_move_window) {
+	  gdk_window_move_resize (view->output_window,
+				  - (gint) view->hadjustment->value,
+				  - (gint) view->vadjustment->value,
+				  (gint) view->hadjustment->upper,
+				  (gint) view->vadjustment->upper);
+	}
+	else {
+	  gdk_window_resize (view->output_window,
+			     (gint) view->hadjustment->upper,
+			     (gint) view->vadjustment->upper);
+	}
+
+	gtk_widget_queue_draw (GTK_WIDGET (view));
       }
       else {
-	gdk_window_resize (view->output_window,
-			   (gint) view->hadjustment->upper,
-			   (gint) view->vadjustment->upper);
+	gdk_window_move (view->output_window,
+			 - (gint) view->hadjustment->value,
+			 - (gint) view->vadjustment->value);
       }
-    }
-    else {
-      gdk_window_move (view->output_window,
-		       - (gint) view->hadjustment->value,
-		       - (gint) view->vadjustment->value);
-    }
 
-    gdk_window_process_updates (view->output_window, FALSE);
+      gdk_window_process_updates (view->output_window, FALSE);
 
-    return TRUE;
+      return TRUE;
+    }
   }
 
   return FALSE;

@@ -1,7 +1,7 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *\
  * This file is part of Quarry.                                    *
  *                                                                 *
- * Copyright (C) 2004 Paul Pogonyshev.                             *
+ * Copyright (C) 2004, 2005 Paul Pogonyshev                        *
  *                                                                 *
  * This program is free software; you can redistribute it and/or   *
  * modify it under the terms of the GNU General Public License as  *
@@ -67,6 +67,9 @@ struct _GtkSgfTreeView {
 
   SgfGameTree	       *current_tree;
 
+  gint			map_width;
+  gint			map_height;
+
   gint			view_port_x0;
   gint			view_port_y0;
   gint			view_port_x1;
@@ -90,7 +93,8 @@ struct _GtkSgfTreeViewClass {
 				   GtkAdjustment *hadjustment,
 				   GtkAdjustment *vadjustment);
 
-  void (* sgf_tree_view_clicked) (GtkSgfTreeView *view, SgfNode *sgf_node);
+  void (* sgf_tree_view_clicked) (GtkSgfTreeView *view, SgfNode *sgf_node,
+				  gint button_index);
 };
 
 
