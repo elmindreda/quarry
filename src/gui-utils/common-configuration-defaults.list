@@ -41,21 +41,18 @@ defaults  - go_board_appearance_defaults {
 
 
 defaults  - amazons_board_appearance_defaults {
-  board_appearance		structure	BoardAppearance
-						board_appearance_dispose
+  board_appearance		structure	new
+				BoardAppearance board_appearance_dispose
 
-  board_appearance.use_background_texture
-				boolean		true
-  board_appearance.background_texture
-				string
+    use_background_texture	boolean		true
+    background_texture		string
 					substitute_value PACKAGE_TEXTURES_DIR
 					"/wood1.jpg"
 
-  board_appearance.background_color
-				color		#dbb665
+    background_color		color		#dbb665
+    grid_and_labels_color	color		#000000
 
-  board_appearance.grid_and_labels_color
-				color		#000000
+  end
 
   # Force some brownish tint.
   checkerboard_pattern_color	color		#604000
