@@ -1,3 +1,8 @@
+2004-11-13  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* C/quarry.xml (register-game-playing-program): Fix typo (bug
+	#1835.)
+
 2004-10-14  Paul Pogonyshev  <pogonyshev@gmx.net>
 
 	* (Quarry version 0.1.9.)
