@@ -616,6 +616,38 @@ sgf_node_get_handicap(const SgfNode *node)
 }
 
 
+int
+sgf_node_get_komi(const SgfNode *node, double *komi)
+{
+  const char *text = sgf_node_get_text_property_value(node, SGF_KOMI);
+
+  if (text) {
+    const char *scan = text;
+    int has_digits = 0;
+    int has_point = 0;
+
+    if (*scan == '+' || *scan == '-')
+      scan++;
+
+    while (*scan) {
+      if ('0' <= *scan && *scan <= '9')
+	has_digits = 1;
+      else if (*scan == '.' && !has_point)
+	has_point = 0;
+      else
+	return 0;
+
+      scan++;
+    }
+
+    *komi = atof(text);
+    return 1;
+  }
+
+  return 0;
+}
+
+
 /* Get the value of `real' property of specified type.  Return value
  * is the same as for sgf_node_get_number_property_value().
  */

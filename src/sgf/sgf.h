@@ -260,6 +260,7 @@ int		 sgf_node_get_double_property_value(const SgfNode *node,
 int		 sgf_node_get_color_property_value(const SgfNode *node,
 						   SgfType type);
 int		 sgf_node_get_handicap(const SgfNode *node);
+int		 sgf_node_get_komi(const SgfNode *node, double *komi);
 
 int		 sgf_node_get_real_property_value(const SgfNode *node,
 						  SgfType type, double *value);
@@ -507,6 +508,9 @@ void	      sgf_utils_mark_territory_on_grid(const SgfGameTree *tree,
 					       char grid[BOARD_GRID_SIZE],
 					       char black_territory_mark,
 					       char white_territory_mark);
+
+void	      sgf_utils_set_handicap(SgfGameTree *tree,
+				     int handicap, int is_fixed);
 
 
 

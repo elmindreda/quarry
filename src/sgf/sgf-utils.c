@@ -440,6 +440,43 @@ sgf_utils_mark_territory_on_grid(const SgfGameTree *tree,
 }
 
 
+/* Set handicap in the `tree's current node (normally root).  If fixed
+ * handicap is requested, the function also adds `AB' property with
+ * required number of handicap stones.
+ */
+void
+sgf_utils_set_handicap(SgfGameTree *tree, int handicap, int is_fixed)
+{
+  char buffer[32];
+
+  assert(tree);
+  assert(tree->game == GAME_GO);
+  assert(tree->current_node);
+  assert(handicap == 0 || handicap > 1);
+  assert(!IS_STONE(tree->current_node->move_color));
+
+  if (is_fixed) {
+    if (handicap != 0) {
+      SgfPositionList *handicap_stones
+	= go_get_fixed_handicap_stones(tree->board_width, tree->board_height,
+				       handicap);
+
+      tree->current_node->move_color = SETUP_NODE;
+      sgf_node_add_list_of_point_property(tree->current_node, tree,
+					  SGF_ADD_BLACK, handicap_stones);
+    }
+  }
+  else
+    assert(handicap <= tree->board_width * tree->board_height);
+
+  sgf_node_add_text_property(tree->current_node, tree, SGF_HANDICAP,
+			     utils_duplicate_as_string(buffer,
+						       sprintf(buffer, "%d",
+							       handicap)));
+}
+
+
+
 static void
 do_enter_tree(SgfGameTree *tree, SgfNode *down_to, SgfBoardState *board_state)
 {
