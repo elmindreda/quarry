@@ -20,9 +20,10 @@
 \* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 
+#include "gtk-utils.h"
+
 #include "gtk-control-center.h"
 #include "gtk-freezable-spin-button.h"
-#include "gtk-utils.h"
 #include "quarry-stock.h"
 #include "utils.h"
 
@@ -380,6 +381,8 @@ file_selection_response (GtkFileSelection *file_selection, gint response_id,
 	  = N_("File named `%s' already exists. "
 	       "Do you want to overwrite it with the one you are saving?");
 
+	gchar *filename_in_utf8 = g_filename_to_utf8 (filename, -1,
+						      NULL, NULL, NULL);
 	GtkWidget *confirmation_dialog
 	  = gtk_utils_create_message_dialog (GTK_WINDOW (file_selection),
 					     GTK_STOCK_DIALOG_WARNING,
@@ -387,7 +390,9 @@ file_selection_response (GtkFileSelection *file_selection, gint response_id,
 					      | GTK_UTILS_DONT_SHOW),
 					     _(hint),
 					     _(message_format_string),
-					     filename);
+					     filename_in_utf8);
+
+	g_free (filename_in_utf8);
 
 	gtk_dialog_add_buttons (GTK_DIALOG (confirmation_dialog),
 				GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
@@ -678,17 +683,24 @@ browse_button_clicked (GtkWidget *button, GtkUtilsBrowseButtonData *data)
     if (*current_entry_text) {
       GtkFileSelection *file_selection
 	= GTK_FILE_SELECTION (data->browsing_dialog);
+      gchar *disk_encoded_filename = NULL;
 
       if (data->is_command_line_entry) {
 	gchar **argv;
 
 	if (g_shell_parse_argv (current_entry_text, NULL, &argv, NULL)) {
-	  gtk_file_selection_set_filename (file_selection, argv[0]);
+	  disk_encoded_filename = g_filename_from_utf8 (argv[0], -1,
+							NULL, NULL, NULL);
 	  g_strfreev (argv);
 	}
       }
-      else
-	gtk_file_selection_set_filename (file_selection, current_entry_text);
+      else {
+	disk_encoded_filename = g_filename_from_utf8 (current_entry_text, -1,
+						      NULL, NULL, NULL);
+      }
+
+      gtk_file_selection_set_filename (file_selection, disk_encoded_filename);
+      g_free (disk_encoded_filename);
     }
 
     gtk_utils_add_file_selection_response_handlers
@@ -705,9 +717,14 @@ browsing_dialog_response (GtkFileSelection *file_selection,
 			  gint response_id, GtkUtilsBrowseButtonData *data)
 {
   if (response_id == GTK_RESPONSE_OK) {
-    gtk_entry_set_text (data->associated_entry,
-			gtk_file_selection_get_filename (file_selection));
+    const gchar *filename   = gtk_file_selection_get_filename (file_selection);
+    gchar *filename_in_utf8 = g_filename_to_utf8 (filename, -1,
+						  NULL, NULL, NULL);
+
+    gtk_entry_set_text (data->associated_entry, filename_in_utf8);
     gtk_widget_grab_focus (GTK_WIDGET (data->associated_entry));
+
+    g_free (filename_in_utf8);
 
     if (data->callback)
       data->callback (data->associated_entry, NULL, data->user_data);
@@ -1041,8 +1058,12 @@ static void
 do_align_left_widget (GtkWidget *widget, GtkSizeGroup **size_group)
 {
   if (*size_group) {
-    gtk_size_group_add_widget (*size_group, widget);
-    *size_group = NULL;
+    if (!GTK_IS_BOX (widget)) {
+      gtk_size_group_add_widget (*size_group, widget);
+      *size_group = NULL;
+    }
+    else
+      do_align_left_widgets (widget, *size_group);
   }
 }
 
