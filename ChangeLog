@@ -1,3 +1,10 @@
+2004-08-09  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* configure.ac: Don't abort configuration if `gthread' library is
+	not installed (optional for Quarry).  Configure Quarry to use
+	`librsvg' if it is installed.  Define `HAVE_LIBRSVG' in `config.h'
+	if it is.
+
 2004-07-20  Paul Pogonyshev  <pogonyshev@gmx.net>
 
 	* configure.ac: Quarry version 0.1.5.

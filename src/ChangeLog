@@ -1,3 +1,16 @@
+2004-08-10  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* board/go.c (go_mark_territory_on_grid): Detect false eyes that
+	don't yield territory and don't mark them.
+
+2004-08-09  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* Makefile.am (quarry_LDADD): Include `QUARRY_GTHREAD_LIBS' (split
+	off from `QUARRY_GTK_LIBS') and new `QUARRY_RSVG_LIBS' flags.
+	* gui-gtk/Makefile.am (QUARRY_FULL_GTK_CFLAGS): Include
+	`QUARRY_GTHREAD_CFLAGS' (split off from `QUARRY_GTK_CFLAGS') and
+	new `QUARRY_RSVG_CFLAGS'.
+
 2004-08-07  Paul Pogonyshev  <pogonyshev@gmx.net>
 
 	* gui-gtk/gtk-preferences.c (create_gtp_engines_page): Create GTP
