@@ -241,6 +241,8 @@ gtk_sgf_tree_view_realize (GtkWidget *widget)
 			    GTK_STATE_NORMAL);
 
   gdk_window_show (view->output_window);
+
+  GTK_WIDGET_CLASS (parent_class)->realize (widget);
 }
 
 
