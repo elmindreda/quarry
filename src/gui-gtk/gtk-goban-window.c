@@ -866,6 +866,7 @@ update_territory_markup(GtkGobanWindow *goban_window)
 			    WHITE_OPAQUE | GOBAN_MARKUP_GHOSTIFY);
 
   gtk_goban_update(goban_window->goban, NULL, goban_markup, NULL,
+		   KEEP_SGF_LABELS,
 		   goban_window->sgf_board_state.last_move_x,
 		   goban_window->sgf_board_state.last_move_y);
 }
@@ -1590,6 +1591,8 @@ update_children_for_new_node(GtkGobanWindow *goban_window)
 
   gtk_goban_update(goban_window->goban, goban_window->board->grid,
 		   goban_markup, goban_window->sgf_markup,
+		   sgf_node_get_list_of_label_property_value(current_node,
+							     SGF_LABEL),
 		   goban_window->sgf_board_state.last_move_x,
 		   goban_window->sgf_board_state.last_move_y);
   gtk_goban_force_feedback_poll(goban_window->goban);

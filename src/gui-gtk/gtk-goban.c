@@ -26,6 +26,7 @@
 #include "gtk-utils.h"
 #include "gtk-tile-set.h"
 #include "quarry-marshal.h"
+#include "sgf.h"
 #include "board.h"
 #include "game-info.h"
 #include "utils.h"
@@ -281,10 +282,26 @@ gtk_goban_set_parameters(GtkGoban *goban, Game game, int width, int height)
   assert(GAME_IS_SUPPORTED(game));
   assert(width > 0 && height > 0);
 
+  if (goban->width && goban->height) {
+    int x;
+    int y;
+
+    for (y = 0; y < goban->height; y++) {
+      for (x = 0; x < goban->width; x++)
+	g_free(goban->sgf_labels[POSITION(x, y)]);
+    }
+  }
+
   is_new_game	= (goban->game != game);
   goban->game	= game;
   goban->width	= width;
   goban->height = height;
+
+  grid_fill(goban->grid, goban->width, goban->height, TILE_NONE);
+  grid_fill(goban->goban_markup, goban->width, goban->height, TILE_NONE);
+  grid_fill(goban->sgf_markup, goban->width, goban->height, TILE_NONE);
+  pointer_grid_fill((void **) goban->sgf_labels, goban->width, goban->height,
+		    NULL);
 
   if (is_new_game)
     set_goban_style_appearance(goban);
@@ -495,6 +512,7 @@ gtk_goban_expose(GtkWidget *widget, GdkEventExpose *event)
   gint upper_limit;
   GdkRectangle row_rectangle;
   GdkRectangle cell_rectangle;
+  PangoLayout *layout = NULL;
 
   GtkGoban *goban = GTK_GOBAN(widget);
   int cell_size = goban->cell_size;
@@ -565,13 +583,13 @@ gtk_goban_expose(GtkWidget *widget, GdkEventExpose *event)
       || clip_right_margin > goban->right_margin
       || clip_top_margin < goban->top_margin
       || clip_bottom_margin > goban->bottom_margin) {
-    PangoLayout *layout = gtk_widget_create_pango_layout(widget, NULL);
     const char *horizontal_coordinates
       = game_info[goban->game].horizontal_coordinates;
 
+    layout = gtk_widget_create_pango_layout(widget, NULL);
     pango_layout_set_font_description(layout, goban->font_description);
-    pango_layout_set_width(layout, 2 * cell_size);
     pango_layout_set_alignment(layout, PANGO_ALIGN_CENTER);
+    pango_layout_set_width(layout, 2 * cell_size);
 
     /* Left and right label columns. */
     if (clip_left_margin < goban->left_margin
@@ -637,8 +655,6 @@ gtk_goban_expose(GtkWidget *widget, GdkEventExpose *event)
 	}
       }
     }
-
-    g_object_unref(layout);
   }
 
   /* FIXME: Not clipped now.  Needs a rewrite anyway. */
@@ -786,12 +802,33 @@ gtk_goban_expose(GtkWidget *widget, GdkEventExpose *event)
 			    -1, -1,
 			    GDK_RGB_DITHER_NORMAL, 0, 0);
 	  }
+
+	  if (goban->sgf_labels[pos]) {
+	    if (!layout) {
+	      layout = gtk_widget_create_pango_layout(widget, NULL);
+	      pango_layout_set_font_description(layout,
+						goban->font_description);
+	      pango_layout_set_alignment(layout, PANGO_ALIGN_CENTER);
+	      pango_layout_set_width(layout, cell_size - 2);
+	    }
+
+	    pango_layout_set_text(layout, goban->sgf_labels[pos], -1);
+	    gdk_draw_layout(widget->window, gc,
+			    goban->first_cell_center_x + x * cell_size,
+			    (goban->first_cell_center_y
+			     - goban->character_height / 2
+			     + y * cell_size),
+			    layout);
+	  }
 	}
       }
     }
 
     gdk_region_destroy(row_region);
   }
+
+  if (layout)
+    g_object_unref(layout);
 
   if (!IS_NULL_POINT(goban->last_move_x, goban->last_move_y)) {
     if (goban->grid[POSITION(goban->last_move_x, goban->last_move_y)] == BLACK)
@@ -1026,6 +1063,16 @@ gtk_goban_finalize(GObject *object)
 {
   GtkGoban *goban = GTK_GOBAN(object);
 
+  if (goban->width && goban->height) {
+    int x;
+    int y;
+
+    for (y = 0; y < goban->height; y++) {
+      for (x = 0; x < goban->width; x++)
+	g_free(goban->sgf_labels[POSITION(x, y)]);
+    }
+  }
+
   if (goban->font_description)
     pango_font_description_free(goban->font_description);
 
@@ -1187,11 +1234,16 @@ gtk_goban_update(GtkGoban *goban,
 		 const char grid[BOARD_GRID_SIZE],
 		 const char goban_markup[BOARD_GRID_SIZE],
 		 const char sgf_markup[BOARD_GRID_SIZE],
+		 const SgfLabelList *sgf_label_list,
 		 int last_move_x, int last_move_y)
 {
   GtkWidget *widget;
-  int cell_size;
+  gint width;
+  gint height;
+  gint cell_size;
   int k;
+  int x;
+  int y;
 
   assert(GTK_IS_GOBAN(goban));
 
@@ -1206,14 +1258,23 @@ gtk_goban_update(GtkGoban *goban,
     sgf_markup = goban->sgf_markup;
 
   widget = GTK_WIDGET(goban);
+
+  width	    = goban->width;
+  height    = goban->height;
   cell_size = goban->cell_size;
 
   if (GTK_WIDGET_REALIZED(widget)) {
     GdkRectangle rectangle_stone;
     GdkRectangle rectangle_markup;
     GdkRectangle rectangle_sgf_markup;
-    int x;
-    int y;
+    GdkRectangle rectangle_sgf_label;
+    const SgfLabel *sgf_label = NULL;
+    const SgfLabel *sgf_labels_limit = NULL;
+
+    if (sgf_label_list && sgf_label_list != KEEP_SGF_LABELS) {
+      sgf_label = sgf_label_list->labels;
+      sgf_labels_limit = sgf_label_list->labels + sgf_label_list->num_labels;
+    }
 
     rectangle_stone.width	= goban->main_tile_set->tile_size;
     rectangle_stone.height	= goban->main_tile_set->tile_size;
@@ -1221,9 +1282,11 @@ gtk_goban_update(GtkGoban *goban,
     rectangle_markup.height	= goban->small_tile_set->tile_size;
     rectangle_sgf_markup.width	= goban->sgf_markup_tile_set->tile_size;
     rectangle_sgf_markup.height = goban->sgf_markup_tile_set->tile_size;
+    rectangle_sgf_label.width	= cell_size - 2;
+    rectangle_sgf_label.height	= goban->character_height;
 
-    for (y = 0; y < goban->height; y++) {
-      for (x = 0; x < goban->width; x++) {
+    for (y = 0; y < height; y++) {
+      for (x = 0; x < width; x++) {
 	int pos = POSITION(x, y);
 
 	if (goban->grid[pos] != grid[pos]
@@ -1255,13 +1318,60 @@ gtk_goban_update(GtkGoban *goban,
 
 	  goban->goban_markup[pos] = goban_markup[pos];
 	}
+
+	if (sgf_label_list != KEEP_SGF_LABELS) {
+	  char *label_text = ((sgf_label != sgf_labels_limit
+			       && sgf_label->point.x == x
+			       && sgf_label->point.y == y)
+			      ? sgf_label->text : NULL);
+
+	  if (goban->sgf_labels[pos]
+	      ? (!label_text
+		 || strcmp(goban->sgf_labels[pos], label_text) != 0)
+	      : label_text != NULL) {
+	    rectangle_sgf_label.x = (goban->first_cell_center_x
+				     - cell_size / 2
+				     + x * cell_size);
+	    rectangle_sgf_label.y = (goban->first_cell_center_y
+				     - goban->character_height / 2
+				     + y * cell_size);
+	    gdk_window_invalidate_rect(widget->window, &rectangle_sgf_label,
+				       FALSE);
+
+	    g_free(goban->sgf_labels[pos]);
+	    goban->sgf_labels[pos] = (label_text
+				      ? g_strdup(label_text) : NULL);
+	  }
+
+	  if (label_text)
+	    sgf_label++;
+	}
       }
     }
   }
   else {
-    memcpy(goban->grid, grid, sizeof(goban->grid));
-    memcpy(goban->goban_markup, goban_markup, sizeof(goban->goban_markup));
-    memcpy(goban->sgf_markup, sgf_markup, sizeof(goban->sgf_markup));
+    grid_copy(goban->grid, grid, width, height);
+    grid_copy(goban->goban_markup, goban_markup, width, height);
+    grid_copy(goban->sgf_markup, sgf_markup, width, height);
+
+    if (sgf_label_list != KEEP_SGF_LABELS) {
+      for (y = 0; y < height; y++) {
+	for (x = 0; x < width; x++) {
+	  int pos = POSITION(x, y);
+
+	  g_free(goban->sgf_labels[pos]);
+	  goban->sgf_labels[pos] = NULL;
+	}
+      }
+
+      if (sgf_label_list) {
+	for (k = 0; k < sgf_label_list->num_labels; k++) {
+	  int pos = POINT_TO_POSITION(sgf_label_list->labels[k].point);
+
+	  goban->sgf_labels[pos] = g_strdup(sgf_label_list->labels[k].text);
+	}
+      }
+    }
   }
 
   if (goban->last_move_x != last_move_x || goban->last_move_y != last_move_y) {
@@ -1280,7 +1390,7 @@ gtk_goban_update(GtkGoban *goban,
 	gdk_window_invalidate_rect(widget->window, &rectangle, FALSE);
       }
 
-      if (ON_SIZED_GRID(goban->width, goban->height, last_move_x, last_move_y)
+      if (ON_SIZED_GRID(width, height, last_move_x, last_move_y)
 	  && goban->grid[pos] == grid[pos]) {
 	rectangle.x = goban->first_cell_center_x + last_move_x * cell_size - 3;
 	rectangle.y = goban->first_cell_center_y + last_move_y * cell_size - 3;
@@ -1288,7 +1398,7 @@ gtk_goban_update(GtkGoban *goban,
       }
     }
 
-    if (ON_SIZED_GRID(goban->width, goban->height, last_move_x, last_move_y)) {
+    if (ON_SIZED_GRID(width, height, last_move_x, last_move_y)) {
       goban->last_move_x = last_move_x;
       goban->last_move_y = last_move_y;
     }

@@ -155,6 +155,7 @@ struct _GtkGoban {
   char			 grid[BOARD_GRID_SIZE];
   char			 goban_markup[BOARD_GRID_SIZE];
   char			 sgf_markup[BOARD_GRID_SIZE];
+  gchar			*sgf_labels[BOARD_GRID_SIZE];
 
   BoardPositionList	*overlay_positon_lists[NUM_OVERLAYS];
   char			*overlay_contents[NUM_OVERLAYS];
@@ -221,6 +222,9 @@ struct _GtkGobanClass {
 };
 
 
+#define KEEP_SGF_LABELS		((const SgfLabelList *) -1)
+
+
 GtkType 	gtk_goban_get_type(void);
 
 GtkWidget *	gtk_goban_new(void);
@@ -232,6 +236,7 @@ void		gtk_goban_update(GtkGoban *goban,
 				 const char grid[BOARD_GRID_SIZE],
 				 const char goban_markup[BOARD_GRID_SIZE],
 				 const char sgf_markup[BOARD_GRID_SIZE],
+				 const SgfLabelList *sgf_label_list,
 				 int last_move_x, int last_move_y);
 void		gtk_goban_force_feedback_poll(GtkGoban *goban);
 
