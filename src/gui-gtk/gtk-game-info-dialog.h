@@ -24,6 +24,7 @@
 #define QUARRY_GTK_GAME_INFO_DIALOG_H
 
 
+#include "gtk-freezable-spin-button.h"
 #include "sgf.h"
 #include "board.h"
 #include "quarry.h"
@@ -32,73 +33,83 @@
 
 
 #define GTK_TYPE_GAME_INFO_DIALOG					\
-  (gtk_game_info_dialog_get_type())
-#define GTK_GAME_INFO_DIALOG(obj)					\
-  GTK_CHECK_CAST((obj), GTK_TYPE_GAME_INFO_DIALOG, GtkGameInfoDialog)
-#define GTK_GAME_INFO_DIALOG_CLASS(klass)				\
-  GTK_CHECK_CLASS_CAST((klass), GTK_TYPE_GAME_INFO_DIALOG,		\
+  gtk_game_info_dialog_get_type ()
+
+#define GTK_GAME_INFO_DIALOG(object)					\
+  GTK_CHECK_CAST ((object), GTK_TYPE_GAME_INFO_DIALOG,			\
+		  GtkGameInfoDialog)
+
+#define GTK_GAME_INFO_DIALOG_CLASS(class)				\
+  GTK_CHECK_CLASS_CAST ((class), GTK_TYPE_GAME_INFO_DIALOG,		\
+			GtkGameInfoDialogClass)
+
+#define GTK_IS_GAME_INFO_DIALOG(object)					\
+  GTK_CHECK_TYPE ((object), GTK_TYPE_GAME_INFO_DIALOG)
+
+#define GTK_IS_GAME_INFO_DIALOG_CLASS(class)				\
+  GTK_CHECK_CLASS_TYPE ((class), GTK_TYPE_GAME_INFO_DIALOG)
+
+#define GTK_GAME_INFO_DIALOG_GET_CLASS(object)				\
+  GTK_CHECK_GET_CLASS ((object), GTK_TYPE_GAME_INFO_DIALOG,		\
 		       GtkGameInfoDialogClass)
-
-#define GTK_IS_GAME_INFO_DIALOG(obj)					\
-  GTK_CHECK_TYPE((obj), GTK_TYPE_GAME_INFO_DIALOG)
-#define GTK_IS_GAME_INFO_DIALOG_CLASS(klass)				\
-  GTK_CHECK_CLASS_TYPE((klass), GTK_TYPE_GAME_INFO_DIALOG)
-
-#define GTK_GAME_INFO_DIALOG_GET_CLASS(obj)				\
-  GTK_CHECK_GET_CLASS((obj), GTK_TYPE_GAME_INFO_DIALOG,			\
-		      GtkGameInfoDialogClass)
 
 
 typedef struct _GtkGameInfoDialog	GtkGameInfoDialog;
 typedef struct _GtkGameInfoDialogClass	GtkGameInfoDialogClass;
 
 struct _GtkGameInfoDialog {
-  GtkDialog	   dialog;
+  GtkDialog		   dialog;
 
-  SgfGameTree	  *sgf_tree;
-  SgfNode	  *sgf_node;
+  SgfGameTree		  *sgf_tree;
+  SgfNode		  *sgf_node;
 
-  GtkEntry	  *player_names[NUM_COLORS];
-  GtkEntry	  *player_teams[NUM_COLORS];
-  GtkEntry	  *player_ranks[NUM_COLORS];
+  GtkEntry		  *player_names[NUM_COLORS];
+  GtkEntry		  *player_teams[NUM_COLORS];
+  GtkEntry		  *player_ranks[NUM_COLORS];
 
-  GtkEntry	  *game_name;
-  GtkEntry	  *place;
-  GtkEntry	  *date;
-  GtkEntry	  *event;
-  GtkEntry	  *round;
+  GtkEntry		  *game_name;
+  GtkEntry		  *place;
+  GtkEntry		  *date;
+  GtkEntry		  *event;
+  GtkEntry		  *round;
 
-  GtkEntry	  *rule_set;
-  GtkAdjustment	  *handicap;
-  GtkAdjustment	  *komi;
-  GtkAdjustment	  *main_time;
-  GtkEntry	  *overtime;
+  GtkEntry		  *rule_set;
+  GtkAdjustment		  *handicap;
+  GtkFreezableSpinButton  *handicap_spin_button;
+  GtkAdjustment		  *komi;
+  GtkFreezableSpinButton  *komi_spin_button;
+  GtkAdjustment		  *main_time;
+  GtkFreezableSpinButton  *main_time_spin_button;
+  GtkEntry		  *overtime;
 
-  GtkWidget	  *handicap_box;
-  GtkWidget	  *komi_box;
+  GtkWidget		  *handicap_box;
+  GtkWidget		  *komi_box;
 
-  GtkEntry	  *result;
-  GtkEntry	  *opening;
-  GtkTextBuffer	  *game_comment;
+  GtkEntry		  *result;
+  GtkEntry		  *opening;
+  GtkTextBuffer		  *game_comment;
 
-  GtkEntry	  *copyright;
-  GtkEntry	  *annotator;
-  GtkEntry	  *source;
-  GtkEntry	  *user;
+  GtkEntry		  *copyright;
+  GtkEntry		  *annotator;
+  GtkEntry		  *source;
+  GtkEntry		  *user;
 };
 
 struct _GtkGameInfoDialogClass {
-  GtkDialogClass   parent_class;
+  GtkDialogClass	   parent_class;
+
+  void (* property_changed) (GtkGameInfoDialog *game_info_dialog,
+			     SgfType sgf_property_type);
 };
 
 
-GtkType		gtk_game_info_dialog_get_type(void);
+GtkType		gtk_game_info_dialog_get_type (void);
 
-GtkWidget *	gtk_game_info_dialog_new(void);
+GtkWidget *	gtk_game_info_dialog_new (void);
 
-void		gtk_game_info_dialog_set_node(GtkGameInfoDialog *dialog,
-					      SgfGameTree *sgf_tree,
-					      SgfNode *sgf_node);
+void		gtk_game_info_dialog_set_node (GtkGameInfoDialog *dialog,
+					       SgfGameTree *sgf_tree,
+					       SgfNode *sgf_node);
 
 
 #endif /* QUARRY_GTK_GAME_INFO_DIALOG_H */
