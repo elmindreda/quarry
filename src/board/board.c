@@ -688,9 +688,12 @@ board_position_list_new_empty(int num_positions)
 }
 
 
+/* Position lists are always stored sorted in ascending order of
+ * positions.  This is essential here and also for SGF writer.
+ */
 int
-board_position_list_equal(const BoardPositionList *list1,
-			  const BoardPositionList *list2)
+board_position_lists_are_equal(const BoardPositionList *list1,
+			       const BoardPositionList *list2)
 {
   int k;
 
