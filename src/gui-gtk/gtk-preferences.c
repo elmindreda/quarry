@@ -1837,7 +1837,9 @@ update_board_markup_theme (GtkWidget *widget, UseThemeDefaultsData *data)
     = markup_theme_list_get_item (&markup_themes, selected_theme_index);
 
   if (strcmp (board_appearance->markup_theme, selected_theme->name) != 0) {
-    board_appearance->markup_theme = selected_theme->name;
+    utils_free (board_appearance->markup_theme);
+    board_appearance->markup_theme
+      = utils_duplicate_string (selected_theme->name);
 
     /* Call it, because it blocks signal handlers. */
     update_markup_theme_defaults_usage (NULL, data);
