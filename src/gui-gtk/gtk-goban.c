@@ -20,6 +20,7 @@
 \* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 
+#include "gtk-configuration.h"
 #include "gtk-goban.h"
 #include "gtk-utils.h"
 #include "gtk-tile-set-interface.h"
@@ -76,6 +77,8 @@ static gboolean	 gtk_goban_key_release_event(GtkWidget *widget,
 
 static void	 gtk_goban_finalize(GObject *object);
 
+static void	 set_goban_appearance_style(GtkGoban *goban);
+
 /* FIXME: Doesn't belong here.  And name is bad too. */
 static void	 find_hoshi_points(GtkGoban *goban);
 
@@ -93,7 +96,9 @@ static void	 widget_coordinates_to_board(GtkGoban *goban,
 
 
 static GtkWidgetClass  *parent_class;
-static GtkStyle	       *goban_style;
+
+static GSList	       *all_gobans = NULL;
+
 
 enum {
   POINTER_MOVED,
@@ -135,11 +140,6 @@ gtk_goban_get_type(void)
 static void
 gtk_goban_class_init(GtkGobanClass *class)
 {
-  GtkWidgetClass *widget_class = GTK_WIDGET_CLASS(class);
-  GdkPixbuf *pixbuf;
-  GdkPixmap *pixmap;
-  GtkBindingSet *binding_set;
-
   static GtkUtilsBindingInfo navigation_bindings[] = {
     {GDK_Left,		0,	GOBAN_NAVIGATE_BACK},
     {GDK_Page_Up,	0,	GOBAN_NAVIGATE_BACK_FAST},
@@ -150,6 +150,9 @@ gtk_goban_class_init(GtkGobanClass *class)
     {GDK_Home,		0,	GOBAN_NAVIGATE_ROOT},
     {GDK_End,		0,	GOBAN_NAVIGATE_VARIATION_END}
   };
+
+  GtkWidgetClass *widget_class = GTK_WIDGET_CLASS(class);
+  GtkBindingSet *binding_set;
 
   parent_class = g_type_class_peek_parent(class);
 
@@ -170,15 +173,6 @@ gtk_goban_class_init(GtkGobanClass *class)
   class->pointer_moved = NULL;
   class->goban_clicked = NULL;
   class->navigate      = NULL;
-
-  goban_style = gtk_style_new();
-
-  assert(pixbuf = gdk_pixbuf_new_from_file(PACKAGE_TEXTURES_DIR "/wood1.jpg",
-					   NULL));
-  gdk_pixbuf_render_pixmap_and_mask(pixbuf, &pixmap, NULL, 0);
-  g_object_unref(pixbuf);
-
-  goban_style->bg_pixmap[GTK_STATE_NORMAL] = pixmap;
 
   goban_signals[POINTER_MOVED]
     = g_signal_new("pointer-moved",
@@ -227,7 +221,8 @@ gtk_goban_init(GtkGoban *goban)
 
   goban->cell_size = 0;
 
-  goban->font_description = pango_font_description_copy(goban_style->font_desc);
+  goban->font_description
+    = pango_font_description_copy(gtk_widget_get_default_style()->font_desc);
   goban->font_size = 0;
 
   goban->main_tile_set = NULL;
@@ -240,6 +235,8 @@ gtk_goban_init(GtkGoban *goban)
     goban->overlay_pos[k] = NULL_POSITION;
 
   set_feedback_data(goban, NULL_X, NULL_Y, GOBAN_FEEDBACK_NONE);
+
+  all_gobans = g_slist_prepend(all_gobans, goban);
 }
 
 
@@ -253,13 +250,19 @@ gtk_goban_new(void)
 void
 gtk_goban_set_parameters(GtkGoban *goban, Game game, int width, int height)
 {
+  int is_new_game;
+
   assert(GTK_IS_GOBAN(goban));
   assert(GAME_IS_SUPPORTED(game));
   assert(width > 0 && height > 0);
 
+  is_new_game	= (goban->game != game);
   goban->game	= game;
   goban->width	= width;
   goban->height = height;
+
+  if (is_new_game)
+    set_goban_appearance_style(goban);
 }
 
 
@@ -292,9 +295,7 @@ gtk_goban_realize(GtkWidget *widget)
 				  &attributes, attributes_mask);
   gdk_window_set_user_data(widget->window, goban);
 
-  g_object_ref(goban_style);
-  g_object_ref(goban_style->bg_pixmap[GTK_STATE_NORMAL]);
-  widget->style = gtk_style_attach(goban_style, widget->window);
+  widget->style = gtk_style_attach(widget->style, widget->window);
   gtk_style_set_background(widget->style, widget->window, GTK_STATE_NORMAL);
 }
 
@@ -451,7 +452,7 @@ gtk_goban_expose(GtkWidget *widget, GdkEventExpose *event)
   int cell_size = goban->cell_size;
 
   GdkWindow *window = widget->window;
-  GdkGC *gc = widget->style->black_gc;
+  GdkGC *gc = widget->style->fg_gc[GTK_STATE_NORMAL];
 
   UNUSED(event);
 
@@ -586,6 +587,8 @@ gtk_goban_expose(GtkWidget *widget, GdkEventExpose *event)
   if (!IS_NULL_POINT(goban->last_move_x, goban->last_move_y)) {
     if (goban->grid[POSITION(goban->last_move_x, goban->last_move_y)] == BLACK)
       gc = widget->style->white_gc;
+    else
+      gc = widget->style->black_gc;
 
     x = goban->first_cell_center_x + goban->last_move_x * cell_size;
     y = goban->first_cell_center_y + goban->last_move_y * cell_size;
@@ -757,7 +760,41 @@ gtk_goban_finalize(GObject *object)
   if (goban->small_tile_set)
     tile_set_unreference(goban->small_tile_set);
 
+  all_gobans = g_slist_remove(all_gobans, goban);
+
   G_OBJECT_CLASS(parent_class)->finalize(object);
+}
+
+
+
+static void
+set_goban_appearance_style(GtkGoban *goban)
+{
+  const BoardAppearance *board_appearance;
+  GtkRcStyle *rc_style = gtk_rc_style_new();
+
+  if (goban->game == GAME_GO)
+    board_appearance = &go_board_appearance;
+  else if (goban->game == GAME_AMAZONS)
+    board_appearance = &amazons_board_appearance;
+  else if (goban->game == GAME_OTHELLO)
+    board_appearance = &othello_board_appearance;
+  else
+    assert(0);
+
+  rc_style->color_flags[GTK_STATE_NORMAL] = GTK_RC_FG | GTK_RC_BG;
+  gtk_utils_set_gdk_color(&rc_style->fg[GTK_STATE_NORMAL],
+			  board_appearance->foreground_color);
+  gtk_utils_set_gdk_color(&rc_style->bg[GTK_STATE_NORMAL],
+			  board_appearance->background_color);
+
+  if (board_appearance->use_background_texture) {
+    rc_style->bg_pixmap_name[GTK_STATE_NORMAL]
+      = g_strdup(board_appearance->background_texture);
+  }
+
+  gtk_widget_modify_style(GTK_WIDGET(goban), rc_style);
+  g_object_unref(rc_style);
 }
 
 
@@ -914,6 +951,22 @@ gtk_goban_set_overlay_data(GtkGoban *goban, int overlay_index,
   if (need_feedback_poll) {
     emit_pointer_moved(goban, goban->pointer_x, goban->pointer_y,
 		       goban->modifiers);
+  }
+}
+
+
+void
+gtk_goban_update_appearance(Game game)
+{
+  GSList *item;
+
+  assert(game >= FIRST_GAME && GAME_IS_SUPPORTED(game));
+
+  for (item = all_gobans; item; item = item->next) {
+    GtkGoban *goban = (GtkGoban *) (item->data);
+
+    if (goban->game == game)
+      set_goban_appearance_style(goban);
   }
 }
 

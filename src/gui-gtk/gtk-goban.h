@@ -215,6 +215,9 @@ gint		gtk_goban_negotiate_width(GtkWidget *widget, gint height);
 gint		gtk_goban_negotiate_height(GtkWidget *widget, gint width);
 
 
+void		gtk_goban_update_appearance(Game game);
+
+
 #endif /* QUARRY_GTK_GOBAN_H */
 
 
