@@ -1,7 +1,7 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *\
  * This file is part of Quarry.                                    *
  *                                                                 *
- * Copyright (C) 2003, 2004 Paul Pogonyshev.                       *
+ * Copyright (C) 2003, 2004, 2005 Paul Pogonyshev.                 *
  *                                                                 *
  * This program is free software; you can redistribute it and/or   *
  * modify it under the terms of the GNU General Public License as  *
@@ -49,24 +49,24 @@ struct _ValueTypeList {
 
 
 #define value_type_list_new()						\
-  string_list_new_derived(sizeof(ValueTypeListItem), NULL)
+  string_list_new_derived (sizeof (ValueTypeListItem), NULL)
 
 #define value_type_list_init(list)					\
-  string_list_init_derived((list), sizeof(ValueTypeListItem), NULL)
+  string_list_init_derived ((list), sizeof (ValueTypeListItem), NULL)
 
 #define STATIC_VALUE_TYPE_LIST						\
-  STATIC_STRING_LIST_DERIVED(ValueTypeListItem, NULL)
+  STATIC_STRING_LIST_DERIVED (ValueTypeListItem, NULL)
 
 
 #define value_type_list_get_item(list, item_index)			\
-  ((ValueTypeListItem *) string_list_get_item((list), (item_index)))
+  ((ValueTypeListItem *) string_list_get_item ((list), (item_index)))
 
 #define value_type_list_find(list, infile_name)				\
-  ((ValueTypeListItem *) string_list_find((list), (infile_name)))
+  ((ValueTypeListItem *) string_list_find ((list), (infile_name)))
 
 #define value_type_list_find_after_notch(list, infile_name, notch)	\
-  ((ValueTypeListItem *)\						\
-   string_list_find_after_notch((list), (infile_name), (notch)))
+  ((ValueTypeListItem *)						\
+   string_list_find_after_notch ((list), (infile_name), (notch)))
 
 
 typedef struct _TreeNode	TreeNode;
@@ -78,32 +78,38 @@ struct _TreeNode {
 };
 
 
-static int	value_type_list_parse_type1(char **line);
-static int	value_type_list_parse_type2(StringBuffer *c_file_arrays,
-					    char **line,
-					    const char *identifier,
-					    char **pending_eol_comment,
-					    int *pending_linefeeds);
+static int	value_type_list_parse_type1 (char **line);
+static int	value_type_list_parse_type2 (StringBuffer *c_file_arrays,
+					     char **line,
+					     const char *identifier,
+					     char **pending_eol_comment,
+					     int *pending_linefeeds);
 
-static int	property_list_parse_type1(char **line);
-static int	property_list_parse_type2(StringBuffer *c_file_arrays,
-					  char **line,
-					  const char *identifier,
-					  char **pending_eol_comment,
-					  int *pending_linefeeds);
-static int	property_list_finalize(StringBuffer *c_file_arrays);
-
-
-static int	error_list_parse_error2(StringBuffer *c_file_arrays,
-					char **line,
-					const char *identifier,
-					char **pending_eol_comment,
-					int *pending_linefeeds);
+static int	property_list_parse_type1 (char **line);
+static int	property_list_parse_type2 (StringBuffer *c_file_arrays,
+					   char **line,
+					   const char *identifier,
+					   char **pending_eol_comment,
+					   int *pending_linefeeds);
+static int	property_list_finalize (StringBuffer *c_file_arrays);
 
 
-static void	enumerate_nodes(TreeNode *node);
-static void	print_nodes(const TreeNode *node, const char *identifier);
-static void	delete_nodes(TreeNode *node);
+static int	error_list_parse_error2 (StringBuffer *c_file_arrays,
+					 char **line,
+					 const char *identifier,
+					 char **pending_eol_comment,
+					 int *pending_linefeeds);
+
+
+static int	undo_operation_list_parse_undo_operation2
+		  (StringBuffer *c_file_arrays, char **line,
+		   const char *identifier,
+		   char **pending_eol_comment, int *pending_linefeeds);
+
+
+static void	enumerate_nodes (TreeNode *node);
+static void	print_nodes (const TreeNode *node, const char *identifier);
+static void	delete_nodes (TreeNode *node);
 
 
 static const ListDescription properties_lists[] = {
@@ -121,9 +127,16 @@ static const ListDescription errors_list[] = {
   { NULL, 0, SORT_NORMAL, 0, NULL, NULL, NULL, NULL, NULL }
 };
 
+static const ListDescription undo_operations_list[] = {
+  { "operations", 0, SORT_NORMAL, 1, "const SgfUndoOperationInfo ",
+    NULL, NULL, undo_operation_list_parse_undo_operation2, NULL },
+  { NULL, 0, SORT_NORMAL, 0, NULL, NULL, NULL, NULL, NULL }
+};
+
 const ListDescriptionSet list_sets[] = {
-  { "properties", properties_lists },
-  { "errors", errors_list },
+  { "properties",      properties_lists },
+  { "errors",	       errors_list },
+  { "undo_operations", undo_operations_list }
 };
 
 
@@ -140,14 +153,14 @@ static TreeNode	     *root = NULL;
 
 
 int
-main(int argc, char *argv[])
+main (int argc, char *argv[])
 {
   int result;
 
-  result = parse_list_main(argc, argv, list_sets,
-			   sizeof(list_sets) / sizeof(ListDescriptionSet));
+  result = parse_list_main (argc, argv, list_sets,
+			    sizeof list_sets / sizeof (ListDescriptionSet));
 
-  string_list_empty(&value_types);
+  string_list_empty (&value_types);
 
   return result;
 }
@@ -155,58 +168,59 @@ main(int argc, char *argv[])
 
 
 static int
-value_type_list_parse_type1(char **line)
+value_type_list_parse_type1 (char **line)
 {
   const char *infile_name;
 
-  PARSE_IDENTIFIER(infile_name, line, "value type");
-  string_list_add(&value_types, infile_name);
+  PARSE_IDENTIFIER (infile_name, line, "value type");
+  string_list_add (&value_types, infile_name);
 
   return 0;
 }
 
 
 static int
-value_type_list_parse_type2(StringBuffer *c_file_arrays,
-			    char **line, const char *identifier,
-			    char **pending_eol_comment, int *pending_linefeeds)
+value_type_list_parse_type2 (StringBuffer *c_file_arrays,
+			     char **line, const char *identifier,
+			     char **pending_eol_comment,
+			     int *pending_linefeeds)
 {
-  UNUSED(c_file_arrays);
-  UNUSED(pending_eol_comment);
-  UNUSED(pending_linefeeds);
+  UNUSED (c_file_arrays);
+  UNUSED (pending_eol_comment);
+  UNUSED (pending_linefeeds);
 
   value_types.last->c_name = identifier;
 
-  PARSE_IDENTIFIER(value_types.last->value_writer_function, line,
-		   "writer function");
+  PARSE_IDENTIFIER (value_types.last->value_writer_function, line,
+		    "writer function");
 
   return 0;
 }
 
 
 static int
-property_list_parse_type1(char **line)
+property_list_parse_type1 (char **line)
 {
-  if (looking_at("unknown", line)) {
-    PARSE_IDENTIFIER(unknown, line, "`unknown' identifier");
+  if (looking_at ("unknown", line)) {
+    PARSE_IDENTIFIER (unknown, line, "`unknown' identifier");
     *line = NULL;
   }
-  else if (looking_at("total", line)) {
-    PARSE_IDENTIFIER(total, line, "`total' identifier");
+  else if (looking_at ("total", line)) {
+    PARSE_IDENTIFIER (total, line, "`total' identifier");
     *line = NULL;
   }
   else {
-    if (looking_at("-", line)) {
+    if (looking_at ("-", line)) {
       static const char null_string[] = "";
 
       property_id = null_string;
     }
     else
-      PARSE_THING(property_id, PROPERTY_IDENTIFIER, line, "property id");
+      PARSE_THING (property_id, PROPERTY_IDENTIFIER, line, "property id");
 
-    if (strlen(property_id) > 2) {
-      print_error("warning: strangely long property name `%s'", property_id);
-      if (strlen(property_id) > 3)
+    if (strlen (property_id) > 2) {
+      print_error ("warning: strangely long property name `%s'", property_id);
+      if (strlen (property_id) > 3)
 	long_names = 1;
     }
   }
@@ -216,54 +230,54 @@ property_list_parse_type1(char **line)
 
 
 static int
-property_list_parse_type2(StringBuffer *c_file_arrays,
-			  char **line, const char *identifier,
-			  char **pending_eol_comment, int *pending_linefeeds)
+property_list_parse_type2 (StringBuffer *c_file_arrays,
+			   char **line, const char *identifier,
+			   char **pending_eol_comment, int *pending_linefeeds)
 {
   const char *infile_value_type;
   const char *parser_function;
   ValueTypeListItem *value_type;
   TreeNode *node;
 
-  UNUSED(pending_linefeeds);
+  UNUSED (pending_linefeeds);
 
-  PARSE_IDENTIFIER(infile_value_type, line, "value type");
+  PARSE_IDENTIFIER (infile_value_type, line, "value type");
 
-  value_type = value_type_list_find(&value_types, infile_value_type);
+  value_type = value_type_list_find (&value_types, infile_value_type);
   if (!value_type) {
-    print_error("unknown property value type `%s'", infile_value_type);
+    print_error ("unknown property value type `%s'", infile_value_type);
     return 1;
   }
 
-  PARSE_IDENTIFIER(parser_function, line, "parser function");
+  PARSE_IDENTIFIER (parser_function, line, "parser function");
 
-  *pending_eol_comment = utils_duplicate_string(property_id);
+  *pending_eol_comment = utils_duplicate_string (property_id);
 
-  string_buffer_cprintf(c_file_arrays, "  { \"%s\", %s, %s, %s }",
-			property_id, value_type->c_name, parser_function,
-			value_type->value_writer_function);
+  string_buffer_cprintf (c_file_arrays, "  { \"%s\", %s, %s, %s }",
+			 property_id, value_type->c_name, parser_function,
+			 value_type->value_writer_function);
 
   if (*property_id) {
     const char *pointer;
 
     if (!root)
-      root = (TreeNode *) utils_malloc0(sizeof(TreeNode));
+      root = (TreeNode *) utils_malloc0 (sizeof (TreeNode));
 
     for (pointer = property_id, node = root; *(pointer + 1); pointer++) {
       TreeNode **child = &node->children[*pointer - 'A'];
 
       if (! *child)
-	*child = (TreeNode *) utils_malloc0(sizeof(TreeNode));
+	*child = (TreeNode *) utils_malloc0 (sizeof (TreeNode));
 
       node = *child;
     }
 
     if (node->identifiers[*pointer - 'A']) {
-      print_error("duplicated property `%s'", property_id);
+      print_error ("duplicated property `%s'", property_id);
       return 1;
     }
 
-    node->identifiers[*pointer - 'A'] = utils_duplicate_string(identifier);
+    node->identifiers[*pointer - 'A'] = utils_duplicate_string (identifier);
   }
 
   return 0;
@@ -271,39 +285,39 @@ property_list_parse_type2(StringBuffer *c_file_arrays,
 
 
 static int
-property_list_finalize(StringBuffer *c_file_arrays)
+property_list_finalize (StringBuffer *c_file_arrays)
 {
-  UNUSED(c_file_arrays);
+  UNUSED (c_file_arrays);
 
   if (! *total) {
-    print_error("`total' identifier missed");
+    print_error ("`total' identifier missed");
     return 1;
   }
 
   if (! *unknown) {
-    print_error("`unknown' identifier missed");
+    print_error ("`unknown' identifier missed");
     return 1;
   }
 
-  string_buffer_cprintf(&h_file_bottom,
-			"\n\n#define SGF_LONG_NAMES\t\t%d\n", long_names);
+  string_buffer_cprintf (&h_file_bottom,
+			 "\n\n#define SGF_LONG_NAMES\t\t%d\n", long_names);
 
-  enumerate_nodes(root);
+  enumerate_nodes (root);
 
-  string_buffer_cat_string(&c_file_bottom,
-			   ("\nconst SgfType"
-			    " property_tree[][1 + ('Z' - 'A' + 1)] = {"));
-  print_nodes(root, NULL);
-  string_buffer_cat_string(&c_file_bottom, "\n  }\n};\n");
+  string_buffer_cat_string (&c_file_bottom,
+			    ("\nconst SgfType"
+			     " property_tree[][1 + ('Z' - 'A' + 1)] = {"));
+  print_nodes (root, NULL);
+  string_buffer_cat_string (&c_file_bottom, "\n  }\n};\n");
 
-  delete_nodes(root);
+  delete_nodes (root);
 
   return 0;
 }
 
 
 static void
-enumerate_nodes(TreeNode *node)
+enumerate_nodes (TreeNode *node)
 {
   static int node_index = 0;
   int k;
@@ -312,78 +326,105 @@ enumerate_nodes(TreeNode *node)
 
   for (k = 0; k < 'Z' - 'A' + 1; k++) {
     if (node->children[k])
-      enumerate_nodes(node->children[k]);
+      enumerate_nodes (node->children[k]);
   }
 }
 
 
 static void
-print_nodes(const TreeNode *node, const char *identifier)
+print_nodes (const TreeNode *node, const char *identifier)
 {
   int k;
 
   if (node->index)
-    string_buffer_cat_string(&c_file_bottom, "\n  },");
-  string_buffer_cat_strings(&c_file_bottom,
-			    "\n  {\n    ", identifier ? identifier : unknown,
-			    NULL);
+    string_buffer_cat_string (&c_file_bottom, "\n  },");
+  string_buffer_cat_strings (&c_file_bottom,
+			     "\n  {\n    ", identifier ? identifier : unknown,
+			     NULL);
 
   for (k = 0; k < 'Z' - 'A' + 1; k++) {
     if (node->children[k]) {
-      string_buffer_cprintf(&c_file_bottom, ",\n    %s + %d",
-			    total, node->children[k]->index);
+      string_buffer_cprintf (&c_file_bottom, ",\n    %s + %d",
+			     total, node->children[k]->index);
     }
     else {
-      string_buffer_cat_strings(&c_file_bottom,
-				",\n    ",
-				(node->identifiers[k]
-				 ? node->identifiers[k] : unknown),
-				NULL);
+      string_buffer_cat_strings (&c_file_bottom,
+				 ",\n    ",
+				 (node->identifiers[k]
+				  ? node->identifiers[k] : unknown),
+				 NULL);
     }
   }
 
   for (k = 0; k < 'Z' - 'A' + 1; k++) {
     if (node->children[k])
-      print_nodes(node->children[k], node->identifiers[k]);
+      print_nodes (node->children[k], node->identifiers[k]);
   }
 }
 
 
 static void
-delete_nodes(TreeNode *node)
+delete_nodes (TreeNode *node)
 {
   int k;
 
   for (k = 0; k < 'Z' - 'A' + 1; k++) {
     if (node->identifiers[k])
-      utils_free(node->identifiers[k]);
+      utils_free (node->identifiers[k]);
     if (node->children[k])
-      delete_nodes(node->children[k]);
+      delete_nodes (node->children[k]);
   }
 
-  utils_free(node);
+  utils_free (node);
 }
 
 
 
 static int
-error_list_parse_error2(StringBuffer *c_file_arrays,
-			char **line, const char *identifier,
-			char **pending_eol_comment, int *pending_linefeeds)
+error_list_parse_error2 (StringBuffer *c_file_arrays,
+			 char **line, const char *identifier,
+			 char **pending_eol_comment, int *pending_linefeeds)
 {
   char *string;
 
-  UNUSED(identifier);
-  UNUSED(pending_eol_comment);
+  UNUSED (identifier);
+  UNUSED (pending_eol_comment);
 
-  string = parse_multiline_string(line, "error string or NULL", "\n  ", 1);
+  string = parse_multiline_string (line, "error string or NULL", "\n  ", 1);
   if (!string)
     return 1;
 
-  string_buffer_cat_strings(c_file_arrays, "  ", string, NULL);
-  utils_free(string);
+  string_buffer_cat_strings (c_file_arrays, "  ", string, NULL);
+  utils_free (string);
 
   *pending_linefeeds = -1;
+  return 0;
+}
+
+
+
+static int
+undo_operation_list_parse_undo_operation2 (StringBuffer *c_file_arrays,
+					   char **line,
+					   const char *identifier,
+					   char **pending_eol_comment,
+					   int *pending_linefeeds)
+{
+  const char *undo_function;
+  const char *redo_function;
+  const char *free_data_function;
+
+  UNUSED (identifier);
+  UNUSED (pending_eol_comment);
+  UNUSED (pending_linefeeds);
+
+  PARSE_IDENTIFIER (undo_function, line, "undo function");
+  PARSE_IDENTIFIER (redo_function, line, "redo function");
+  PARSE_IDENTIFIER (free_data_function, line, "free data function");
+
+  string_buffer_cprintf (c_file_arrays, "  { %s,\n    %s,\n    %s }",
+			 undo_function, redo_function, free_data_function);
+
   return 0;
 }
 
