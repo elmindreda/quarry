@@ -1,7 +1,7 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *\
  * This file is part of Quarry.                                    *
  *                                                                 *
- * Copyright (C) 2003, 2004 Paul Pogonyshev.                       *
+ * Copyright (C) 2003, 2004, 2005 Paul Pogonyshev                  *
  *                                                                 *
  * This program is free software; you can redistribute it and/or   *
  * modify it under the terms of the GNU General Public License as  *
@@ -225,6 +225,9 @@ static GtkGobanPointerFeedback
 						GtkGobanPointerData *data);
 static void	 go_scoring_mode_goban_clicked (GtkGobanWindow *goban_window,
 						GtkGobanClickData *data);
+
+static void	 sgf_tree_view_clicked (GtkGobanWindow *goban_window,
+					SgfNode *sgf_node, gint button_index);
 
 static void	 navigate_goban (GtkGobanWindow *goban_window,
 				 GtkGobanNavigationCommand command);
@@ -652,7 +655,7 @@ gtk_goban_window_init (GtkGobanWindow *goban_window)
   goban_window->sgf_tree_view_visibility_locked = FALSE;
 
   g_signal_connect_swapped (sgf_tree_view, "sgf-tree-view-clicked",
-			    G_CALLBACK (switch_to_given_node), goban_window);
+			    G_CALLBACK (sgf_tree_view_clicked), goban_window);
 
   /* Make it scrollable.  Note that we don't pack it in the `vpaned'
    * widget now, this is done only by show_or_hide_sgf_tree_view().
@@ -787,7 +790,7 @@ gtk_goban_window_init (GtkGobanWindow *goban_window)
   if (gtk_ui_configuration.show_game_action_buttons)
     show_or_hide_game_action_buttons (goban_window);
 
-  if (editing_and_viewing.show_game_tree == SHOW_GAME_TREE_ALWAYS)
+  if (game_tree_view.show_game_tree == SHOW_GAME_TREE_ALWAYS)
     show_or_hide_sgf_tree_view (goban_window, GTK_GOBAN_WINDOW_SHOW_CHILD);
 
   /* Look up here when the classes are certainly loaded. */
@@ -797,6 +800,8 @@ gtk_goban_window_init (GtkGobanWindow *goban_window)
 
   /* But hide special mode section again. */
   leave_special_mode (goban_window);
+
+  gtk_window_maximize (GTK_WINDOW (goban_window));
 
   goban_window->board = NULL;
 
@@ -1885,7 +1890,7 @@ static void
 show_sgf_tree_view_automatically (GtkGobanWindow *goban_window,
 				  const SgfNode *sgf_node)
 {
-  if (editing_and_viewing.show_game_tree == SHOW_GAME_TREE_AUTOMATICALLY
+  if (game_tree_view.show_game_tree == SHOW_GAME_TREE_AUTOMATICALLY
       && !goban_window->sgf_tree_view_visibility_locked
       && sgf_node
       && (sgf_node->next
@@ -2124,7 +2129,7 @@ set_current_tree (GtkGobanWindow *goban_window, SgfGameTree *sgf_tree)
 
   gtk_sgf_tree_view_set_sgf_tree (goban_window->sgf_tree_view, sgf_tree);
 
-  if (editing_and_viewing.show_game_tree == SHOW_GAME_TREE_AUTOMATICALLY
+  if (game_tree_view.show_game_tree == SHOW_GAME_TREE_AUTOMATICALLY
       && !goban_window->sgf_tree_view_visibility_locked) {
     const SgfNode *sgf_node;
 
@@ -2618,6 +2623,24 @@ go_scoring_mode_goban_clicked (GtkGobanWindow *goban_window,
       board_position_list_delete (stones);
 
       update_territory_markup (goban_window);
+    }
+  }
+}
+
+
+static void
+sgf_tree_view_clicked (GtkGobanWindow *goban_window, SgfNode *sgf_node,
+		       gint button_index)
+{
+  if (button_index == 1)
+    switch_to_given_node (goban_window, sgf_node);
+  else {
+    assert (button_index == 3);
+
+    if (sgf_node->child) {
+      sgf_utils_set_node_is_collapsed (goban_window->current_tree, sgf_node,
+				       !sgf_node->is_collapsed);
+      gtk_sgf_tree_view_update_view_port (goban_window->sgf_tree_view);
     }
   }
 }
