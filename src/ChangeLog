@@ -1,3 +1,69 @@
+2004-05-01  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* gui-gtk/gtk-preferences.c (create_board_appearance_page): Add
+	controls for configuring Amazons' checkerboard pattern.  Change
+	control layout: consider grid and labels a part of background.
+	(update_board_grid_and_labels_color): Rename from
+	update_board_foreground().
+	(update_checkerboard_pattern): New function.
+
+	* gui-utils/common-configuration-values.list: Rename "Foreground"
+	configuration variable to "Grid and labels color".
+
+	* gui-gtk/gtk-utils.c (gtk_utils_pack_in_box): Add a way to
+	request packing in box end.
+	(gtk_utils_create_mnemonic_label): New function.
+
+	* gui-gtk/gtk-named-vbox.c (gtk_named_vbox_size_request)
+	(gtk_named_vbox_size_allocate): Use `QUARRY_SPACING_SMALL' instead
+	of the box spacing as distance between the label and the contents.
+	* gui-gtk/gtk-goban-window.c (gtk_goban_window_init): Use
+	`QUARRY_SPACING_SMALL' instead of `QUARRY_SPACING_GOBAN_WINDOW'
+	for the gap between players' control sets.
+
+2004-04-30  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* gui-gtk/gtk-goban.c (gtk_goban_expose): Don't draw clipped
+	objects (significant speedup).
+	(gtk_goban_expose): Draw checkerboard pattern if requested.
+	(set_goban_style_appearance): Rename from
+	set_goban_appearance_style().
+	(set_goban_non_style_appearance): New function.  Only handles
+	checkerboard pattern at present.
+
+	* gui-utils/tile-set.c (tile_set_create_or_reuse): Initialize
+	`cell_size' parameter of `TileSet' structure.
+
+	* gui-utils/common-configuration-sections.list: Add configuration
+	parameters for checkerboard pattern for Amazons board.
+	* gui-utils/common-configuration-values.list: Likewise.
+	* gui-utils/common-configuration-defaults.list: Likewise.
+
+	* gui-utils/parse-configuration.c (configuration_parse_defaults2):
+	Add support for structure fields in new (generated) structures.
+
+	* gui-utils/common-configuration-values.list: Remove value
+	identifiers (not used now).
+	* gui-gtk/gtk-configuration.list: Likewise.
+
+	* gui-utils/configuration.c (configuration_set_section_values):
+	Remove function.
+	(configuration_set_string_value)
+	(configuration_set_string_list_value)
+	(configuration_set_string_list_value_steal_strings): New
+	functions.
+
+	* utils/string-list.c (string_list_duplicate_items): Add `const'
+	modifier to second argument.
+
+	* gui-gtk/gtk-new-game-dialog.c (begin_game): Free `data'
+	structure.
+
+2004-04-29  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* gui-gtk/gtk-goban-window.c (gtk_goban_window_finalize):
+	Unreference `item_factory'.
+
 2004-04-28  Paul Pogonyshev  <pogonyshev@gmx.net>
 
 	* utils/utils.h (string_list_is_empty)
