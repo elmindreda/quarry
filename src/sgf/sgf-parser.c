@@ -771,8 +771,9 @@ parse_property(SgfParsingData *data)
       if (sgf_node_find_unknown_property(data->node, data->buffer,
 					 name_end - data->buffer, &link)) {
 	/* Duplicated unknown properties.  Assume list value type. */
-	utils_cat_as_string((*link)->value.text, name_end,
-			    data->temp_buffer - name_end);
+	(*link)->value.text
+	  = utils_cat_as_string((*link)->value.text,
+				name_end, data->temp_buffer - name_end);
 	*name_end = 0;
 	add_error(data, SGF_WARNING_UNKNOWN_PROPERTIES_MERGED, data->buffer);
       }
@@ -2305,7 +2306,7 @@ sgf_parse_komi(SgfParsingData *data)
     return SGF_FATAL_EMPTY_VALUE;
 
   if (do_parse_real(data, &komi) && data->token == ']') {
-    text = utils_duplicate_string(format_double(komi));
+    text = utils_duplicate_string(utils_format_double(komi));
     result = end_parsing_value(data);
   }
   else {
@@ -2525,7 +2526,7 @@ sgf_parse_time_limit(SgfParsingData *data)
       return SGF_FATAL_NEGATIVE_TIME_LIMIT;
     }
 
-    text = utils_duplicate_string(format_double(time_limit));
+    text = utils_duplicate_string(utils_format_double(time_limit));
     result = end_parsing_value(data);
   }
   else {
