@@ -1,3 +1,32 @@
+2004-08-19  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* gui-gtk/gtk-new-game-dialog.c (begin_game): Set UTF-8 encoding
+	for the created game tree.
+
+	* sgf/sgf-writer.c (sgf_write_file): New parameter `force_utf8'.
+	(write_game_tree): Write `CA' property.  Create an iconv handle
+	for converting text property values if conversion is requested.
+	(do_write_text): Tell buffered writer to convert text.  Skip UTF-8
+	characters, not just bytes.
+	(sgf_write_fake_simple_text): Likewise.
+	(sgf_write_unknown): Likewise.
+
+	* sgf/sgf-properties.list: Mark `CA' property as not stored.
+	* sgf/sgf-parser.c (sgf_parse_char_set): New function.
+
+	* utils/buffered-writer.c (buffered_writer_init): Reset new field
+	`iconv_handle' to NULL.
+	(buffered_writer_add_character): Convert incoming text using
+	iconv(), if requested.
+	(buffered_writer_add_newline): Likewise.
+	(buffered_writer_cat_as_string): Likewise.
+	(buffered_writer_vprintf): Likewise.
+	(update_column): Count UTF-8 characters, not bytes.
+
+	* utils/utils.h (buffered_writer_set_iconv_handle): New macro.
+
+	* quarry.h (IS_UTF8_STARTER): New macro.
+
 2004-08-18  Paul Pogonyshev  <pogonyshev@gmx.net>
 
 	* sgf/sgf-parser.c: Start handling of non-UTF-8 encodings.
