@@ -265,6 +265,8 @@ configuration_read_from_file(const ConfigurationSection *sections,
 
       utils_free(line);
     }
+
+    fclose(file);
   }
 
   return 0;
