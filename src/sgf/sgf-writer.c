@@ -61,6 +61,8 @@ sgf_write_file(const char *filename, SgfCollection *collection)
     for (data.tree = collection->first_tree; data.tree;
 	 data.tree = data.tree->next) {
       write_game_tree(&data, data.tree);
+      if (data.tree->next)
+	buffered_writer_add_newline(&data.writer);
 
       if (!data.writer.successful)
 	break;
@@ -107,8 +109,8 @@ write_game_tree(SgfWritingData *data, SgfGameTree *tree)
     if (game_get_default_setup(tree->game,
 			       tree->board_width, tree->board_height,
 			       &black_stones, &white_stones)) {
-      if (sgf_position_list_equal(root_black_stones, black_stones)
-	  && sgf_position_list_equal(root_white_stones, white_stones)) {
+      if (sgf_position_lists_are_equal(root_black_stones, black_stones)
+	  && sgf_position_lists_are_equal(root_white_stones, white_stones)) {
 	sgf_node_delete_property(root, tree, SGF_ADD_BLACK);
 	sgf_node_delete_property(root, tree, SGF_ADD_WHITE);
 
