@@ -1,7 +1,97 @@
+2004-12-11  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* gui-gtk/gtk-preferences.c: Add "Game Tree" category.
+	(create_saving_sgf_page): New function.
+	(create_markup_box): Alter layout to reflect changes in theme
+	default usage policy.  Remove two buttons and add a check button.
+	(gtk_preferences_dialog_response): Handle
+	`PREFERENCES_PAGE_GAME_TREE'.
+	(update_board_background_texture): New function.
+	(update_board_appearance): Remove accidental code duplication.
+	(update_board_markup_theme): Rename from update_board_markup().
+	(use_theme_default_size, use_theme_default_opacity): Remove
+	functions.
+	(update_markup_theme_defaults_usage): New function.
+
+	* gui-gtk/gtk-utils.h (gtk_utils_block_signal_handlers)
+	(gtk_utils_unblock_signal_handlers): New macros.
+
+	* gui-gtk/gtk-tile-set.c
+	(gtk_sgf_markup_tile_set_create_or_reuse): Adapt to new theme
+	defaults usage scheme.
+
+	* gui-utils/common-configuration-values.list: Add "Use theme
+	defaults" value.  Add previously forgotten "Markup theme" value to
+	`amazons_board_appearance_values'
+	* gui-utils/common-configuration-defaults.list: Likewise for
+	`use_theme_defaults'
+
+	* sgf/sgf-tree-map.c (sgf_game_tree_update_view_port): Fix `if'
+	condition, don't call update_internal_view_port() when not needed.
+
+	* gui-gtk/gtk-goban-window.c (gtk_goban_window_init): Add "Game
+	Tree" check menu item.  Don't pack `sgf_tree_view's parent widget
+	to `vpaned' unless configured to always show game tree view.
+	Initialize new `sgf_tree_view_visibility_locked' field.
+	(gtk_goban_window_enter_game_mode): Never hide clocks.
+	(gtk_goban_window_destroy): Unreference `sgf_tree_view's parent.
+	(show_or_hide_sgf_tree_view, show_sgf_tree_view_automatically):
+	New functions.
+	(set_current_tree): When configured to show game tree view
+	automatically, show/hide it depending on whether the new tree has
+	any variations.  But respect `sgf_tree_view_visibility_locked',
+	set by show_or_hide_sgf_tree_view() when invoked from menu.
+	(update_children_for_new_node): Call
+	show_sgf_tree_view_automatically() for `current_node'.
+	(update_game_information): Never hide players' information.
+	(update_player_information): Set return type to `void'.
+	(move_has_been_generated): Call show_sgf_tree_view_automatically()
+	for `game_position_node'.
+
+2004-12-10  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* gui-utils/common-configuration-sections.list: Add configuration
+	parameter for whether and when to show game tree view.
+	* gui-utils/common-configuration-values.list: Likewise.
+	* gui-utils/common-configuration-defaults.list: Likewise.
+
+	* gui-utils/configuration.c (configuration_read_from_file): Add
+	support for `enumeration' value type.
+	(parse_integer): New function, broken out of
+	configuration_read_from_file().
+	(write_section): Add support for `enumeration' value type.
+
+	* gui-utils/parse-configuration.c (configuration_parse_sections2):
+	Adjust output to follow modified (see `ChangeLog' entry of 12
+	October) coding convention.
+	(configuration_parse_values2): Likewise.
+	(configuration_parse_defaults2): Likewise.
+	(configuration_finalize_defaults): Likewise.
+	(add_field_dispose_call_if_needed): Likewise.
+	(finish_function): Likewise.
+	(configuration_initialize_sections): Save `c_file_array_name' on
+	the heap, don't write to `h_file_bottom' yet.
+	(configuration_parse_values2): Add support for `enumeration' value
+	type.
+	(configuration_initialize_defaults): Perform write to
+	`h_file_bottom' delayed in configuration_initialize_sections().
+	(configuration_parse_defaults2): Add support for `enumeration'
+	value type.
+	(configuration_parse_defaults2): Likewise.
+	(add_field_declaration_if_needed): Likewise.
+
+	* gui-gtk/gtk-sgf-tree-view.c (gtk_sgf_tree_view_size_allocate):
+	Remove debugging leftover.
+	(gtk_sgf_tree_view_expose): Only draw if the widget is realized,
+	not if `current_tree' is set.  Implement line clipping to
+	workaround X drawing problems with very long lines (over 32K.)
+	(gtk_sgf_tree_view_update_view_port): Do nothing if widget is not
+	realized.
+
 2004-12-09  Paul Pogonyshev  <pogonyshev@gmx.net>
 
 	* gui-gtk/gtk-goban-window.c (gtk_goban_window_init): Add an
-	GtkSgfTreeView to the side bar.
+	GtkSgfTreeView to the sidebar.
 	(set_current_tree): Inform `sgf_tree_view' about the change.
 	(switch_to_given_node): New function.
 	(update_children_for_new_node): Force `sgf_tree_view' view port
