@@ -64,22 +64,19 @@ typedef struct _GtkPlayerInformation	GtkPlayerInformation;
 typedef struct _GtkGobanWindow		GtkGobanWindow;
 typedef struct _GtkGobanWindowClass	GtkGobanWindowClass;
 
-struct _GtkPlayerInformation {
-  GtkLabel		  *player_label;
-};
-
 struct _GtkGobanWindow {
   GtkWindow		   window;
 
   GtkItemFactory	  *item_factory;
   GtkGoban		  *goban;
   GtkWidget		  *player_table_alignment;
-  GtkPlayerInformation	   players_information[NUM_COLORS];
+  GtkLabel		  *player_labels[NUM_COLORS];
+  GtkLabel		  *game_specific_info[NUM_COLORS];
   GtkClock		  *clocks[NUM_COLORS];
   GtkWidget		  *players_information_hseparator;
-  GtkWidget		  *move_information_label;
+  GtkLabel		  *move_information_label;
   GtkWidget		  *mode_information_hseparator;
-  GtkWidget		  *mode_hint_label;
+  GtkLabel		  *mode_hint_label;
   GtkWidget		  *done_button;
   GtkWidget		  *cancel_button;
   GtkTextBuffer		  *text_buffer;

@@ -152,12 +152,14 @@ static void	 update_children_for_new_node(GtkGobanWindow *goban_window);
 static void	 update_game_information(GtkGobanWindow *goban_window);
 static void	 update_window_title(GtkGobanWindow *goban_window,
 				     const SgfNode *game_info_node);
-static int	 update_player_information
-		   (const SgfNode *game_info_node,
-		    GtkPlayerInformation *player_information,
-		    SgfType name_property, SgfType rank_property,
-		    SgfType team_property);
+static int	 update_player_information(const SgfNode *game_info_node,
+					   GtkLabel *player_label,
+					   SgfType name_property,
+					   SgfType rank_property,
+					   SgfType team_property);
 
+static void	 update_game_specific_information
+		   (GtkGobanWindow *goban_window);
 static void	 update_move_information(GtkGobanWindow *goban_window);
 
 static void	 initialize_gtp_player(GtpClient *client, int successful,
@@ -262,6 +264,8 @@ gtk_goban_window_init(GtkGobanWindow *goban_window)
   GtkWidget *goban;
   GtkWidget *frame;
   GtkWidget *table;
+  GtkWidget *move_information_label;
+  GtkWidget *mode_hint_label;
   GtkWidget *hbox;
   GtkWidget *text_view;
   GtkWidget *scrolled_window;
@@ -293,22 +297,29 @@ gtk_goban_window_init(GtkGobanWindow *goban_window)
 
   /* Information labels and clocks for each player. */
   for (k = 0; k < NUM_COLORS; k++) {
-    GtkWidget *named_vbox;
-    GtkWidget *label;
+    GtkWidget *player_label;
+    GtkWidget *game_specific_info;
     GtkWidget *clock;
+    GtkWidget *named_vbox;
 
-    named_vbox = gtk_named_vbox_new(k == BLACK_INDEX ? "Black" : "White",
-				    FALSE, QUARRY_SPACING_VERY_SMALL);
+    player_label = gtk_label_new(NULL);
+    gtk_misc_set_alignment(GTK_MISC(player_label), 0.0, 0.5);
+    goban_window->player_labels[k] = GTK_LABEL(player_label);
 
-    /* In GUI, White is always first. */
+    game_specific_info = gtk_label_new(NULL);
+    gtk_misc_set_alignment(GTK_MISC(game_specific_info), 0.0, 0.5);
+    goban_window->game_specific_info[k] = GTK_LABEL(game_specific_info);
+
+    named_vbox = gtk_utils_pack_in_box(GTK_TYPE_NAMED_VBOX,
+				       QUARRY_SPACING_VERY_SMALL,
+				       player_label, GTK_UTILS_FILL,
+				       game_specific_info, GTK_UTILS_FILL,
+				       NULL);
+    gtk_named_vbox_set_label_text(GTK_NAMED_VBOX(named_vbox), 
+				  (k == BLACK_INDEX ? "Black" : "White"));
     gtk_table_attach(GTK_TABLE(table), named_vbox,
 		     0, 1, OTHER_INDEX(k), OTHER_INDEX(k) + 1,
 		     GTK_FILL, 0, 0, 0);
-
-    label = gtk_label_new(NULL);
-    gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
-    gtk_box_pack_start(GTK_BOX(named_vbox), label, FALSE, TRUE, 0);
-    goban_window->players_information[k].player_label = GTK_LABEL(label);
 
     clock = gtk_clock_new();
     gtk_table_attach(GTK_TABLE(table), gtk_utils_sink_widget(clock),
@@ -326,15 +337,16 @@ gtk_goban_window_init(GtkGobanWindow *goban_window)
   goban_window->players_information_hseparator = gtk_hseparator_new();
 
   /* Move information label. */
-  goban_window->move_information_label = gtk_label_new(NULL);
+  move_information_label = gtk_label_new(NULL);
+  goban_window->move_information_label = GTK_LABEL(move_information_label);
 
   goban_window->mode_information_hseparator = gtk_hseparator_new();
 
   /* A label with hints about special window modes. */
-  goban_window->mode_hint_label = gtk_label_new(NULL);
-  gtk_label_set_line_wrap(GTK_LABEL(goban_window->mode_hint_label), TRUE);
-  gtk_label_set_justify(GTK_LABEL(goban_window->mode_hint_label),
-			GTK_JUSTIFY_CENTER);
+  mode_hint_label = gtk_label_new(NULL);
+  gtk_label_set_line_wrap(GTK_LABEL(mode_hint_label), TRUE);
+  gtk_label_set_justify(GTK_LABEL(mode_hint_label), GTK_JUSTIFY_CENTER);
+  goban_window->mode_hint_label = GTK_LABEL(mode_hint_label);
 
   /* Buttons for ending specil window modes. */
   goban_window->done_button = gtk_button_new_from_stock(QUARRY_STOCK_DONE);
@@ -364,8 +376,7 @@ gtk_goban_window_init(GtkGobanWindow *goban_window)
 			       GTK_UTILS_FILL,
 			       goban_window->players_information_hseparator,
 			       GTK_UTILS_FILL,
-			       goban_window->move_information_label,
-			       GTK_UTILS_FILL,
+			       move_information_label, GTK_UTILS_FILL,
 			       goban_window->mode_information_hseparator,
 			       GTK_UTILS_FILL,
 			       goban_window->mode_hint_label,
@@ -508,26 +519,22 @@ gtk_goban_window_enter_game_mode(GtkGobanWindow *goban_window,
     initialize_gtp_player(white_player, 1, goban_window);
   }
 
-  black_clock_frame
-    = gtk_widget_get_parent(GTK_WIDGET(goban_window->clocks[BLACK_INDEX]));
-  white_clock_frame
-    = gtk_widget_get_parent(GTK_WIDGET(goban_window->clocks[WHITE_INDEX]));
-
   if (black_time_control && white_time_control) {
     gtk_clock_initialize_for_time_control(goban_window->clocks[BLACK_INDEX],
 					  black_time_control);
     gtk_clock_initialize_for_time_control(goban_window->clocks[WHITE_INDEX],
 					  white_time_control);
-
-    gtk_widget_show(black_clock_frame);
-    gtk_widget_show(white_clock_frame);
-  }
-  else if (!black_time_control && !white_time_control) {
-    gtk_widget_hide(black_clock_frame);
-    gtk_widget_hide(white_clock_frame);
   }
   else
-    assert(0);
+    assert(!black_time_control && !white_time_control);
+
+  black_clock_frame
+    = gtk_widget_get_parent(GTK_WIDGET(goban_window->clocks[BLACK_INDEX]));
+  white_clock_frame
+    = gtk_widget_get_parent(GTK_WIDGET(goban_window->clocks[WHITE_INDEX]));
+
+  gtk_utils_set_widgets_visible(black_time_control && white_time_control,
+				black_clock_frame, white_clock_frame, NULL);
 
   if (USER_CAN_PLAY_MOVES(goban_window))
     start_clock_if_needed(goban_window);
@@ -662,10 +669,10 @@ enter_special_mode(GtkGobanWindow *goban_window, const gchar *hint,
 		   SpecialModeButtonClicked done_callback,
 		   SpecialModeButtonClicked cancel_callback)
 {
-  gtk_label_set_text(GTK_LABEL(goban_window->mode_hint_label), hint);
+  gtk_label_set_text(goban_window->mode_hint_label, hint);
 
   gtk_widget_show(goban_window->mode_information_hseparator);
-  gtk_widget_show(goban_window->mode_hint_label);
+  gtk_widget_show(GTK_WIDGET(goban_window->mode_hint_label));
 
   gtk_widget_show(goban_window->done_button);
   g_signal_connect_swapped(goban_window->done_button, "clicked",
@@ -692,7 +699,7 @@ leave_special_mode(GtkGobanWindow *goban_window)
 				       goban_window);
 
   gtk_widget_hide(goban_window->mode_information_hseparator);
-  gtk_widget_hide(goban_window->mode_hint_label);
+  gtk_widget_hide(GTK_WIDGET(goban_window->mode_hint_label));
   gtk_widget_hide(goban_window->done_button);
   gtk_widget_hide(goban_window->cancel_button);
 }
@@ -756,9 +763,15 @@ static void
 set_current_tree(GtkGobanWindow *goban_window, SgfGameTree *sgf_tree)
 {
   if (!goban_window->board && GAME_IS_SUPPORTED(sgf_tree->game)) {
+    GtkLabel **game_specific_info = goban_window->game_specific_info;
+
     goban_window->board = board_new(sgf_tree->game,
 				    sgf_tree->board_width,
 				    sgf_tree->board_height);
+
+    gtk_utils_set_widgets_visible(goban_window->board->game != GAME_AMAZONS,
+				  game_specific_info[BLACK_INDEX],
+				  game_specific_info[WHITE_INDEX], NULL);
   }
 
   goban_window->current_tree = sgf_tree;
@@ -1260,7 +1273,7 @@ update_children_for_new_node(GtkGobanWindow *goban_window)
 				    goban_window->black_variations,
 				    goban_window->white_variations,
 				    BLACK_50_TRANSPARENT, WHITE_50_TRANSPARENT,
-				    TILE_NONE);
+				    MIXED_50_TRANSPARENT);
   sgf_utils_mark_territory_on_grid(current_tree, goban_markup,
 				   (BLACK_OPAQUE
 				    | GOBAN_MARKUP_GHOSTIFY),
@@ -1279,6 +1292,7 @@ update_children_for_new_node(GtkGobanWindow *goban_window)
       != goban_window->sgf_board_state.game_info_node)
     update_game_information(goban_window);
 
+  update_game_specific_information(goban_window);
   update_move_information(goban_window);
 
   comment = sgf_node_get_text_property_value(current_node, SGF_COMMENT);
@@ -1319,34 +1333,27 @@ static void
 update_game_information(GtkGobanWindow *goban_window)
 {
   const SgfNode *game_info_node = goban_window->sgf_board_state.game_info_node;
-  int have_any_player_information = 0;
+  int have_any_player_information = (goban_window->board->game
+				     != GAME_AMAZONS);
 
   update_window_title(goban_window, game_info_node);
 
   if (update_player_information(game_info_node,
-				(goban_window->players_information
-				 + BLACK_INDEX),
+				goban_window->player_labels[BLACK_INDEX],
 				SGF_PLAYER_BLACK, SGF_BLACK_RANK,
 				SGF_BLACK_TEAM))
     have_any_player_information = 1;
 
   if (update_player_information(game_info_node,
-				(goban_window->players_information
-				 + WHITE_INDEX),
+				goban_window->player_labels[WHITE_INDEX],
 				SGF_PLAYER_WHITE, SGF_WHITE_RANK,
 				SGF_WHITE_TEAM))
     have_any_player_information = 1;
 
-  if (have_any_player_information
-      && !GTK_WIDGET_VISIBLE(goban_window->player_table_alignment)) {
-    gtk_widget_show(goban_window->player_table_alignment);
-    gtk_widget_show(goban_window->players_information_hseparator);
-  }
-  else if (!have_any_player_information
-	   && GTK_WIDGET_VISIBLE(goban_window->player_table_alignment)) {
-    gtk_widget_hide(goban_window->player_table_alignment);
-    gtk_widget_hide(goban_window->players_information_hseparator);
-  }
+  gtk_utils_set_widgets_visible(have_any_player_information,
+				goban_window->player_table_alignment,
+				goban_window->players_information_hseparator,
+				NULL);
 
   goban_window->last_game_info_node = game_info_node;
 }
@@ -1379,7 +1386,7 @@ update_window_title(GtkGobanWindow *goban_window, const SgfNode *game_info_node)
 
 static int
 update_player_information(const SgfNode *game_info_node,
-			  GtkPlayerInformation *player_information,
+			  GtkLabel *player_label,
 			  SgfType name_property, SgfType rank_property,
 			  SgfType team_property)
 {
@@ -1402,10 +1409,58 @@ update_player_information(const SgfNode *game_info_node,
   if (team)
     label_text = utils_cat_strings(label_text, " (", team, ")", NULL);
 
-  gtk_label_set_text(player_information->player_label, label_text);
+  gtk_label_set_text(player_label, label_text);
   utils_free(label_text);
 
   return name || rank || team;
+}
+
+
+static void
+update_game_specific_information(GtkGobanWindow *goban_window)
+{
+  const Board *board = goban_window->board;
+  gchar *black_string;
+  gchar *white_string;
+
+  if (board->game == GAME_GO) {
+    const SgfNode *game_info_node
+      = goban_window->sgf_board_state.game_info_node;
+    double komi;
+
+    black_string = g_strdup_printf("%d capture(s)",
+				   board->data.go.prisoners[BLACK_INDEX]);
+
+    if (game_info_node
+	&& sgf_node_get_komi(game_info_node, &komi) && komi != 0.0) {
+      white_string = g_strdup_printf("%d capture(s) %c %s komi",
+				     board->data.go.prisoners[WHITE_INDEX],
+				     (komi > 0.0 ? '+' : '-'),
+				     format_double(fabs(komi)));
+    }
+    else {
+      white_string = g_strdup_printf("%d capture(s)",
+				     board->data.go.prisoners[WHITE_INDEX]);
+    }
+  }
+  else if (board->game == GAME_OTHELLO) {
+    int num_black_disks;
+    int num_white_disks;
+
+    othello_count_disks(board, &num_black_disks, &num_white_disks);
+    black_string = g_strdup_printf("%d disk(s)", num_black_disks);
+    white_string = g_strdup_printf("%d disk(s)", num_white_disks);
+  }
+  else
+    return;
+
+  gtk_label_set_text(goban_window->game_specific_info[BLACK_INDEX],
+		     black_string);
+  gtk_label_set_text(goban_window->game_specific_info[WHITE_INDEX],
+		     white_string);
+
+  g_free(black_string);
+  g_free(white_string);
 }
 
 
@@ -1439,7 +1494,7 @@ update_move_information(GtkGobanWindow *goban_window)
   else
     strcpy(buffer + length, "; game over");
 
-  gtk_label_set_text(GTK_LABEL(goban_window->move_information_label), buffer);
+  gtk_label_set_text(goban_window->move_information_label, buffer);
 }
 
 
