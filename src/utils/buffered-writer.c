@@ -19,17 +19,29 @@
  * Boston, MA 02111-1307, USA.                                     *
 \* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
+/* This module provides a buffered file writer with a few useful
+ * features:
+ *
+ * - Allows on-the-fly re-encoding of incoming text.  Moreover,
+ *   required encoding can change arbitrary between writes to the
+ *   buffer (use buffered_writer_set_iconv_handle() macro to change
+ *   it).  Incoming text must come in UTF-8.
+ *
+ * - Tracks current column in the output stream, thus making output
+ *   formatting easier for higher level code.
+ */
+
 
 #include "utils.h"
 
-#include <stdlib.h>
+#include <assert.h>
+#include <limits.h>
 #include <stdarg.h>
+#include <stdlib.h>
 
 /* For memrchr(), if it is present at all. */
 #define __USE_GNU
 #include <string.h>
-
-#include <assert.h>
 
 #ifdef HAVE_MEMORY_H
 #include <memory.h>
@@ -46,7 +58,7 @@ buffered_writer_init(BufferedWriter *writer,
 		     const char *filename, int buffer_size)
 {
   assert(writer);
-  assert(buffer_size > 0);
+  assert(buffer_size > MB_LEN_MAX);
 
   if (filename) {
     writer->file = fopen(filename, "w");
@@ -60,6 +72,8 @@ buffered_writer_init(BufferedWriter *writer,
   writer->buffer_pointer = writer->buffer;
   writer->buffer_end	 = writer->buffer + buffer_size;
 
+  writer->iconv_handle = NULL;
+
   writer->column = 0;
 
   writer->successful = 1;
@@ -71,6 +85,8 @@ buffered_writer_init(BufferedWriter *writer,
 int
 buffered_writer_dispose(BufferedWriter *writer)
 {
+  assert(writer);
+
   if (writer->buffer_pointer != writer->buffer)
     flush_buffer(writer);
 
@@ -86,7 +102,31 @@ buffered_writer_dispose(BufferedWriter *writer)
 void
 buffered_writer_add_character(BufferedWriter *writer, char character)
 {
-  *writer->buffer_pointer++ = character;
+  assert(writer);
+
+  /* The character must not be a multi-byte UTF-8 character. */
+  assert(!(character & 0x80) && character != '\n');
+
+  if (!writer->iconv_handle)
+    *writer->buffer_pointer++ = character;
+  else {
+    char *input_text = &character;
+    int input_bytes_left = 1;
+    int output_bytes_left = writer->buffer_end - writer->buffer_pointer;
+
+    iconv(writer->iconv_handle,
+	  &input_text, &input_bytes_left,
+	  &writer->buffer_pointer, &output_bytes_left);
+
+    if (input_bytes_left) {
+      flush_buffer(writer);
+
+      iconv(writer->iconv_handle,
+	    &input_text, &input_bytes_left,
+	    &writer->buffer_pointer, &output_bytes_left);
+    }
+  }
+
   if (writer->buffer_pointer == writer->buffer_end)
     flush_buffer(writer);
 
@@ -96,10 +136,33 @@ buffered_writer_add_character(BufferedWriter *writer, char character)
 }
 
 
+/* FIXME: Output system-specific line terminator. */
 void
 buffered_writer_add_newline(BufferedWriter *writer)
 {
-  *writer->buffer_pointer++ = '\n';
+  assert(writer);
+
+  if (!writer->iconv_handle)
+    *writer->buffer_pointer++ = '\n';
+  else {
+    char input_character = '\n';
+    char *input_text = &input_character;
+    int input_bytes_left = 1;
+    int output_bytes_left = writer->buffer_end - writer->buffer_pointer;
+
+    iconv(writer->iconv_handle,
+	  &input_text, &input_bytes_left,
+	  &writer->buffer_pointer, &output_bytes_left);
+
+    if (input_bytes_left) {
+      flush_buffer(writer);
+
+      iconv(writer->iconv_handle,
+	    &input_text, &input_bytes_left,
+	    &writer->buffer_pointer, &output_bytes_left);
+    }
+  }
+
   if (writer->buffer_pointer == writer->buffer_end)
     flush_buffer(writer);
 
@@ -138,18 +201,35 @@ buffered_writer_cat_as_string(BufferedWriter *writer,
 
   update_column(writer, buffer, length);
 
-  while (length > 0) {
-    int chunk_size = (length < writer->buffer_end - writer->buffer_pointer
-		      ? length : writer->buffer_end - writer->buffer_pointer);
+  if (!writer->iconv_handle) {
+    while (length > 0) {
+      int chunk_size = MIN(length,
+			   writer->buffer_end - writer->buffer_pointer);
 
-    memcpy(writer->buffer_pointer, buffer, chunk_size);
+      memcpy(writer->buffer_pointer, buffer, chunk_size);
 
-    writer->buffer_pointer += chunk_size;
-    if (writer->buffer_pointer == writer->buffer_end)
-      flush_buffer(writer);
+      writer->buffer_pointer += chunk_size;
+      if (writer->buffer_pointer == writer->buffer_end)
+	flush_buffer(writer);
 
-    buffer += chunk_size;
-    length -= chunk_size;
+      buffer += chunk_size;
+      length -= chunk_size;
+    }
+  }
+  else {
+    while (length > 0) {
+      int output_bytes_left = writer->buffer_end - writer->buffer_pointer;
+
+      /* Dumb <iconv.h> doesn't apply `const' to input buffer?!  This
+       * is nasty, but a warning for nothing is even worse.
+       */
+      iconv(writer->iconv_handle,
+	    (char **) (void *) &buffer, &length,
+	    &writer->buffer_pointer, &output_bytes_left);
+
+      if (writer->buffer_pointer == writer->buffer_end)
+	flush_buffer(writer);
+    }
   }
 }
 
@@ -186,26 +266,34 @@ buffered_writer_vprintf(BufferedWriter *writer,
 {
   va_list arguments_copy;
   int characters_written;
+  char *string;
 
   assert(writer);
   assert(format_string);
 
-  QUARRY_VA_COPY(arguments_copy, arguments);
-  characters_written = vsnprintf(writer->buffer_pointer,
-				 writer->buffer_end - writer->buffer_pointer,
-				 format_string, arguments_copy);
-  va_end(arguments_copy);
+  if (!writer->iconv_handle
+      && (writer->buffer_end - writer->buffer_pointer
+	  >= strlen(format_string))) {
+    /* No encoding conversion is requested.  Try to print the string
+     * directly in the buffer.
+     */
+    QUARRY_VA_COPY(arguments_copy, arguments);
+    characters_written = vsnprintf(writer->buffer_pointer,
+				   writer->buffer_end - writer->buffer_pointer,
+				   format_string, arguments_copy);
+    va_end(arguments_copy);
 
-  if (characters_written < writer->buffer_end - writer->buffer_pointer) {
-    update_column(writer, writer->buffer_pointer, characters_written);
-    writer->buffer_pointer += characters_written;
-  }
-  else {
-    char *string = utils_vprintf(format_string, arguments);
+    if (characters_written < writer->buffer_end - writer->buffer_pointer) {
+      update_column(writer, writer->buffer_pointer, characters_written);
+      writer->buffer_pointer += characters_written;
 
-    buffered_writer_cat_string(writer, string);
-    utils_free(string);
+      return;
+    }
   }
+
+  string = utils_vprintf(format_string, arguments);
+  buffered_writer_cat_string(writer, string);
+  utils_free(string);
 }
 
 
@@ -253,9 +341,13 @@ update_column(BufferedWriter *writer, const char *buffer, int length)
 #endif
 
   while (last_line < buffer_end) {
-    writer->column++;
-    if (*last_line++ == '\t')
-      writer->column = ROUND_UP(writer->column, 8);
+    if (IS_UTF8_STARTER(*last_line)) {
+      writer->column++;
+      if (*last_line == '\t')
+	writer->column = ROUND_UP(writer->column, 8);
+    }
+
+    last_line++;
   }
 }
 

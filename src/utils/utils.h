@@ -26,9 +26,10 @@
 
 #include "quarry.h"
 
-#include <stdlib.h>
-#include <stdio.h>
+#include <iconv.h>
 #include <stdarg.h>
+#include <stdio.h>
+#include <stdlib.h>
 
 
 /* Set to zero to disable memory pools. */
@@ -475,6 +476,8 @@ struct _BufferedWriter {
   char	       *buffer_pointer;
   char	       *buffer_end;
 
+  iconv_t	iconv_handle;
+
   int		column;
 
   int		successful;
@@ -484,6 +487,10 @@ struct _BufferedWriter {
 int		buffered_writer_init(BufferedWriter *writer,
 				     const char *filename, int buffer_size);
 int		buffered_writer_dispose(BufferedWriter *writer);
+
+#define buffered_writer_set_iconv_handle(writer, handle)	\
+  ((writer)->iconv_handle = (handle))
+
 
 void		buffered_writer_add_character(BufferedWriter *writer,
 					      char character);
