@@ -157,6 +157,8 @@ AM_CPPFLAGS = \
 	$(QUARRY_WARNINGS)			\
 						\
 	-I $(top_srcdir)/src/gui-gtk		\
+	-I $(top_srcdir)/src/gui-utils		\
+	-I $(top_srcdir)/src/board		\
 	-I $(top_srcdir)/src/utils
 
 
