@@ -1,0 +1,163 @@
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+# This file is part of Quarry                                     #
+#                                                                 #
+# Copyright (C) 2003, 2004 Paul Pogonyshev.                       #
+#                                                                 #
+# This program is free software; you can redistribute it and/or   #
+# modify it under the terms of the GNU General Public License as  #
+# published by the Free Software Foundation; either version 2 of  #
+# the License, or (at your option) any later version.             #
+#                                                                 #
+# This program is distributed in the hope that it will be useful, #
+# but WITHOUT ANY WARRANTY; without even the implied warranty of  #
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the   #
+# GNU General Public License for more details.                    #
+#                                                                 #
+# You should have received a copy of the GNU General Public       #
+# License along with this program; if not, write to the Free      #
+# Software Foundation, Inc., 59 Temple Place - Suite 330,         #
+# Boston, MA 02111-1307, USA.                                     #
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+
+
+c_include "game-info.h"
+c_include "go.h"
+c_include "othello.h"
+c_include "amazons.h"
+
+c_include <stdlib.h>
+
+
+games  Game game_info {
+  # List of games, in the same order they are numbered in SGF.
+
+  #> Dummy entry, to fill zero index.
+  NULL		GAME_DUMMY		UNSUPPORTED
+
+		+ FIRST_GAME
+
+
+  #> GM[1], Go.
+  "Go"		GAME_GO			19
+		black			NULL
+		go_is_game_over
+
+		ABCDEFGHJKLMNOPQRSTUVWXYZ	reversed
+
+		NULL
+
+		go_reset_game_data
+		go_is_legal_move	go_play_move		go_undo
+		go_apply_changes	go_add_dummy_move_entry
+		go_format_move		go_parse_move
+		go_validate_board	go_dump_board
+
+		GoMoveStackEntry	0.8
+
+
+  #> GM[2], Othello.
+  "Othello"	GAME_OTHELLO		8
+		black			othello_adjust_color_to_play
+		NULL
+
+		ABCDEFGHIJKLMNOPQRSTUVWXY	normal
+
+		othello_get_default_setup
+
+		NULL
+		othello_is_legal_move	othello_play_move	othello_undo
+		othello_apply_changes	othello_add_dummy_move_entry
+		othello_format_move	othello_parse_move
+		othello_validate_board	othello_dump_board
+
+		OthelloMoveStackEntry	0.95
+
+
+  #> GM[3], chess.
+  "chess"	GAME_CHESS		UNSUPPORTED
+
+
+  #> GM[4], Gomoku + Renju.
+  "Gomoku"	GAME_GOMOKU		UNSUPPORTED
+
+
+  #> GM[5], Nine Men's Morris.
+  "Nine Men's Morris"	GAME_NINE_MENS_MORRIS	UNSUPPORTED
+
+
+  #> GM[6], Backgammon.
+  "Backgammon"	GAME_BACKGAMMON		UNSUPPORTED
+
+
+  #> GM[7], Chinese chess.
+  "Chinese chess"	GAME_CHINESE_CHESS	UNSUPPORTED
+
+
+  #> GM[8], Shogi.
+  "Shogi"	GAME_SHOGI		UNSUPPORTED
+
+
+  #> GM[9], Lines of Action.
+  "Lines of Action"	GAME_LINES_OF_ACTION	UNSUPPORTED
+
+
+  #> GM[10], Ataxx.
+  "Ataxx"	GAME_ATAXX		UNSUPPORTED
+
+
+  #> GM[11], Hex.
+  "Hex"		GAME_HEX		UNSUPPORTED
+
+
+  #> GM[12], Jungle.
+  "Jungle"	GAME_JUNGLE		UNSUPPORTED
+
+
+  #> GM[13], Neutron.
+  "Neutron"	GAME_NEUTRON		UNSUPPORTED
+
+
+  #> GM[14], Philosopher's Football.
+  "Philosopher's Football"	GAME_PHILOSOPHERS_FOOTBALL	UNSUPPORTED
+
+
+  #> GM[15], Quadrature.
+  "Quadrature"	GAME_QUADRATURE		UNSUPPORTED
+
+
+  #> GM[16], Trax.
+  "Trax"	GAME_TRAX		UNSUPPORTED
+
+
+  #> GM[17], Tantrix.
+  "Tantrix"	GAME_TANTRIX		UNSUPPORTED
+
+
+  #> GM[18], Amazons.
+  "Amazons"	GAME_AMAZONS		10
+		white			amazons_adjust_color_to_play
+		amazons_is_game_over
+
+		ABCDEFGHIJKLMNOPQRSTUVWXY	reversed
+
+		amazons_get_default_setup
+
+		NULL
+		amazons_is_legal_move	amazons_play_move	amazons_undo
+		amazons_apply_changes	amazons_add_dummy_move_entry
+		amazons_format_move	amazons_parse_move
+		amazons_validate_board	amazons_dump_board
+
+		AmazonsMoveStackEntry	0.95
+
+
+  #> GM[19], Octi.
+  "Octi"	GAME_OCTI		UNSUPPORTED
+
+
+  #> GM[20], Gess.
+  "Gess"	GAME_GESS		UNSUPPORTED
+
+
+		= LAST_GAME
+}

@@ -1,0 +1,59 @@
+		   QUARRY INSTALLATION INSTRUCTIONS
+
+Untar the sources, `cd' to the directory where you unpacked Quarry and
+invoke `configure' script:
+
+	./configure [OPTIONS]
+
+If your system is sane, the only reason for `configure' to complain is
+absence of GTK+ 2.x library.  If this is the case, download the
+library from
+
+	http://gtk.org/download/
+
+Note that GTK+ 1.x won't work and will never be supported in Quarry.
+GTK+ 2.x is so much better that there is no reason to support older
+versions.
+
+Now invoke the `make' program:
+
+	make
+
+If it succeeded then you are done.  You should now have a binary named
+`quarry' residing in the `src'.  You can find a bit information on
+what you can do with it in file README.  No proper documentation is
+available yet, sorry.
+
+If something went wrong, please have a look at the next section.
+
+After this, you should install Quarry by typing
+
+	make install
+
+(you may need to login as super-user first).  After this, everything
+should be set up just fine.
+
+Note that Quarry binary can be placed anywhere.  This means that you
+can run the copy in your build directory as well the installed one.
+Also, if you rebuild Quarry, you don't need to reinstall it unless
+files in `data/' subdirectory has changed or you intend to run the
+installed binary, not the one in build directory.
+
+
+			INSTALLATION PROBLEMS
+
+If Quarry won't configure or compile on your system and you are sure
+that you have GTK+ 2.x, I would certainly like to fix that.  Feel free
+to mail to <quarry@gna.org>.  Remember that the more information you
+provide, the more likely I will fix the problem.  In particular,
+please send me several last lines of `configure's and/or `make's
+output, depending on where the problem occured.
+
+Before sending a bug report, please make sure that GTK+ 2.x is
+installed: type
+
+	pkg-config --modversion gtk+-2.0
+
+If the library is installed, it will print the exact version.  If it
+is not, `pkg-config' will tell you that or fail to run at all.  Don't
+forget to include GTK+ version in your bug report.

@@ -1,0 +1,185 @@
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+# This file is part of Quarry                                     #
+#                                                                 #
+# Copyright (C) 2003, 2004 Paul Pogonyshev.                       #
+#                                                                 #
+# This program is free software; you can redistribute it and/or   #
+# modify it under the terms of the GNU General Public License as  #
+# published by the Free Software Foundation; either version 2 of  #
+# the License, or (at your option) any later version.             #
+#                                                                 #
+# This program is distributed in the hope that it will be useful, #
+# but WITHOUT ANY WARRANTY; without even the implied warranty of  #
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the   #
+# GNU General Public License for more details.                    #
+#                                                                 #
+# You should have received a copy of the GNU General Public       #
+# License along with this program; if not, write to the Free      #
+# Software Foundation, Inc., 59 Temple Place - Suite 330,         #
+# Boston, MA 02111-1307, USA.                                     #
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+
+
+c_include "sgf-privates.h"
+c_include "sgf-parser.h"
+c_include "sgf-writer.h"
+
+
+value_types  SgfValueType - {
+  #> Value types.
+  none			SGF_NONE		sgf_write_none
+  number		SGF_NUMBER		sgf_write_number
+  double		SGF_DOUBLE		sgf_write_double
+  color			SGF_COLOR		sgf_write_color
+
+			+ SGF_FIRST_MALLOC_TYPE
+  real			SGF_REAL		sgf_write_real
+  simple_text		SGF_SIMPLE_TEXT		sgf_write_simple_text
+  fake_simple_text	SGF_FAKE_SIMPLE_TEXT	sgf_write_fake_simple_text
+  text			SGF_TEXT		sgf_write_text
+  list_of_point		SGF_LIST_OF_POINT	sgf_write_list_of_point
+  elist_of_point	SGF_ELIST_OF_POINT	sgf_write_list_of_point
+  list_of_vector	SGF_LIST_OF_VECTOR	sgf_write_list_of_vector
+  list_of_label		SGF_LIST_OF_LABEL	sgf_write_list_of_label
+  unknown		SGF_TYPE_UNKNOWN	sgf_write_unknown
+			= SGF_LAST_MALLOC_TYPE
+
+  #> Special value "type" for properties which are not stored.
+  not_stored		SGF_NOT_STORED		NULL
+}
+
+
+properties  SgfType property_info {
+  #> Root properties.
+	+ SGF_FIRST_ROOT_PROPERTY
+  FF	SGF_FILE_FORMAT		not_stored	sgf_parse_file_format
+  GM	SGF_GAME_TYPE		not_stored	sgf_parse_game_type
+  CA	SGF_CHAR_SET		simple_text	sgf_parse_simple_text
+  ST	SGF_STYLE		number		sgf_parse_style
+  AP	SGF_APPLICATION		not_stored	sgf_parse_application
+  SZ	SGF_BOARD_SIZE		not_stored	sgf_parse_board_size
+	= SGF_LAST_ROOT_PROPERTY
+
+  #> Game information properties.
+	+ SGF_FIRST_GAME_INFO_PROPERTY
+
+  # Note that all values are stored as `simple_text', because SGF
+  # specification requires us to preserve incorrectly formatted
+  # game-info properties.
+
+  GN	SGF_GAME_NAME		simple_text	sgf_parse_simple_text
+  EV	SGF_EVENT		simple_text	sgf_parse_simple_text
+  RO	SGF_ROUND		simple_text	sgf_parse_simple_text
+  PC	SGF_PLACE		simple_text	sgf_parse_simple_text
+  DT	SGF_DATE		simple_text	sgf_parse_date
+  RU	SGF_RULES		simple_text	sgf_parse_simple_text
+
+  #> `HA' and `KM' are specific to Go.
+  HA	SGF_HANDICAP		fake_simple_text  sgf_parse_handicap
+  KM	SGF_KOMI		fake_simple_text  sgf_parse_komi
+
+  OT	SGF_OVERTIME		simple_text	sgf_parse_simple_text
+  TM	SGF_TIME_LIMIT		fake_simple_text  sgf_parse_time_limit
+  PB	SGF_PLAYER_BLACK	simple_text	sgf_parse_simple_text
+  BT	SGF_BLACK_TEAM		simple_text	sgf_parse_simple_text
+  BR	SGF_BLACK_RANK		simple_text	sgf_parse_simple_text
+  PW	SGF_PLAYER_WHITE	simple_text	sgf_parse_simple_text
+  WT	SGF_WHITE_TEAM		simple_text	sgf_parse_simple_text
+  WR	SGF_WHITE_RANK		simple_text	sgf_parse_simple_text
+  AN	SGF_ANNOTATOR		simple_text	sgf_parse_simple_text
+  CP	SGF_COPYRIGHT		simple_text	sgf_parse_simple_text
+  SO	SGF_SOURCE		simple_text	sgf_parse_simple_text
+  US	SGF_USER		simple_text	sgf_parse_simple_text
+  ON	SGF_OPENING		simple_text	sgf_parse_simple_text
+  GC	SGF_GAME_COMMENT	text		sgf_parse_text
+  RE	SGF_RESULT		simple_text	sgf_parse_result
+	= SGF_LAST_GAME_INFO_PROPERTY
+
+  #> Setup properties.
+	+ SGF_FIRST_SETUP_PROPERTY
+  AB	SGF_ADD_BLACK		list_of_point	sgf_parse_setup_property
+  AW	SGF_ADD_WHITE		list_of_point	sgf_parse_setup_property
+  AE	SGF_ADD_EMPTY		list_of_point	sgf_parse_setup_property
+
+  # `AA' is specific to Amazons.
+  AA	SGF_ADD_ARROWS		list_of_point	sgf_parse_setup_property
+
+  PL	SGF_TO_PLAY		color		sgf_parse_color
+	= SGF_LAST_SETUP_PROPERTY
+
+  #> Move properties.
+  B	SGF_BLACK		not_stored	sgf_parse_move
+  W	SGF_WHITE		not_stored	sgf_parse_move
+  KO	SGF_KO			none		sgf_parse_none
+  MN	SGF_MOVE_NUMBER		number		sgf_parse_move_number
+
+  #> Node annotation properties.
+  N	SGF_NODE_NAME		simple_text	sgf_parse_simple_text
+  C	SGF_COMMENT		text		sgf_parse_text
+  HO	SGF_HOTSPOT		double		sgf_parse_double
+  UC	SGF_UNCLEAR		double		sgf_parse_double
+  V	SGF_VALUE		real		sgf_parse_real
+  GB	SGF_GOOD_4BLACK		double		sgf_parse_double
+  DM	SGF_DAME		double		sgf_parse_double
+  GW	SGF_GOOD_4WHITE		double		sgf_parse_double
+
+  #> Move annotation properties.
+  BM	SGF_BAD_MOVE		double		sgf_parse_double
+  DO	SGF_DOUBTFUL		none		sgf_parse_none
+  IT	SGF_INTERESTING		none		sgf_parse_none
+  TE	SGF_TESUJI		double		sgf_parse_double
+
+  #> Timing properties.
+  BL	SGF_TIME_LEFT_4BLACK	real		sgf_parse_real
+  OB	SGF_MOVES_LEFT_4BLACK	number		sgf_parse_moves_left
+  WL	SGF_TIME_LEFT_4WHITE	real		sgf_parse_real
+  OW	SGF_MOVES_LEFT_4WHITE	number		sgf_parse_moves_left
+
+  #> Markup properties.
+  MA	SGF_MARK		list_of_point	sgf_parse_markup_property
+  CR	SGF_CIRCLE		list_of_point	sgf_parse_markup_property
+  SQ	SGF_SQUARE		list_of_point	sgf_parse_markup_property
+  TR	SGF_TRIANGLE		list_of_point	sgf_parse_markup_property
+  SL	SGF_SELECTED		list_of_point	sgf_parse_markup_property
+  LB	SGF_LABEL		list_of_label	sgf_parse_list_of_label
+
+  #> `TB' and `TW' are Go-specific.
+  TB	SGF_BLACK_TERRITORY	list_of_point	sgf_parse_territory
+  TW	SGF_WHITE_TERRITORY	list_of_point	sgf_parse_territory
+
+  AR	SGF_ARROW		list_of_vector	sgf_parse_list_of_vector
+  LN	SGF_LINE		list_of_vector	sgf_parse_list_of_vector
+  DD	SGF_DIMMED		elist_of_point	sgf_parse_list_of_point
+
+  #> Miscellaneous properties.
+  FG	SGF_FIGURE		simple_text	sgf_parse_figure
+  PM	SGF_PRINT_MODE		number		sgf_parse_print_mode
+  VW	SGF_VIEW_PORT		elist_of_point	sgf_parse_list_of_point
+
+  #> Custom extension properties we support.
+  IL	SGF_ILLEGAL_MOVE	list_of_point	sgf_parse_list_of_point
+
+  ##> Outdated properties (FF[1] - FF[3]).
+  #EL	SGF_EVALUATED		not_stored
+  #EX	SGF_EXPECTED		not_stored
+  #ID	SGF_IDENTIFIER		not_stored
+  #L	SGF_LETTERS		not_stored	sgf_parse_letters
+  #M	SGF_SIMPLE_MARKUP	not_stored	sgf_parse_simple_markup
+  #OM	SGF_MOVES_OVERTIME	not_stored
+  #OP	SGF_OVERTIME_LENGTH	not_stored
+  #OV	SGF_OPERATOR_OVERHEAD	not_stored
+  #RG	SGF_REGION		not_stored
+  #SC	SGF_SECURE_STONES	not_stored
+
+  #> The number of known properties.
+	+ SGF_KNOWN_PROPERTIES
+
+  #> Any property we don't know about (e.g. a custom extension).
+  -	SGF_UNKNOWN		unknown		NULL
+
+  #> Total number of all properties (known and unknown).
+	+ SGF_NUM_PROPERTIES
+
+  unknown SGF_UNKNOWN
+  total	  SGF_NUM_PROPERTIES
+}

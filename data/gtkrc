@@ -1,0 +1,15 @@
+style "sub-header" {
+  font_name = ", bold"
+}
+
+
+style "dialog" {
+  GtkDialog::content_area_border = 12
+  GtkDialog::button_spacing	 = 6
+  GtkDialog::action_area_border	 = 0
+}
+
+
+widget "*.quarry-sub-header" style "sub-header"
+
+widget "quarry-dialog" style "dialog"

@@ -1,0 +1,115 @@
+				QUARRY
+
+Quarry is a universal board game interface program.  At present it
+supports three games: Go, Amazons and Othello.  It is intended to be
+useful for both users and developers of game engines (i.e. programs
+that play board games).
+
+Currently, Quarry is in very early stages of development.  It is not
+really useful yet.  However, you are most welcome to have a try with
+it.  I'm sure you will like at least the way it looks.
+
+
+			     INSTALLATION
+
+The usual `./configure; make' should build Quarry.  The only serious
+requirement for Quarry is GTK+ 2.x library, everything else must be
+present on a sane system.  See file INSTALL for details.
+
+
+			    RUNNING QUARRY
+
+In the absence of proper documentation, here are a few words about
+what you can do with Quarry.
+
+So far, it treats all command line parameters as names of SGF files to
+open.  You can run it either without any parameters at all, or supply
+one or more files to start with.
+
+When you open an SGF file, either with a GTK+ file selector or from
+command line, you will see a nice-looking board.  You can use cursor
+keys for navigating through the files.
+
+Right and Left go forward and backward in the game record (i.e. they
+play and undo moves--actually SGF nodes--from it on board).  Instead
+of browsing move at a time, you can use Page Down and Page Up to skip
+ten moves at once.  Home and End go to the very beginning or the very
+end of game record.
+
+Down and Up switch to next or previous variation of the current move
+(node), if any.  Variations can be thought of as alternative ways the
+game can continue.  If there are variations containing moves, you will
+see them as small semi-transparent stones (or queens, or pieces
+depending on the game) on the board.  You can right-click on such a
+"ghost" to switch to variation at its position.  It can be more
+convenient than Down/Up when there are lots of variations all over the
+board.
+
+If keyboard focus slips from board to another control, you can use the
+keys mentioned above with Alt modifier, e.g. Alt-Right or Alt-Home.
+
+Finally, you can left-click your mouse on the board to play moves.
+For Amazons this will require 3 clicks (select a queen, point where to
+move it and point where to shoot arrow to). Note, that as you move
+mouse pointer over the board, a semi-transparent "ghost" shows up or
+disappears thus showing whether a move is legal or not.
+
+
+			    REPORTING BUGS
+
+Please don't report any bugs apart from those preventing you from
+compiling Quarry (see file INSTALL, section "Installation problems").
+Quarry is in so early stages of development that it contains myriads
+of unimplemented things and certainly many real bugs.  Most are known
+anyway, so reporting them will not help anything.
+
+
+			COPYRIGHTS AND LICENSE
+
+All files are copyrighted 2003, 2004 by Paul Pogonyshev except as
+noted below.
+
+All files are licensed under the GNU General Public License version 2
+or (at your option) any later version except as noted below.  GNU GPL
+version 2 may be found in the file COPYING.
+
+* Files `src/gui-gtk/gtk-qhbox.c' and `src/gui-gtk/gtk-qvbox.c' are
+  copyrighted 1995-1997 by Peter Mattis, Spencer Kimball and Josh
+  MacDonald and copyrighted 2003, 2004 by Paul Pogonyshev.  They are
+  licensed under GNU GPL version 2 or later too.
+
+* File `data/textures/wood1.jpg' can be distributed freely (1).
+
+* Files in the root directory of the distribution (this directory) are
+  either licensed by different parties as free software or are in
+  public domain.
+
+
+(1) This file was taken from
+
+	http://www.grsites.com/
+
+    On the site there is a disclaimer with the following text:
+
+	"Disclaimer: Background textures found on this site were not
+	created by the webmaster. They were obtained from various
+	sources on the internet that labeled them as "freely
+	distributable". If you should discover images in this
+	collection which you recognize as copyrighted, please email
+	the webmaster immediately so that they may be removed."
+
+    And in its "Terms of use" section, it is stated that
+
+	"The background textures found on this site were not created
+	by the webmaster, but were obtained from various sources on
+	the internet that described these graphics as freeware. Some
+	of the authors, however, might disapprove if their graphics
+	were used, for example, as part of a commercial software
+	package. Therefore, these graphics are best suited for
+	personal use (i.e. on a personal web site.)"
+
+    I'm very interested in a good texture that is either cleanly
+    licensed in a non-restrictive way that allows redistribution and
+    modification or is in public domain.  If you happen to have/know
+    about such a texture that would fit Quarry's look, please send it
+    or a link to it to <quarry@gna.org>.

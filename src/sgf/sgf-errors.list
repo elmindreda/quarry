@@ -1,0 +1,233 @@
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+# This file is part of Quarry                                     #
+#                                                                 #
+# Copyright (C) 2003, 2004 Paul Pogonyshev.                       #
+#                                                                 #
+# This program is free software; you can redistribute it and/or   #
+# modify it under the terms of the GNU General Public License as  #
+# published by the Free Software Foundation; either version 2 of  #
+# the License, or (at your option) any later version.             #
+#                                                                 #
+# This program is distributed in the hope that it will be useful, #
+# but WITHOUT ANY WARRANTY; without even the implied warranty of  #
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the   #
+# GNU General Public License for more details.                    #
+#                                                                 #
+# You should have received a copy of the GNU General Public       #
+# License along with this program; if not, write to the Free      #
+# Software Foundation, Inc., 59 Temple Place - Suite 330,         #
+# Boston, MA 02111-1307, USA.                                     #
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+
+
+c_include "quarry.h"
+
+c_include <stdlib.h>
+
+
+errors  SgfError sgf_errors {
+  SGF_CRITICAL_UNEXPECTED_END_OF_FILE
+  "critical: unexpected end of file, information may be lost "
+  "(proceeded with read data)"
+
+  SGF_FATAL_INVALID_VALUE
+  "error: property `%N' with invalid value [%V] (deleted)"
+
+  SGF_FATAL_INVALID_GAME_TYPE
+  "error: invalid game type [%V] (deleted; assuming Go, GM[1])"
+
+  SGF_FATAL_MOVE_OUT_OF_BOARD
+  "error: move in `%N' property value is out of board (property deleted)"
+
+
+  + SGF_FIRST_PROPERTY_NAME_ERROR
+
+
+  SGF_FATAL_EMPTY_VALUE
+  "error: property `%N' with empty value (deleted)"
+
+  SGF_FATAL_DUPLICATE_PROPERTY
+  "error: duplicate property `%N' (deleted)"
+
+  SGF_FATAL_NEGATIVE_TIME_LIMIT
+  "error: negative value of time limit (`TM') property (property deleted)"
+
+  SGF_FAIL		NULL
+
+
+  = SGF_LAST_FATAL_ERROR
+
+
+  SGF_CRITICAL_FUTURE_FILE_FORMAT
+  "critical: future SGF version, FF[%d] - be careful when saving (reading on)"
+
+  SGF_ERROR_MISPLACED_GAME_INFO_PROPERTY
+  "error: game-info property `%N' outside game-info node (deleted)"
+
+  SGF_ERROR_INVALID_GAME_INFO_PROPERTY
+  "error: game-info property `%N' with invalid value [%V] (preserved)"
+
+  SGF_ERROR_MISPLACED_ROOT_PROPERTY
+  "error: root property `%N' outside root node (deleted)"
+
+  SGF_ERROR_WRONG_GAME
+  "error: %s-specific property `%N' in %s game tree (deleted)"
+
+  SGF_WARNING_PROPERTY_WITH_EMPTY_VALUE
+  "warning: property `%N' with empty value (deleted)"
+
+  SGF_WARNING_PROPERTIES_MERGED
+  "warning: duplicate property `%N' (values merged)"
+
+  SGF_WARNING_UNKNOWN_PROPERTIES_MERGED
+  "warning: duplicate unknown property `%s' "
+  "(assuming list type; values merged)"
+
+  SGF_ERROR_ANOTHER_MOVE
+  "error: move property `%N' in a node already having a move (split node)"
+
+
+  = SGF_LAST_PROPERTY_NAME_ERROR
+
+
+  SGF_ERROR_MIXED_SETUP_ADD_AND_MOVE_PROPERTIES
+  "error: setup and move properties mixed in one node (split node)"
+
+  SGF_ERROR_MIXED_PL_AND_MOVE_PROPERTIES
+  "error: setup and move properties mixed in one node (deleted `PL' property)"
+
+  SGF_ERROR_SENSELESS_MOVE
+  "error: move %M is senseless: no piece of appropriate color at %P (deleted)"
+
+  SGF_WARNING_NON_SGF_POINT_NOTATION
+  "warning: non-SGF point notation `%c%d' "
+  "(parsed anyway; note: this warning is reported once only)"
+
+  SGF_ERROR_EMPTY_VARIATION
+  "error: variation without nodes (deleted)"
+
+  SGF_WARNING_EMPTY_VALUE
+  "warning: empty value of property `%N' (value ignored)"
+
+  SGF_ERROR_NON_EMPTY_VALUE
+  "error: value [%V] of property `%N' is not empty as it should be "
+  "(value deleted)"
+
+  SGF_ERROR_MULTIPLE_VALUES
+  "error: property `%N' cannot have a list of values "
+  "(all values but first deleted)"
+
+  SGF_WARNING_VALUES_MERGED
+  "warning: property `%N' cannot have a list of values (values merged)"
+
+  SGF_ERROR_INVALID_VALUE
+  "error: invalid value [%V] of property `%N' (value deleted)"
+
+  SGF_WARNING_COMPOSED_SIMPLE_TEXT_EXPECTED
+  "warning: composed simple text value expected (assuming empty second part)"
+
+  SGF_ERROR_INVALID_DOUBLE_VALUE
+  "error: property `%N' with invalid value [%V], while expected [1] or [2] "
+  "(assuming [1])"
+
+  SGF_WARNING_LOWER_CASE_COLOR
+  "warning: lower-case color `%c' in property `%N' (upcased to `%c')"
+
+  SGF_WARNING_INTEGER_PART_SUPPLIED
+  "warning: missed integral part of floating-point number in value "
+  "of property `%N' (zero supplied)"
+
+  SGF_WARNING_FRACTIONAL_PART_SUPPLIED
+  "warning: missed fractional part of floating-point number in value "
+  "of property `%N' (zero supplied)"
+
+  SGF_ERROR_TOO_LARGE_ABSOLUTE_VALUE
+  "error: too large (by absolute value) floating-point number in value "
+  " of property `%N' (replaced with something huge)"
+
+  SGF_ERROR_POINT_OUT_OF_BOARD
+  "error: point in `%N' property value is out of board (value deleted)"
+
+  SGF_ERROR_INVALID_CORNERS
+  "error: rectangle corners specified in value of property `%N' "
+  "are not upper left and lower right ones (fixed)"
+
+  SGF_WARNING_POINT_AS_RECTANGLE
+  "warning: rectangle specified in value of property `%N' is single point "
+  "(second corner ignored)"
+
+  SGF_ERROR_VALUES_AFTER_EMPTY_LIST
+  "error: more values after empty list value [] in property `%N' (deleted)"
+
+  SGF_WARNING_SETUP_HAS_NO_EFFECT
+  "warning: point %P in `%N' setup property value doesn't change the board "
+  "(value ignored)"
+
+  SGF_WARNING_DUPLICATE_POINT
+  "warning: point %P was already listed in another `%N' property value "
+  "(ignored)"
+
+  SGF_ERROR_DUPLICATE_SETUP
+  "error: point %P (in `%N' property value) was already listed "
+  "in another setup property (deleted)"
+
+  SGF_ERROR_DUPLICATE_MARKUP
+  "error: point %P (in `%N' property value) was already listed "
+  "in another markup property (deleted)"
+
+  SGF_ERROR_DUPLICATE_TERRITORY
+  "error: point %P (in `%N' property value) was already listed "
+  "in another territory property (deleted)"
+
+  SGF_ERROR_DUPLICATE_LABEL
+  "error: point %P already has a label (value deleted)"
+
+  SGF_WARNING_EMPTY_LABEL
+  "warning: empty label at point %P (ignored)"
+
+  SGF_ERROR_TOO_LARGE_BOARD
+  "error: board of size %dx%d is too large per SGF standard (assuming %dx%d)"
+
+  SGF_WARNING_SAME_WIDTH_AND_HEIGHT
+  "warning: board is specified as rectangular, but with equal width and height "
+  "(height ignored)"
+
+  SGF_WARNING_UNKNOWN_GAME
+  "warning: unknown game type [%d], presumably new in SGF standard "
+  "(only general properties will be validated)"
+
+  SGF_WARNING_UNSUPPORTED_GAME
+  "warning: unsupported game: %s, GM[%d] "
+  "(only general properties will be validated)"
+
+  SGF_ERROR_INVALID_HANDICAP
+  "error: handicap cannot be negative or equal to 1 (assuming 0)"
+
+  SGF_WARNING_HANDICAP_REDUCED
+  "warning: handicap larger than the number of board vertices "
+  "(reduced to %d)"
+
+  SGF_WARNING_ZERO_BYTE
+  "warning: zero byte encountered "
+  "(ignored; note: this warning is reported once only)"
+
+  SGF_WARNING_ILLEGAL_WHITESPACE
+  "warning: whitespace in value of non-text property `%N' (ignored)"
+
+  SGF_ERROR_ILLEGAL_TRAILING_CHARACTERS
+  "error: illegal trailing character(s) [...%V] in value of property `%N' "
+  "(deleted)"
+
+  SGF_ERROR_ILLEGAL_TRAILING_CHARACTERS_BEFORE_COLON
+  "error: illegal trailing character(s) [...%V:...] in first part "
+  "of composed value of property `%N' (deleted)"
+
+
+  SGF_WARNING_ERROR_SUPPRESSED
+  "warning: the above error is reported too frequently (suppressed)"
+
+
+  = SGF_NUM_ERRORS
+
+  = SGF_SUCCESS
+}
