@@ -349,10 +349,12 @@ configuration_parse_values2(StringBuffer *c_file_arrays,
     value_type = "VALUE_TYPE_STRING";
   else if (looking_at("string_list", line))
     value_type = "VALUE_TYPE_STRING_LIST";
-  else if (looking_at("int", line))
-    value_type = "VALUE_TYPE_INT";
   else if (looking_at("boolean", line))
     value_type = "VALUE_TYPE_BOOLEAN";
+  else if (looking_at("int", line))
+    value_type = "VALUE_TYPE_INT";
+  else if (looking_at("real", line))
+    value_type = "VALUE_TYPE_REAL";
   else {
     print_error("value/field type expected");
     return 1;
@@ -483,12 +485,6 @@ configuration_parse_defaults2(StringBuffer *c_file_arrays,
     dispose_field_function = "  string_list_empty(&%s->%s);\n";
     type_is_string_list	   = 1;
   }
-  else if (looking_at("int", line)) {
-    PARSE_THING(default_value, INTEGER_NUMBER, line, "integer number");
-
-    field_type	     = "int";
-    field_is_pointer = ' ';
-  }
   else if (looking_at("boolean", line)) {
     if (looking_at("true", line))
       default_value = "1";
@@ -500,6 +496,18 @@ configuration_parse_defaults2(StringBuffer *c_file_arrays,
     }
 
     field_type	     = "int";
+    field_is_pointer = ' ';
+  }
+  else if (looking_at("int", line)) {
+    PARSE_THING(default_value, INTEGER_NUMBER, line, "integer number");
+
+    field_type	     = "int";
+    field_is_pointer = ' ';
+  }
+  else if (looking_at("real", line)) {
+    PARSE_THING(default_value, FLOATING_POINT_NUMBER, line, "real number");
+
+    field_type	     = "double";
     field_is_pointer = ' ';
   }
   else {

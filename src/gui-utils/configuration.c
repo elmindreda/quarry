@@ -141,70 +141,84 @@ configuration_read_from_file(const ConfigurationSection *sections,
 	  if (k < current_section->num_values) {
 	    void *field = (((char *) current_section_structure)
 			   + value->field_offset);
+	    char *string;
 
 	    scan++;
 
-	    switch (value->type) {
-	    case VALUE_TYPE_STRING:
-	      {
-		char *string = parse_string(&scan, 0);
+	    if (value->type != VALUE_TYPE_STRING_LIST)
+	      string = parse_string(&scan, 0);
 
-		if (string) {
-		  utils_free(* (char **) field);
-		  * (char **) field = string;
-		}
-	      }
+	    if (value->type == VALUE_TYPE_STRING_LIST || string) {
+	      switch (value->type) {
+	      case VALUE_TYPE_STRING:
+		utils_free(* (char **) field);
+		* (char **) field = string;
+		break;
 
-	      break;
+	      case VALUE_TYPE_STRING_LIST:
+		{
+		  int first_value = 1;
 
-	    case VALUE_TYPE_STRING_LIST:
-	      {
-		int first_value = 1;
+		  do {
+		    string = parse_string(&scan, ',');
 
-		do {
-		  char *string = parse_string(&scan, ',');
+		    if (string) {
+		      if (first_value) {
+			string_list_empty(field);
+			first_value = 0;
+		      }
 
-		  if (string) {
-		    if (first_value) {
-		      string_list_empty(field);
-		      first_value = 0;
+		      string_list_add_ready(field, string);
 		    }
-
-		    string_list_add_ready(field, string);
-		  }
-		  else
-		    break;
-		} while (*scan++ == ',');
-	      }
-
-	      break;
-
-	    case VALUE_TYPE_INT:
-	      /* FIXME */
-	      assert(0);
-
-	    case VALUE_TYPE_BOOLEAN:
-	      {
-		char *string = parse_string(&scan, 0);
-
-		if (string) {
-		  if (strcasecmp(string, "true") == 0
-		      || strcasecmp(string, "yes") == 0
-		      || strcmp(string, "1") == 0)
-		    * (int *) field = 1;
-		  else if (strcasecmp(string, "false") == 0
-			   || strcasecmp(string, "no") == 0
-			   || strcmp(string, "0") == 0)
-		    * (int *) field = 0;
-
-		  utils_free(string);
+		    else
+		      break;
+		  } while (*scan++ == ',');
 		}
+
+		break;
+
+	      case VALUE_TYPE_BOOLEAN:
+		if (strcasecmp(string, "true") == 0
+		    || strcasecmp(string, "yes") == 0
+		    || strcmp(string, "1") == 0)
+		  * (int *) field = 1;
+		else if (strcasecmp(string, "false") == 0
+			 || strcasecmp(string, "no") == 0
+			 || strcmp(string, "0") == 0)
+		  * (int *) field = 0;
+
+		utils_free(string);
+		break;
+
+	      case VALUE_TYPE_INT:
+	      case VALUE_TYPE_REAL:
+		{
+		  const char *contents = string;
+		  const char *digit_scan;
+
+		  while (*contents == ' ' || *contents == '\t')
+		    contents++;
+
+		  digit_scan = contents;
+		  if (*digit_scan == '+' || *digit_scan == '-')
+		    digit_scan++;
+
+		  if (('0' <= *digit_scan && *digit_scan <= '9')
+		      || (value->type == VALUE_TYPE_REAL
+			  && *digit_scan == '.')) {
+		    if (value->type == VALUE_TYPE_INT)
+		      * (int *) field = atoi(contents);
+		    else
+		      * (double *) field = atof(contents);
+		  }
+		}
+
+		utils_free(string);
+		break;
+
+	      default:
+		assert(0);
 	      }
-
-	      break;
-
-	    default:
-	      assert(0);
 	    }
 	  }
 	}
@@ -395,13 +409,18 @@ write_section(BufferedWriter *writer, const ConfigurationSection *section,
 
       break;
 
+    case VALUE_TYPE_BOOLEAN:
+      buffered_writer_cat_string(writer,
+				 * (const int *) field ? "true" : "false");
+      break;
+
     case VALUE_TYPE_INT:
       buffered_writer_printf(writer, "%d", * (const int *) field);
       break;
 
-    case VALUE_TYPE_BOOLEAN:
+    case VALUE_TYPE_REAL:
       buffered_writer_cat_string(writer,
-				 * (const int *) field ? "true" : "false");
+				 format_double(* (const double *) field));
       break;
 
     default:
@@ -496,9 +515,13 @@ configuration_set_section_values(const ConfigurationSection *section, ...)
 
       break;
 
-    case VALUE_TYPE_INT:
     case VALUE_TYPE_BOOLEAN:
+    case VALUE_TYPE_INT:
       * (int *) field = va_arg(arguments, int);
+      break;
+
+    case VALUE_TYPE_REAL:
+      * (double *) field = va_arg(arguments, double);
       break;
 
     default:
