@@ -4,11 +4,13 @@ dnl  Package name and version.
 AC_INIT([Quarry], [0.1.1], [quarry@gna.org])
 AC_PREREQ(2.57)
 
-AM_INIT_AUTOMAKE
-
 dnl  Check if the script is running in the proper directory.  Alarm if
 dnl  it is not.
 AC_CONFIG_SRCDIR(src/quarry.c)
+
+dnl  Initialize Automake and add maintainer mode as an option.
+AM_INIT_AUTOMAKE
+AM_MAINTAINER_MODE
 
 AC_CONFIG_HEADER(config.h)
 
