@@ -11,8 +11,8 @@ engines.
 
 So, this is how you could enhance Quarry package.  If, when installing
 the package, you detect that, say GNU Go, is installed too, create a
-file `/usr/share/quarry/quarryrc' (normally, the name might differ if
-you use a different $(datadir)) with the following contents:
+file `/usr/share/quarry/quarry.cfg' (normally, the name might differ
+if you use a different $(datadir)) with the following contents:
 
 ---8<--- cut here ---8<---
 [GTP Engine "GNU Go"]
