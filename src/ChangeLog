@@ -1,3 +1,16 @@
+2004-12-29  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* gui-gtk/gtk-parser-interface.c (analyze_parsed_data): Cast
+	`data->parent' to GtkWindow type only when non-NULL.  If there is
+	no parent window, make error dialog non-modal and register it with
+	gtk_control_center_window_created().
+	(gtk_parse_sgf_file): Likewise.  Also fix for changed
+	gtk_utils_create_message_dialog() prototype.
+
+	* sgf/sgf-tree-map.c (update_internal_view_port): Fix bug that
+	caused overlapping branches in rare cases (reported by Arend
+	Bayer.)
+
 2004-12-25  Paul Pogonyshev  <pogonyshev@gmx.net>
 
 	* gui-gtk/gtk-preferences.c (update_board_markup_theme): Bug-fix:
