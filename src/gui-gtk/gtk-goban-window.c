@@ -95,6 +95,9 @@ static void	 gtk_goban_window_init(GtkGobanWindow *goban_window);
 static void	 gtk_goban_window_destroy(GtkObject *object);
 static void	 gtk_goban_window_finalize(GObject *object);
 
+static void	 force_minimal_width(GtkWidget *label,
+				     GtkRequisition *requisition);
+
 static void	 gtk_goban_window_save(GtkGobanWindow *goban_window,
 				       guint callback_action);
 static void	 save_file_as_response(GtkFileSelection *dialog,
@@ -403,6 +406,9 @@ gtk_goban_window_init(GtkGobanWindow *goban_window)
 			       GTK_UTILS_FILL,
 			       scrolled_window, GTK_UTILS_PACK_DEFAULT, NULL);
 
+  g_signal_connect(vbox, "size-request",
+		   G_CALLBACK(force_minimal_width), NULL);
+
   /* Horizontal box containing goban and sidebar. */
   qhbox = gtk_utils_pack_in_box(GTK_TYPE_QHBOX, QUARRY_SPACING_GOBAN_WINDOW,
 				frame, GTK_UTILS_FILL,
@@ -600,6 +606,23 @@ gtk_goban_window_finalize(GObject *object)
     gtk_widget_destroy(GTK_WIDGET(goban_window->save_as_dialog));
 
   G_OBJECT_CLASS(parent_class)->finalize(object);
+}
+
+
+static void
+force_minimal_width(GtkWidget *widget, GtkRequisition *requisition)
+{
+  /* Different languages might have longer words. */
+  static const gchar *string = N_("A good width for the right side to have.");
+
+  PangoLayout *layout = gtk_widget_create_pango_layout(widget, _(string));
+  gint width;
+
+  pango_layout_get_pixel_size(layout, &width, NULL);
+  if (width > requisition->width)
+    requisition->width = width;
+
+  g_object_unref(layout);
 }
 
 
