@@ -66,7 +66,9 @@ render_go_stones(int cell_size, const GoStonesParameters *parameters,
 		 int *stones_x_offset, int *stones_y_offset)
 {
   double stone_radius = 0.5 * parameters->relative_stone_size * cell_size;
-  double stone_radius_in_pixels = ceil(stone_radius - 0.5) + 0.5;
+  double stone_radius_in_pixels = (cell_size % 2 == 1
+				   ? ceil(stone_radius - 0.5) + 0.5
+				   : ceil(stone_radius));
   double center_x = (parameters->light.dx < 0.0 ? stone_radius_in_pixels
 		     : cell_size - stone_radius_in_pixels);
   double center_y = (parameters->light.dy < 0.0 ? stone_radius_in_pixels
@@ -102,8 +104,6 @@ render_go_stones(int cell_size, const GoStonesParameters *parameters,
 
   int x;
   int y;
-
-  fprintf(stderr, "%d %lf %lf\n", cell_size, stone_radius, stone_radius_in_pixels);
 
   for (y = 0; y < cell_size; y++) {
     for (x = 0; x < cell_size; x++) {
@@ -224,7 +224,9 @@ render_othello_disks(int cell_size, const OthelloDisksParameters *parameters,
 		     int *disks_x_offset, int *disks_y_offset)
 {
   double disk_radius = 0.5 * parameters->relative_disk_size * cell_size;
-  double disk_radius_in_pixels = ceil(disk_radius - 0.5) + 0.5;
+  double disk_radius_in_pixels = (cell_size % 2 == 1
+				  ? ceil(disk_radius - 0.5) + 0.5
+				  : ceil(disk_radius));
   double disk_flat_part_radius = 1.0 - parameters->border_curve_size;
   double center_x = (parameters->light.dx < 0.0 ? disk_radius_in_pixels
 		     : cell_size - disk_radius_in_pixels);
