@@ -1,0 +1,6 @@
+.deps
+Makefile
+gtk-configuration.c
+gtk-configuration.h
+quarry-marshal.c
+quarry-marshal.h

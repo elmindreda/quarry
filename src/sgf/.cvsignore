@@ -1,0 +1,8 @@
+.deps
+Makefile
+parse-sgf-list
+sgf-errors.c
+sgf-errors.h
+sgf-properties.c
+sgf-properties.h
+sgf-test

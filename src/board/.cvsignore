@@ -1,0 +1,5 @@
+.deps
+Makefile
+games.c
+games.h
+parse-game-list
