@@ -1,3 +1,47 @@
+2004-04-21  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* sgf/sgf-diff-utils.c: New file with various functions for
+	comparing SGF game trees and their collections.
+	* sgf/sgf-diff.c: New file with standalone `sgf-diff' utility
+	code (very simplistic at present).
+
+	* sgf/sgf-writer.c (sgf_write_file): Add empty line between SGF
+	game trees.
+
+	* sgf/sgf-tree.c (sgf_node_delete): Rewrite to reduce stack usage
+	when branching factor is high (follow algorithm of
+	parse_node_tree() and parse_node_sequence() from `sgf-parser.c').
+	(sgf_node_count_subtree_nodes): Likewise (had different problem).
+	(sgf_node_count_subtree_nodes): Rename from
+	sgf_node_count_sub_tree_nodes().
+
+	* sgf/sgf-tree.c (sgf_game_tree_duplicate)
+	(sgf_game_tree_duplicate_with_nodes)
+	(sgf_node_duplicate, sgf_node_duplicate_recursively)
+	(sgf_node_duplicate_to_given_depth, sgf_property_duplicate): New
+	functions.
+	(sgf_label_list_duplicate): New function.
+
+	* board/board.h (board_position_list_duplicate): New macro.
+	* sgf/sgf.h (sgf_position_list_duplicate): New macro.
+
+2004-04-20  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* gui-gtk/gtk-goban-window.c (move_has_been_played): Fix crashes
+	when `color_to_play' is EMPTY (happens in Othello games) by
+	getting explicit `color' argument from the caller.
+
+2004-04-18  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* sgf/sgf-parser.c (parse_buffer): Fix bug that prevented correct
+	parsing of files with multiple SGF game trees.
+
+2004-04-17  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* board/board.c (board_position_lists_are_equal): Rename from
+	board_position_list_equal().
+	* sgf/sgf.h (sgf_position_lists_are_equal): Likewise.
+
 2004-04-16  Paul Pogonyshev  <pogonyshev@gmx.net>
 
 	* gui-gtk/gtk-goban-window.c

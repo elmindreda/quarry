@@ -1,3 +1,12 @@
+2004-04-21  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* configure.ac: Quarry version 0.1.2.
+
+	* configure.ac: New option `--disable-sgf-utils'.
+
+	* configure.ac: Convert `dnl' comments to `#' comments as
+	suggested by Autoconf manual.
+
 2004-04-14  Paul Pogonyshev  <pogonyshev@gmx.net>
 
 	* configure.ac: Add `AM_MAINTAINER_MODE' so that `Makefile's don't
