@@ -1,32 +1,28 @@
 Things that need to be done before releasing 0.2.
 
 
-* Playing games
+* PLAYING GAMES
 
 ** Display move list?  Right column is already quite filled...
 
-* Viewing game records
-
-** Display remaining time as stored in game records.
+* VIEWING GAME RECORDS
 
 ** Display values of various SGF properties (`VA',  `BM' etc.)
 
-** Game tree view
-
-*** Make non-current branches a little ghostly.
+** GAME TREE VIEW
 
 *** Maybe add command to narrow to a subtree.
 
-** Text search
+** TEXT SEARCH
 
 *** Implement search history.
 
 *** Maybe search other properties too?  `N' seems like a good
     candidate.
 
-** Support multiple games in one files (postpone?)
+** Support multiple games in one file (postpone?)
 
-* Editing game records
+* EDITING GAME RECORDS
 
 ** Add a command to create a game record without starting a game.
 
@@ -42,20 +38,20 @@ Things that need to be done before releasing 0.2.
 
 ** Support editing various SGF properties (`VA', `BM' etc.)
 
-** Add undo/redo commands.  Disable saving for unmodified files.
+** Add undo/redo commands.
 
 ** Add command(s) to rearrange children of given node.
 
-** Game information
+** GAME INFORMATION
 
 *** Add a way to revert to original values.  Maybe a button to undo
     changes one by one (property by property.)
 
-* Board Appearance
+* BOARD APPEARANCE
 
 ** Make Amazons queens look like chess queens (with SVG.)
 
-* General GUI
+* GENERAL GUI
 
 ** Do something about the Control Center, it is kinda ugly.
    (Oh, graphical artist, where art thou?)
@@ -65,25 +61,41 @@ Things that need to be done before releasing 0.2.
 ** Think of what to add to the toolbars (help of anyone who uses
    toolbars is welcome.)
 
-* SGF parsing
+* SGF PARSING
 
 ** Complete support for charsets.
 
 ** Handle file read errors gracefully.
 
-* Internal board code
+* INTERNAL BOARD CODE
 
 ** Score sekis properly.
 
-* Internal GTP code
+* INTERNAL GTP CODE
 
 ** Issue `clear_board' command after `boardsize'.
 
-* General
+* GENERAL
 
 ** Expand and fix manual.
 
 ** Browse all FIXMEs in the code and fix all that are bad.
+
+
+
+			HOW TO EDIT THIS FILE
+
+When adding a specific to-do item, start it with a verb (``fix'',
+``implement'', ``add'' etc.)  When adding a placement (for instance, a
+name of a module) for to-do items, make it a noun or a phrase that
+acts as a noun and uppercase the entire line to make it stand out.
+
+When something has been implemented, delete or update the appropriate
+entry here, don't mark it with ``done'' or something similar.  This
+file is only meant to track unimplemented, but planned features.
+Those that have been implemented should be mentioned in NEWS (and in
+ChangeLog.)
+
 
 
 Local variables:

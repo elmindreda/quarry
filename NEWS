@@ -1,3 +1,23 @@
+--- New in Quarry 0.1.13 ---------------------------------------------
+
+* Warning about potential loss of information is no longer shown on
+  file overwriting: there must be no possibility for it anymore.
+
+* It is now possible to adjourn and later resume a game.  Actually,
+  you can resume any unfinished game, even one stored from another
+  client.
+
+* Improved time control handling.  In particular, player who runs out
+  of time now actually loses the game.
+
+* Improvements in game tree view, including better tracking of current
+  node, clear indication of current tree branch and less flickering.
+
+* New, alternative, woodgrain background by Brenn Hill.  It is not the
+  default, but you can select it in the Preferences dialog.
+
+* Small improvements and bug-fixes.
+
 --- New in Quarry 0.1.12 ---------------------------------------------
 
 * Bug-fixes in game tree view.  In particular, bug #1969 is fixed,
