@@ -232,37 +232,37 @@ static void
 gtk_goban_window_init(GtkGobanWindow *goban_window)
 {
   static GtkItemFactoryEntry menu_entries[] = {
-    { "/_File",			NULL,		  NULL, 0, "<Branch>" },
-    { "/File/_Open...",		"<ctrl>O",	  gtk_parser_interface_present,
+    { N_("/_File"),		NULL,		  NULL, 0, "<Branch>" },
+    { N_("/File/_Open..."),	"<ctrl>O",	  gtk_parser_interface_present,
       0,			    "<StockItem>",  GTK_STOCK_OPEN },
-    { "/File/",			NULL,		  NULL, 0, "<Separator>" },
-    { "/File/_Save",		"<ctrl>S",	  gtk_goban_window_save,
+    { N_("/File/"),		NULL,		  NULL, 0, "<Separator>" },
+    { N_("/File/_Save"),	"<ctrl>S",	  gtk_goban_window_save,
       GTK_GOBAN_WINDOW_SAVE,	    "<StockItem>",  GTK_STOCK_SAVE },
-    { "/File/Save _As...",	"<shift><ctrl>S", gtk_goban_window_save,
+    { N_("/File/Save _As..."),	"<shift><ctrl>S", gtk_goban_window_save,
       GTK_GOBAN_WINDOW_SAVE_AS,	    "<StockItem>",  GTK_STOCK_SAVE_AS },
 
-    { "/_Play",			NULL,		  NULL, 0, "<Branch>" },
-    { "/Play/_Pass",		NULL,		  play_pass_move,
+    { N_("/_Play"),		NULL,		  NULL, 0, "<Branch>" },
+    { N_("/Play/_Pass"),	NULL,		  play_pass_move,
       1,			    "<Item>" },
 
-    { "/_Go",			NULL,		  NULL, 0, "<Branch>" },
-    { "/Go/_Next Node",		"<alt>Right",	  navigate_goban,
+    { N_("/_Go"),		NULL,		  NULL, 0, "<Branch>" },
+    { N_("/Go/_Next Node"),	"<alt>Right",	  navigate_goban,
       GOBAN_NAVIGATE_FORWARD,	    "<StockItem>",  GTK_STOCK_GO_FORWARD },
-    { "/Go/_Previous Node",	"<alt>Left",	  navigate_goban,
+    { N_("/Go/_Previous Node"),	"<alt>Left",	  navigate_goban,
       GOBAN_NAVIGATE_BACK,	    "<StockItem>",  GTK_STOCK_GO_BACK },
-    { "/Go/Ten Nodes _Forward",	"<alt>Page_Down", navigate_goban,
+    { N_("/Go/Ten Nodes _Forward"),   "<alt>Page_Down", navigate_goban,
       GOBAN_NAVIGATE_FORWARD_FAST,  "<Item>" },
-    { "/Go/Ten Nodes _Backward", "<alt>Page_Up",  navigate_goban,
+    { N_("/Go/Ten Nodes _Backward"),  "<alt>Page_Up",	navigate_goban,
       GOBAN_NAVIGATE_BACK_FAST,	    "<Item>" },
-    { "/Go/",			NULL,		  NULL, 0, "<Separator>" },
-    { "/Go/_Root Node",		"<alt>Home",	  navigate_goban,
+    { N_("/Go/"),		NULL,		  NULL, 0, "<Separator>" },
+    { N_("/Go/_Root Node"),	"<alt>Home",	  navigate_goban,
       GOBAN_NAVIGATE_ROOT,	    "<StockItem>",  GTK_STOCK_GOTO_FIRST },
-    { "/Go/Variation _Last Node", "<alt>End",	  navigate_goban,
+    { N_("/Go/Variation _Last Node"), "<alt>End",	navigate_goban,
       GOBAN_NAVIGATE_VARIATION_END, "<StockItem>",  GTK_STOCK_GOTO_LAST },
-    { "/Go/",			NULL,		  NULL, 0, "<Separator>" },
-    { "/Go/Ne_xt Variation",	"<alt>Down",	  navigate_goban,
+    { N_("/Go/"),		NULL,		  NULL, 0, "<Separator>" },
+    { N_("/Go/Ne_xt Variation"),      "<alt>Down",	navigate_goban,
       GOBAN_NAVIGATE_NEXT_VARIATION, "<StockItem>", GTK_STOCK_GO_DOWN },
-    { "/Go/Pre_vious Variation", "<alt>Up",	  navigate_goban,
+    { N_("/Go/Pre_vious Variation"),  "<alt>Up",	navigate_goban,
       GOBAN_NAVIGATE_PREVIOUS_VARIATION, "<StockItem>", GTK_STOCK_GO_UP },
   };
 
@@ -321,7 +321,8 @@ gtk_goban_window_init(GtkGobanWindow *goban_window)
 				       game_specific_info, GTK_UTILS_FILL,
 				       NULL);
     gtk_named_vbox_set_label_text(GTK_NAMED_VBOX(named_vbox), 
-				  (k == BLACK_INDEX ? "Black" : "White"));
+				  (k == BLACK_INDEX ?
+				   _("Black") : _("White")));
     gtk_table_attach(GTK_TABLE(table), named_vbox,
 		     0, 1, OTHER_INDEX(k), OTHER_INDEX(k) + 1,
 		     GTK_FILL, 0, 0, 0);
@@ -500,8 +501,8 @@ gtk_goban_window_enter_game_mode(GtkGobanWindow *goban_window,
     goban_window->num_handicap_stones_placed = 0;
 
     if (!black_player) {
-      gchar *hint = g_strdup_printf(("Please set up %d (or less)\n"
-				     "stones of free handicap"),
+      gchar *hint = g_strdup_printf(_("Please set up %d (or less)\n"
+				      "stones of free handicap"),
 				    handicap);
 
       gtk_widget_set_sensitive(goban_window->done_button, FALSE);
@@ -592,6 +593,7 @@ static void
 gtk_goban_window_save(GtkGobanWindow *goban_window, guint callback_action)
 {
   if (callback_action == GTK_GOBAN_WINDOW_SAVE && goban_window->filename) {
+    /* NOTE: Not translated, a temporary message anyway. */
     static const gchar *hint_text
       = ("Note that if this file was created with another SGF editor, "
 	 "there is a small chance that some information will be lost. "
@@ -618,7 +620,7 @@ gtk_goban_window_save(GtkGobanWindow *goban_window, guint callback_action)
   else {
     /* "Save as..." command invoked or we don't have a filename. */
     if (!goban_window->save_as_dialog) {
-      GtkWidget *file_selection = gtk_file_selection_new("Save As...");
+      GtkWidget *file_selection = gtk_file_selection_new(_("Save As..."));
 
       goban_window->save_as_dialog = GTK_WINDOW(file_selection);
       gtk_control_center_window_created(goban_window->save_as_dialog);
@@ -1396,25 +1398,26 @@ update_children_for_new_node(GtkGobanWindow *goban_window)
   gtk_utils_set_menu_items_sensitive(goban_window->item_factory,
 				     (goban_window->board->game == GAME_GO
 				      && USER_CAN_PLAY_MOVES(goban_window)),
-				     "/Play/Pass", NULL);
+				     _("/Play/Pass"), NULL);
 
   gtk_utils_set_menu_items_sensitive(goban_window->item_factory,
 				     current_node->child != NULL,
-				     "/Go/Next Node", "/Go/Ten Nodes Forward",
-				     "/Go/Variation Last Node", NULL);
+				     _("/Go/Next Node"),
+				     _("/Go/Ten Nodes Forward"),
+				     _("/Go/Variation Last Node"), NULL);
   gtk_utils_set_menu_items_sensitive(goban_window->item_factory,
 				     current_node->parent != NULL,
-				     "/Go/Previous Node",
-				     "/Go/Ten Nodes Backward",
-				     "/Go/Root Node", NULL);
+				     _("/Go/Previous Node"),
+				     _("/Go/Ten Nodes Backward"),
+				     _("/Go/Root Node"), NULL);
   gtk_utils_set_menu_items_sensitive(goban_window->item_factory,
 				     current_node->next != NULL,
-				     "/Go/Next Variation", NULL);
+				     _("/Go/Next Variation"), NULL);
   gtk_utils_set_menu_items_sensitive(goban_window->item_factory,
 				     (current_node->parent != NULL
 				      && (current_node->parent->child
 					  != current_node)),
-				     "/Go/Previous Variation", NULL);
+				     _("/Go/Previous Variation"), NULL);
 
   goban_window->switching_x = NULL_X;
   goban_window->switching_y = NULL_Y;
@@ -1495,7 +1498,7 @@ update_player_information(const SgfNode *game_info_node,
     team = sgf_node_get_text_property_value(game_info_node, team_property);
   }
 
-  label_text = utils_duplicate_string(name ? name : "[unknown]");
+  label_text = utils_duplicate_string(name ? name : _("[unknown]"));
 
   if (rank)
     label_text = utils_cat_strings(label_text, " ", rank, NULL);
@@ -1522,21 +1525,27 @@ update_game_specific_information(GtkGobanWindow *goban_window)
       = goban_window->sgf_board_state.game_info_node;
     double komi;
 
-    black_string = g_strdup_printf("%d capture(s)",
-				   board->data.go.prisoners[BLACK_INDEX]);
+    black_string
+      = g_strdup_printf(ngettext("%d capture", "%d captures",
+				 board->data.go.prisoners[BLACK_INDEX]),
+			board->data.go.prisoners[BLACK_INDEX]);
 
     if (game_info_node
 	&& sgf_node_get_komi(game_info_node, &komi) && komi != 0.0) {
-      white_string = g_strdup_printf("%d capture(s) %c %.*f komi",
-				     board->data.go.prisoners[WHITE_INDEX],
-				     (komi > 0.0 ? '+' : '-'),
-				     ((int) floor(komi * 100.0 + 0.5) % 10 == 0
-				      ? 1 : 2),
-				     fabs(komi));
+      white_string
+	= g_strdup_printf(ngettext("%d capture %c %.*f komi",
+				   "%d captures %c %.*f komi",
+				   board->data.go.prisoners[WHITE_INDEX]),
+			  board->data.go.prisoners[WHITE_INDEX],
+			  (komi > 0.0 ? '+' : '-'),
+			  ((int) floor(komi * 100.0 + 0.5) % 10 == 0 ? 1 : 2),
+			  fabs(komi));
     }
     else {
-      white_string = g_strdup_printf("%d capture(s)",
-				     board->data.go.prisoners[WHITE_INDEX]);
+      white_string
+	= g_strdup_printf(ngettext("%d capture", "%d captures",
+				   board->data.go.prisoners[WHITE_INDEX]),
+			  board->data.go.prisoners[WHITE_INDEX]);
     }
   }
   else if (board->game == GAME_OTHELLO) {
@@ -1544,8 +1553,12 @@ update_game_specific_information(GtkGobanWindow *goban_window)
     int num_white_disks;
 
     othello_count_disks(board, &num_black_disks, &num_white_disks);
-    black_string = g_strdup_printf("%d disk(s)", num_black_disks);
-    white_string = g_strdup_printf("%d disk(s)", num_white_disks);
+    black_string = g_strdup_printf(ngettext("%d disk", "%d disks",
+					    num_black_disks),
+				   num_black_disks);
+    white_string = g_strdup_printf(ngettext("%d disk", "%d disks",
+					    num_white_disks),
+				   num_white_disks);
   }
   else
     return;
@@ -1564,31 +1577,34 @@ static void
 update_move_information(GtkGobanWindow *goban_window)
 {
   const SgfNode *move_node = goban_window->sgf_board_state.last_move_node;
-  char buffer[128];
+  char buffer[256];
   int length;
 
   if (move_node) {
-    if (goban_window->current_tree->current_node == move_node)
-      length = sprintf(buffer, "Move %d: ", goban_window->board->move_number);
+    if (goban_window->current_tree->current_node == move_node) {
+      length = sprintf(buffer, _("Move %d: "),
+		       goban_window->board->move_number);
+    }
     else {
-      length = sprintf(buffer, "Last move: %u, ",
+      length = sprintf(buffer, _("Last move: %u, "),
 		       goban_window->board->move_number);
     }
 
     length += sgf_utils_format_node_move(goban_window->current_tree, move_node,
-					 buffer + length, "B ", "W ", "Pass");
+					 buffer + length,
+					 _("B "), _("W "), _("pass"));
   }
   else
-    length = sprintf(buffer, "Game beginning");
+    length = sprintf(buffer, _("Game beginning"));
 
   if (!board_is_game_over(goban_window->board, RULE_SET_DEFAULT,
 			  goban_window->sgf_board_state.color_to_play)) {
-    sprintf(buffer + length, "; %s to play",
+    strcpy(buffer + length,
 	    (goban_window->sgf_board_state.color_to_play == BLACK
-	     ? "black" : "white"));
+	     ? _("; black to play") : _("; white to play")));
   }
   else
-    strcpy(buffer + length, "; game over");
+    strcpy(buffer + length, _("; game over"));
 
   gtk_label_set_text(goban_window->move_information_label, buffer);
 }
@@ -1833,7 +1849,7 @@ move_has_been_played(GtkGobanWindow *goban_window)
       board_fill_grid(goban_window->board, goban_window->dead_stones, 0);
 
       enter_special_mode(goban_window,
-			 "Please select dead stones\nto score the game",
+			 _("Please select dead stones\nto score the game"),
 			 go_scoring_mode_done, NULL); 
       set_goban_signal_handlers(goban_window,
 				G_CALLBACK(go_scoring_mode_pointer_moved),
