@@ -1,3 +1,18 @@
+--- New in Quarry 0.1.11 ---------------------------------------------
+
+* New Game Tree View control provides means of easily navigating game
+  record trees.  It looks much like that of cGoban 1 and has similar
+  features.  However, it also allows collapsing/expanding individual
+  nodes (by right-clicking) and is much faster.
+
+* Basic support for debugging GTP connections from command line.  Use
+  it if your engine won't work with Quarry out of the box.
+
+* New fancy markup theme "Filled."
+
+* Many bug-fixes (including bug #1929) and improvements here and
+  there.
+
 --- New in Quarry 0.1.10 ---------------------------------------------
 
 * New useful feature: text search in comments.  Can be invaluable when
@@ -42,7 +57,6 @@
 * Bug-fixes, better support for earlier GTK+ versions and yet further
   improved support for locales.
 
-
 --- New in Quarry 0.1.7 ----------------------------------------------
 
 * Partial support for different encodings of SGF files.  It is not yet
@@ -64,7 +78,6 @@
 * Quarry is internationalized, though there are no translations yet.
 
 * Other small improvements and bug-fixes.
-
 
 --- New in Quarry 0.1.6 ----------------------------------------------
 
