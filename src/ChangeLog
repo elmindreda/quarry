@@ -1,3 +1,9 @@
+2004-05-21  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* gui-gtk/gtk-goban-window.c (initialize_gtp_player): Don't send
+	`fixed_handicap 0' GTP command (specification requires to just
+	omit it).
+
 2004-05-13  Paul Pogonyshev  <pogonyshev@gmx.net>
 
 	* sgf/sgf.h: Remove types `SgfPoint', `SgfPositionList',
