@@ -32,6 +32,11 @@
 #	Version: 0.1.2 (last updated: March 20, 2002)
 #
 
+# 2004-11-29  Paul Pogonyshev
+#
+#	Make XML installation conditional on ScrollKeeper presence.
+#	If it is not present, then only install HTML file.
+#
 # 2004-10-11  Paul Pogonyshev
 #
 #	Change path to `omf.make' from `$(top_srcdir)/' to
@@ -50,7 +55,8 @@ xml_files = $(entities) $(docname).xml $(docname).html
 EXTRA_DIST = $(xml_files) $(omffile)
 CLEANFILES = omf_timestamp
 
-# If the following file is in a subdir (like help/) you need to add that to the path
+if HAVE_SCROLLKEEPER
+
 include $(top_srcdir)/aux/omf.make
 
 all: omf
@@ -60,6 +66,8 @@ $(docname).xml: $(entities)
 	cd $(srcdir);   \
 	cp $(entities) $$ourdir
 
+endif
+
 app-dist-hook:
 	if test "$(figdir)"; then \
 	  $(mkinstalldirs) $(distdir)/$(figdir); \
@@ -68,6 +76,8 @@ app-dist-hook:
 	    $(INSTALL_DATA) $$file $(distdir)/$(figdir)/$$basefile; \
 	  done \
 	fi
+
+if HAVE_SCROLLKEEPER
 
 install-data-local: omf
 	$(mkinstalldirs) $(DESTDIR)$(docdir)
@@ -99,3 +109,32 @@ uninstall-local-doc:
 	done
 	-rmdir $(DESTDIR)$(docdir)
 
+else
+
+install-data-local:
+	$(mkinstalldirs) $(DESTDIR)$(docdir)
+	cp $(srcdir)/$(docname).html $(DESTDIR)$(docdir);
+	if test "$(figdir)"; then \
+	  $(mkinstalldirs) $(DESTDIR)$(docdir)/$(figdir); \
+	  for file in $(srcdir)/$(figdir)/*.png; do \
+	    basefile=`echo $$file | sed -e  's,^.*/,,'`; \
+	    $(INSTALL_DATA) $$file $(DESTDIR)$(docdir)/$(figdir)/$$basefile; \
+	  done \
+	fi
+
+install-data-hook:
+
+uninstall-local: uninstall-local-doc
+
+uninstall-local-doc:
+	-if test "$(figdir)"; then \
+	  for file in $(srcdir)/$(figdir)/*.png; do \
+	    basefile=`echo $$file | sed -e  's,^.*/,,'`; \
+	    rm -f $(docdir)/$(figdir)/$$basefile; \
+	  done; \
+	  rmdir $(DESTDIR)$(docdir)/$(figdir); \
+	fi
+	-rm -f $(DESTDIR)$(docdir)/$(docname).html;
+	-rmdir $(DESTDIR)$(docdir)
+
+endif
