@@ -69,6 +69,7 @@ struct _GtkPlayerInformation {
 struct _GtkGobanWindow {
   GtkWindow		   window;
 
+  GtkItemFactory	  *item_factory;
   GtkGoban		  *goban;
   GtkWidget		  *player_table_alignment;
   GtkPlayerInformation	   player_information[NUM_COLORS];
@@ -110,9 +111,6 @@ struct _GtkGobanWindow {
 
 struct _GtkGobanWindowClass {
   GtkWindowClass	   parent_class;
-
-  void (* navigate_goban) (GtkGobanWindow *goban_window,
-			   GtkGobanNavigationCommand command);
 };
 
 

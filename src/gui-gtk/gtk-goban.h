@@ -81,8 +81,13 @@ typedef enum {
   NUM_GOBAN_FEEDBACKS
 } GtkGobanPointerFeedback;
 
+/* Note that there _must not_ be zero enumeration element.  These
+ * constants are used in `gtk-goban-window.c' in `callback_action'
+ * field of GtkItemFactoryEntry and zero has special meaning in that
+ * context.
+ */
 typedef enum {
-  GOBAN_NAVIGATE_BACK,
+  GOBAN_NAVIGATE_BACK = 1,
   GOBAN_NAVIGATE_BACK_FAST,
   GOBAN_NAVIGATE_FORWARD,
   GOBAN_NAVIGATE_FORWARD_FAST,

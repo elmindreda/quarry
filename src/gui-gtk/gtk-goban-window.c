@@ -114,14 +114,6 @@ static void	 move_has_been_generated(GtpClient *client, int successful,
 static GtkWindowClass  *parent_class;
 
 
-enum {
-  NAVIGATE_GOBAN,
-  NUM_SIGNALS
-};
-
-static guint		goban_window_signals[NUM_SIGNALS];
-
-
 GtkType
 gtk_goban_window_get_type(void)
 {
@@ -153,45 +145,11 @@ gtk_goban_window_get_type(void)
 static void
 gtk_goban_window_class_init(GtkGobanWindowClass *class)
 {
-  GtkBindingSet *binding_set;
-
-  static GtkUtilsBindingInfo goban_navigation_bindings[] = {
-    {GDK_Left,		GDK_MOD1_MASK,	GOBAN_NAVIGATE_BACK},
-    {GDK_Page_Up,	GDK_MOD1_MASK,	GOBAN_NAVIGATE_BACK_FAST},
-    {GDK_Right,		GDK_MOD1_MASK,	GOBAN_NAVIGATE_FORWARD},
-    {GDK_Page_Down,	GDK_MOD1_MASK,	GOBAN_NAVIGATE_FORWARD_FAST},
-    {GDK_Up,		GDK_MOD1_MASK,	GOBAN_NAVIGATE_PREVIOUS_VARIATION},
-    {GDK_Down,		GDK_MOD1_MASK,	GOBAN_NAVIGATE_NEXT_VARIATION},
-    {GDK_Home,		GDK_MOD1_MASK,	GOBAN_NAVIGATE_ROOT},
-    {GDK_End,		GDK_MOD1_MASK,	GOBAN_NAVIGATE_VARIATION_END}
-  };
-
   parent_class = g_type_class_peek_parent(class);
 
   G_OBJECT_CLASS(class)->finalize = gtk_goban_window_finalize;
 
   GTK_OBJECT_CLASS(class)->destroy = gtk_goban_window_destroy;
-
-  class->navigate_goban = NULL;
-
-  goban_window_signals[NAVIGATE_GOBAN]
-    = g_signal_new("navigate_goban",
-		   G_TYPE_FROM_CLASS(class),
-		   G_SIGNAL_RUN_LAST | G_SIGNAL_ACTION,
-		   G_STRUCT_OFFSET(GtkGobanWindowClass, navigate_goban),
-		   NULL, NULL,
-		   quarry_marshal_VOID__INT,
-		   G_TYPE_NONE, 1, G_TYPE_INT);
-
-  binding_set = gtk_binding_set_by_class(class);
-
-  /* Bind Alt-modified versions of goban navigation commands so that
-   * one can navigate goban no matter where the focus is.
-   */
-  gtk_utils_add_similar_bindings(binding_set, "navigate_goban",
-				 goban_navigation_bindings,
-				 (sizeof(goban_navigation_bindings)
-				  / sizeof(GtkUtilsBindingInfo)));
 }
 
 
@@ -199,14 +157,37 @@ static void
 gtk_goban_window_init(GtkGobanWindow *goban_window)
 {
   static GtkItemFactoryEntry menu_entries[] = {
-    { "/_File",		    NULL,		NULL,	0, "<Branch>" },
-    { "/File/_Open...",	    "<ctrl>O",		gtk_parser_interface_present,
-      0, "<StockItem>",	    GTK_STOCK_OPEN },
-    { "/File/",		    NULL,		NULL,	0, "<Separator>" },
-    { "/File/_Save",	    "<ctrl>S",		gtk_goban_window_save,
-      GTK_GOBAN_WINDOW_SAVE,	"<StockItem>",	    GTK_STOCK_SAVE },
-    { "/File/Save _As...",  "<shift><ctrl>S",	gtk_goban_window_save,
-      GTK_GOBAN_WINDOW_SAVE_AS,	"<StockItem>",	    GTK_STOCK_SAVE_AS }
+    { "/_File",			NULL,		  NULL, 0, "<Branch>" },
+    { "/File/_Open...",		"<ctrl>O",	  gtk_parser_interface_present,
+      0,			    "<StockItem>",  GTK_STOCK_OPEN },
+    { "/File/",			NULL,		  NULL, 0, "<Separator>" },
+    { "/File/_Save",		"<ctrl>S",	  gtk_goban_window_save,
+      GTK_GOBAN_WINDOW_SAVE,	    "<StockItem>",  GTK_STOCK_SAVE },
+    { "/File/Save _As...",	"<shift><ctrl>S", gtk_goban_window_save,
+      GTK_GOBAN_WINDOW_SAVE_AS,	    "<StockItem>",  GTK_STOCK_SAVE_AS },
+    { "/_Go",			NULL,		  NULL, 0, "<Branch>" },
+
+    /* FIXME: At some point these should be generalized for not
+     *	      playing mode only.
+     */
+    { "/Go/_Next Node",		"<alt>Right",	  playing_mode_navigate_goban,
+      GOBAN_NAVIGATE_FORWARD,	    "<StockItem>",  GTK_STOCK_GO_FORWARD },
+    { "/Go/_Previous Node",	"<alt>Left",	  playing_mode_navigate_goban,
+      GOBAN_NAVIGATE_BACK,	    "<StockItem>",  GTK_STOCK_GO_BACK },
+    { "/Go/Ten Nodes _Forward",	"<alt>Page_Down", playing_mode_navigate_goban,
+      GOBAN_NAVIGATE_FORWARD_FAST,  "<Item>" },
+    { "/Go/Ten Nodes _Backward", "<alt>Page_Up",  playing_mode_navigate_goban,
+      GOBAN_NAVIGATE_BACK_FAST,	    "<Item>" },
+    { "/Go/",			NULL,		  NULL, 0, "<Separator>" },
+    { "/Go/_Root Node",		"<alt>Home",	  playing_mode_navigate_goban,
+      GOBAN_NAVIGATE_ROOT,	    "<StockItem>",  GTK_STOCK_GOTO_FIRST },
+    { "/Go/Variation _Last Node", "<alt>End",	  playing_mode_navigate_goban,
+      GOBAN_NAVIGATE_VARIATION_END, "<StockItem>",  GTK_STOCK_GOTO_LAST },
+    { "/Go/",			NULL,		  NULL, 0, "<Separator>" },
+    { "/Go/Ne_xt Variation",	"<alt>Down",	  playing_mode_navigate_goban,
+      GOBAN_NAVIGATE_NEXT_VARIATION, "<StockItem>", GTK_STOCK_GO_DOWN },
+    { "/Go/Pre_vious Variation", "<alt>Up",	  playing_mode_navigate_goban,
+      GOBAN_NAVIGATE_PREVIOUS_VARIATION, "<StockItem>", GTK_STOCK_GO_UP },
   };
 
   GtkWidget *goban;
@@ -218,7 +199,6 @@ gtk_goban_window_init(GtkGobanWindow *goban_window)
   GtkWidget *qhbox;
   GtkWidget *menu_bar;
   GtkAccelGroup *accel_group;
-  GtkItemFactory *item_factory;
   int k;
 
   gtk_control_center_window_created(GTK_WINDOW(goban_window));
@@ -236,8 +216,6 @@ gtk_goban_window_init(GtkGobanWindow *goban_window)
   g_signal_connect_swapped(goban, "navigate",
 			   G_CALLBACK(playing_mode_navigate_goban),
 			   goban_window);
-  g_signal_connect(goban_window, "navigate-goban",
-		   G_CALLBACK(playing_mode_navigate_goban), NULL);
 
   /* Frame to make goban look sunken. */
   frame = gtk_utils_sink_widget(goban);
@@ -310,14 +288,15 @@ gtk_goban_window_init(GtkGobanWindow *goban_window)
   /* Window menu bar and associated accelerator group. */
   accel_group = gtk_accel_group_new();
 
-  item_factory = gtk_item_factory_new(GTK_TYPE_MENU_BAR,
-				      "<QuarryGobanWindowMenu>", accel_group);
-  gtk_item_factory_create_items(item_factory,
+  goban_window->item_factory = gtk_item_factory_new(GTK_TYPE_MENU_BAR,
+						    "<QuarryGobanWindowMenu>",
+						    accel_group);
+  gtk_item_factory_create_items(goban_window->item_factory,
 				(sizeof(menu_entries)
 				 / sizeof(GtkItemFactoryEntry)),
 				menu_entries,
 				goban_window);
-  menu_bar = gtk_item_factory_get_widget(item_factory,
+  menu_bar = gtk_item_factory_get_widget(goban_window->item_factory,
 					 "<QuarryGobanWindowMenu>");
 
   gtk_window_add_accel_group(GTK_WINDOW(goban_window), accel_group);
@@ -757,17 +736,17 @@ static void
 update_children_for_new_node(GtkGobanWindow *goban_window)
 {
   SgfGameTree *current_tree = goban_window->current_tree;
+  SgfNode *current_node = current_tree->current_node;
   char goban_markup[BOARD_GRID_SIZE];
   const char *comment;
 
-  if (current_tree->current_node == goban_window->last_displayed_node)
+  if (current_node == goban_window->last_displayed_node)
     return;
 
   reset_amazons_move_data(goban_window);
 
   if (!goban_window->last_displayed_node
-      || (current_tree->current_node->parent
-	  != goban_window->last_displayed_node->parent)) {
+      || current_node->parent != goban_window->last_displayed_node->parent) {
     sgf_utils_count_variations(current_tree, 1,
 			       goban_window->black_variations,
 			       goban_window->white_variations, NULL);
@@ -799,15 +778,32 @@ update_children_for_new_node(GtkGobanWindow *goban_window)
 
   update_move_information(goban_window);
 
-  comment = sgf_node_get_text_property_value(current_tree->current_node,
-					     SGF_COMMENT);
+  comment = sgf_node_get_text_property_value(current_node, SGF_COMMENT);
   gtk_text_buffer_set_text(goban_window->text_buffer,
 			   comment ? comment : "", -1);
+
+  gtk_utils_set_menu_items_sensitive(goban_window->item_factory,
+				     current_node->child != NULL,
+				     "/Go/Next Node", "/Go/Ten Nodes Forward",
+				     "/Go/Variation Last Node", NULL);
+  gtk_utils_set_menu_items_sensitive(goban_window->item_factory,
+				     current_node->parent != NULL,
+				     "/Go/Previous Node",
+				     "/Go/Ten Nodes Backward",
+				     "/Go/Root Node", NULL);
+  gtk_utils_set_menu_items_sensitive(goban_window->item_factory,
+				     current_node->next != NULL,
+				     "/Go/Next Variation", NULL);
+  gtk_utils_set_menu_items_sensitive(goban_window->item_factory,
+				     (current_node->parent != NULL
+				      && (current_node->parent->child
+					  != current_node)),
+				     "/Go/Previous Variation", NULL);
 
   goban_window->switching_x = NULL_X;
   goban_window->switching_y = NULL_Y;
 
-  goban_window->last_displayed_node = current_tree->current_node;
+  goban_window->last_displayed_node = current_node;
 }
 
 
