@@ -182,6 +182,8 @@ sgf_game_tree_delete (SgfGameTree *tree)
   if (tree->notification_callback)
     tree->notification_callback (tree, SGF_GAME_TREE_DELETED, tree->user_data);
 
+  sgf_game_tree_invalidate_map (tree, NULL);
+
 #if ENABLE_MEMORY_POOLS
 
   memory_pool_traverse (&tree->property_pool,
@@ -201,8 +203,6 @@ sgf_game_tree_delete (SgfGameTree *tree)
   utils_free (tree->char_set);
   utils_free (tree->application_name);
   utils_free (tree->application_version);
-
-  sgf_game_tree_invalidate_map (tree, NULL);
 
   utils_free (tree);
 }
