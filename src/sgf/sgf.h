@@ -107,6 +107,9 @@ typedef struct _SgfNodeAmazons		SgfNodeAmazons;
 
 typedef struct _SgfBoardState		SgfBoardState;
 
+typedef struct _SgfUndoHistoryEntry	SgfUndoHistoryEntry;
+typedef struct _SgfUndoHistory		SgfUndoHistory;
+
 typedef struct _SgfGameTreeMapData	SgfGameTreeMapData;
 typedef struct _SgfGameTreeMapLine	SgfGameTreeMapLine;
 typedef struct _SgfGameTree		SgfGameTree;
@@ -294,6 +297,13 @@ struct _SgfBoardState {
 };
 
 
+struct _SgfUndoHistory {
+  SgfUndoHistoryEntry	   *first_entry;
+  SgfUndoHistoryEntry	   *last_entry;
+  SgfUndoHistoryEntry	   *last_applied_entry;
+};
+
+
 struct _SgfGameTreeMapData {
   SgfGameTreeMapData	   *next;
 
@@ -305,7 +315,6 @@ struct _SgfGameTreeMapData {
   int			    largest_x_so_far;
 };
 
-
 struct _SgfGameTreeMapLine {
   int			    x0;
   int			    y0;
@@ -313,7 +322,6 @@ struct _SgfGameTreeMapLine {
   int			    x2;
   int			    x3;
 };
-
 
 struct _SgfGameTree {
   SgfGameTree		   *previous;
@@ -328,6 +336,8 @@ struct _SgfGameTree {
   int			    board_height;
   Board			   *board;
   SgfBoardState		   *board_state;
+
+  SgfUndoHistory	   *undo_history;
 
   int			    file_format;
   char			   *char_set;
@@ -446,7 +456,7 @@ void		 sgf_game_tree_set_notification_callback
 SgfNode *	 sgf_node_new (SgfGameTree *tree, SgfNode *parent);
 void		 sgf_node_delete (SgfNode *node, SgfGameTree *tree);
 
-SgfNode *	 sgf_node_append_child (SgfNode *node, SgfGameTree *tree);
+SgfNode *	 sgf_node_get_last_child (const SgfNode *node);
 
 SgfNode *	 sgf_node_duplicate (const SgfNode *node,
 				     SgfGameTree *tree, SgfNode *parent);
@@ -610,7 +620,6 @@ SgfFigureDescription *
 		   (const SgfFigureDescription *figure);
 
 
-
 
 /* `sgf-parser.c' global declarations, functions and variables. */
 
@@ -746,6 +755,22 @@ void	      sgf_utils_switch_to_given_node (SgfGameTree *tree,
 void	      sgf_utils_append_variation (SgfGameTree *tree,
 					  int color, ...);
 
+void	      sgf_utils_delete_current_node (SgfGameTree *tree);
+void	      sgf_utils_delete_current_node_children (SgfGameTree *tree);
+
+
+#define sgf_utils_can_undo(tree)					\
+  ((tree)->undo_history && (tree)->undo_history->last_applied_entry)
+
+#define sgf_utils_can_redo(tree)					\
+  ((tree)->undo_history							\
+   && ((tree)->undo_history->last_applied_entry				\
+       != (tree)->undo_history->last_entry))
+
+void	      sgf_utils_undo (SgfGameTree *tree);
+void	      sgf_utils_redo (SgfGameTree *tree);
+
+
 void	      sgf_utils_set_node_is_collapsed (SgfGameTree *tree,
 					       SgfNode *node,
 					       int is_collapsed);
@@ -764,6 +789,12 @@ void	      sgf_utils_add_free_handicap_stones
 
 
 char *	      sgf_utils_normalize_text (const char *text, int is_simple_text);
+
+
+SgfUndoHistory *
+	      sgf_undo_history_new (void);
+void	      sgf_undo_history_delete (SgfUndoHistory *history,
+				       SgfGameTree *associated_tree);
 
 
 
