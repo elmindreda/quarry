@@ -273,19 +273,20 @@ file_selection_response(GtkFileSelection *file_selection, gint response_id,
       else if (data->saving_file
 	       && g_file_test(filename, G_FILE_TEST_EXISTS)) {
 	static const gchar *hint
-	  = ("Note that all information in the existing file will be lost "
-	     "permanently if you choose to overwrite it.");
+	  = N_("Note that all information in the existing file will be lost "
+	       "permanently if you choose to overwrite it.");
 	static const gchar *message_format_string
-	  = ("File named `%s' already exists. "
-	     "Do you want to overwrite it with the one you are saving?");
+	  = N_("File named `%s' already exists. "
+	       "Do you want to overwrite it with the one you are saving?");
 
 	GtkWidget *confirmation_dialog
 	  = gtk_utils_create_message_dialog(GTK_WINDOW(file_selection),
 					    GTK_STOCK_DIALOG_WARNING,
 					    (GTK_UTILS_NO_BUTTONS
 					     | GTK_UTILS_DONT_SHOW),
-					    hint,
-					    message_format_string, filename);
+					    _(hint),
+					    _(message_format_string),
+					    filename);
 
 	gtk_dialog_add_buttons(GTK_DIALOG(confirmation_dialog),
 			       GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
@@ -690,7 +691,7 @@ gtk_utils_create_selector(const gchar **items, gint num_items,
     GtkComboBox *combo_box = GTK_COMBO_BOX(widget);
 
     for (k = 0; k < num_items; k++)
-      gtk_combo_box_append_text(combo_box, items[k]);
+      gtk_combo_box_append_text(combo_box, _(items[k]));
 
     gtk_combo_box_set_active(combo_box,
 			     (0 <= selected_item && selected_item < num_items
@@ -749,7 +750,7 @@ gtk_utils_create_radio_chain(GtkWidget **radio_buttons,
   for (k = 0; k < num_radio_buttons; k++) {
     radio_buttons[k]
       = gtk_radio_button_new_with_mnemonic_from_widget(last_button,
-						       label_texts[k]);
+						       _(label_texts[k]));
     last_button = GTK_RADIO_BUTTON(radio_buttons[k]);
   }
 }
