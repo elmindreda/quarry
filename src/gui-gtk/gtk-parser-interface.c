@@ -1,7 +1,7 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *\
  * This file is part of Quarry.                                    *
  *                                                                 *
- * Copyright (C) 2003, 2004 Paul Pogonyshev.                       *
+ * Copyright (C) 2003, 2004, 2005 Paul Pogonyshev.                 *
  *                                                                 *
  * This program is free software; you can redistribute it and/or   *
  * modify it under the terms of the GNU General Public License as  *
@@ -124,6 +124,7 @@ open_game_record (SgfCollection *sgf_collection, SgfErrorList *sgf_error_list,
 {
   GtkWidget *goban_window = gtk_goban_window_new (sgf_collection, filename);
 
+  gtk_goban_window_enter_game_record_mode (GTK_GOBAN_WINDOW (goban_window));
   gtk_window_present (GTK_WINDOW (goban_window));
 
   if (sgf_error_list)
