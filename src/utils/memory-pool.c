@@ -171,7 +171,7 @@ memory_pool_alloc(MemoryPool *pool)
   * (ItemIndex *) item = item_index;
 
 #if ENABLE_MEMORY_PROFILING
-      pool->num_items_allocated++;
+  pool->num_items_allocated++;
 #endif
 
   return item;
@@ -210,11 +210,6 @@ memory_pool_free(MemoryPool *pool, void *item)
 
       pool->first_chunk = chunk;
     }
-
-    chunk->num_free_items++;
-
-    * (ItemIndex *) item = chunk->first_free_item;
-    chunk->first_free_item = item_index;
   }
   else {
     if (chunk->previous
@@ -235,13 +230,28 @@ memory_pool_free(MemoryPool *pool, void *item)
       utils_free(chunk);
 
 #if ENABLE_MEMORY_PROFILING
+      pool->num_items_freed++;
       pool->num_chunks_freed++;
 #endif
+
+      /* Since the whole chunk is freed, we don't need to free the
+       * item itself.  Return now.
+       */
+      return;
     }
+
+    /* We cannot free the chunk because it is the only "non-full" one.
+     * Just fall through and free the item, leaving the chunk around.
+     */
   }
 
+  chunk->num_free_items++;
+
+  * (ItemIndex *) item = chunk->first_free_item;
+  chunk->first_free_item = item_index;
+
 #if ENABLE_MEMORY_PROFILING
-  pool->num_items_allocated++;
+  pool->num_items_freed++;
 #endif
 }
 
