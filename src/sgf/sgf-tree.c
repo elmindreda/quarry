@@ -109,7 +109,8 @@ sgf_game_tree_new (void)
   tree->current_node	   = NULL;
   tree->current_node_depth = 0;
 
-  tree->board = NULL;
+  tree->board	    = NULL;
+  tree->board_state = NULL;
 
   tree->char_set = NULL;
 
@@ -231,7 +232,9 @@ sgf_game_tree_set_game (SgfGameTree *tree, Game game)
 }
 
 
-/* Set given tree's associated board and current node. */
+/* Set given tree's associated board, board state and current node.
+ * All fields but `board_state' must be non-NULL.
+ */
 void
 sgf_game_tree_set_state (SgfGameTree *tree, const SgfGameTreeState *state)
 {
@@ -244,6 +247,7 @@ sgf_game_tree_set_state (SgfGameTree *tree, const SgfGameTreeState *state)
   assert (state->current_node);
 
   tree->board		   = state->board;
+  tree->board_state	   = state->board_state;
   tree->current_node	   = state->current_node;
   tree->current_node_depth = state->current_node_depth;
 }
@@ -256,6 +260,7 @@ sgf_game_tree_get_state (SgfGameTree *tree, SgfGameTreeState *state)
   assert (state);
 
   state->board		    = tree->board;
+  state->board_state	    = tree->board_state;
   state->current_node	    = tree->current_node;
   state->current_node_depth = tree->current_node_depth;
 }

@@ -39,18 +39,15 @@
   } while (0)
 
 
-static void	  do_enter_tree (SgfGameTree *tree, SgfNode *down_to,
-				 SgfBoardState *board_state);
+static void	do_enter_tree (SgfGameTree *tree, SgfNode *down_to);
 
-static void	  descend_nodes (SgfGameTree *tree, int num_nodes,
-				 SgfBoardState *board_state);
-static void	  ascend_nodes (SgfGameTree *tree, int num_nodes,
-				SgfBoardState *board_state);
+static void	descend_nodes (SgfGameTree *tree, int num_nodes);
+static void	ascend_nodes (SgfGameTree *tree, int num_nodes);
 
-static SgfNode *  find_game_info_node (SgfNode *higher_limit,
-				       SgfNode *lower_limit);
-static void	  determine_final_color_to_play (SgfGameTree *tree,
-						 SgfBoardState *board_state);
+static void	find_time_control_data (SgfGameTree *tree,
+					SgfNode *upper_limit,
+					SgfNode *lower_limit);
+static void	determine_final_color_to_play (SgfGameTree *tree);
 
 
 inline void
@@ -130,8 +127,10 @@ sgf_utils_enter_tree (SgfGameTree *tree, Board *board,
   assert (tree->current_node);
   assert (board_state);
 
-  tree->board = board;
-  do_enter_tree (tree, tree->current_node, board_state);
+  tree->board	    = board;
+  tree->board_state = board_state;
+
+  do_enter_tree (tree, tree->current_node);
 }
 
 
@@ -142,16 +141,15 @@ sgf_utils_enter_tree (SgfGameTree *tree, Board *board,
  * up to the variation end.
  */
 void
-sgf_utils_go_down_in_tree (SgfGameTree *tree, int num_nodes,
-			   SgfBoardState *board_state)
+sgf_utils_go_down_in_tree (SgfGameTree *tree, int num_nodes)
 {
   assert (tree);
   assert (tree->current_node);
-  assert (board_state);
+  assert (tree->board_state);
 
   if (num_nodes != 0 && tree->current_node->child) {
     DO_NOTIFY (tree, SGF_ABOUT_TO_CHANGE_CURRENT_NODE);
-    descend_nodes (tree, num_nodes, board_state);
+    descend_nodes (tree, num_nodes);
     DO_NOTIFY (tree, SGF_CURRENT_NODE_CHANGED);
   }
 }
@@ -166,20 +164,19 @@ sgf_utils_go_down_in_tree (SgfGameTree *tree, int num_nodes,
  * current node.
  */
 void
-sgf_utils_go_up_in_tree (SgfGameTree *tree, int num_nodes,
-			 SgfBoardState *board_state)
+sgf_utils_go_up_in_tree (SgfGameTree *tree, int num_nodes)
 {
   assert (tree);
   assert (tree->current_node);
-  assert (board_state);
+  assert (tree->board_state);
 
   if (num_nodes != 0 && tree->current_node->parent) {
     DO_NOTIFY (tree, SGF_ABOUT_TO_CHANGE_CURRENT_NODE);
 
     if (num_nodes > 0)
-      ascend_nodes (tree, num_nodes, board_state);
+      ascend_nodes (tree, num_nodes);
     else
-      do_enter_tree (tree, tree->root, board_state);
+      do_enter_tree (tree, tree->root);
 
     DO_NOTIFY (tree, SGF_CURRENT_NODE_CHANGED);
   }
@@ -289,16 +286,15 @@ sgf_utils_find_variation_at_position (SgfGameTree *tree, int x, int y,
 
 
 void
-sgf_utils_switch_to_variation (SgfGameTree *tree, SgfDirection direction,
-			       SgfBoardState *board_state)
+sgf_utils_switch_to_variation (SgfGameTree *tree, SgfDirection direction)
 {
   SgfNode *switch_to;
   SgfNode *parent;
 
   assert (tree);
   assert (tree->current_node);
+  assert (tree->board_state);
   assert (direction == SGF_NEXT || direction == SGF_PREVIOUS);
-  assert (board_state);
 
   parent = tree->current_node->parent;
 
@@ -319,32 +315,31 @@ sgf_utils_switch_to_variation (SgfGameTree *tree, SgfDirection direction,
 
   DO_NOTIFY (tree, SGF_ABOUT_TO_CHANGE_CURRENT_NODE);
 
-  ascend_nodes (tree, 1, board_state);
+  ascend_nodes (tree, 1);
 
   parent->current_variation = switch_to;
-  descend_nodes (tree, 1, board_state);
+  descend_nodes (tree, 1);
 
   DO_NOTIFY (tree, SGF_CURRENT_NODE_CHANGED);
 }
 
 
 void
-sgf_utils_switch_to_given_variation (SgfGameTree *tree, SgfNode *node,
-				     SgfBoardState *board_state)
+sgf_utils_switch_to_given_variation (SgfGameTree *tree, SgfNode *node)
 {
   assert (tree);
   assert (tree->current_node);
   assert (node);
   assert (tree->current_node->parent == node->parent);
-  assert (board_state);
+  assert (tree->board_state);
 
   if (tree->current_node != node) {
     DO_NOTIFY (tree, SGF_ABOUT_TO_CHANGE_CURRENT_NODE);
 
-    ascend_nodes (tree, 1, board_state);
+    ascend_nodes (tree, 1);
 
     node->parent->current_variation = node;
-    descend_nodes (tree, 1, board_state);
+    descend_nodes (tree, 1);
 
     DO_NOTIFY (tree, SGF_CURRENT_NODE_CHANGED);
   }
@@ -352,13 +347,12 @@ sgf_utils_switch_to_given_variation (SgfGameTree *tree, SgfNode *node,
 
 
 void
-sgf_utils_switch_to_given_node (SgfGameTree *tree, SgfNode *node,
-				SgfBoardState *board_state)
+sgf_utils_switch_to_given_node (SgfGameTree *tree, SgfNode *node)
 {
   assert (tree);
   assert (tree->current_node);
   assert (node);
-  assert (board_state);
+  assert (tree->board_state);
 
   if (tree->current_node != node) {
     SgfNode *path_scan;
@@ -368,7 +362,7 @@ sgf_utils_switch_to_given_node (SgfGameTree *tree, SgfNode *node,
     for (path_scan = node; path_scan->parent; path_scan = path_scan->parent)
       path_scan->parent->current_variation = path_scan;
 
-    do_enter_tree (tree, node, board_state);
+    do_enter_tree (tree, node);
 
     DO_NOTIFY (tree, SGF_CURRENT_NODE_CHANGED);
   }
@@ -382,14 +376,13 @@ sgf_utils_switch_to_given_node (SgfGameTree *tree, SgfNode *node,
  * not contain a move.
  */
 void
-sgf_utils_append_variation (SgfGameTree *tree, SgfBoardState *board_state,
-			    int color, ...)
+sgf_utils_append_variation (SgfGameTree *tree, int color, ...)
 {
   SgfNode *node;
 
   assert (tree);
   assert (tree->current_node);
-  assert (board_state);
+  assert (tree->board_state);
 
   DO_NOTIFY (tree, SGF_ABOUT_TO_MODIFY_MAP);
   DO_NOTIFY (tree, SGF_ABOUT_TO_MODIFY_TREE);
@@ -417,7 +410,7 @@ sgf_utils_append_variation (SgfGameTree *tree, SgfBoardState *board_state,
   tree->current_node->current_variation = node;
   sgf_game_tree_invalidate_map (tree, tree->current_node);
 
-  descend_nodes (tree, 1, board_state);
+  descend_nodes (tree, 1);
 
   DO_NOTIFY (tree, SGF_CURRENT_NODE_CHANGED);
   DO_NOTIFY (tree, SGF_TREE_MODIFIED);
@@ -688,9 +681,10 @@ sgf_utils_normalize_text (const char *text, int is_simple_text)
 
 
 static void
-do_enter_tree (SgfGameTree *tree, SgfNode *down_to, SgfBoardState *board_state)
+do_enter_tree (SgfGameTree *tree, SgfNode *down_to)
 {
   static SgfNode root_predecessor;
+  SgfBoardState *const board_state = tree->board_state;
   SgfNode *node;
   int num_nodes = 1;
 
@@ -703,6 +697,11 @@ do_enter_tree (SgfGameTree *tree, SgfNode *down_to, SgfBoardState *board_state)
   board_state->game_info_node		= NULL;
   board_state->last_move_node		= NULL;
   board_state->last_main_variation_node = NULL;
+
+  board_state->time_left[BLACK_INDEX]	= -1.0;
+  board_state->time_left[WHITE_INDEX]	= -1.0;
+  board_state->moves_left[BLACK_INDEX]	= -1;
+  board_state->moves_left[WHITE_INDEX]	= -1;
 
   for (node = tree->root; node != down_to; node = node->current_variation) {
     assert (node);
@@ -717,7 +716,7 @@ do_enter_tree (SgfGameTree *tree, SgfNode *down_to, SgfBoardState *board_state)
   tree->current_node		     = &root_predecessor;
   tree->current_node_depth	     = -1;
 
-  descend_nodes (tree, num_nodes, board_state);
+  descend_nodes (tree, num_nodes);
 }
 
 
@@ -727,8 +726,9 @@ do_enter_tree (SgfGameTree *tree, SgfNode *down_to, SgfBoardState *board_state)
  * board and `board_state' is updated as needed.
  */
 static void
-descend_nodes (SgfGameTree *tree, int num_nodes, SgfBoardState *board_state)
+descend_nodes (SgfGameTree *tree, int num_nodes)
 {
+  SgfBoardState *const board_state = tree->board_state;
   SgfNode *node = tree->current_node;
 
   tree->current_node_depth += num_nodes;
@@ -749,6 +749,12 @@ descend_nodes (SgfGameTree *tree, int num_nodes, SgfBoardState *board_state)
     }
 
     node = node->current_variation;
+
+    if (!board_state->game_info_node && sgf_node_is_game_info_node (node)) {
+      board_state->game_info_node	= node;
+      board_state->game_info_node_depth = (tree->current_node_depth
+					   - (num_nodes - 1));
+    }
 
     if (IS_STONE (node->move_color)) {
       sgf_utils_play_node_move (node, tree->board);
@@ -780,13 +786,13 @@ descend_nodes (SgfGameTree *tree, int num_nodes, SgfBoardState *board_state)
 	board_apply_changes (tree->board, position_lists);
 
 	board_state->last_move_x = NULL_X;
+
+	color = sgf_node_get_color_property_value (node, SGF_TO_PLAY);
+	if (color != EMPTY)
+	  board_state->sgf_color_to_play = color;
       }
       else
 	board_add_dummy_move_entry (tree->board);
-
-      color = sgf_node_get_color_property_value (node, SGF_TO_PLAY);
-      if (color != EMPTY)
-	board_state->sgf_color_to_play = color;
     }
 
     if (node->move_color != SETUP_NODE) {
@@ -801,20 +807,18 @@ descend_nodes (SgfGameTree *tree, int num_nodes, SgfBoardState *board_state)
     else
       board_state->last_move_y = NULL_Y;
 
-    if (!board_state->game_info_node) {
-      board_state->game_info_node
-	= find_game_info_node (tree->current_node->current_variation, node);
-    }
+    find_time_control_data (tree, tree->current_node, node);
 
     tree->current_node = node;
-    determine_final_color_to_play (tree, board_state);
+    determine_final_color_to_play (tree);
   }
 }
 
 
 static void
-ascend_nodes (SgfGameTree *tree, int num_nodes, SgfBoardState *board_state)
+ascend_nodes (SgfGameTree *tree, int num_nodes)
 {
+  SgfBoardState *const board_state = tree->board_state;
   SgfNode *node = tree->current_node;
   int k;
 
@@ -827,14 +831,14 @@ ascend_nodes (SgfGameTree *tree, int num_nodes, SgfBoardState *board_state)
 
   if (node->parent) {
     SgfNode *look_up_node = node;
-    int need_last_move = 1;
+    int need_move_coordinates = 1;
 
     board_undo (tree->board, num_nodes);
 
     board_state->sgf_color_to_play = EMPTY;
-    board_state->last_move_node = NULL;
+    board_state->last_move_node    = NULL;
 
-    do {
+    while (1) {
       if (IS_STONE (look_up_node->move_color)) {
 	if (board_state->sgf_color_to_play == EMPTY) {
 	  board_state->sgf_color_to_play
@@ -842,89 +846,128 @@ ascend_nodes (SgfGameTree *tree, int num_nodes, SgfBoardState *board_state)
 	}
 
 	board_state->last_move_node = look_up_node;
-	if (need_last_move) {
+	if (need_move_coordinates) {
 	  board_state->last_move_x = look_up_node->move_point.x;
 	  board_state->last_move_y = look_up_node->move_point.y;
 	}
 
 	break;
       }
+      else if (look_up_node->move_color == SETUP_NODE) {
+	if (board_state->sgf_color_to_play == EMPTY) {
+	  /* `PL' is a setup property, so we check only here. */
+	  board_state->sgf_color_to_play
+	    = sgf_node_get_color_property_value (look_up_node, SGF_TO_PLAY);
+	}
 
-      if (board_state->sgf_color_to_play == EMPTY) {
-	board_state->sgf_color_to_play
-	  = sgf_node_get_color_property_value (look_up_node, SGF_TO_PLAY);
-      }
-
-      if (look_up_node->move_color == SETUP_NODE && need_last_move) {
 	board_state->last_move_x = NULL_X;
 	board_state->last_move_y = NULL_Y;
-
-	need_last_move = 0;
+	need_move_coordinates	 = 0;
       }
 
       look_up_node = look_up_node->parent;
       if (!look_up_node) {
-	if (need_last_move) {
-	  board_state->last_move_x = NULL_X;
-	  board_state->last_move_y = NULL_Y;
-	}
+	board_state->last_move_x = NULL_X;
+	board_state->last_move_y = NULL_Y;
 
 	break;
       }
-    } while (board_state->sgf_color_to_play == EMPTY || need_last_move);
+    }
 
-    if (board_state->game_info_node)
-      board_state->game_info_node = find_game_info_node (tree->root, node);
+    find_time_control_data (tree, NULL, node);
 
     tree->current_node	      = node;
     tree->current_node_depth -= num_nodes;
 
-    determine_final_color_to_play (tree, board_state);
+    if (board_state->game_info_node
+	&& board_state->game_info_node_depth > tree->current_node_depth)
+      board_state->game_info_node = NULL;
+
+    determine_final_color_to_play (tree);
   }
   else
-    do_enter_tree (tree, tree->root, board_state);
-}
-
-
-static SgfNode *
-find_game_info_node (SgfNode *higher_limit, SgfNode *lower_limit)
-{
-  SgfNode *node = higher_limit;
-
-  while (1) {
-    if (sgf_node_is_game_info_node (node))
-      return node;
-
-    if (node == lower_limit)
-      break;
-
-    node = node->current_variation;
-  }
-
-  return NULL;
+    do_enter_tree (tree, tree->root);
 }
 
 
 static void
-determine_final_color_to_play (SgfGameTree *tree, SgfBoardState *board_state)
+find_time_control_data (SgfGameTree *tree,
+			SgfNode *upper_limit, SgfNode *lower_limit)
 {
-  const SgfNode *game_info_node = board_state->game_info_node;
+  SgfBoardState *const board_state = tree->board_state;
+  SgfNode *node;
 
-  if (board_state->sgf_color_to_play == EMPTY && tree->game == GAME_GO
+  char have_time_left_for_black  = 0;
+  char have_time_left_for_white  = 0;
+  char have_moves_left_for_black = 0;
+  char have_moves_left_for_white = 0;
+
+  if (!upper_limit) {
+    have_time_left_for_black  = (board_state->time_left[BLACK_INDEX] == -1.0);
+    have_time_left_for_white  = (board_state->time_left[WHITE_INDEX] == -1.0);
+    have_moves_left_for_black = (board_state->moves_left[BLACK_INDEX] == -1);
+    have_moves_left_for_white = (board_state->moves_left[WHITE_INDEX] == -1);
+  }
+  else {
+    /* Weird fix for do_enter_tree()'s `root_predecessor'. */
+    upper_limit = upper_limit->child->parent;
+  }
+
+  node = lower_limit;
+  while (!(have_time_left_for_black && have_time_left_for_white
+	   && have_moves_left_for_black && have_moves_left_for_white)) {
+    if (!have_time_left_for_black) {
+      have_time_left_for_black = (sgf_node_get_real_property_value
+				  (node, SGF_TIME_LEFT_FOR_BLACK,
+				   &board_state->time_left[BLACK_INDEX]));
+    }
+
+    if (!have_time_left_for_white) {
+      have_time_left_for_white = (sgf_node_get_real_property_value
+				  (node, SGF_TIME_LEFT_FOR_WHITE,
+				   &board_state->time_left[WHITE_INDEX]));
+    }
+
+    if (!have_moves_left_for_black) {
+      have_moves_left_for_black = (sgf_node_get_number_property_value
+				   (node, SGF_MOVES_LEFT_FOR_BLACK,
+				    &board_state->moves_left[BLACK_INDEX]));
+    }
+
+    if (!have_moves_left_for_white) {
+      have_moves_left_for_white = (sgf_node_get_number_property_value
+				   (node, SGF_MOVES_LEFT_FOR_WHITE,
+				    &board_state->moves_left[WHITE_INDEX]));
+    }
+
+    node = node->parent;
+    if (node == upper_limit)
+      break;
+  }
+}
+
+
+static void
+determine_final_color_to_play (SgfGameTree *tree)
+{
+  const SgfNode *game_info_node = tree->board_state->game_info_node;
+
+  if (tree->board_state->sgf_color_to_play == EMPTY
+      && tree->game == GAME_GO
       && game_info_node) {
     int handicap = sgf_node_get_handicap (game_info_node);
 
     if (handicap > 0
 	&& sgf_node_get_list_of_point_property_value (game_info_node,
 						      SGF_ADD_BLACK))
-      board_state->sgf_color_to_play = WHITE;
+      tree->board_state->sgf_color_to_play = WHITE;
     else if (handicap == 0)
-      board_state->sgf_color_to_play = BLACK;
+      tree->board_state->sgf_color_to_play = BLACK;
   }
 
-  board_state->color_to_play
+  tree->board_state->color_to_play
     = board_adjust_color_to_play (tree->board, RULE_SET_DEFAULT,
-				  board_state->sgf_color_to_play);
+				  tree->board_state->sgf_color_to_play);
 }
 
 

@@ -105,6 +105,7 @@ typedef struct _SgfNodeGeneric		SgfNodeGo;
 typedef struct _SgfNodeGeneric		SgfNodeOthello;
 typedef struct _SgfNodeAmazons		SgfNodeAmazons;
 
+typedef struct _SgfBoardState		SgfBoardState;
 
 typedef struct _SgfGameTreeMapData	SgfGameTreeMapData;
 typedef struct _SgfGameTreeMapLine	SgfGameTreeMapLine;
@@ -264,6 +265,35 @@ struct _SgfNodeAmazons {
 };
 
 
+/* An SgfBoardState structure is associated with a tree (much like a
+ * board.)  It is only used and kept valid by `sgf-utils' module.
+ *
+ * Fields must not be changed from outside `sgf-utils' module.
+ */
+struct _SgfBoardState {
+  int		color_to_play;
+  int		last_move_x;
+  int		last_move_y;
+
+  SgfNode      *game_info_node;
+  int		game_info_node_depth;
+
+  SgfNode      *last_move_node;
+
+  /* Will be NULL if in main variation. */
+  SgfNode      *last_main_variation_node;
+
+  /* Time control data as stored in the game record.  Negative values
+   * mean that the property is not set.
+   */
+  double	time_left[NUM_COLORS];
+  int		moves_left[NUM_COLORS];
+
+  /* Private fields.  Must be of no interest outside `sgf-utils'. */
+  int		sgf_color_to_play;
+};
+
+
 struct _SgfGameTreeMapData {
   SgfGameTreeMapData	   *next;
 
@@ -297,6 +327,7 @@ struct _SgfGameTree {
   int			    board_width;
   int			    board_height;
   Board			   *board;
+  SgfBoardState		   *board_state;
 
   int			    file_format;
   char			   *char_set;
@@ -340,6 +371,8 @@ typedef struct _SgfGameTreeState	SgfGameTreeState;
 
 struct _SgfGameTreeState {
   Board			   *board;
+  SgfBoardState		   *board_state;
+
   SgfNode		   *current_node;
   int			    current_node_depth;
 };
@@ -673,25 +706,6 @@ int		 sgf_write_file (const char *filename,
 
 /* `sgf-utils.c' global declarations and functions. */
 
-typedef struct _SgfBoardState	SgfBoardState;
-
-/* Fields must not be changed from outside `sgf-utils' module. */
-struct _SgfBoardState {
-  int		color_to_play;
-  int		last_move_x;
-  int		last_move_y;
-
-  SgfNode      *game_info_node;
-  SgfNode      *last_move_node;
-
-  /* Will be NULL if in main variation. */
-  SgfNode      *last_main_variation_node;
-
-  /* Private fields.  Must be of no interest outside `sgf-utils'. */
-  int		sgf_color_to_play;
-};
-
-
 typedef enum {
   SGF_NEXT,
   SGF_PREVIOUS
@@ -709,10 +723,8 @@ int	      sgf_utils_format_node_move (const SgfGameTree *tree,
 void	      sgf_utils_enter_tree (SgfGameTree *tree, Board *board,
 				    SgfBoardState *board_state);
 
-void	      sgf_utils_go_down_in_tree (SgfGameTree *tree, int num_nodes,
-					 SgfBoardState *board_state);
-void	      sgf_utils_go_up_in_tree (SgfGameTree *tree, int num_nodes,
-				       SgfBoardState *board_state);
+void	      sgf_utils_go_down_in_tree (SgfGameTree *tree, int num_nodes);
+void	      sgf_utils_go_up_in_tree (SgfGameTree *tree, int num_nodes);
 
 int	      sgf_utils_count_variations
 		(const SgfGameTree *tree, int of_current_node,
@@ -725,16 +737,13 @@ SgfNode *     sgf_utils_find_variation_at_position (SgfGameTree *tree,
 						    int after_current);
 
 void	      sgf_utils_switch_to_variation (SgfGameTree *tree,
-					     SgfDirection direction,
-					     SgfBoardState *board_state);
+					     SgfDirection direction);
 void	      sgf_utils_switch_to_given_variation (SgfGameTree *tree,
-						   SgfNode *node,
-						   SgfBoardState *board_state);
-void	      sgf_utils_switch_to_given_node (SgfGameTree *tree, SgfNode *node,
-					      SgfBoardState *board_state);
+						   SgfNode *node);
+void	      sgf_utils_switch_to_given_node (SgfGameTree *tree,
+					      SgfNode *node);
 
 void	      sgf_utils_append_variation (SgfGameTree *tree,
-					  SgfBoardState *board_state,
 					  int color, ...);
 
 void	      sgf_utils_set_node_is_collapsed (SgfGameTree *tree,
