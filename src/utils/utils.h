@@ -277,12 +277,11 @@ void		  string_list_delete(void *abstract_list);
 void		  string_list_empty(void *abstract_list);
 
 #define string_list_is_empty(abstract_list)				\
-  (((const StringList *) (abstract_list))->first == NULL)
+  ((abstract_list)->first == NULL)
 
 #define string_list_is_single_string(abstract_list)			\
-  (((const StringList *) (abstract_list))->first != NULL		\
-   && (((const StringList *) (abstract_list))->first			\
-       == ((const StringList *) (abstract_list))->last))
+  ((abstract_list)->first != NULL					\
+   && (abstract_list)->first == (abstract_list)->last)
 
 
 void		  string_list_fill_from_string(void *abstract_list,
