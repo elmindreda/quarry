@@ -1,5 +1,28 @@
 2004-08-21  Paul Pogonyshev  <pogonyshev@gmx.net>
 
+	* gui-gtk/gtk-goban-window.c (gtk_goban_window_save): Make sure
+	that the comment for the current node is saved if needed.
+	(save_file_as_response): Likewise.
+	(set_current_tree): Likewise.
+	(update_children_for_new_node): Likewise, but for the node goban
+	just left.  Append one newline to the displayed comment to ease
+	editing.
+	(fetch_comment_if_changed): New function.
+
+	* sgf/sgf-utils.c (sgf_utils_normalize_text): New function.
+
+	* sgf/sgf-tree.c (sgf_node_add_number_property): Add `overwrite'
+	parameter.
+	(sgf_node_add_real_property): Likewise.
+	(sgf_node_add_pointer_property): Likewise.
+
+	* sgf/sgf.h (sgf_node_add_double_property): Add `overwrite'
+	parameter.
+	(sgf_node_add_color_property): Likewise.
+	(sgf_node_add_text_property): Likewise.
+	(sgf_node_add_list_of_point_property): Likewise.
+	(sgf_node_add_list_of_label_property): Likewise.
+
 	* gettext.h (textdomain): Cast to `void' when NLS is disabled to
 	avoid pointless compiler warnings.
 	(bindtextdomain): Likewise.
@@ -77,7 +100,8 @@
 2004-08-17  Paul Pogonyshev  <pogonyshev@gmx.net>
 
 	* gui-gtk/gtk-goban.c (gtk_goban_scroll_event): New
-	function (navigate goban in respond to mouse wheel movement).
+	function (navigate goban in respond to mouse wheel movement, wish
+	#610, David Gómez).
 
 2004-08-16  Paul Pogonyshev  <pogonyshev@gmx.net>
 
@@ -218,7 +242,7 @@
 
 	* gui-gtk/gtk-goban-window.c (gtk_goban_window_save): Handle
 	"Save" command, but issue warning about potential loss of
-	information (bug #522).
+	information (bug #522, David Gómez).
 
 2004-07-20  Paul Pogonyshev  <pogonyshev@gmx.net>
 
@@ -849,3 +873,8 @@ Changes before the project registration on Gna! (2004-04-12) were not logged.
 
   Copying and distribution of this file, with or without modification,
   are permitted provided the copyright notice and this notice are preserved.
+
+
+Local Variables:
+coding: iso-8859-1
+End:
