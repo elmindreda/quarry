@@ -1,3 +1,49 @@
+2004-11-26  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* gui-gtk/gtk-goban-window.c (IS_IN_SPECIAL_MODE): New macro.
+	(gtk_goban_window_init): Use `GTK_STOCK_PROPERTIES'es shortcut and
+	icon for "Game Information" menu item.  Add "View" sub-menu.
+	Rearrange "Go" sub-menu items so that "previous"-like items always
+	go before "next"-like.
+	(gtk_goban_window_init): Add main and navigation toolbars.  Add
+	"Pass" and "Resign" buttons to the sidebar.  Tweak sidebar
+	spacing.
+	(gtk_goban_window_enter_game_mode): Call
+	update_children_for_new_node() since result of
+	USER_CAN_PLAY_MOVES() might change.  Bug-fix: don't start user's
+	clock if the user is setting free handicap.
+	(show_or_hide_main_toolbar, show_or_hide_navigation_toolbar)
+	(show_or_hide_game_action_buttons): New functions.
+	(set_current_tree): Show or hide "Pass" button depending on game.
+	(play_resign): Ask user if she really wants to resign first.
+	(do_resign_game): New function, broken out of play_resign().
+	(update_children_for_new_node): Also sensitize/desensitize toolbar
+	buttons and game action buttons.  Make "Pass" and "Resign" menu
+	items and buttons insensitive when in special mode.
+	(move_has_been_played): ReSet `in_game_mode' if game is over.
+	(move_has_been_generated): Use do_resign_game() instead of
+	play_resign().
+
+	* gui-gtk/gtk-configuration.list: Add "GTK+ User Interface"
+	section.
+
+	* gui-utils/configuration.c (IS_ACCEPTABLE_NAME_CHARACTER): New
+	macro.
+	(configuration_read_from_file): Use
+	IS_ACCEPTABLE_NAME_CHARACTER().  This allows digits, hyphen, plus
+	sign and apostrophe in names, in addition to digits accepted
+	before.
+
+	* utils/string-buffer.c (string_buffer_vcprintf): Bug-fix:
+	increase string length also when buffer reallocation is needed.
+
+2004-11-25  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* gui-gtk/gtk-utils.c (gtk_utils_append_toolbar_button)
+	(invoke_toolbar_button_callback)
+	(gtk_utils_set_toolbar_buttons_sensitive)
+	(set_toolbar_item_sensitive): New functions.
+
 2004-11-24  Paul Pogonyshev  <pogonyshev@gmx.net>
 
 	* gui-gtk/gtk-goban-window.c (play_resign): Bug-fix: don't stop
