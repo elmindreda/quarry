@@ -235,6 +235,26 @@ gtk_utils_create_message_dialog(GtkWindow *parent, const gchar *icon_stock_id,
 }
 
 
+/* GTK+ has an annoying "feature" (I tend to consider it a bug): if
+ * you activate a button from keyboard (i.e. Alt+O for "OK" button),
+ * then keyboard changes in the currently focused spin button are not
+ * saved.  This might be true for some other widgets too.
+ *
+ * Every dialog with spin buttons should call this function from all
+ * button/response handlers.
+ */
+void
+gtk_utils_workaround_focus_bug(GtkWindow *window)
+{
+  GtkWidget *focused_widget = gtk_window_get_focus(window);
+
+  if (focused_widget) {
+    if (GTK_IS_SPIN_BUTTON(focused_widget))
+      gtk_spin_button_update(GTK_SPIN_BUTTON(focused_widget));
+  }
+}
+
+
 void
 gtk_utils_add_file_selection_response_handlers(GtkWidget *file_selection,
 					       gboolean saving_file,

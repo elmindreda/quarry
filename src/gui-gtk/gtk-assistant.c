@@ -198,6 +198,9 @@ gtk_assistant_response(GtkDialog *dialog, gint response_id)
   GtkWidget *current_page;
   GtkAssistantPage *page_data;
 
+  /* Assistant pages might contain spin buttons. */
+  gtk_utils_workaround_focus_bug(GTK_WINDOW(assistant));
+
   if (response_id == ASSISTANT_RESPONSE_NEXT
       || response_id == GTK_RESPONSE_OK) {
     current_page_index = gtk_notebook_get_current_page(notebook);

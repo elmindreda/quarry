@@ -154,6 +154,7 @@ GtkWidget *	gtk_utils_create_message_dialog
 		  (GtkWindow *parent, const gchar *icon_stock_id,
 		   GtkUtilsMessageDialogFlags flags,
 		   const gchar *hint, const gchar *message_format_string, ...);
+void		gtk_utils_workaround_focus_bug(GtkWindow *window);
 
 void		gtk_utils_add_file_selection_response_handlers
 		  (GtkWidget *file_selection, gboolean saving_file,
