@@ -99,6 +99,8 @@ struct _GtkGobanWindow {
   int			   white_variations[BOARD_GRID_SIZE];
   char			   sgf_markup[BOARD_GRID_SIZE];
 
+  char			  *dead_stones;
+
   SgfCollection		  *sgf_collection;
   SgfGameTree		  *current_tree;
 

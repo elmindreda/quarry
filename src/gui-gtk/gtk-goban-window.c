@@ -93,6 +93,8 @@ static void	 save_file_as_response(GtkFileSelection *dialog,
 				       GtkGobanWindow *goban_window);
 static void	 save_file_as_destroy(GtkGobanWindow *goban_window);
 
+static void	 update_territory_markup(GtkGobanWindow *goban_window);
+
 static void	 enter_special_mode(GtkGobanWindow *goban_window,
 				    const gchar *hint,
 				    SpecialModeButtonClicked done_callback,
@@ -100,12 +102,14 @@ static void	 enter_special_mode(GtkGobanWindow *goban_window,
 static void	 leave_special_mode(GtkGobanWindow *goban_window);
 
 static void	 free_handicap_mode_done(GtkGobanWindow *goban_window);
+static void	 go_scoring_mode_done(GtkGobanWindow *goban_window);
 
 static void	 play_pass_move(GtkGobanWindow *goban_window);
 
 
 static void	 set_current_tree(GtkGobanWindow *goban_window,
 				  SgfGameTree *sgf_tree);
+static void	 reenter_current_node(GtkGobanWindow *goban_window);
 
 static void	 cancel_amazons_move(GtkGobanWindow *goban_window);
 static void	 reset_amazons_move_data(GtkGobanWindow *goban_window);
@@ -125,6 +129,12 @@ static GtkGobanPointerFeedback
 						  GtkGobanPointerData *data);
 static void	 free_handicap_mode_goban_clicked(GtkGobanWindow *goban_window,
 						  GtkGobanClickData *data);
+
+static GtkGobanPointerFeedback
+		 go_scoring_mode_pointer_moved(GtkGobanWindow *goban_window,
+					       GtkGobanPointerData *data);
+static void	 go_scoring_mode_goban_clicked(GtkGobanWindow *goban_window,
+					       GtkGobanClickData *data);
 
 static void	 navigate_goban(GtkGobanWindow *goban_window,
 				GtkGobanNavigationCommand command);
@@ -569,6 +579,36 @@ save_file_as_destroy(GtkGobanWindow *goban_window)
 
 
 static void
+update_territory_markup(GtkGobanWindow *goban_window)
+{
+  int x;
+  int y;
+  char goban_markup[BOARD_GRID_SIZE];
+
+  for (y = 0; y < goban_window->board->height; y++) {
+    for (x = 0; x < goban_window->board->width; x++) {
+      int pos = POSITION(x, y);
+
+      if (!goban_window->dead_stones[pos])
+	goban_markup[pos] = TILE_NONE;
+      else
+	goban_markup[pos] = GOBAN_MARKUP_GHOSTIFY;
+    }
+  }
+
+  go_mark_territory_on_grid(goban_window->board,
+			    goban_markup, goban_window->dead_stones,
+			    BLACK_OPAQUE | GOBAN_MARKUP_GHOSTIFY,
+			    WHITE_OPAQUE | GOBAN_MARKUP_GHOSTIFY);
+
+  gtk_goban_update(goban_window->goban, NULL, goban_markup, NULL,
+		   goban_window->sgf_board_state.last_move_x,
+		   goban_window->sgf_board_state.last_move_y);
+}
+
+
+
+static void
 enter_special_mode(GtkGobanWindow *goban_window, const gchar *hint,
 		   SpecialModeButtonClicked done_callback,
 		   SpecialModeButtonClicked cancel_callback)
@@ -632,6 +672,38 @@ free_handicap_mode_done(GtkGobanWindow *goban_window)
 
 
 static void
+go_scoring_mode_done(GtkGobanWindow *goban_window)
+{
+  SgfGameTree *current_tree = goban_window->current_tree;
+  double komi;
+  char *detailed_score;
+  BoardPositionList *black_territory;
+  BoardPositionList *white_territory;
+
+  assert(sgf_node_get_komi(goban_window->sgf_board_state.game_info_node,
+			   &komi));
+  go_score_game(goban_window->board, goban_window->dead_stones, komi,
+		NULL, &detailed_score, &black_territory, &white_territory);
+
+  sgf_node_add_text_property(current_tree->current_node, current_tree,
+			     SGF_COMMENT, detailed_score);
+  sgf_node_add_list_of_point_property(current_tree->current_node, current_tree,
+				      SGF_BLACK_TERRITORY, black_territory);
+  sgf_node_add_list_of_point_property(current_tree->current_node, current_tree,
+				      SGF_WHITE_TERRITORY, white_territory);
+
+  g_free(goban_window->dead_stones);
+
+  reenter_current_node(goban_window);
+
+  leave_special_mode(goban_window);
+  set_goban_signal_handlers(goban_window,
+			    G_CALLBACK(playing_mode_pointer_moved),
+			    G_CALLBACK(playing_mode_goban_clicked));
+}
+
+
+static void
 set_current_tree(GtkGobanWindow *goban_window, SgfGameTree *sgf_tree)
 {
   if (!goban_window->board && GAME_IS_SUPPORTED(sgf_tree->game)) {
@@ -653,6 +725,25 @@ set_current_tree(GtkGobanWindow *goban_window, SgfGameTree *sgf_tree)
 
 
 static void
+reenter_current_node(GtkGobanWindow *goban_window)
+{
+  SgfGameTree *current_tree = goban_window->current_tree;
+
+  if (current_tree->current_node->parent) {
+    sgf_utils_go_up_in_tree(current_tree, 1, &goban_window->sgf_board_state);
+    sgf_utils_go_down_in_tree(current_tree, 1, &goban_window->sgf_board_state);
+  }
+  else {
+    sgf_utils_enter_tree(current_tree, goban_window->board,
+			 &goban_window->sgf_board_state);
+  }
+
+  goban_window->last_displayed_node = NULL;
+  update_children_for_new_node(goban_window);
+}
+
+
+static void
 play_pass_move(GtkGobanWindow *goban_window)
 {
   assert(goban_window->board->game == GAME_GO
@@ -662,9 +753,9 @@ play_pass_move(GtkGobanWindow *goban_window)
 				  &goban_window->sgf_board_state,
 				  goban_window->sgf_board_state.color_to_play,
 				  PASS_X, PASS_Y);
-  move_has_been_played(goban_window);
 
   update_children_for_new_node(goban_window);
+  move_has_been_played(goban_window);
 }
 
 
@@ -672,13 +763,13 @@ static void
 cancel_amazons_move(GtkGobanWindow *goban_window)
 {
   if (goban_window->amazons_move_stage == SHOOTING_ARROW) {
-    gtk_goban_set_overlay_data(goban_window->goban, 1,
-			       NULL_X, NULL_Y, TILE_NONE);
+    gtk_goban_set_overlay_data(goban_window->goban, 1, NULL,
+			       TILE_NONE, TILE_NONE);
   }
 
   if (goban_window->amazons_move_stage != SELECTING_QUEEN) {
-    gtk_goban_set_overlay_data(goban_window->goban, 0,
-			       NULL_X, NULL_Y, TILE_NONE);
+    gtk_goban_set_overlay_data(goban_window->goban, 0, NULL,
+			       TILE_NONE, TILE_NONE);
   }
 
   reset_amazons_move_data(goban_window);
@@ -809,13 +900,16 @@ playing_mode_goban_clicked(GtkGobanWindow *goban_window,
 					color_to_play, data->x, data->y);
       }
       else {
+	int pos = POSITION(data->x, data->y);
+
 	if (goban_window->amazons_move_stage == SELECTING_QUEEN) {
 	  goban_window->amazons_move_stage  = MOVING_QUEEN;
 
 	  gtk_goban_set_overlay_data(goban_window->goban, 0,
-				     data->x, data->y,
+				     board_position_list_new(&pos, 1),
 				     (STONE_50_TRANSPARENT
-				      + COLOR_INDEX(color_to_play)));
+				      + COLOR_INDEX(color_to_play)),
+				     TILE_NONE);
 
 	  return;
 	}
@@ -823,9 +917,10 @@ playing_mode_goban_clicked(GtkGobanWindow *goban_window,
 	  goban_window->amazons_move_stage  = SHOOTING_ARROW;
 
 	  gtk_goban_set_overlay_data(goban_window->goban, 1,
-				     data->x, data->y,
+				     board_position_list_new(&pos, 1),
 				     (STONE_25_TRANSPARENT
-				      + COLOR_INDEX(color_to_play)));
+				      + COLOR_INDEX(color_to_play)),
+				     TILE_NONE);
 
 	  return;
 	}
@@ -839,10 +934,9 @@ playing_mode_goban_clicked(GtkGobanWindow *goban_window,
 	}
       }
 
+      update_children_for_new_node(goban_window);
       move_has_been_played(goban_window);
     }
-    else
-      return;
 
     break;
 
@@ -857,17 +951,13 @@ playing_mode_goban_clicked(GtkGobanWindow *goban_window,
       sgf_utils_switch_to_given_variation(goban_window->current_tree,
 					  goban_window->node_to_switch_to,
 					  &goban_window->sgf_board_state);
+      update_children_for_new_node(goban_window);
     }
     else
       cancel_amazons_move(goban_window);
 
     break;
-
-  default:
-    return;
   }
-
-  update_children_for_new_node(goban_window);
 }
 
 
@@ -907,6 +997,8 @@ free_handicap_mode_goban_clicked(GtkGobanWindow *goban_window,
       && !(data->modifiers & GDK_SHIFT_MASK)) {
     int contents = gtk_goban_get_grid_contents(goban_window->goban,
 					       data->x, data->y);
+    int pos = POSITION(data->x, data->y);
+    BoardPositionList *position_list = board_position_list_new(&pos, 1);
 
     if (contents == EMPTY) {
       contents = BLACK;
@@ -919,10 +1011,100 @@ free_handicap_mode_goban_clicked(GtkGobanWindow *goban_window,
     else
       assert(0);
 
-    gtk_goban_set_grid_contents(goban_window->goban,
-				data->x, data->y, contents);
+    gtk_goban_set_contents(goban_window->goban, position_list,
+			   contents, GOBAN_TILE_DONT_CHANGE);
+    board_position_list_delete(position_list);
+
     gtk_widget_set_sensitive(goban_window->done_button,
 			     goban_window->num_handicap_stones_placed >= 2);
+  }
+}
+
+
+static GtkGobanPointerFeedback
+go_scoring_mode_pointer_moved(GtkGobanWindow *goban_window,
+			      GtkGobanPointerData *data)
+{
+  BoardPositionList * (* const get_stones) (Board *board, int x, int y)
+    = (data->modifiers & GDK_SHIFT_MASK
+       ? go_get_string_stones : go_get_logically_dead_stones);
+  int pos = POSITION(data->x, data->y);
+
+  switch (data->button) {
+  case 0:
+    {
+      BoardPositionList *stones = get_stones(goban_window->board,
+					     data->x, data->y);
+
+      if (stones) {
+	int color = goban_window->board->grid[pos];
+
+	data->feedback_position_list = stones;
+
+	if (!goban_window->dead_stones[pos]) {
+	  return ((GOBAN_FEEDBACK_GHOST + COLOR_INDEX(OTHER_COLOR(color)))
+		  * GOBAN_FEEDBACK_MARKUP_FACTOR);
+	}
+	else {
+	  return ((GOBAN_FEEDBACK_THICK_GHOST + COLOR_INDEX(color))
+		  + (GOBAN_FEEDBACK_FORCE_TILE_NONE
+		     * GOBAN_FEEDBACK_MARKUP_FACTOR));
+	}
+      }
+    }
+
+    break;
+
+  case 1:
+    {
+      BoardPositionList *stones = get_stones(goban_window->board,
+					     data->x, data->y);
+
+      if (stones) {
+	int color = goban_window->board->grid[POSITION(data->x, data->y)];
+
+	data->feedback_position_list = stones;
+
+	if (!goban_window->dead_stones[pos]) {
+	  return ((GOBAN_FEEDBACK_THICK_GHOST + COLOR_INDEX(color))
+		  + ((GOBAN_FEEDBACK_GHOST + COLOR_INDEX(OTHER_COLOR(color)))
+		     * GOBAN_FEEDBACK_MARKUP_FACTOR));
+	}
+	else {
+	  return ((GOBAN_FEEDBACK_OPAQUE + COLOR_INDEX(color))
+		  + (GOBAN_FEEDBACK_FORCE_TILE_NONE
+		     * GOBAN_FEEDBACK_MARKUP_FACTOR));
+	}
+      }
+    }
+
+    break;
+  }
+
+  return GOBAN_FEEDBACK_NONE;
+}
+
+
+static void
+go_scoring_mode_goban_clicked(GtkGobanWindow *goban_window,
+			      GtkGobanClickData *data)
+{
+  if (data->button == 1) {
+    BoardPositionList * (* const get_stones) (Board *board, int x, int y)
+      = (data->modifiers & GDK_SHIFT_MASK
+	 ? go_get_string_stones : go_get_logically_dead_stones);
+    BoardPositionList *stones = get_stones(goban_window->board,
+					   data->x, data->y);
+
+    if (stones) {
+      int pos = POSITION(data->x, data->y);
+
+      board_position_list_mark_on_grid(stones, goban_window->dead_stones,
+				       !goban_window->dead_stones[pos]);
+      board_position_list_delete(stones);
+
+      update_territory_markup(goban_window);
+    }
   }
 }
 
@@ -1032,9 +1214,9 @@ update_children_for_new_node(GtkGobanWindow *goban_window)
 				    TILE_NONE);
   sgf_utils_mark_territory_on_grid(current_tree, goban_markup,
 				   (BLACK_OPAQUE
-				    | GOBAN_MARKUP_GHOSTIFY_SLIGHTLY),
+				    | GOBAN_MARKUP_GHOSTIFY),
 				   (WHITE_OPAQUE
-				    | GOBAN_MARKUP_GHOSTIFY_SLIGHTLY));
+				    | GOBAN_MARKUP_GHOSTIFY));
 
   sgf_utils_get_markup(current_tree, goban_window->sgf_markup);
 
@@ -1378,11 +1560,7 @@ free_handicap_has_been_placed(GtkGobanWindow *goban_window,
   sgf_utils_add_free_handicap_stones(goban_window->current_tree,
 				     handicap_stones);
 
-  /* FIXME: Generalize. */
-  sgf_utils_enter_tree(goban_window->current_tree, goban_window->board,
-		       &goban_window->sgf_board_state);
-  goban_window->last_displayed_node = NULL;
-  update_children_for_new_node(goban_window);
+  reenter_current_node(goban_window);
 
   if (GTP_ENGINE_CAN_PLAY_MOVES(goban_window, WHITE)) {
     /* The engine is initialized, but since free handicap placement
@@ -1418,14 +1596,32 @@ move_has_been_played(GtkGobanWindow *goban_window)
   }
 
   if (!board_is_game_over(goban_window->board, RULE_SET_DEFAULT,
-			  color_to_play)
-      && GTP_ENGINE_CAN_PLAY_MOVES(goban_window, color_to_play)) {
-    /* If the next move is to be played by a GTP engine and the engine
-     * is ready, ask for a move now.
-     */
-    gtp_client_generate_move(goban_window->players[COLOR_INDEX(color_to_play)],
-			     (GtpClientMoveCallback) move_has_been_generated,
-			     goban_window, color_to_play);
+			  color_to_play)) {
+    if (GTP_ENGINE_CAN_PLAY_MOVES(goban_window, color_to_play)) {
+      /* If the next move is to be played by a GTP engine and the engine
+       * is ready, ask for a move now.
+       */
+      GtpClient *player = goban_window->players[COLOR_INDEX(color_to_play)];
+
+      gtp_client_generate_move(player,
+			       (GtpClientMoveCallback) move_has_been_generated,
+			       goban_window, color_to_play);
+    }
+  }
+  else {
+    if (goban_window->board->game == GAME_GO) {
+      goban_window->dead_stones = g_malloc(BOARD_GRID_SIZE * sizeof(char));
+      board_fill_grid(goban_window->board, goban_window->dead_stones, 0);
+
+      enter_special_mode(goban_window,
+			 "Please select dead stones\nto score the game",
+			 go_scoring_mode_done, NULL); 
+      set_goban_signal_handlers(goban_window,
+				G_CALLBACK(go_scoring_mode_pointer_moved),
+				G_CALLBACK(go_scoring_mode_goban_clicked));
+
+      update_territory_markup(goban_window);
+    }
   }
 }
 
@@ -1451,7 +1647,6 @@ move_has_been_generated(GtpClient *client, int successful,
     }
 
     update_children_for_new_node(goban_window);
-
     move_has_been_played(goban_window);
   }
 }
