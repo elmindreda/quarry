@@ -128,7 +128,7 @@ struct _GtkGobanWindow {
   /* NOTE: In file system encoding! */
   char			  *filename;
 
-  GtkWindow		  *save_as_dialog;
+  GtkWidget		  *save_as_dialog;
   gboolean		   adjourning_game;
 
   SgfNode		  *last_displayed_node;

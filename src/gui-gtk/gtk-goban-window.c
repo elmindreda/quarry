@@ -33,6 +33,7 @@
 #include "gtk-clock.h"
 #include "gtk-configuration.h"
 #include "gtk-control-center.h"
+#include "gtk-file-dialog.h"
 #include "gtk-game-info-dialog.h"
 #include "gtk-goban.h"
 #include "gtk-gtp-client-interface.h"
@@ -146,8 +147,8 @@ static void	 set_sgf_collection_is_modified (GtkGobanWindow *goban_window,
 
 static void	 gtk_goban_window_save (GtkGobanWindow *goban_window,
 					guint callback_action);
-static gchar *	 suggest_filename (GtkGobanWindow *goban_window);
-static void	 save_file_as_response (GtkFileSelection *dialog,
+static char *	 suggest_filename (GtkGobanWindow *goban_window);
+static void	 save_file_as_response (GtkWidget *file_dialog,
 					gint response_id,
 					GtkGobanWindow *goban_window);
 static void	 game_has_been_adjourned (GtkGobanWindow *goban_window);
@@ -751,6 +752,7 @@ gtk_goban_window_init (GtkGobanWindow *goban_window)
   /* Main toolbar and a handle box for it. */
   main_toolbar = gtk_toolbar_new ();
   goban_window->main_toolbar = GTK_TOOLBAR (main_toolbar);
+  gtk_preferences_register_main_toolbar (goban_window->main_toolbar);
 
   gtk_utils_append_toolbar_button (goban_window->main_toolbar,
 				   &toolbar_open, goban_window);
@@ -771,6 +773,8 @@ gtk_goban_window_init (GtkGobanWindow *goban_window)
   /* Navigation toolbar and a handle box for it. */
   navigation_toolbar = gtk_toolbar_new ();
   goban_window->navigation_toolbar = GTK_TOOLBAR (navigation_toolbar);
+  gtk_preferences_register_navigation_toolbar
+    (goban_window->navigation_toolbar);
 
   gtk_utils_append_toolbar_button (goban_window->navigation_toolbar,
 				   &navigation_toolbar_root, goban_window);
@@ -947,7 +951,7 @@ gtk_goban_window_finalize (GObject *object)
 
   g_free (goban_window->filename);
   if (goban_window->save_as_dialog)
-    gtk_widget_destroy (GTK_WIDGET (goban_window->save_as_dialog));
+    gtk_widget_destroy (goban_window->save_as_dialog);
 
   g_free (goban_window->text_to_find);
   if (goban_window->find_dialog)
@@ -1161,43 +1165,38 @@ gtk_goban_window_save (GtkGobanWindow *goban_window, guint callback_action)
 
     if (!goban_window->save_as_dialog
 	|| goban_window->adjourning_game != adjourning_game) {
-      GtkWidget *file_selection;
-      gchar *filename = suggest_filename (goban_window);
+      char *filename = suggest_filename (goban_window);
 
       if (goban_window->save_as_dialog)
-	gtk_widget_destroy (GTK_WIDGET (goban_window->save_as_dialog));
+	gtk_widget_destroy (goban_window->save_as_dialog);
 
-      file_selection = gtk_file_selection_new (adjourning_game
-					       ? _("Adjourn & Save As...")
-					       : _("Save As..."));
-      gtk_file_selection_set_filename (GTK_FILE_SELECTION (file_selection),
-				       filename);
-      g_free (filename);
+      goban_window->save_as_dialog
+	= gtk_file_dialog_new ((adjourning_game
+				? _("Adjourn & Save As...") : _("Save As...")),
+			       GTK_WINDOW (goban_window),
+			       FALSE, GTK_STOCK_SAVE,
+			       G_CALLBACK (save_file_as_response),
+			       goban_window);
+      gtk_file_dialog_set_filename (goban_window->save_as_dialog, filename);
+      utils_free (filename);
 
-      goban_window->save_as_dialog  = GTK_WINDOW (file_selection);
       goban_window->adjourning_game = adjourning_game;
-      gtk_control_center_window_created (goban_window->save_as_dialog);
-      gtk_utils_null_pointer_on_destroy (&goban_window->save_as_dialog, TRUE);
-
-      gtk_window_set_transient_for (goban_window->save_as_dialog,
-				    GTK_WINDOW (goban_window));
-      gtk_window_set_destroy_with_parent (goban_window->save_as_dialog, TRUE);
-
-      gtk_utils_add_file_selection_response_handlers
-	(file_selection, TRUE,
-	 G_CALLBACK (save_file_as_response), goban_window);
+      gtk_control_center_window_created
+	(GTK_WINDOW (goban_window->save_as_dialog));
+      gtk_utils_null_pointer_on_destroy (((GtkWindow **)
+					  &goban_window->save_as_dialog),
+					 TRUE);
     }
 
-    gtk_window_present (goban_window->save_as_dialog);
+    gtk_window_present (GTK_WINDOW (goban_window->save_as_dialog));
   }
 }
 
 
-/* Returns a suggested filename for the current game record in
- * encoding used by the file system.  The return value must be
- * g_free'd.
+/* Returns a suggested filename for the current game record in UTF-8
+ * encoding.  The return value must be utils_free'd.
  */
-static gchar *
+static char *
 suggest_filename (GtkGobanWindow *goban_window)
 {
   const SgfNode *game_info_node = goban_window->sgf_board_state.game_info_node;
@@ -1228,7 +1227,6 @@ suggest_filename (GtkGobanWindow *goban_window)
 
     if (suggested_filename) {
       char *scan;
-      gchar *disk_encoded_filename;
 
       /* For Windows spaces in names are standard anyway. */
 #ifndef G_OS_WIN32
@@ -1244,11 +1242,7 @@ suggest_filename (GtkGobanWindow *goban_window)
 
 #endif
 
-      disk_encoded_filename = g_filename_from_utf8 (suggested_filename, -1,
-						    NULL, NULL, NULL);
-      utils_free (suggested_filename);
-
-      return disk_encoded_filename;
+      return suggested_filename;
     }
   }
 
@@ -1257,18 +1251,18 @@ suggest_filename (GtkGobanWindow *goban_window)
 
 
 static void
-save_file_as_response (GtkFileSelection *dialog, gint response_id,
+save_file_as_response (GtkWidget *file_dialog, gint response_id,
 		       GtkGobanWindow *goban_window)
 {
   if (response_id == GTK_RESPONSE_OK) {
-    const gchar *filename = gtk_file_selection_get_filename (dialog);
+    gchar *filename = gtk_file_dialog_get_filename (file_dialog);
 
     fetch_comment_if_changed (goban_window, TRUE);
 
     if (sgf_write_file (filename, goban_window->sgf_collection,
 			sgf_configuration.force_utf8)) {
       g_free (goban_window->filename);
-      goban_window->filename = g_strdup (filename);
+      goban_window->filename = filename;
 
       if (goban_window->adjourning_game) {
 	game_has_been_adjourned (goban_window);
@@ -1278,10 +1272,12 @@ save_file_as_response (GtkFileSelection *dialog, gint response_id,
       /* This should always update window title. */
       set_sgf_collection_is_modified (goban_window, FALSE);
     }
+    else
+      g_free (filename);
   }
 
   if (response_id == GTK_RESPONSE_OK || response_id == GTK_RESPONSE_CANCEL)
-    gtk_widget_destroy (GTK_WIDGET (dialog));
+    gtk_widget_destroy (file_dialog);
 }
 
 
@@ -1634,7 +1630,7 @@ do_find_text (GtkGobanWindow *goban_window, guint callback_action)
 
 	if (callback_action == GTK_GOBAN_WINDOW_FIND_NEXT) {
 	  occurence_node
-	      = sgf_game_tree_traverse_forward (goban_window->current_tree);
+	    = sgf_game_tree_traverse_forward (goban_window->current_tree);
 	}
 	else {
 	  occurence_node
@@ -2336,14 +2332,14 @@ go_scoring_mode_done (GtkGobanWindow *goban_window)
   SgfGameTree *current_tree = goban_window->current_tree;
   SgfNode *game_info_node
     = goban_window->game_position.board_state->game_info_node;
-  double komi;
+  double komi = 0.0;
   double score;
   char *detailed_score;
   BoardPositionList *black_territory;
   BoardPositionList *white_territory;
 
-  assert (sgf_node_get_komi (goban_window->sgf_board_state.game_info_node,
-			     &komi));
+  sgf_node_get_komi (goban_window->sgf_board_state.game_info_node, &komi);
+
   go_score_game (goban_window->board, goban_window->dead_stones, komi,
 		 &score, &detailed_score, &black_territory, &white_territory);
 
