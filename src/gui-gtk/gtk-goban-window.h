@@ -97,6 +97,7 @@ struct _GtkGobanWindow {
   SgfGameTree		  *current_tree;
 
   char			  *filename;
+  GtkWindow		  *save_as_dialog;
 
   const SgfNode		  *last_displayed_node;
   const SgfNode		  *last_game_info_node;

@@ -26,6 +26,7 @@
 #include "gtk-goban.h"
 #include "gtk-gtp-client-interface.h"
 #include "gtk-named-vbox.h"
+#include "gtk-parser-interface.h"
 #include "gtk-qhbox.h"
 #include "gtk-qvbox.h"
 #include "gtk-utils.h"
@@ -47,11 +48,24 @@
 #define NAVIGATE_FAST_NUM_MOVES	10
 
 
+enum {
+  GTK_GOBAN_WINDOW_SAVE = 1,
+  GTK_GOBAN_WINDOW_SAVE_AS
+};
+
+
 static void	 gtk_goban_window_class_init(GtkGobanWindowClass *class);
 static void	 gtk_goban_window_init(GtkGobanWindow *goban_window);
 
-static void	 gtk_goban_window_finalize(GObject *object);
 static void	 gtk_goban_window_destroy(GtkObject *object);
+static void	 gtk_goban_window_finalize(GObject *object);
+
+static void	 gtk_goban_window_save(GtkGobanWindow *goban_window,
+				       guint callback_action);
+static void	 save_file_as_response(GtkFileSelection *dialog,
+				       gint response_id,
+				       GtkGobanWindow *goban_window);
+static void	 save_file_as_destroy(GtkGobanWindow *goban_window);
 
 
 static void	 set_current_tree(GtkGobanWindow *goban_window,
@@ -184,6 +198,17 @@ gtk_goban_window_class_init(GtkGobanWindowClass *class)
 static void
 gtk_goban_window_init(GtkGobanWindow *goban_window)
 {
+  static GtkItemFactoryEntry menu_entries[] = {
+    { "/_File",		    NULL,		NULL,	0, "<Branch>" },
+    { "/File/_Open...",	    "<ctrl>O",		gtk_parser_interface_present,
+      0, "<StockItem>",	    GTK_STOCK_OPEN },
+    { "/File/",		    NULL,		NULL,	0, "<Separator>" },
+    { "/File/_Save",	    "<ctrl>S",		gtk_goban_window_save,
+      GTK_GOBAN_WINDOW_SAVE,	"<StockItem>",	    GTK_STOCK_SAVE },
+    { "/File/Save _As...",  "<shift><ctrl>S",	gtk_goban_window_save,
+      GTK_GOBAN_WINDOW_SAVE_AS,	"<StockItem>",	    GTK_STOCK_SAVE_AS }
+  };
+
   GtkWidget *goban;
   GtkWidget *frame;
   GtkWidget *table;
@@ -191,11 +216,12 @@ gtk_goban_window_init(GtkGobanWindow *goban_window)
   GtkWidget *scrolled_window;
   GtkWidget *vbox;
   GtkWidget *qhbox;
+  GtkWidget *menu_bar;
+  GtkAccelGroup *accel_group;
+  GtkItemFactory *item_factory;
   int k;
 
   gtk_control_center_window_created(GTK_WINDOW(goban_window));
-  gtk_container_set_border_width(GTK_CONTAINER(goban_window),
-				 QUARRY_SPACING_GOBAN_WINDOW);
 
   /* Goban, the main thing in the window. */
   goban = gtk_goban_new();
@@ -276,12 +302,34 @@ gtk_goban_window_init(GtkGobanWindow *goban_window)
   qhbox = gtk_utils_pack_in_box(GTK_TYPE_QHBOX, QUARRY_SPACING_GOBAN_WINDOW,
 				frame, GTK_UTILS_FILL,
 				vbox, GTK_UTILS_PACK_DEFAULT, NULL);
+  gtk_container_set_border_width(GTK_CONTAINER(qhbox),
+				 QUARRY_SPACING_GOBAN_WINDOW);
   gtk_qbox_set_ruling_widget(GTK_QBOX(qhbox), frame,
 			     gtk_goban_negotiate_height);
-  gtk_container_add(GTK_CONTAINER(goban_window), qhbox);
+
+  /* Window menu bar and associated accelerator group. */
+  accel_group = gtk_accel_group_new();
+
+  item_factory = gtk_item_factory_new(GTK_TYPE_MENU_BAR,
+				      "<QuarryGobanWindowMenu>", accel_group);
+  gtk_item_factory_create_items(item_factory,
+				(sizeof(menu_entries)
+				 / sizeof(GtkItemFactoryEntry)),
+				menu_entries,
+				goban_window);
+  menu_bar = gtk_item_factory_get_widget(item_factory,
+					 "<QuarryGobanWindowMenu>");
+
+  gtk_window_add_accel_group(GTK_WINDOW(goban_window), accel_group);
+
+  /* Vertical box with menu bar and actual window contents. */
+  vbox = gtk_utils_pack_in_box(GTK_TYPE_VBOX, 0,
+			       menu_bar, GTK_UTILS_FILL,
+			       qhbox, GTK_UTILS_PACK_DEFAULT, NULL);
+  gtk_container_add(GTK_CONTAINER(goban_window), vbox);
 
   /* Show everything but the window itself. */
-  gtk_widget_show_all(qhbox);
+  gtk_widget_show_all(vbox);
 
   goban_window->board = NULL;
 
@@ -290,6 +338,7 @@ gtk_goban_window_init(GtkGobanWindow *goban_window)
   goban_window->players[WHITE_INDEX] = NULL;
 
   goban_window->filename = NULL;
+  goban_window->save_as_dialog = NULL;
 
   goban_window->last_displayed_node = NULL;
   goban_window->last_game_info_node = NULL;
@@ -366,8 +415,61 @@ gtk_goban_window_finalize(GObject *object)
     sgf_collection_delete(goban_window->sgf_collection);
 
   g_free(goban_window->filename);
+  if (goban_window->save_as_dialog)
+    gtk_widget_destroy(GTK_WIDGET(goban_window->save_as_dialog));
 
   G_OBJECT_CLASS(parent_class)->finalize(object);
+}
+
+
+static void
+gtk_goban_window_save(GtkGobanWindow *goban_window, guint callback_action)
+{
+  if (callback_action == GTK_GOBAN_WINDOW_SAVE_AS || !goban_window->filename) {
+    if (!goban_window->save_as_dialog) {
+      GtkWidget *file_selection = gtk_file_selection_new("Save As...");
+
+      goban_window->save_as_dialog = GTK_WINDOW(file_selection);
+      gtk_control_center_window_created(goban_window->save_as_dialog);
+      gtk_window_set_transient_for(goban_window->save_as_dialog,
+				   GTK_WINDOW(goban_window));
+      gtk_window_set_destroy_with_parent(goban_window->save_as_dialog, TRUE);
+
+      g_signal_connect(file_selection, "response",
+		       G_CALLBACK(save_file_as_response), goban_window);
+      g_signal_connect_swapped(file_selection, "destroy",
+			       G_CALLBACK(save_file_as_destroy),
+			       goban_window);
+    }
+
+    gtk_window_present(goban_window->save_as_dialog);
+  }
+}
+
+
+static void
+save_file_as_response(GtkFileSelection *dialog, gint response_id,
+		      GtkGobanWindow *goban_window)
+{
+  if (response_id == GTK_RESPONSE_OK) {
+    const gchar *filename = gtk_file_selection_get_filename(dialog);
+
+    if (sgf_write_file(filename, goban_window->sgf_collection)) {
+      g_free(goban_window->filename);
+      goban_window->filename = g_strdup(filename);
+    }
+  }
+
+  if (response_id == GTK_RESPONSE_OK || response_id == GTK_RESPONSE_CANCEL)
+    gtk_widget_destroy(GTK_WIDGET(dialog));
+}
+
+
+static void
+save_file_as_destroy(GtkGobanWindow *goban_window)
+{
+  gtk_control_center_window_destroyed(goban_window->save_as_dialog);
+  goban_window->save_as_dialog = NULL;
 }
 
 
