@@ -63,16 +63,16 @@ struct _QuarryColor {
 
 /* `utils.c' global functions. */
 
-void *		utils_malloc(size_t size);
-void *		utils_malloc0(size_t size);
-void *		utils_realloc(void *pointer, size_t size);
+void *		utils_malloc (size_t size);
+void *		utils_malloc0 (size_t size);
+void *		utils_realloc (void *pointer, size_t size);
 
 
 #if ENABLE_MEMORY_PROFILING
 
-void		utils_free(void *pointer);
+void		utils_free (void *pointer);
 
-void		utils_print_memory_profiling_info(void);
+void		utils_print_memory_profiling_info (void);
 
 #else  /* not ENABLE_MEMORY_PROFILING */
 
@@ -81,47 +81,47 @@ void		utils_print_memory_profiling_info(void);
 #endif	/* not ENABLE_MEMORY_PROFILING */
 
 
-char *		utils_duplicate_string(const char *string);
-void *		utils_duplicate_buffer(const void *buffer, int length);
-char *		utils_duplicate_as_string(const char *buffer, int length);
+char *		utils_duplicate_string (const char *string);
+void *		utils_duplicate_buffer (const void *buffer, int length);
+char *		utils_duplicate_as_string (const char *buffer, int length);
 
-char *		utils_cat_string(char *string, const char *to_cat);
-char *		utils_cat_strings(char *string, ...);
+char *		utils_cat_string (char *string, const char *to_cat);
+char *		utils_cat_strings (char *string, ...);
 
-char *		utils_cat_as_string(char *string, const char *buffer,
-				    int length);
-char *		utils_cat_as_strings(char *string, ...);
-
-
-void		utils_remember_program_name(const char *argv0);
-void		utils_free_program_name_strings(void);
+char *		utils_cat_as_string (char *string, const char *buffer,
+				     int length);
+char *		utils_cat_as_strings (char *string, ...);
 
 
-char *		utils_printf(const char *format_string, ...);
-char *		utils_vprintf(const char *format_string, va_list arguments);
-
-char *		utils_cprintf(const char *format_string, ...);
-char *		utils_vcprintf(const char *format_string, va_list arguments);
-int		utils_ncprintf(char *buffer, int buffer_size,
-			       const char *format_string, ...);
-int		utils_vncprintf(char *buffer, int buffer_size,
-				const char *format_string, va_list arguments);
-
-char *		utils_special_printf(const char *format_string, ...);
-char *		utils_special_vprintf(const char *format_string,
-				      va_list arguments);
+void		utils_remember_program_name (const char *argv0);
+void		utils_free_program_name_strings (void);
 
 
-char *		utils_fgets(FILE *file, int *length);
+char *		utils_printf (const char *format_string, ...);
+char *		utils_vprintf (const char *format_string, va_list arguments);
+
+char *		utils_cprintf (const char *format_string, ...);
+char *		utils_vcprintf (const char *format_string, va_list arguments);
+int		utils_ncprintf (char *buffer, int buffer_size,
+				const char *format_string, ...);
+int		utils_vncprintf (char *buffer, int buffer_size,
+				 const char *format_string, va_list arguments);
+
+char *		utils_special_printf (const char *format_string, ...);
+char *		utils_special_vprintf (const char *format_string,
+				       va_list arguments);
 
 
-int		utils_compare_ints(const void *first_int,
-				   const void *second_int);
+char *		utils_fgets (FILE *file, int *length);
 
 
-int             utils_parse_double(const char *float_string, 
-                                   double *result);
-int		utils_parse_time(const char *time_string);
+int		utils_compare_ints (const void *first_int,
+				    const void *second_int);
+
+
+int             utils_parse_double (const char *float_string,
+				    double *result);
+int		utils_parse_time (const char *time_string);
 
 
 extern char    *full_program_name;
@@ -184,20 +184,20 @@ typedef void (* MemoryPoolCallback) (void *item);
 typedef void (* MemoryPoolDataCallback) (void *item, void *data);
 
 
-void		memory_pool_init(MemoryPool *pool, int item_size);
+void		memory_pool_init (MemoryPool *pool, int item_size);
 
-void *		memory_pool_alloc(MemoryPool *pool);
-void		memory_pool_free(MemoryPool *pool, void *item);
+void *		memory_pool_alloc (MemoryPool *pool);
+void		memory_pool_free (MemoryPool *pool, void *item);
 
-int		memory_pool_count_items(const MemoryPool *pool);
+int		memory_pool_count_items (const MemoryPool *pool);
 
-void		memory_pool_traverse(const MemoryPool *pool,
-				     MemoryPoolCallback callback);
-void		memory_pool_traverse_data(const MemoryPool *pool,
-					  MemoryPoolDataCallback callback,
-					  void *data);
+void		memory_pool_traverse (const MemoryPool *pool,
+				      MemoryPoolCallback callback);
+void		memory_pool_traverse_data (const MemoryPool *pool,
+					   MemoryPoolDataCallback callback,
+					   void *data);
 
-void		memory_pool_flush(MemoryPool *pool);
+void		memory_pool_flush (MemoryPool *pool);
 
 
 #if ENABLE_MEMORY_PROFILING
@@ -225,10 +225,10 @@ struct _MemoryPool {
   ((pool)->item_size = (_item_size))
 
 #define memory_pool_alloc(pool)			\
-  utils_malloc((pool)->item_size)
+  utils_malloc ((pool)->item_size)
 
 #define memory_pool_free(pool, item)		\
-  (UNUSED(pool), utils_free(item))
+  (UNUSED (pool), utils_free (item))
 
 /* Functions memory_pool_count_items(), memory_pool_traverse(),
  * memory_pool_traverse_data() and memory_pool_flush() cannot be
@@ -273,26 +273,26 @@ struct _StringList {
 
 #define string_list_new()						\
   ((StringList *)							\
-   string_list_new_derived(sizeof(StringListItem), NULL))
+   string_list_new_derived (sizeof (StringListItem), NULL))
 
 #define string_list_init(list)						\
-  string_list_init_derived((list), sizeof(StringListItem), NULL)
+  string_list_init_derived ((list), sizeof (StringListItem), NULL)
 
 #define STATIC_STRING_LIST						\
-  STATIC_STRING_LIST_DERIVED(StringListItem, NULL)
+  STATIC_STRING_LIST_DERIVED (StringListItem, NULL)
 
 #define STATIC_STRING_LIST_DERIVED(ItemType, item_dispose)		\
   { NULL, NULL,								\
-    sizeof(ItemType), (StringListItemDispose) (item_dispose) }
+    sizeof (ItemType), (StringListItemDispose) (item_dispose) }
 
 
-void *		  string_list_new_derived(int item_size,
-					  StringListItemDispose item_dispose);
-void		  string_list_init_derived(void *abstract_list,
-					   int item_size,
+void *		  string_list_new_derived (int item_size,
 					   StringListItemDispose item_dispose);
-void		  string_list_delete(void *abstract_list);
-void		  string_list_empty(void *abstract_list);
+void		  string_list_init_derived
+		    (void *abstract_list, int item_size,
+		     StringListItemDispose item_dispose);
+void		  string_list_delete (void *abstract_list);
+void		  string_list_empty (void *abstract_list);
 
 #define string_list_is_empty(abstract_list)				\
   ((abstract_list)->first == NULL)
@@ -301,10 +301,10 @@ void		  string_list_empty(void *abstract_list);
   ((abstract_list)->first != NULL					\
    && (abstract_list)->first == (abstract_list)->last)
 
-int		  string_list_count_items(void *abstract_list);
+int		  string_list_count_items (void *abstract_list);
 
-void		  string_list_fill_from_string(void *abstract_list,
-					       const char *super_string);
+void		  string_list_fill_from_string (void *abstract_list,
+						const char *super_string);
 
 /* Note that this function only operates on non-derived StringLists.
  * I don't want to introduce copy constructor for list items unless
@@ -313,63 +313,65 @@ void		  string_list_fill_from_string(void *abstract_list,
 void		  string_list_duplicate_items
 		    (StringList *list, const StringList *duplicate_from_list);
 
-void		  string_list_steal_items(void *abstract_list,
-					  void *steal_from);
+void		  string_list_steal_items (void *abstract_list,
+					   void *steal_from);
 
 
-void		  string_list_add(void *abstract_list, const char *string);
-void		  string_list_add_from_buffer(void *abstract_list,
-					      const char *buffer, int length);
-void		  string_list_add_ready(void *abstract_list,
-					char *allocated_string);
-void		  string_list_add_ready_item(void *abstract_list,
-					     void *abstract_item);
+void		  string_list_add (void *abstract_list, const char *string);
+void		  string_list_add_from_buffer (void *abstract_list,
+					       const char *buffer, int length);
+void		  string_list_add_ready (void *abstract_list,
+					 char *allocated_string);
+void		  string_list_add_ready_item (void *abstract_list,
+					      void *abstract_item);
 
-void		  string_list_prepend(void *abstract_list, const char *string);
-void		  string_list_prepend_from_buffer(void *abstract_list,
+void		  string_list_prepend (void *abstract_list,
+				       const char *string);
+void		  string_list_prepend_from_buffer (void *abstract_list,
+						   const char *buffer,
+						   int length);
+void		  string_list_prepend_ready (void *abstract_list,
+					     char *allocated_string);
+void		  string_list_prepend_ready_item (void *abstract_list,
+						  void *abstract_item);
+
+void *		  string_list_insert (void *abstract_list,
+				      void *abstract_notch,
+				      const char *string);
+void *		  string_list_insert_from_buffer (void *abstract_list,
+						  void *abstract_notch,
 						  const char *buffer,
 						  int length);
-void		  string_list_prepend_ready(void *abstract_list,
+void *		  string_list_insert_ready (void *abstract_list,
+					    void *abstract_notch,
 					    char *allocated_string);
-void		  string_list_prepend_ready_item(void *abstract_list,
-						 void *abstract_item);
-
-void		  string_list_insert(void *abstract_list, void *abstract_notch,
-				     const char *string);
-void		  string_list_insert_from_buffer(void *abstract_list,
+void *		  string_list_insert_ready_item (void *abstract_list,
 						 void *abstract_notch,
-						 const char *buffer,
-						 int length);
-void		  string_list_insert_ready(void *abstract_list,
-					   void *abstract_notch,
-					   char *allocated_string);
-void		  string_list_insert_ready_item(void *abstract_list,
-						void *abstract_notch,
-						void *abstract_item);
-
-void		  string_list_delete_item(void *abstract_list,
-					  void *abstract_item);
-void		  string_list_delete_first_item(void *abstract_list);
-
-int		  string_list_get_item_index(void *abstract_list,
-					     void *abstract_item);
-StringListItem *  string_list_get_item(void *abstract_list, int item_index);
-
-StringListItem *  string_list_find(const void *abstract_list,
-				   const char *text);
-StringListItem *  string_list_find_after_notch(const void *abstract_list,
-					       const char *text,
-					       const void *abstract_notch);
-
-void		  string_list_swap_with_next(void *abstract_list,
-					     void *abstract_item);
-void		  string_list_swap_with_previous(void *abstract_list,
 						 void *abstract_item);
-void		  string_list_move(void *abstract_list, void *abstract_item,
-				   void *abstract_notch);
 
-char *		  string_list_implode(const void *abstract_list,
-				      const char *separator);
+void		  string_list_delete_item (void *abstract_list,
+					   void *abstract_item);
+void		  string_list_delete_first_item (void *abstract_list);
+
+int		  string_list_get_item_index (void *abstract_list,
+					      void *abstract_item);
+StringListItem *  string_list_get_item (void *abstract_list, int item_index);
+
+StringListItem *  string_list_find (const void *abstract_list,
+				    const char *text);
+StringListItem *  string_list_find_after_notch (const void *abstract_list,
+						const char *text,
+						const void *abstract_notch);
+
+void		  string_list_swap_with_next (void *abstract_list,
+					      void *abstract_item);
+void		  string_list_swap_with_previous (void *abstract_list,
+						  void *abstract_item);
+void		  string_list_move (void *abstract_list, void *abstract_item,
+				    void *abstract_notch);
+
+char *		  string_list_implode (const void *abstract_list,
+				       const char *separator);
 
 
 /* A type derived from string list. */
@@ -394,35 +396,35 @@ struct _AssociationList {
 
 #define association_list_new()						\
   ((AssociationList *)							\
-   string_list_new_derived(sizeof(AssociationListItem),			\
-			   ((StringListItemDispose)			\
-			    association_list_item_dispose)))
+   string_list_new_derived (sizeof (AssociationListItem),		\
+			    ((StringListItemDispose)			\
+			     association_list_item_dispose)))
 
 #define association_list_init(list)					\
-  string_list_init_derived((list), sizeof(AssociationListItem),		\
-			   ((StringListItemDispose)			\
-			    association_list_item_dispose))
+  string_list_init_derived ((list), sizeof (AssociationListItem),	\
+			    ((StringListItemDispose)			\
+			     association_list_item_dispose))
 
 #define STATIC_ASSOCIATION_LIST						\
-  STATIC_STRING_LIST_DERIVED(AssociationListItem,			\
-			     association_list_item_dispose)
+  STATIC_STRING_LIST_DERIVED (AssociationListItem,			\
+			      association_list_item_dispose)
 
-void		association_list_item_dispose(AssociationListItem *item);
+void		association_list_item_dispose (AssociationListItem *item);
 
 
 #define association_list_get_item(list, item_index)			\
-  ((AssociationListItem *) string_list_get_item((list), (item_index)))
+  ((AssociationListItem *) string_list_get_item ((list), (item_index)))
 
 #define association_list_find(list, key)				\
-  ((AssociationListItem *) string_list_find((list), (key)))
+  ((AssociationListItem *) string_list_find ((list), (key)))
 
 #define association_list_find_after_notch(list, key, notch)		\
-  ((AssociationListItem *) string_list_find_after_notch((list), (key),	\
-							(notch)))
+  ((AssociationListItem *) string_list_find_after_notch ((list), (key),	\
+							 (notch)))
 
 
-inline char *	association_list_find_association(AssociationList *list,
-						  const char *key);
+inline char *	association_list_find_association (AssociationList *list,
+						   const char *key);
 
 
 
@@ -439,41 +441,42 @@ struct _StringBuffer {
 };
 
 
-StringBuffer *	string_buffer_new(int initial_size, int size_increment);
-void		string_buffer_init(StringBuffer *string_buffer,
-				   int initial_size, int size_increment);
+StringBuffer *	string_buffer_new (int initial_size, int size_increment);
+void		string_buffer_init (StringBuffer *string_buffer,
+				    int initial_size, int size_increment);
 
-void		string_buffer_delete(StringBuffer *string_buffer);
-void		string_buffer_dispose(StringBuffer *string_buffer);
+void		string_buffer_delete (StringBuffer *string_buffer);
+void		string_buffer_dispose (StringBuffer *string_buffer);
 
-void		string_buffer_empty(StringBuffer *string_buffer);
+void		string_buffer_empty (StringBuffer *string_buffer);
 
 
-#define string_buffer_add_character(string_buffer, character)	\
-  string_buffer_add_characters((string_buffer), (character), 1)
+#define string_buffer_add_character(string_buffer, character)		\
+  string_buffer_add_characters ((string_buffer), (character), 1)
 
-void		string_buffer_add_characters(StringBuffer *string_buffer,
-					     char character,
-					     int num_characters);
+void		string_buffer_add_characters (StringBuffer *string_buffer,
+					      char character,
+					      int num_characters);
 
-void		string_buffer_cat_string(StringBuffer *string_buffer,
-					 const char *string);
-void		string_buffer_cat_strings(StringBuffer *string_buffer, ...);
+void		string_buffer_cat_string (StringBuffer *string_buffer,
+					  const char *string);
+void		string_buffer_cat_strings (StringBuffer *string_buffer, ...);
 
-void		string_buffer_cat_as_string(StringBuffer *string_buffer,
-					    const char *buffer, int length);
-void		string_buffer_cat_as_strings(StringBuffer *string_buffer, ...);
+void		string_buffer_cat_as_string (StringBuffer *string_buffer,
+					     const char *buffer, int length);
+void		string_buffer_cat_as_strings (StringBuffer *string_buffer,
+					      ...);
 
-void		string_buffer_printf(StringBuffer *string_buffer,
-				     const char *format_string, ...);
-void		string_buffer_vprintf(StringBuffer *string_buffer,
-				      const char *format_string,
-				      va_list arguments);
-void		string_buffer_cprintf(StringBuffer *string_buffer,
+void		string_buffer_printf (StringBuffer *string_buffer,
 				      const char *format_string, ...);
-void		string_buffer_vcprintf(StringBuffer *string_buffer,
+void		string_buffer_vprintf (StringBuffer *string_buffer,
 				       const char *format_string,
 				       va_list arguments);
+void		string_buffer_cprintf (StringBuffer *string_buffer,
+				       const char *format_string, ...);
+void		string_buffer_vcprintf (StringBuffer *string_buffer,
+					const char *format_string,
+					va_list arguments);
 
 
 
@@ -496,36 +499,36 @@ struct _BufferedWriter {
 };
 
 
-int		buffered_writer_init(BufferedWriter *writer,
-				     const char *filename, int buffer_size);
-int		buffered_writer_dispose(BufferedWriter *writer);
+int		buffered_writer_init (BufferedWriter *writer,
+				      const char *filename, int buffer_size);
+int		buffered_writer_dispose (BufferedWriter *writer);
 
 #define buffered_writer_set_iconv_handle(writer, handle)	\
   ((writer)->iconv_handle = (handle))
 
 
-void		buffered_writer_add_character(BufferedWriter *writer,
-					      char character);
-void		buffered_writer_add_newline(BufferedWriter *writer);
+void		buffered_writer_add_character (BufferedWriter *writer,
+					       char character);
+void		buffered_writer_add_newline (BufferedWriter *writer);
 
-void		buffered_writer_cat_string(BufferedWriter *writer,
-					   const char *string);
-void		buffered_writer_cat_strings(BufferedWriter *writer, ...);
+void		buffered_writer_cat_string (BufferedWriter *writer,
+					    const char *string);
+void		buffered_writer_cat_strings (BufferedWriter *writer, ...);
 
-void		buffered_writer_cat_as_string(BufferedWriter *writer,
-					      const char *buffer, int length);
-void		buffered_writer_cat_as_strings(BufferedWriter *writer, ...);
+void		buffered_writer_cat_as_string (BufferedWriter *writer,
+					       const char *buffer, int length);
+void		buffered_writer_cat_as_strings (BufferedWriter *writer, ...);
 
-void		buffered_writer_printf(BufferedWriter *writer,
-				       const char *format_string, ...);
-void		buffered_writer_vprintf(BufferedWriter *writer,
-					const char *format_string,
-					va_list arguments);
-void		buffered_writer_cprintf(BufferedWriter *writer,
+void		buffered_writer_printf (BufferedWriter *writer,
 					const char *format_string, ...);
-void		buffered_writer_vcprintf(BufferedWriter *writer,
+void		buffered_writer_vprintf (BufferedWriter *writer,
 					 const char *format_string,
 					 va_list arguments);
+void		buffered_writer_cprintf (BufferedWriter *writer,
+					 const char *format_string, ...);
+void		buffered_writer_vcprintf (BufferedWriter *writer,
+					  const char *format_string,
+					  va_list arguments);
 
 
 
@@ -565,15 +568,15 @@ struct _ObjectCache {
 };
 
 
-void *		object_cache_create_or_reuse_object(ObjectCache *cache,
-						    const void *key);
-void		object_cache_unreference_object(ObjectCache *cache,
-						void *object);
+void *		object_cache_create_or_reuse_object (ObjectCache *cache,
+						     const void *key);
+void		object_cache_unreference_object (ObjectCache *cache,
+						 void *object);
 
-void		object_cache_recycle_dump(ObjectCache *cache,
-					  int lazy_recycling);
+void		object_cache_recycle_dump (ObjectCache *cache,
+					   int lazy_recycling);
 
-void		object_cache_free(ObjectCache *cache);
+void		object_cache_free (ObjectCache *cache);
 
 
 #endif /* QUARRY_UTILS_H */
