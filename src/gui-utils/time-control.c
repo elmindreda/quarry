@@ -21,11 +21,14 @@
 
 
 #include "time-control.h"
+
+#include "sgf.h"
 #include "utils.h"
 
 #include <assert.h>
 #include <float.h>
 #include <math.h>
+#include <string.h>
 
 
 TimeControl *
@@ -37,6 +40,67 @@ time_control_new (int main_time, int overtime_length, int moves_per_overtime)
 		     main_time, overtime_length, moves_per_overtime);
 
   return time_control;
+}
+
+
+TimeControl *
+time_control_new_from_sgf_node (const SgfNode *sgf_node)
+{
+  double main_time = 0.0;
+  const char *overtime_description;
+  int overtime_length	 = 0;
+  int moves_per_overtime = 0;
+
+  sgf_node_get_time_limit (sgf_node, &main_time);
+  overtime_description = sgf_node_get_text_property_value (sgf_node,
+							   SGF_OVERTIME);
+
+  if (overtime_description) {
+    /* FIXME: Nasty.  We certainly need utils_sscanf() for
+     *	      locale-independent string parsing.
+     */
+
+    const char *scan;
+
+    for (scan = overtime_description; '0' <= *scan && *scan <= '9'; scan++)
+      overtime_length = overtime_length * 10 + (*scan - '0');
+
+    if (overtime_length > 0) {
+      if (strcmp (scan, " per move") == 0)
+	moves_per_overtime = 1;
+      else if (*scan++ == '/') {
+	moves_per_overtime = overtime_length;
+	overtime_length	   = 0;
+
+	for (; '0' <= *scan && *scan <= '9'; scan++)
+	  overtime_length = overtime_length * 10 + (*scan - '0');
+
+	if (overtime_length == 0 || strcmp (scan, " Canadian") != 0) {
+	  overtime_length    = 0;
+	  moves_per_overtime = 0;
+	}
+      }
+      else
+	overtime_length = 0;
+    }
+  }
+
+  if (main_time > 0 || overtime_length > 0)
+    return time_control_new (main_time, overtime_length, moves_per_overtime);
+
+  return NULL;
+}
+
+
+/* Note that this function only duplicates the settings, not the
+ * state of its argument.
+ */
+inline TimeControl *
+time_control_duplicate (const TimeControl *time_control)
+{
+  return time_control_new (time_control->main_time,
+			   time_control->overtime_length,
+			   time_control->moves_per_overtime);
 }
 
 
@@ -76,6 +140,128 @@ time_control_dispose (TimeControl *time_control)
 
   if (time_control->timer_object)
     gui_back_end_timer_delete (time_control->timer_object);
+}
+
+
+void
+time_control_save_settings_in_sgf_node (const TimeControl *time_control,
+					SgfNode *sgf_node,
+					SgfGameTree *sgf_tree)
+{
+  assert (time_control);
+  assert (sgf_node);
+  assert (sgf_tree);
+
+  if (time_control->main_time > 0.0 || time_control->overtime_length > 0.0) {
+    char *overtime_description;
+
+    if (time_control->overtime_length == 0)
+      overtime_description = utils_duplicate_string ("none");
+    else if (time_control->moves_per_overtime == 1) {
+      overtime_description = utils_cprintf ("%d per move",
+					    time_control->overtime_length);
+    }
+    else {
+      overtime_description = utils_cprintf ("%d/%d Canadian",
+					    time_control->moves_per_overtime,
+					    time_control->overtime_length);
+    }
+
+    sgf_node_add_text_property (sgf_node, sgf_tree, SGF_TIME_LIMIT,
+				utils_cprintf ("%d.0",
+					       time_control->main_time),
+				1);
+    sgf_node_add_text_property (sgf_node, sgf_tree, SGF_OVERTIME,
+				overtime_description, 1);
+  }
+}
+
+
+void
+time_control_save_state_in_sgf_node (const TimeControl *time_control,
+				     SgfNode *sgf_node, SgfGameTree *sgf_tree,
+				     int color)
+{
+  double seconds_left;
+  int moves_to_play;
+
+  assert (time_control);
+  assert (!time_control->is_active);
+  assert (sgf_node);
+  assert (sgf_tree);
+  assert (IS_STONE (color));
+
+  if (!TIME_CONTROL_CLOCK_RUNS_DOWN (time_control))
+    return;
+
+  seconds_left = time_control_get_time_left (time_control, &moves_to_play);
+
+  sgf_node_add_real_property (sgf_node, sgf_tree,
+			      (color == BLACK
+			       ? SGF_TIME_LEFT_FOR_BLACK
+			       : SGF_TIME_LEFT_FOR_WHITE),
+			      floor (seconds_left * 1000.0 + 0.5) / 1000.0, 1);
+
+  if (moves_to_play) {
+    sgf_node_add_number_property (sgf_node, sgf_tree,
+				  (color == BLACK
+				   ? SGF_MOVES_LEFT_FOR_BLACK
+				   : SGF_MOVES_LEFT_FOR_WHITE),
+				  moves_to_play, 1);
+  }
+}
+
+
+void
+time_control_apply_defaults_if_needed (const TimeControl *time_control,
+				       double seconds_left, int moves_to_play,
+				       double *new_seconds_left,
+				       int *new_moves_to_play)
+{
+  assert (time_control);
+  assert (new_seconds_left);
+  assert (new_moves_to_play);
+
+  if (seconds_left >= 0.0)
+    *new_seconds_left = seconds_left;
+  else {
+    *new_seconds_left = (time_control->main_time > 0
+			 ? time_control->main_time
+			 : time_control->overtime_length);
+  }
+
+  if (moves_to_play >= 0)
+    *new_moves_to_play = moves_to_play;
+  else {
+    *new_moves_to_play = (time_control->main_time > 0
+			  ? 0 : time_control->moves_per_overtime);
+  }
+}
+
+
+/* FIXME: Validate new state. */
+void
+time_control_set_state (TimeControl *time_control,
+			double seconds_left, int moves_to_play)
+{
+  double new_seconds_left;
+
+  assert (time_control);
+  assert (!time_control->is_active);
+
+  time_control_apply_defaults_if_needed (time_control,
+					 seconds_left, moves_to_play,
+					 &new_seconds_left,
+					 &time_control->moves_to_play);
+
+  if (time_control->moves_to_play) {
+    time_control->seconds_elapsed = (time_control->overtime_length
+				     - new_seconds_left);
+  }
+  else {
+    time_control->seconds_elapsed = (time_control->main_time
+				     - new_seconds_left);
+  }
 }
 
 
@@ -277,9 +463,8 @@ time_control_is_short_on_time (const TimeControl *time_control)
   }
 
   if (time_control->moves_to_play == 0) {
-    seconds_left = (double) time_control->main_time - seconds_elapsed;
-    if (seconds_left <= 0.0)
-      seconds_left += (double) time_control->overtime_length;
+    seconds_left = (((double) time_control->main_time - seconds_elapsed)
+		    + (double) time_control->overtime_length);
   }
   else
     seconds_left = (double) time_control->overtime_length - seconds_elapsed;

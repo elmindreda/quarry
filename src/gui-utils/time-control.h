@@ -24,6 +24,7 @@
 #define QUARRY_TIME_CONTROL_H
 
 
+#include "sgf.h"
 #include "quarry.h"
 
 
@@ -53,6 +54,9 @@ struct _TimeControl {
 
 TimeControl *	time_control_new (int main_time,
 				  int overtime_length, int moves_per_overtime);
+TimeControl *	time_control_new_from_sgf_node (const SgfNode *sgf_node);
+inline TimeControl *
+		time_control_duplicate (const TimeControl *time_control);
 void		time_control_init (TimeControl *time_control,
 				   int main_time,
 				   int overtime_length,
@@ -60,6 +64,21 @@ void		time_control_init (TimeControl *time_control,
 
 void		time_control_delete (TimeControl *time_control);
 void		time_control_dispose (TimeControl *time_control);
+
+void		time_control_save_settings_in_sgf_node
+		  (const TimeControl *time_control,
+		   SgfNode *sgf_node, SgfGameTree *sgf_tree);
+void		time_control_save_state_in_sgf_node
+		  (const TimeControl *time_control,
+		   SgfNode *sgf_node, SgfGameTree *sgf_tree, int color);
+
+void		time_control_apply_defaults_if_needed
+		  (const TimeControl *time_control,
+		   double seconds_left, int moves_to_play,
+		   double *new_seconds_left, int *new_moves_to_play);
+
+void		time_control_set_state (TimeControl *time_control,
+					double seconds_left, int moves_to_play);
 
 double		time_control_start (TimeControl *time_control);
 double		time_control_get_clock_seconds (const TimeControl *time_control,
