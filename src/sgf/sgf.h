@@ -211,6 +211,39 @@ struct _SgfGameTreeState {
 };
 
 
+typedef enum {
+  SGF_RESULT_WIN,
+  SGF_RESULT_BLACK_WIN		      = SGF_RESULT_WIN + BLACK_INDEX,
+  SGF_RESULT_WHITE_WIN		      = SGF_RESULT_WIN + WHITE_INDEX,
+
+  SGF_RESULT_WIN_BY_FORFEIT,
+  SGF_RESULT_BLACK_WIN_BY_FORFEIT     = (SGF_RESULT_WIN_BY_FORFEIT
+					 + BLACK_INDEX),
+  SGF_RESULT_WHITE_WIN_BY_FORFEIT     = (SGF_RESULT_WIN_BY_FORFEIT
+					 + WHITE_INDEX),
+
+  SGF_RESULT_WIN_BY_RESIGNATION,
+  SGF_RESULT_BLACK_WIN_BY_RESIGNATION = (SGF_RESULT_WIN_BY_RESIGNATION
+					 + BLACK_INDEX),
+  SGF_RESULT_WHITE_WIN_BY_RESIGNATION = (SGF_RESULT_WIN_BY_RESIGNATION
+					 + WHITE_INDEX),
+
+  SGF_RESULT_WIN_BY_SCORE,
+  SGF_RESULT_BLACK_WIN_BY_SCORE	      = SGF_RESULT_WIN_BY_SCORE + BLACK_INDEX,
+  SGF_RESULT_WHITE_WIN_BY_SCORE	      = SGF_RESULT_WIN_BY_SCORE + WHITE_INDEX,
+
+  SGF_RESULT_WIN_BY_TIME,
+  SGF_RESULT_BLACK_WIN_BY_TIME	      = SGF_RESULT_WIN_BY_TIME + BLACK_INDEX,
+  SGF_RESULT_WHITE_WIN_BY_TIME	      = SGF_RESULT_WIN_BY_TIME + WHITE_INDEX,
+
+  SGF_RESULT_UNKNOWN,
+  SGF_RESULT_DRAW,
+  SGF_RESULT_VOID,
+  SGF_RESULT_NOT_SET,
+  SGF_RESULT_INVALID
+} SgfResult;
+
+
 SgfCollection *	 sgf_collection_new(void);
 void		 sgf_collection_delete(SgfCollection *collection);
 void		 sgf_collection_add_game_tree(SgfCollection *collection,
@@ -265,14 +298,8 @@ int		 sgf_node_get_double_property_value(const SgfNode *node,
 						    SgfType type);
 int		 sgf_node_get_color_property_value(const SgfNode *node,
 						   SgfType type);
-int		 sgf_node_get_handicap(const SgfNode *node);
-int		 sgf_node_get_komi(const SgfNode *node, double *komi);
-int		 sgf_node_get_time_limit(const SgfNode *node,
-					 double *time_limit);
-
 int		 sgf_node_get_real_property_value(const SgfNode *node,
 						  SgfType type, double *value);
-
 const char *	 sgf_node_get_text_property_value(const SgfNode *node,
 						       SgfType type);
 const BoardPositionList *
@@ -281,6 +308,12 @@ const BoardPositionList *
 const SgfLabelList *
 		 sgf_node_get_list_of_label_property_value(const SgfNode *node,
 							   SgfType type);
+
+int		 sgf_node_get_handicap(const SgfNode *node);
+int		 sgf_node_get_komi(const SgfNode *node, double *komi);
+SgfResult	 sgf_node_get_result(const SgfNode *node, double *score);
+int		 sgf_node_get_time_limit(const SgfNode *node,
+					 double *time_limit);
 
 
 int		 sgf_node_add_none_property(SgfNode *node, SgfGameTree *tree,
@@ -319,6 +352,16 @@ int		 sgf_node_add_pointer_property(SgfNode *node, SgfGameTree *tree,
 					    overwrite)			\
   sgf_node_add_pointer_property((node), (tree), (type), (label_list),	\
 				(overwrite))
+
+
+int		 sgf_node_add_score_result(SgfNode *node, SgfGameTree *tree,
+					   double score, int overwrite);
+
+int		 sgf_node_append_text_property(SgfNode *node,
+					       SgfGameTree *tree,
+					       SgfType type,
+					       char *text,
+					       const char *separator);
 
 
 int		 sgf_node_delete_property(SgfNode *node, SgfGameTree *tree,
@@ -455,6 +498,9 @@ struct _SgfBoardState {
   SgfNode      *game_info_node;
   SgfNode      *last_move_node;
 
+  /* Will be NULL if in main variation. */
+  SgfNode      *last_main_variation_node;
+
   /* Private fields.  Must be of no interest outside `sgf-utils'. */
   int		sgf_color_to_play;
 };
@@ -499,9 +545,9 @@ void	      sgf_utils_switch_to_given_variation(SgfGameTree *tree,
 						  SgfNode *node,
 						  SgfBoardState *board_state);
 
-void	      sgf_utils_append_move_variation(SgfGameTree *tree,
-					      SgfBoardState *board_state,
-					      int color, ...);
+void	      sgf_utils_append_variation(SgfGameTree *tree,
+					 SgfBoardState *board_state,
+					 int color, ...);
 
 void	      sgf_utils_get_markup(const SgfGameTree *tree,
 				   char markup[BOARD_GRID_SIZE]);

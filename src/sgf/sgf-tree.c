@@ -26,6 +26,7 @@
 #include "utils.h"
 
 #include <assert.h>
+#include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -294,6 +295,7 @@ sgf_game_tree_count_nodes(const SgfGameTree *tree)
 }
 
 
+
 /* Dynamically allocate an SgfNode structure and links it to the
  * specified parent node.
  */
@@ -657,6 +659,45 @@ sgf_node_get_komi(const SgfNode *node, double *komi)
 }
 
 
+SgfResult
+sgf_node_get_result(const SgfNode *node, double *score)
+{
+  const char *result = sgf_node_get_text_property_value(node, SGF_RESULT);
+
+  if (result) {
+    if (strcmp(result, "?") == 0)
+      return SGF_RESULT_UNKNOWN;
+    if (strcmp(result, "Draw") == 0 || strcmp(result, "0") == 0)
+      return SGF_RESULT_DRAW;
+    if (strcmp(result, "Void") == 0)
+      return SGF_RESULT_VOID;
+
+    if ((*result == 'B' || *result == 'W') && *(result + 1) == '+') {
+      int color_index = (*result == 'B' ? BLACK_INDEX : WHITE_INDEX);
+
+      result += 2;
+      if (! *result)
+	return SGF_RESULT_WIN | color_index;
+
+      if (strcmp(result, "F") == 0 || strcmp(result, "Forfeit") == 0)
+	return SGF_RESULT_WIN_BY_FORFEIT | color_index;
+      if (strcmp(result, "R") == 0 || strcmp(result, "Resign") == 0)
+	return SGF_RESULT_WIN_BY_RESIGNATION | color_index;
+      if (strcmp(result, "T") == 0 || strcmp(result, "Time") == 0)
+	return SGF_RESULT_WIN_BY_TIME | color_index;
+
+      if ('0' <= *result && *result <= '9'
+	  && utils_parse_double(result, score))
+	return SGF_RESULT_WIN_BY_SCORE | color_index;
+    }
+
+    return SGF_RESULT_INVALID;
+  }
+
+  return SGF_RESULT_NOT_SET;
+}
+
+
 int
 sgf_node_get_time_limit(const SgfNode *node, double *time_limit)
 {
@@ -719,6 +760,9 @@ sgf_node_get_list_of_label_property_value(const SgfNode *node, SgfType type)
 		     label_list, NULL);
 }
 
+
+
+/* Functions for adding/overwriting property values. */
 
 int
 sgf_node_add_none_property(SgfNode *node, SgfGameTree *tree, SgfType type)
@@ -824,6 +868,65 @@ sgf_node_add_pointer_property(SgfNode *node, SgfGameTree *tree,
 }
 
 
+int
+sgf_node_add_score_result(SgfNode *node, SgfGameTree *tree,
+			  double score, int overwrite)
+{
+  char *result;
+
+  if (score < -0.000005 || 0.000005 < score) {
+    char color_who_won = (score > 0.0 ? 'B' : 'W');
+
+    if (tree->game == GAME_GO
+	&& fabs(score - floor(score + 0.000005)) >= 0.000005)
+      result = utils_cprintf("%c+%.f", color_who_won, fabs(score));
+    else
+      result = utils_cprintf("%c+%d", color_who_won, (int) fabs(score));
+  }
+  else
+    result = utils_duplicate_string("Draw");
+
+  return sgf_node_add_text_property(node, tree, SGF_RESULT, result, overwrite);
+}
+
+
+/* Add a text property to a given node.  If such a property already
+ * exists, don't overwrite its value, but instead append new value to
+ * the old one, putting `separator' in between.  If this property
+ * doesn't yet exist, the `separator' is not used.  If `separator' is
+ * NULL, then "\n\n" is used.
+ *
+ * Return non-zero if the value is appended (zero if added).
+ */
+int
+sgf_node_append_text_property(SgfNode *node, SgfGameTree *tree,
+			      SgfType type, char *text, const char *separator)
+{
+  SgfProperty **link;
+
+  assert(node);
+  assert(property_info[type].value_type == SGF_SIMPLE_TEXT
+	 || property_info[type].value_type == SGF_FAKE_SIMPLE_TEXT
+	 || property_info[type].value_type == SGF_TEXT);
+
+  if (!sgf_node_find_property(node, type, &link)) {
+    *link = sgf_property_new(tree, type, *link);
+    (*link)->value.memory_block = text;
+
+    return 0;
+  }
+
+  (*link)->value.memory_block = utils_cat_strings((*link)->value.memory_block,
+						  (separator
+						   ? separator : "\n\n"),
+						  text, NULL);
+  utils_free(text);
+
+  return 1;
+}
+
+
+
 /* Find and delete property of given type in the node.  Return nonzero
  * if succeded, or zero if there is no such property.
  */

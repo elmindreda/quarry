@@ -325,9 +325,15 @@ sgf_utils_switch_to_given_variation(SgfGameTree *tree, SgfNode *node,
 }
 
 
+/* Append a variation to the current node.  The new variation may
+ * contain a move or it may not.  If `color' is either `BLACK' or
+ * `WHITE', arguments after it should specify a move according to
+ * tree's game.  If `color' is `EMPTY', then the new variation will
+ * not contain a move.
+ */
 void
-sgf_utils_append_move_variation(SgfGameTree *tree, SgfBoardState *board_state,
-				int color, ...)
+sgf_utils_append_variation(SgfGameTree *tree, SgfBoardState *board_state,
+			   int color, ...)
 {
   va_list arguments;
   SgfNode *node;
@@ -339,12 +345,17 @@ sgf_utils_append_move_variation(SgfGameTree *tree, SgfBoardState *board_state,
   va_start(arguments, color);
 
   node = sgf_node_append_child(tree->current_node, tree);
-  node->move_color   = color;
-  node->move_point.x = va_arg(arguments, int);
-  node->move_point.y = va_arg(arguments, int);
 
-  if (tree->game == GAME_AMAZONS)
-    node->data.amazons = va_arg(arguments, BoardAmazonsMoveData);
+  node->move_color = color;
+  if (color != EMPTY) {
+    assert(IS_STONE(color));
+
+    node->move_point.x = va_arg(arguments, int);
+    node->move_point.y = va_arg(arguments, int);
+
+    if (tree->game == GAME_AMAZONS)
+      node->data.amazons = va_arg(arguments, BoardAmazonsMoveData);
+  }
 
   va_end(arguments);
 
@@ -566,19 +577,25 @@ do_enter_tree(SgfGameTree *tree, SgfNode *down_to, SgfBoardState *board_state)
   board_set_parameters(tree->board, tree->game,
 		       tree->board_width, tree->board_height);
 
-  board_state->sgf_color_to_play = EMPTY;
-  board_state->last_move_x	 = NULL_X;
-  board_state->last_move_y	 = NULL_Y;
-  board_state->game_info_node	 = NULL;
-  board_state->last_move_node	 = NULL;
+  board_state->sgf_color_to_play	= EMPTY;
+  board_state->last_move_x		= NULL_X;
+  board_state->last_move_y		= NULL_Y;
+  board_state->game_info_node		= NULL;
+  board_state->last_move_node		= NULL;
+  board_state->last_main_variation_node = NULL;
 
   for (node = tree->root; node != down_to; node = node->current_variation) {
     assert(node);
     num_nodes++;
   }
 
+  /* Use a fake SGF node so that descend_nodes() has something to
+   * descend from.
+   */
+  root_predecessor.child = tree->root;
   root_predecessor.current_variation = tree->root;
   tree->current_node = &root_predecessor;
+
   descend_nodes(tree, num_nodes, board_state);
 }
 
@@ -594,7 +611,12 @@ descend_nodes(SgfGameTree *tree, int num_nodes, SgfBoardState *board_state)
   SgfNode *node = tree->current_node;
 
   do {
-    if (!node->current_variation) {
+    if (node->current_variation) {
+      if (node->current_variation != node->child
+	  && !board_state->last_main_variation_node)
+	board_state->last_main_variation_node = node;
+    }
+    else {
       if (!node->child)
 	break;
 
@@ -671,8 +693,12 @@ ascend_nodes(SgfGameTree *tree, int num_nodes, SgfBoardState *board_state)
   SgfNode *node = tree->current_node;
   int k;
 
-  for (k = 0; k < num_nodes && node->parent; k++)
+  for (k = 0; k < num_nodes && node->parent; k++) {
     node = node->parent;
+
+    if (board_state->last_main_variation_node == node)
+      board_state->last_main_variation_node = NULL;
+  }
 
   if (node->parent) {
     SgfNode *look_up_node = node;
