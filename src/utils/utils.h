@@ -42,6 +42,22 @@
 #define DIRECTORY_SEPARATOR	'/'
 
 
+/* Just a useful structure to have around. */
+typedef struct _QuarryColor	QuarryColor;
+
+struct _QuarryColor {
+  unsigned char	  red;
+  unsigned char	  green;
+  unsigned char	  blue;
+};
+
+
+#define QUARRY_COLORS_ARE_EQUAL(first_color, second_color)	\
+  ((first_color).red == (second_color).red			\
+   && (first_color).green == (second_color).green		\
+   && (first_color).blue == (second_color).blue)
+
+
 
 /* `utils.c' global functions. */
 
@@ -333,6 +349,59 @@ void		  string_list_swap_with_previous(void *abstract_list,
 						 void *abstract_item);
 void		  string_list_move(void *abstract_list, void *abstract_item,
 				   void *abstract_notch);
+
+
+/* A type derived from string list. */
+typedef struct _AssociationListItem	AssociationListItem;
+typedef struct _AssociationList		AssociationList;
+
+struct _AssociationListItem {
+  AssociationListItem	 *next;
+  char			 *key;
+
+  char			 *association;
+};
+
+struct _AssociationList {
+  AssociationListItem	 *first;
+  AssociationListItem	 *last;
+
+  int			  item_size;
+  StringListItemDispose	  item_dispose;
+};
+
+
+#define association_list_new()						\
+  ((AssociationList *)							\
+   string_list_new_derived(sizeof(AssociationListItem),			\
+			   ((StringListItemDispose)			\
+			    association_list_item_dispose)))
+
+#define association_list_init(list)					\
+  string_list_init_derived((list), sizeof(AssociationListItem),		\
+			   ((StringListItemDispose)			\
+			    association_list_item_dispose))
+
+#define STATIC_ASSOCIATION_LIST						\
+  STATIC_STRING_LIST_DERIVED(AssociationListItem,			\
+			     association_list_item_dispose)
+
+void		association_list_item_dispose(AssociationListItem *item);
+
+
+#define association_list_get_item(list, item_index)			\
+  ((AssociationListItem *) string_list_get_item((list), (item_index)))
+
+#define association_list_find(list, key)				\
+  ((AssociationListItem *) string_list_find((list), (key)))
+
+#define association_list_find_after_notch(list, key, notch)		\
+  ((AssociationListItem *) string_list_find_after_notch((list), (key),	\
+							(notch)))
+
+
+inline char *	association_list_find_association(AssociationList *list,
+						  const char *key);
 
 
 
