@@ -300,13 +300,11 @@ gtk_new_game_dialog_present(void)
 						QUARRY_SPACING_SMALL);
     gtk_notebook_append_page(data->notebook, game_specific_rules[k], NULL);
 
-    board_size_labels[k] = gtk_label_new_with_mnemonic("Board _size:");
-    gtk_misc_set_alignment(GTK_MISC(board_size_labels[k]), 0.0, 0.5);
-
     board_size_spin_buttons[k]
       = gtk_utils_create_spin_button(data->board_sizes[k], 0.0, 0, TRUE);
-    gtk_label_set_mnemonic_widget(GTK_LABEL(board_size_labels[k]),
-				  board_size_spin_buttons[k]);
+    board_size_labels[k]
+      = gtk_utils_create_mnemonic_label("Board _size:",
+					board_size_spin_buttons[k]);
 
     hbox = gtk_utils_pack_in_box(GTK_TYPE_HBOX, QUARRY_SPACING,
 				 board_size_labels[k], 0,
@@ -346,14 +344,12 @@ gtk_new_game_dialog_present(void)
   gtk_box_pack_start(GTK_BOX(game_specific_rules[GTK_GAME_GO]),
 		     vbox1, FALSE, TRUE, QUARRY_SPACING_SMALL);
 
-  label = gtk_label_new_with_mnemonic("_Komi:");
-  gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
-
   data->komi = ((GtkAdjustment *)
 		gtk_adjustment_new(new_game_configuration.komi, -999.5, 999.5,
 				   1.0, 5.0, 0.0));
   komi_spin_button = gtk_utils_create_spin_button(data->komi, 0.0, 1, FALSE);
-  gtk_label_set_mnemonic_widget(GTK_LABEL(label), komi_spin_button);
+
+  label = gtk_utils_create_mnemonic_label("_Komi:", komi_spin_button);
 
   hbox = gtk_utils_pack_in_box(GTK_TYPE_HBOX, QUARRY_SPACING,
 			       label, 0, komi_spin_button, GTK_UTILS_FILL,
@@ -538,9 +534,6 @@ instantiate_players(NewGameDialogData *data)
 static void
 begin_game(GtkEnginesInstantiationStatus status, gpointer user_data)
 {
-  static const ConfigurationSection *new_game_dialog_section
-    = &gtk_configuration_sections[SECTION_NEW_GAME_DIALOG];
-
   NewGameDialogData *data = (NewGameDialogData *) user_data;
   GtkGameIndex game_index = get_selected_game(data);
   Game game = index_to_game[game_index];
@@ -588,56 +581,44 @@ begin_game(GtkEnginesInstantiationStatus status, gpointer user_data)
     sgf_node_add_text_property(game_tree->current_node, game_tree, SGF_KOMI,
 			       utils_duplicate_string(format_double(komi)));
 
-    configuration_set_section_values(new_game_dialog_section,
-				     NEW_GAME_DIALOG_GO_BOARD_SIZE,
-				     board_size,
-				     NEW_GAME_DIALOG_HANDICAP_IS_FIXED,
-				     handicap_is_fixed,
-				     (handicap_is_fixed
-				      ? NEW_GAME_DIALOG_FIXED_HANDICAP
-				      : NEW_GAME_DIALOG_FREE_HANDICAP),
-				     handicap,
-				     NEW_GAME_DIALOG_KOMI,
-				     komi, -1);
+    new_game_configuration.go_board_size      = board_size;
+    new_game_configuration.handicap_is_fixed  = handicap_is_fixed;
+
+    if (handicap_is_fixed)
+      new_game_configuration.fixed_handicap   = handicap;
+    else
+      new_game_configuration.free_handicap    = handicap;
+
+    new_game_configuration.komi = komi;
   }
-  else if (game == GAME_AMAZONS) {
-    configuration_set_section_values(new_game_dialog_section,
-				     NEW_GAME_DIALOG_AMAZONS_BOARD_SIZE,
-				     board_size, -1);
-  }
-  else if (game == GAME_OTHELLO) {
-    configuration_set_section_values(new_game_dialog_section,
-				     NEW_GAME_DIALOG_OTHELLO_BOARD_SIZE,
-				     board_size, -1);
-  }
+  else if (game == GAME_AMAZONS)
+    new_game_configuration.amazons_board_size = board_size;
+  else if (game == GAME_OTHELLO)
+    new_game_configuration.othello_board_size = board_size;
 
   sgf_collection = sgf_collection_new();
   sgf_collection_add_game_tree(sgf_collection, game_tree);
 
-  configuration_set_section_values(new_game_dialog_section,
-				   NEW_GAME_DIALOG_GAME,
-				   game_info[game].name,
-				   NEW_GAME_DIALOG_WHITE_PLAYER,
-				   human_names[WHITE_INDEX],
-				   NEW_GAME_DIALOG_WHITE_IS_COMPUTER,
-				   player_is_computer[WHITE_INDEX],
-				   NEW_GAME_DIALOG_ENGINE_WHITE,
-				   engine_screen_names[WHITE_INDEX],
-				   NEW_GAME_DIALOG_BLACK_PLAYER,
-				   human_names[BLACK_INDEX],
-				   NEW_GAME_DIALOG_BLACK_IS_COMPUTER,
-				   player_is_computer[BLACK_INDEX],
-				   NEW_GAME_DIALOG_ENGINE_BLACK,
-				   engine_screen_names[BLACK_INDEX],
-				   -1);
+  configuration_set_string_value(&new_game_configuration.game_name,
+				 game_info[game].name);
 
-  gtk_widget_destroy(GTK_WIDGET(data->assistant));
+  for (k = 0; k < NUM_COLORS; k++) {
+    configuration_set_string_value(&new_game_configuration.player_names[k],
+				   human_names[k]);
+
+    new_game_configuration.player_is_computer[k] = player_is_computer[k];
+    configuration_set_string_value(&new_game_configuration.engine_names[k],
+				   engine_screen_names[k]);
+  }
 
   goban_window = gtk_goban_window_new(sgf_collection, NULL);
   gtk_goban_window_enter_game_mode(GTK_GOBAN_WINDOW(goban_window),
 				   data->players[BLACK_INDEX],
 				   data->players[WHITE_INDEX]);
   gtk_widget_show(goban_window);
+
+  gtk_widget_destroy(GTK_WIDGET(data->assistant));
+  g_free(data);
 }
 
 
