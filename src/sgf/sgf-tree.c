@@ -113,6 +113,8 @@ sgf_game_tree_new(void)
 
   tree->board = NULL;
 
+  tree->char_set = NULL;
+
   tree->application_name = NULL;
   tree->application_version = NULL;
 
@@ -186,6 +188,7 @@ sgf_game_tree_delete(SgfGameTree *tree)
 
 #endif
 
+  utils_free(tree->char_set);
   utils_free(tree->application_name);
   utils_free(tree->application_version);
 
@@ -240,9 +243,10 @@ sgf_game_tree_set_state(SgfGameTree *tree, Board *board, SgfNode *node,
 }
 
 
-/* Create a copy of given game tree structure.  Nodes are duplicated
- * (not even root).  Use sgf_game_tree_duplicate_with_nodes() if you
- * need a copy with all nodes. */
+/* Create a copy of given game tree structure.  Nodes are not
+ * duplicated (not even root).  Use
+ * sgf_game_tree_duplicate_with_nodes() if you need a copy with all
+ * nodes. */
 SgfGameTree *
 sgf_game_tree_duplicate(const SgfGameTree *tree)
 {
@@ -254,6 +258,7 @@ sgf_game_tree_duplicate(const SgfGameTree *tree)
   tree_copy->board_width = tree->board_width;
   tree_copy->board_height = tree->board_height;
 
+  tree_copy->char_set = utils_duplicate_string(tree->char_set);
   tree_copy->variation_style = tree->variation_style;
 
   return tree_copy;

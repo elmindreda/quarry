@@ -187,6 +187,7 @@ struct _SgfGameTree {
   Board			*board;
 
   int			 file_format;
+  char			*char_set;
   char			*application_name;
   char			*application_version;
   int			 variation_style;
