@@ -521,6 +521,23 @@ string_list_move(void *abstract_list, void *abstract_item,
 }
 
 
+
+void
+association_list_item_dispose(AssociationListItem *item)
+{
+  utils_free(item->association);
+}
+
+
+inline char *
+association_list_find_association(AssociationList *list, const char *key)
+{
+  AssociationListItem *item = association_list_find(list, key);
+
+  return item ? item->association : NULL;
+}
+
+
 /*
  * Local Variables:
  * tab-width: 8
