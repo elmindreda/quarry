@@ -78,8 +78,8 @@ properties  SgfType property_info {
   HA	SGF_HANDICAP		fake_simple_text  sgf_parse_handicap
   KM	SGF_KOMI		fake_simple_text  sgf_parse_komi
 
-  OT	SGF_OVERTIME		simple_text	sgf_parse_simple_text
   TM	SGF_TIME_LIMIT		fake_simple_text  sgf_parse_time_limit
+  OT	SGF_OVERTIME		simple_text	sgf_parse_simple_text
   PB	SGF_PLAYER_BLACK	simple_text	sgf_parse_simple_text
   BT	SGF_BLACK_TEAM		simple_text	sgf_parse_simple_text
   BR	SGF_BLACK_RANK		simple_text	sgf_parse_simple_text
@@ -111,7 +111,7 @@ properties  SgfType property_info {
   B	SGF_BLACK		not_stored	sgf_parse_move
   W	SGF_WHITE		not_stored	sgf_parse_move
   KO	SGF_KO			none		sgf_parse_none
-  MN	SGF_MOVE_NUMBER		number		sgf_parse_move_number
+  MN	SGF_MOVE_NUMBER		number		sgf_parse_constrained_number
 
   #> Node annotation properties.
   N	SGF_NODE_NAME		simple_text	sgf_parse_simple_text
@@ -131,9 +131,9 @@ properties  SgfType property_info {
 
   #> Timing properties.
   BL	SGF_TIME_LEFT_4BLACK	real		sgf_parse_real
-  OB	SGF_MOVES_LEFT_4BLACK	number		sgf_parse_moves_left
+  OB	SGF_MOVES_LEFT_4BLACK	number		sgf_parse_constrained_number
   WL	SGF_TIME_LEFT_4WHITE	real		sgf_parse_real
-  OW	SGF_MOVES_LEFT_4WHITE	number		sgf_parse_moves_left
+  OW	SGF_MOVES_LEFT_4WHITE	number		sgf_parse_constrained_number
 
   #> Markup properties.
   MA	SGF_MARK		list_of_point	sgf_parse_markup_property
