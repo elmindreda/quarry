@@ -8,10 +8,12 @@ SUBDIRS =		\
 	gui-utils	\
 	gui-gtk
 
-AM_CPPFLAGS = 				\
-	$(QUARRY_WARNINGS)		\
-					\
-	-I $(top_srcdir)/src/gui-gtk	\
+AM_CPPFLAGS =					\
+	-D LOCALE_DIR=\"$(datadir)/locale\"	\
+						\
+	$(QUARRY_WARNINGS)			\
+						\
+	-I $(top_srcdir)/src/gui-gtk		\
 	-I $(top_srcdir)/src/utils
 
 
@@ -20,6 +22,7 @@ bin_PROGRAMS = quarry
 quarry_SOURCES =	\
 	quarry.c	\
 			\
+	gettext.h	\
 	quarry.h
 
 quarry_LDADD = 			\
