@@ -1,7 +1,7 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *\
  * This file is part of Quarry.                                    *
  *                                                                 *
- * Copyright (C) 2003, 2004 Paul Pogonyshev.                       *
+ * Copyright (C) 2004 Paul Pogonyshev and Martin Holters.          *
  *                                                                 *
  * This program is free software; you can redistribute it and/or   *
  * modify it under the terms of the GNU General Public License as  *
@@ -54,6 +54,13 @@ typedef enum {
   /* Used internally */
   GTP_SUCCESS
 } GtpError;
+
+
+typedef enum {
+  GTP_ALIVE,
+  GTP_DEAD,
+  GTP_SEKI
+} GtpStoneStatus;
 
 
 typedef struct _GtpClient	GtpClient;
@@ -158,6 +165,10 @@ typedef void (* GtpClientMoveCallback) (GtpClient *client, int successful,
 					int color, int x, int y,
 					BoardAbstractMoveData *move_data);
 
+typedef void (* GtpClientFinalStatusListCallback)
+  (GtpClient *client, int successful, void *user_data,
+   GtpStoneStatus status, BoardPositionList *stones);
+
 
 GtpClient *	gtp_client_new
 		  (GtpClientSendToEngine send_to_engine,
@@ -234,6 +245,11 @@ void		gtp_client_generate_move
 		  (GtpClient *client,
 		   GtpClientMoveCallback response_callback,
 		   void *user_data, int color);
+
+void		gtp_client_final_status_list
+		  (GtpClient *client,
+		   GtpClientFinalStatusListCallback response_callback,
+		   void *user_data, GtpStoneStatus status);
 
 
 #endif /* QUARRY_GTP_CLIENT_H */

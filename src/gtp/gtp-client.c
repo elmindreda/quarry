@@ -1,7 +1,7 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *\
  * This file is part of Quarry.                                    *
  *                                                                 *
- * Copyright (C) 2003, 2004 Paul Pogonyshev.                       *
+ * Copyright (C) 2004 Paul Pogonyshev and Martin Holters.          *
  *                                                                 *
  * This program is free software; you can redistribute it and/or   *
  * modify it under the terms of the GNU General Public License as  *
@@ -82,6 +82,9 @@ static int	parse_free_handicap_placement
 		   GtpClientUserCallbackData *callback_data);
 static int	parse_generated_move(GtpClient *client, int successful,
 				     GtpClientUserCallbackData *callback_data);
+static int	parse_final_status_list
+		  (GtpClient *client, int successful,
+		   GtpClientUserCallbackData *callback_data);
 
 
 /* Create a new client for an engine that can be sent commands to by
@@ -622,6 +625,39 @@ gtp_client_generate_move(GtpClient *client,
 }
 
 
+void
+gtp_client_final_status_list(GtpClient *client,
+			     GtpClientFinalStatusListCallback response_callback,
+			     void *user_data, GtpStoneStatus status)
+{
+  const char *status_string = NULL;
+
+  assert(client);
+
+  switch (status) {
+    case GTP_ALIVE:
+      status_string = "alive";
+      break;
+
+    case GTP_DEAD:
+      status_string = "dead";
+      break;
+
+    case GTP_SEKI:
+      status_string = "seki";
+      break;
+  }
+
+  assert(status_string);
+
+  send_command(client, (GtpClientResponseCallback) parse_final_status_list,
+	       store_user_callback_data(((GtpClientResponseCallback)
+					 response_callback),
+					user_data, status, NULL),
+	       "final_status_list %s", status_string);
+}
+
+
 static void
 send_command(GtpClient *client,
 	     GtpClientResponseCallback response_callback, void *user_data,
@@ -908,6 +944,46 @@ parse_generated_move(GtpClient *client, int successful,
   utils_free(callback_data);
 
   return !successful || move_parsed;
+}
+
+
+static int
+parse_final_status_list(GtpClient *client, int successful,
+			GtpClientUserCallbackData *callback_data)
+{
+  StringListItem *this_item;
+
+  GtpClientFinalStatusListCallback final_status_list_callback
+    = (GtpClientFinalStatusListCallback) callback_data->response_callback;
+
+  BoardPositionList *stones = board_position_list_new_empty(0);
+
+  for (this_item = client->response.first; 
+       this_item; 
+       this_item = this_item->next) {
+    BoardPositionList *string = game_parse_position_list(GAME_GO, 
+							 client->board_size, 
+							 client->board_size, 
+							 this_item->text);
+
+    if (string) {
+      BoardPositionList *stones_new = board_position_list_union(stones,
+								string);
+
+      board_position_list_delete(stones);
+      board_position_list_delete(string);
+      stones = stones_new;
+    }
+  }
+
+  final_status_list_callback(client, successful,
+			     callback_data->user_data, 
+			     callback_data->integer_data, stones);
+  utils_free(callback_data);
+
+  board_position_list_delete(stones);
+
+  return !successful;
 }
 
 
