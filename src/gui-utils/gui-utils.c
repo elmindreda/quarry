@@ -20,12 +20,104 @@
 \* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 
+#include "configuration.h"
 #include "gui-utils.h"
+#include "markup-theme-configuration.h"
 #include "board.h"
+#include "utils.h"
 
 #include <assert.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+/* These will probably cause serious portability problems.  Will need
+ * to make dependent on OS.
+ */
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <dirent.h>
+#include <unistd.h>
 
 
+int
+gui_utils_enumerate_themes(void)
+{
+  /* We don't need to initialize themes' configuration sections as
+   * they are all repeatable.
+   */
+
+  DIR *markup_themes_directory = opendir(PACKAGE_DATA_DIR "/markup-themes");
+  struct dirent *directory_entry;
+
+  if (!markup_themes_directory) {
+    /* FIXME: Add proper i18n at some point (and same below). */
+    fprintf(stderr, "%s: fatal error: directory `%s' doesn't exist\n",
+	    short_program_name, PACKAGE_DATA_DIR);
+    fprintf(stderr, "%s: seems like you need to reinstall me\n",
+	    short_program_name);
+
+    return 0;
+  }
+
+  while ((directory_entry = readdir(markup_themes_directory)) != NULL) {
+    if (strcmp(directory_entry->d_name, ".") != 0
+	&& strcmp(directory_entry->d_name, "..") != 0) {
+      char *theme_directory
+	= utils_cat_strings(NULL,
+			    PACKAGE_DATA_DIR "/markup-themes/",
+			    directory_entry->d_name, NULL);
+      struct stat file_statistics;
+
+      if (stat(theme_directory, &file_statistics) == 0
+	  && S_ISDIR(file_statistics.st_mode)) {
+	char *theme_configuration_file = utils_cat_strings(NULL,
+							   theme_directory,
+							   "/theme.cfg", NULL);
+
+	configuration_read_from_file(markup_theme_configuration_sections,
+				     NUM_MARKUP_THEME_CONFIGURATION_SECTIONS,
+				     theme_configuration_file);
+
+	if (markup_themes.last && markup_themes.last->directory == NULL) {
+	  /* Configuration file has been read and contained a theme
+	   * description.  We assume that SVG files are in place.
+	   */
+	  markup_themes.last->directory
+	    = utils_duplicate_string(directory_entry->d_name);
+	}
+
+	utils_free(theme_configuration_file);
+      }
+
+      utils_free(theme_directory);
+    }
+  }
+
+  closedir(markup_themes_directory);
+
+  if (!string_list_find(&markup_themes, "Default")) {
+    fprintf(stderr, "%s: fatal error: `Default' markup theme not found\n",
+	    short_program_name);
+    fprintf(stderr, "%s: seems like you need to reinstall me\n",
+	    short_program_name);
+
+    return 0;
+  }
+
+  return 1;
+}
+
+
+void
+gui_utils_discard_theme_lists(void)
+{
+  configuration_dispose(markup_theme_configuration_sections,
+			NUM_MARKUP_THEME_CONFIGURATION_SECTIONS);
+}
+
+
+
 void
 gui_utils_mark_variations_on_grid(char grid[BOARD_GRID_SIZE],
 				  const Board *board,

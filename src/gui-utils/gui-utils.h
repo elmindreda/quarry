@@ -28,6 +28,10 @@
 #include "quarry.h"
 
 
+int		gui_utils_enumerate_themes(void);
+void		gui_utils_discard_theme_lists(void);
+
+
 void		gui_utils_mark_variations_on_grid
 		  (char grid[BOARD_GRID_SIZE], const Board *board,
 		   int black_variations[BOARD_GRID_SIZE],
