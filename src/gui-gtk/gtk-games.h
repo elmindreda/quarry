@@ -1,7 +1,7 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *\
  * This file is part of Quarry.                                    *
  *                                                                 *
- * Copyright (C) 2003, 2004 Paul Pogonyshev.                       *
+ * Copyright (C) 2003, 2004, 2005 Paul Pogonyshev.                 *
  *                                                                 *
  * This program is free software; you can redistribute it and/or   *
  * modify it under the terms of the GNU General Public License as  *
@@ -51,7 +51,8 @@ typedef enum {
   GTK_GAME_AMAZONS,
   GTK_GAME_OTHELLO,
 
-  NUM_SUPPORTED_GAMES
+  NUM_SUPPORTED_GAMES,
+  GTK_GAME_UNSUPPORTED = NUM_SUPPORTED_GAMES
 } GtkGameIndex;
 
 
@@ -63,11 +64,13 @@ extern const Game    index_to_game[NUM_SUPPORTED_GAMES];
   (game_info[index_to_game[game_index]].name)
 
 
-gboolean	gtk_games_engine_supports_game(GtpEngineListItem *engine_data,
-					       GtkGameIndex game_index);
+gboolean	gtk_games_engine_supports_game (GtpEngineListItem *engine_data,
+						GtkGameIndex game_index);
 
-gint		gtk_games_name_to_index(const gchar *game_name,
-					gboolean case_sensitive);
+gint		gtk_games_name_to_index (const gchar *game_name,
+					 gboolean case_sensitive);
+
+GtkGameIndex	gtk_games_get_game_index (Game game);
 
 
 #endif /* QUARRY_GTK_GAMES_H */

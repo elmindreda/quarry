@@ -1,7 +1,7 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *\
  * This file is part of Quarry.                                    *
  *                                                                 *
- * Copyright (C) 2003, 2004 Paul Pogonyshev.                       *
+ * Copyright (C) 2003, 2004, 2005 Paul Pogonyshev.                 *
  *                                                                 *
  * This program is free software; you can redistribute it and/or   *
  * modify it under the terms of the GNU General Public License as  *
@@ -21,6 +21,7 @@
 
 
 #include "gtk-games.h"
+
 #include "game-info.h"
 
 #include <assert.h>
@@ -40,20 +41,20 @@ const Game index_to_game[NUM_SUPPORTED_GAMES] = {
 
 
 gboolean
-gtk_games_engine_supports_game(GtpEngineListItem *engine_data,
-			       GtkGameIndex game_index)
+gtk_games_engine_supports_game (GtpEngineListItem *engine_data,
+				GtkGameIndex game_index)
 {
-  assert(0 <= game_index && game_index < NUM_SUPPORTED_GAMES);
+  assert (0 <= game_index && game_index < NUM_SUPPORTED_GAMES);
 
   return (!engine_data
-	  || (string_list_find(&engine_data->supported_games,
-			       INDEX_TO_GAME_NAME(game_index))
+	  || (string_list_find (&engine_data->supported_games,
+				INDEX_TO_GAME_NAME (game_index))
 	      != NULL));
 }
 
 
 gint
-gtk_games_name_to_index(const gchar *game_name, gboolean case_sensitive)
+gtk_games_name_to_index (const gchar *game_name, gboolean case_sensitive)
 {
   int game_index;
 
@@ -62,13 +63,32 @@ gtk_games_name_to_index(const gchar *game_name, gboolean case_sensitive)
       const char *this_name = game_info[index_to_game[game_index]].name;
 
       if (case_sensitive
-	  ? strcmp(game_name, this_name) == 0
-	  : strcasecmp(game_name, this_name) == 0)
+	  ? strcmp (game_name, this_name) == 0
+	  : strcasecmp (game_name, this_name) == 0)
 	return game_index;
     }
   }
 
   return -1;
+}
+
+
+GtkGameIndex
+gtk_games_get_game_index (Game game)
+{
+  switch (game) {
+  case GAME_GO:
+    return GTK_GAME_GO;
+
+  case GAME_AMAZONS:
+    return GTK_GAME_AMAZONS;
+
+  case GAME_OTHELLO:
+    return GTK_GAME_OTHELLO;
+
+  default:
+    return GTK_GAME_UNSUPPORTED;
+  }
 }
 
 
