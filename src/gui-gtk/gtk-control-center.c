@@ -1,7 +1,7 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *\
  * This file is part of Quarry.                                    *
  *                                                                 *
- * Copyright (C) 2003, 2004 Paul Pogonyshev.                       *
+ * Copyright (C) 2003, 2004, 2005 Paul Pogonyshev.                 *
  *                                                                 *
  * This program is free software; you can redistribute it and/or   *
  * modify it under the terms of the GNU General Public License as  *
@@ -21,9 +21,11 @@
 
 
 #include "gtk-control-center.h"
+
 #include "gtk-new-game-dialog.h"
 #include "gtk-parser-interface.h"
 #include "gtk-preferences.h"
+#include "gtk-resume-game-dialog.h"
 #include "gtk-utils.h"
 #include "quarry-stock.h"
 
@@ -44,6 +46,7 @@ gtk_control_center_present (void)
     GtkWidget *vbox;
     GtkWidget *new_game_button;
     GtkWidget *open_game_record_button;
+    GtkWidget *resume_game_button;
     GtkWidget *preferences_button;
 
     control_center = (GtkWindow *) gtk_window_new (GTK_WINDOW_TOPLEVEL);
@@ -62,7 +65,11 @@ gtk_control_center_present (void)
     open_game_record_button
       = gtk_button_new_from_stock (QUARRY_STOCK_OPEN_GAME_RECORD);
     g_signal_connect (open_game_record_button, "clicked",
-		      G_CALLBACK (gtk_parser_interface_present), NULL);
+		      G_CALLBACK (gtk_parser_interface_present_default), NULL);
+
+    resume_game_button = gtk_button_new_with_mnemonic ("_Resume Game");
+    g_signal_connect (resume_game_button, "clicked",
+		      G_CALLBACK (gtk_resume_game), NULL);
 
     preferences_button = gtk_button_new_from_stock (GTK_STOCK_PREFERENCES);
     g_signal_connect_swapped (preferences_button, "clicked",
@@ -72,10 +79,11 @@ gtk_control_center_present (void)
     vbox = gtk_utils_pack_in_box (GTK_TYPE_VBOX, QUARRY_SPACING_SMALL,
 				  new_game_button, GTK_UTILS_FILL,
 				  gtk_hseparator_new (),
-				  GTK_UTILS_FILL | QUARRY_SPACING_SMALL,
+				  GTK_UTILS_FILL | QUARRY_SPACING_VERY_SMALL,
 				  open_game_record_button, GTK_UTILS_FILL,
+				  resume_game_button, GTK_UTILS_FILL,
 				  gtk_hseparator_new (),
-				  GTK_UTILS_FILL | QUARRY_SPACING_SMALL,
+				  GTK_UTILS_FILL | QUARRY_SPACING_VERY_SMALL,
 				  preferences_button, GTK_UTILS_FILL, NULL);
     gtk_container_add (GTK_CONTAINER (control_center), vbox);
     gtk_widget_show_all (vbox);
