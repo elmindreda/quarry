@@ -202,6 +202,14 @@ struct _SgfCollection {
 };
 
 
+typedef struct _SgfGameTreeState	SgfGameTreeState;
+
+struct _SgfGameTreeState {
+  Board	       *board;
+  SgfNode      *current_node;
+};
+
+
 SgfCollection *	 sgf_collection_new(void);
 void		 sgf_collection_delete(SgfCollection *collection);
 void		 sgf_collection_add_game_tree(SgfCollection *collection,
@@ -216,6 +224,9 @@ SgfGameTree *	 sgf_game_tree_new_with_root(Game game,
 void		 sgf_game_tree_delete(SgfGameTree *tree);
 
 void		 sgf_game_tree_set_game(SgfGameTree *tree, Game game);
+void		 sgf_game_tree_set_state(SgfGameTree *tree,
+					 Board *board, SgfNode *node,
+					 SgfGameTreeState *old_state);
 
 SgfGameTree *	 sgf_game_tree_duplicate(const SgfGameTree *tree);
 SgfGameTree *	 sgf_game_tree_duplicate_with_nodes(const SgfGameTree *tree);
