@@ -26,15 +26,7 @@
 #include <signal.h>
 
 
-static void
-catch_broken_pipe_signal(int signal_id)
-{
-  UNUSED(signal_id);
-
-  /* Caught :) */
-}
-
-
+/* FIXME: This is currently just a stub. */
 int
 main(int argc, char *argv[])
 {
@@ -45,7 +37,10 @@ main(int argc, char *argv[])
   if (!gui_back_end_init(&argc, &argv))
     return_code = 255;
 
-  signal(SIGPIPE, catch_broken_pipe_signal);
+  /* When a GTP engine crashes (or it is not a GTP engine in the first
+   * place), we receive this signal and better not abort on it.
+   */
+  signal(SIGPIPE, SIG_IGN);
 
   if (argc == 1)
     return_code = gui_back_end_main_default();
