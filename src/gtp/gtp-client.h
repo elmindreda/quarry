@@ -149,6 +149,10 @@ struct _GtpClient {
 };
 
 
+typedef void (* GtpClientFreeHandicapCallback)
+  (GtpClient *client, int successful, void *user_data,
+   BoardPositionList *handicap_stones);
+
 typedef void (* GtpClientMoveCallback) (GtpClient *client, int successful,
 					void *user_data,
 					int color, int x, int y,
@@ -192,6 +196,14 @@ void		gtp_client_set_fixed_handicap
 		  (GtpClient *client,
 		   GtpClientResponseCallback response_callback,
 		   void *user_data, int handicap);
+void		gtp_client_place_free_handicap
+		  (GtpClient *client,
+		   GtpClientFreeHandicapCallback response_callback,
+		   void *user_data, int handicap);
+void		gtp_client_set_free_handicap
+		  (GtpClient *client,
+		   GtpClientResponseCallback response_callback,
+		   void *user_data, const BoardPositionList *handicap_stones);
 void		gtp_client_set_komi
 		  (GtpClient *client,
 		   GtpClientResponseCallback response_callback,
@@ -208,7 +220,7 @@ void		gtp_client_play_move_from_sgf_node
 		   const SgfGameTree *sgf_game_tree, const SgfNode *sgf_node);
 void		gtp_client_generate_move
 		  (GtpClient *client,
-		   GtpClientMoveCallback move_callback,
+		   GtpClientMoveCallback response_callback,
 		   void *user_data, int color);
 
 

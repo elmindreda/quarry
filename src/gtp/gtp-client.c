@@ -74,6 +74,9 @@ static int	change_client_integer_parameter
 		  (GtpClient *client, int successful,
 		   GtpClientUserCallbackData *callback_data);
 
+static int	parse_free_handicap_placement
+		  (GtpClient *client, int successful,
+		   GtpClientUserCallbackData *callback_data);
 static int	parse_generated_move(GtpClient *client, int successful,
 				     GtpClientUserCallbackData *callback_data);
 
@@ -467,6 +470,40 @@ gtp_client_set_fixed_handicap(GtpClient *client,
 
 
 void
+gtp_client_place_free_handicap(GtpClient *client,
+			       GtpClientFreeHandicapCallback response_callback,
+			       void *user_data, int handicap)
+{
+  assert(client);
+
+  send_command(client,
+	       (GtpClientResponseCallback) parse_free_handicap_placement,
+	       store_user_callback_data(((GtpClientResponseCallback)
+					 response_callback),
+					user_data, handicap, NULL),
+	       "place_free_handicap %d", handicap);
+}
+
+
+void
+gtp_client_set_free_handicap(GtpClient *client,
+			     GtpClientResponseCallback response_callback,
+			     void *user_data,
+			     const BoardPositionList *handicap_stones)
+{
+  char buffer[SUGGESTED_POSITION_LIST_BUFFER_SIZE];
+
+  assert(client);
+  assert(handicap_stones);
+
+  game_format_position_list(GAME_GO, client->board_size, client->board_size,
+			    buffer, handicap_stones);
+  send_command(client, response_callback, user_data,
+	       "set_free_handicap %s", buffer);
+}
+
+
+void
 gtp_client_set_komi(GtpClient *client,
 		    GtpClientResponseCallback response_callback,
 		    void *user_data, double komi)
@@ -532,7 +569,7 @@ gtp_client_play_move_from_sgf_node(GtpClient *client,
 
 void
 gtp_client_generate_move(GtpClient *client,
-			 GtpClientMoveCallback move_callback,
+			 GtpClientMoveCallback response_callback,
 			 void *user_data, int color)
 {
   assert(client);
@@ -540,7 +577,7 @@ gtp_client_generate_move(GtpClient *client,
 
   send_command(client, (GtpClientResponseCallback) parse_generated_move,
 	       store_user_callback_data(((GtpClientResponseCallback)
-					 move_callback),
+					 response_callback),
 					user_data, color, NULL),
 	       client->protocol_version != 1 ? "genmove %s" : "genmove_%s",
 	       color == BLACK ? "black" : "white");
@@ -768,6 +805,29 @@ change_client_integer_parameter(GtpClient *client, int successful,
   return (!successful
 	  || (string_list_is_single_string(&client->response)
 	      && ! *client->response.first->text));
+}
+
+
+static int
+parse_free_handicap_placement(GtpClient *client, int successful,
+			      GtpClientUserCallbackData *callback_data)
+{
+  GtpClientFreeHandicapCallback free_handicap_callback
+    = (GtpClientFreeHandicapCallback) callback_data->response_callback;
+  BoardPositionList *handicap_stones = NULL;
+
+  if (successful && string_list_is_single_string(&client->response)) {
+    handicap_stones = game_parse_position_list(GAME_GO,
+					       client->board_size,
+					       client->board_size,
+					       client->response.first->text);
+  }
+
+  free_handicap_callback(client, handicap_stones != NULL,
+			 callback_data->user_data, handicap_stones);
+  utils_free(callback_data);
+
+  return !successful || handicap_stones != NULL;
 }
 
 
