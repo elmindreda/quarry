@@ -1,0 +1,11 @@
+# GTK+ interface files.
+src/gui-gtk/gtk-color-button.c
+src/gui-gtk/gtk-control-center.c
+src/gui-gtk/gtk-games.c
+src/gui-gtk/gtk-goban-window.c
+src/gui-gtk/gtk-gtp-client-interface.c
+src/gui-gtk/gtk-new-game-dialog.c
+src/gui-gtk/gtk-parser-interface.c
+src/gui-gtk/gtk-preferences.c
+src/gui-gtk/gtk-utils.c
+src/gui-gtk/quarry-stock.c
