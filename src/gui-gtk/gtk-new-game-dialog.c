@@ -646,7 +646,7 @@ update_game_and_players_page (GtkWidget *widget, gpointer user_data)
   for (k = 0; k < NUM_COLORS; k++) {
     GtkWidget *selector = data->engine_selectors[k];
 
-    if (!string_list_is_empty (&gtp_engines)) {
+    if (gtk_preferences_have_non_hidden_gtp_engine ()) {
       if (GTK_WIDGET_IS_SENSITIVE (selector)) {
 	engine_datum[k]
 	  = gtk_preferences_get_engine_selector_selection (selector);
