@@ -1,3 +1,7 @@
+2004-08-18  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* configure.ac: Search for library containing iconv().
+
 2004-08-15  Paul Pogonyshev  <pogonyshev@gmx.net>
 
 	* README: Mention new requirement for `librsvg'.

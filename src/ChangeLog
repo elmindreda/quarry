@@ -1,3 +1,21 @@
+2004-08-18  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* sgf/sgf-parser.c: Start handling of non-UTF-8 encodings.
+	(parse_buffer): Open/close iconv handles.
+	(parse_root): Parse value of `CA' property and create an iconv
+	handle for converting to UTF-8.
+	(do_parse_simple_text): Invoke convert_text_to_utf8().
+	(do_parse_text): Likewise.
+	(convert_text_to_utf8): New function.
+
+	* sgf/sgf-tree.c (sgf_game_tree_new): Initialize new `char_set'
+	field.
+	(sgf_game_tree_delete): Free `char_set'.
+	(sgf_game_tree_duplicate): Duplicate value of `char_set'.
+
+	* utils/utils.c (utils_duplicate_string): Allow `string' to be
+	NULL.
+
 2004-08-17  Paul Pogonyshev  <pogonyshev@gmx.net>
 
 	* gui-gtk/gtk-goban.c (gtk_goban_scroll_event): New
