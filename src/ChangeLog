@@ -1,3 +1,60 @@
+2004-04-28  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* utils/utils.h (string_list_is_empty)
+	(string_list_is_single_string): Don't cast to `const StringList *'
+	to avoid GCC 3.3+ warnings.
+	* gui-utils/configuration.c (write_section): Cast to `const
+	StringList *' to cope with the above change.
+
+	* gui-gtk/gtk-goban-window.c: Add full support for free handicap.
+	(GTP_ENGINE_CAN_PLAY_MOVES): New macro.
+	(gtk_goban_window_init): Create "special mode" control set.
+	(gtk_goban_window_enter_game_mode): Enter free handicap special
+	mode if user is to set up free handicap.
+	(enter_special_mode, leave_special_mode)
+	(free_handicap_mode_done)
+	(set_goban_signal_handlers, free_handicap_mode_pointer_moved)
+	(free_handicap_mode_goban_clicked)
+	(free_handicap_has_been_placed): New functions.
+	(navigate_goban): Rename from playing_mode_navigate_goban().
+	Navigation should always work the same way or just be disabled.
+	(initialize_gtp_player): Rewrite: make reentrant and more generic.
+	(gtp_player_initialized_for_game): Remove (essentially include in
+	the above function).
+	(move_has_been_played): Rewrite.  Remove `color' parameter again.
+	Generate moves even if opponent is not initialized.
+	* gui-gtk/quarry-stock.c: New stock item `QUARRY_STOCK_DONE'.
+	* gui-gtk/gtk-new-game-dialog.c (gtk_new_game_dialog_present):
+	Don't desensitize free handicap controls: unneeded now.
+
+	* gui-gtk/gtk-goban.h: New feedback types
+	`GOBAN_FEEDBACK_ADD_BLACK_OR_REMOVE' and
+	`GOBAN_FEEDBACK_ADD_WHITE_OR_REMOVE'.  Remove `_DEFAULT' from
+	`GOBAN_FEEDBACK_MOVE' and its color variants.
+	* gui-gtk/gtk-goban.c (gtk_goban_set_grid_contents)
+	(gtk_goban_get_grid_contents, gtk_goban_diff_against_grid): New
+	functions.
+	(set_overlay_data): Allow setting overlay tile to `TILE_NONE'.
+	(set_feedback_data): Handle new feedback types.  Cope with the
+	above change.
+
+	* gui-gtk/gtk-utils.h: Define gtk_entry_set_alignment() to nothing
+	unless GTK+ version is 2.4 or higher.
+	(G_MAXUINT8, G_MAXUINT16): Define if not yet defined by GLib
+	headers.
+
+	* gtp/gtp-client.c (gtp_client_place_free_handicap)
+	(parse_free_handicap_placement, gtp_client_set_free_handicap): New
+	functions.
+	* board/board.c (game_format_position_list)
+	(game_parse_position_list): New functions.
+
+	* sgf/sgf-utils.c (sgf_utils_add_free_handicap_stones): New
+	function.
+	(determine_final_color_to_play): If there is positive handicap,
+	set `sgf_color_to_play' to `WHITE' only if handicap stones are
+	present in the same node.
+
 2004-04-27  Paul Pogonyshev  <pogonyshev@gmx.net>
 
 	* utils/memory-pool.c (memory_pool_free): Fix bug: do free the
