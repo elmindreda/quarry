@@ -82,7 +82,6 @@ QUARRY_GTK_DEPRECATED_FLAGS = @QUARRY_GTK_DEPRECATED_FLAGS@
 QUARRY_GTK_LIBS = @QUARRY_GTK_LIBS@
 QUARRY_WARNINGS = @QUARRY_WARNINGS@
 QUARRY_WARNINGS_GTK = @QUARRY_WARNINGS_GTK@
-QUARRY_WARNINGS_REDUCED = @QUARRY_WARNINGS_REDUCED@
 RANLIB = @RANLIB@
 SET_MAKE = @SET_MAKE@
 SHELL = @SHELL@
@@ -529,16 +528,6 @@ quarry-marshal.$(OBJEXT) : quarry-marshal.c quarry-marshal.h
 	      -o quarry-marshal.$(OBJEXT)		\
 	      -c quarry-marshal.c			\
 	  || (rm -f quarry-marshal.$(OBJEXT) ; exit 1)
-
-# FIXME: same as above (problem with GtkStockItem and
-#	 `-Wwrite-strings').
-quarry-stock.$(OBJEXT) : quarry-stock.c quarry-stock.h
-	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(I_CPPFLAGS)	\
-	      $(QUARRY_WARNINGS_REDUCED) $(QUARRY_FULL_GTK_CFLAGS)	\
-	      $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)			\
-	      -o quarry-stock.$(OBJEXT)					\
-	      -c quarry-stock.c						\
-	  || (rm -f quarry-stock.$(OBJEXT) ; exit 1)
 
 gtk-configuration.c gtk-configuration.h					\
   : gtk-configuration.list						\

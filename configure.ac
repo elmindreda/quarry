@@ -21,7 +21,6 @@ AC_PROG_RANLIB
 
 AC_SUBST(QUARRY_WARNINGS)
 AC_SUBST(QUARRY_WARNINGS_GTK)
-AC_SUBST(QUARRY_WARNINGS_REDUCED)
 
 if test "$GCC" = "yes"; then
   dnl  I would like to use `-W' too, but, unfortunately, it generates
@@ -34,20 +33,15 @@ if test "$GCC" = "yes"; then
   QUARRY_WARNINGS='-Wall -Waggregate-return -Wbad-function-cast -Wcast-align -Wcast-qual -Wmissing-declarations -Wmissing-prototypes -Wnested-externs -Wpointer-arith -Wredundant-decls -Wshadow -Wstrict-prototypes -Wunused-parameter -Wwrite-strings'
 
   dnl  `-Wstrict-prototypes' and `-Wshadow' launch alarms on GTK+
-  dnl  headers, so they are excluded.
+  dnl  headers, so they are excluded.  `-Wwrite-strings' is excluded,
+  dnl  because certain GTK+ structures lack `const' attribute for
+  dnl  `gchar *' fields.
 
-  QUARRY_WARNINGS_GTK='-Wall -Waggregate-return -Wbad-function-cast -Wcast-align -Wcast-qual -Wmissing-declarations -Wmissing-prototypes -Wnested-externs -Wpointer-arith -Wredundant-decls -Wunused-parameter -Wwrite-strings'
-
-  dnl  QUARRY_WARNINGS_REDUCED is for a few files that would generate
-  dnl  unwanted warnings even with QUARRY_WARNINGS_GTK (because of
-  dnl  `-Wwrite-strings').
-
-  QUARRY_WARNINGS_REDUCED='-Wall -Waggregate-return -Wbad-function-cast -Wcast-align -Wcast-qual -Wmissing-declarations -Wmissing-prototypes -Wnested-externs -Wpointer-arith -Wredundant-decls -Wunused-parameter'
+  QUARRY_WARNINGS_GTK='-Wall -Waggregate-return -Wbad-function-cast -Wcast-align -Wcast-qual -Wmissing-declarations -Wmissing-prototypes -Wnested-externs -Wpointer-arith -Wredundant-decls -Wunused-parameter'
 
 else
   QUARRY_WARNINGS=''
   QUARRY_WARNINGS_GTK=''
-  QUARRY_WARNINGS_REDUCED=''
 fi
 
 dnl  Optionally disable deprecated GTK+ code (for maintainers--to

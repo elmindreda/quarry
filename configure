@@ -310,7 +310,7 @@ ac_includes_default="\
 # include <unistd.h>
 #endif"
 
-ac_subst_vars='SHELL PATH_SEPARATOR PACKAGE_NAME PACKAGE_TARNAME PACKAGE_VERSION PACKAGE_STRING PACKAGE_BUGREPORT exec_prefix prefix program_transform_name bindir sbindir libexecdir datadir sysconfdir sharedstatedir localstatedir libdir includedir oldincludedir infodir mandir build_alias host_alias target_alias DEFS ECHO_C ECHO_N ECHO_T LIBS INSTALL_PROGRAM INSTALL_SCRIPT INSTALL_DATA CYGPATH_W PACKAGE VERSION ACLOCAL AUTOCONF AUTOMAKE AUTOHEADER MAKEINFO AMTAR install_sh STRIP ac_ct_STRIP INSTALL_STRIP_PROGRAM AWK SET_MAKE CC CFLAGS LDFLAGS CPPFLAGS ac_ct_CC EXEEXT OBJEXT DEPDIR am__include am__quote AMDEP_TRUE AMDEP_FALSE AMDEPBACKSLASH CCDEPMODE am__fastdepCC_TRUE am__fastdepCC_FALSE RANLIB ac_ct_RANLIB QUARRY_WARNINGS QUARRY_WARNINGS_GTK QUARRY_WARNINGS_REDUCED QUARRY_GTK_DEPRECATED_FLAGS CPP EGREP LIBOBJS PKG_CONFIG QUARRY_GTK_CFLAGS QUARRY_GTK_LIBS GLIB_GENMARSHAL LTLIBOBJS'
+ac_subst_vars='SHELL PATH_SEPARATOR PACKAGE_NAME PACKAGE_TARNAME PACKAGE_VERSION PACKAGE_STRING PACKAGE_BUGREPORT exec_prefix prefix program_transform_name bindir sbindir libexecdir datadir sysconfdir sharedstatedir localstatedir libdir includedir oldincludedir infodir mandir build_alias host_alias target_alias DEFS ECHO_C ECHO_N ECHO_T LIBS INSTALL_PROGRAM INSTALL_SCRIPT INSTALL_DATA CYGPATH_W PACKAGE VERSION ACLOCAL AUTOCONF AUTOMAKE AUTOHEADER MAKEINFO AMTAR install_sh STRIP ac_ct_STRIP INSTALL_STRIP_PROGRAM AWK SET_MAKE CC CFLAGS LDFLAGS CPPFLAGS ac_ct_CC EXEEXT OBJEXT DEPDIR am__include am__quote AMDEP_TRUE AMDEP_FALSE AMDEPBACKSLASH CCDEPMODE am__fastdepCC_TRUE am__fastdepCC_FALSE RANLIB ac_ct_RANLIB QUARRY_WARNINGS QUARRY_WARNINGS_GTK QUARRY_GTK_DEPRECATED_FLAGS CPP EGREP LIBOBJS PKG_CONFIG QUARRY_GTK_CFLAGS QUARRY_GTK_LIBS GLIB_GENMARSHAL LTLIBOBJS'
 ac_subst_files=''
 
 # Initialize some variables set by options.
@@ -2789,21 +2789,16 @@ fi
 
 
 
-
 if test "$GCC" = "yes"; then
 
   QUARRY_WARNINGS='-Wall -Waggregate-return -Wbad-function-cast -Wcast-align -Wcast-qual -Wmissing-declarations -Wmissing-prototypes -Wnested-externs -Wpointer-arith -Wredundant-decls -Wshadow -Wstrict-prototypes -Wunused-parameter -Wwrite-strings'
 
 
-  QUARRY_WARNINGS_GTK='-Wall -Waggregate-return -Wbad-function-cast -Wcast-align -Wcast-qual -Wmissing-declarations -Wmissing-prototypes -Wnested-externs -Wpointer-arith -Wredundant-decls -Wunused-parameter -Wwrite-strings'
-
-
-  QUARRY_WARNINGS_REDUCED='-Wall -Waggregate-return -Wbad-function-cast -Wcast-align -Wcast-qual -Wmissing-declarations -Wmissing-prototypes -Wnested-externs -Wpointer-arith -Wredundant-decls -Wunused-parameter'
+  QUARRY_WARNINGS_GTK='-Wall -Waggregate-return -Wbad-function-cast -Wcast-align -Wcast-qual -Wmissing-declarations -Wmissing-prototypes -Wnested-externs -Wpointer-arith -Wredundant-decls -Wunused-parameter'
 
 else
   QUARRY_WARNINGS=''
   QUARRY_WARNINGS_GTK=''
-  QUARRY_WARNINGS_REDUCED=''
 fi
 
 # Check whether --enable-gtk-deprecated or --disable-gtk-deprecated was given.
@@ -4769,7 +4764,6 @@ s,@RANLIB@,$RANLIB,;t t
 s,@ac_ct_RANLIB@,$ac_ct_RANLIB,;t t
 s,@QUARRY_WARNINGS@,$QUARRY_WARNINGS,;t t
 s,@QUARRY_WARNINGS_GTK@,$QUARRY_WARNINGS_GTK,;t t
-s,@QUARRY_WARNINGS_REDUCED@,$QUARRY_WARNINGS_REDUCED,;t t
 s,@QUARRY_GTK_DEPRECATED_FLAGS@,$QUARRY_GTK_DEPRECATED_FLAGS,;t t
 s,@CPP@,$CPP,;t t
 s,@EGREP@,$EGREP,;t t

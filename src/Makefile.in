@@ -82,7 +82,6 @@ QUARRY_GTK_DEPRECATED_FLAGS = @QUARRY_GTK_DEPRECATED_FLAGS@
 QUARRY_GTK_LIBS = @QUARRY_GTK_LIBS@
 QUARRY_WARNINGS = @QUARRY_WARNINGS@
 QUARRY_WARNINGS_GTK = @QUARRY_WARNINGS_GTK@
-QUARRY_WARNINGS_REDUCED = @QUARRY_WARNINGS_REDUCED@
 RANLIB = @RANLIB@
 SET_MAKE = @SET_MAKE@
 SHELL = @SHELL@
@@ -179,7 +178,7 @@ RECURSIVE_TARGETS = info-recursive dvi-recursive pdf-recursive \
 	all-recursive install-data-recursive install-exec-recursive \
 	installdirs-recursive install-recursive uninstall-recursive \
 	check-recursive installcheck-recursive
-DIST_COMMON = Makefile.am Makefile.in
+DIST_COMMON = ChangeLog Makefile.am Makefile.in
 DIST_SUBDIRS = $(SUBDIRS)
 SOURCES = $(quarry_SOURCES)
 
