@@ -33,20 +33,19 @@
 #define QUARRY_STOCK_NEW_GAME		"quarry-new-game"
 #define QUARRY_STOCK_OPEN_GAME_RECORD	"quarry-open-game-record"
 
-/* Different assistant buttons. */
-#define QUARRY_STOCK_NEXT		"quarry-next"
-#define QUARRY_STOCK_PLAY		"quarry-play"
-
 /* Other buttons. */
 #define QUARRY_STOCK_BROWSE		"quarry-browse"
 #define QUARRY_STOCK_DONE		"quarry-done"
 #define QUARRY_STOCK_MODIFY		"quarry-modify"
 #define QUARRY_STOCK_MOVE_UP		"quarry-move-up"
 #define QUARRY_STOCK_MOVE_DOWN		"quarry-move-down"
+#define QUARRY_STOCK_NEXT		"quarry-next"
 #define QUARRY_STOCK_OVERWRITE		"quarry-overwrite"
+#define QUARRY_STOCK_PLAY		"quarry-play"
+#define QUARRY_STOCK_PREVIOUS		"quarry-previous"
 
 
-void		quarry_stock_init(void);
+void		quarry_stock_init (void);
 
 
 #endif /* QUARRY_QUARRY_STOCK_H */
