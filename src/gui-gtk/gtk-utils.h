@@ -154,6 +154,11 @@ GtkWidget *	gtk_utils_create_spin_button(GtkAdjustment *adjustment,
 					     gdouble climb_rate,
 					     guint num_digits,
 					     gboolean snap_to_ticks);
+GtkWidget *	gtk_utils_create_time_spin_button(GtkAdjustment *adjustment,
+						  gdouble climb_rate);
+GtkWidget *	gtk_utils_create_selector(const gchar **items, gint num_items,
+					  gint selected_item);
+GtkWidget *	gtk_utils_create_invisible_notebook(void);
 
 void		gtk_utils_create_radio_chain(GtkWidget **radio_buttons,
 					     const gchar **label_texts,
@@ -174,6 +179,19 @@ void		gtk_utils_set_gdk_color(GdkColor *gdk_color,
 					QuarryColor quarry_color);
 void		gtk_utils_set_quarry_color(QuarryColor *quarry_color,
 					   const GdkColor *gdk_color);
+
+
+#if GTK_2_4_OR_LATER
+
+#define gtk_utils_get_selector_active_item_index(selector)	\
+  gtk_combo_box_get_active(GTK_COMBO_BOX(selector))
+
+#else
+
+#define gtk_utils_get_selector_active_item_index(selector)	\
+  gtk_option_menu_get_history(GTK_OPTION_MENU(selector))
+
+#endif
 
 
 #endif /* QUARRY_GTK_UTILS_H */

@@ -102,10 +102,8 @@ gtk_assistant_init(GtkAssistant *assistant)
 
   gtk_control_center_window_created(GTK_WINDOW(assistant));
 
-  notebook = gtk_notebook_new();
+  notebook = gtk_utils_create_invisible_notebook();
   assistant->notebook = GTK_NOTEBOOK(notebook);
-  gtk_notebook_set_show_tabs(assistant->notebook, FALSE);
-  gtk_notebook_set_show_border(assistant->notebook, FALSE);
   gtk_widget_show(notebook);
 
   gtk_utils_standardize_dialog(&assistant->dialog, notebook);

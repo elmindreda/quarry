@@ -43,18 +43,21 @@ struct _GtkUtilsFileSelectionData {
 };
 
 
-static void	file_selection_response(GtkFileSelection *file_selection,
+static void	 file_selection_response(GtkFileSelection *file_selection,
+					 gint response_id,
+					 GtkUtilsFileSelectionData *data);
+static void	 overwrite_confirmation(GtkWidget *message_dialog,
 					gint response_id,
 					GtkUtilsFileSelectionData *data);
-static void	overwrite_confirmation(GtkWidget *message_dialog,
-				       gint response_id,
-				       GtkUtilsFileSelectionData *data);
 
+static gboolean	 time_spin_button_output(GtkSpinButton *spin_button);
+static gint	 time_spin_button_input(GtkSpinButton *spin_button,
+					gdouble *new_value);
 
-static void	set_widget_sensitivity_on_toggle
-		  (GtkToggleButton *toggle_button, GtkWidget *widget);
-static void	set_widget_sensitivity_on_input(GtkEntry *entry,
-						GtkWidget *widget);
+static void	 set_widget_sensitivity_on_toggle
+		   (GtkToggleButton *toggle_button, GtkWidget *widget);
+static void	 set_widget_sensitivity_on_input(GtkEntry *entry,
+						 GtkWidget *widget);
 
 
 void
@@ -476,6 +479,182 @@ gtk_utils_create_spin_button(GtkAdjustment *adjustment, gdouble climb_rate,
   gtk_entry_set_activates_default(GTK_ENTRY(spin_button), TRUE);
 
   return spin_button;
+}
+
+
+GtkWidget *
+gtk_utils_create_time_spin_button(GtkAdjustment *adjustment,
+				  gdouble climb_rate)
+{
+  GtkWidget *spin_button = gtk_utils_create_spin_button(adjustment, climb_rate,
+							0, FALSE);
+  gdouble upper_limit;
+  gint max_width;
+
+  g_signal_connect(spin_button, "output",
+		   G_CALLBACK(time_spin_button_output), NULL);
+  g_signal_connect(spin_button, "input",
+		   G_CALLBACK(time_spin_button_input), NULL);
+
+  if (adjustment->upper > 60.0 * 60.0) {
+    /* One less, since two colons would normally take space of only
+     * one "common" char.  Anyway Quarry time upper bounds are not
+     * something one would use.
+     */
+    for (max_width = 6, upper_limit = adjustment->upper / (60.0 * 60.0);
+	 upper_limit >= 10.0; upper_limit /= 10.0)
+      max_width++;
+  }
+  else
+    max_width = 5;
+
+  gtk_entry_set_width_chars(GTK_ENTRY(spin_button), max_width);
+
+  return spin_button;
+}
+
+
+static gboolean
+time_spin_button_output(GtkSpinButton *spin_button)
+{
+  gint value = gtk_spin_button_get_adjustment(spin_button)->value;
+  char buffer[32];
+
+  /* Don't print zero hours.  In Quarry context hours are probably
+   * used only occasionally.
+   */
+  if (value >= 60 * 60) {
+    sprintf(buffer, "%d:%02d:%02d",
+	    value / (60 * 60), (value / 60) % 60, value % 60);
+  }
+  else
+    sprintf(buffer, "%02d:%02d", value / 60, value % 60);
+
+  gtk_entry_set_text(GTK_ENTRY(spin_button), buffer);
+
+  return TRUE;
+}
+
+
+static gint
+time_spin_button_input(GtkSpinButton *spin_button, gdouble *new_value)
+{
+  const gchar *text_value = gtk_entry_get_text(GTK_ENTRY(spin_button));
+  const gchar *scan;
+  int num_colons = 0;
+  int digits_and_colons_only = 1;
+
+  for (scan = text_value; *scan; scan++) {
+    if (*scan == ':') {
+      if (++num_colons > 2 || !digits_and_colons_only)
+	return GTK_INPUT_ERROR;
+    }
+    else if (*scan < '0' || '9' < *scan) {
+      digits_and_colons_only = 0;
+      if (num_colons != 0)
+	return GTK_INPUT_ERROR;
+    }
+  }
+
+  if (num_colons > 0) {
+    int hours = 0;
+    int minutes = 0;
+    int seconds = 0;
+    int num_chars_eaten;
+
+    if (num_colons == 2) {
+      if (*text_value != ':') {
+	sscanf(text_value, "%d:%n", &hours, &num_chars_eaten);
+	text_value += num_chars_eaten;
+      }
+      else
+	text_value++;
+    }
+
+    if (*text_value != ':') {
+      sscanf(text_value, "%d:%n", &minutes, &num_chars_eaten);
+      text_value += num_chars_eaten;
+    }
+    else
+      text_value++;
+
+    sscanf(text_value, "%d", &seconds);
+
+    *new_value = (hours * 60 + minutes) * 60 + seconds;
+  }
+  else {
+    gdouble minutes_double;
+    gchar *err = NULL;
+
+    minutes_double = g_strtod(text_value, &err);
+    if (*err)
+      return GTK_INPUT_ERROR;
+
+    *new_value = (gdouble) (gint) (60.0 * minutes_double + 0.5);
+  }
+
+  return TRUE;
+}
+
+
+GtkWidget *
+gtk_utils_create_selector(const gchar **items, gint num_items,
+			  gint selected_item)
+{
+  GtkWidget *widget;
+  int k;
+
+  assert(items);
+  assert(num_items > 0);
+
+#if GTK_2_4_OR_LATER
+
+  widget = gtk_combo_box_new_text();
+
+  {
+    GtkComboBox *combo_box = GTK_COMBO_BOX(widget);
+
+    for (k = 0; k < num_items; k++)
+      gtk_combo_box_append_text(combo_box, items[k]);
+
+    gtk_combo_box_set_active(combo_box, MAX(selected_item, 0));
+  }
+
+#else /* not GTK_2_4_OR_LATER */
+
+  widget = gtk_option_menu_new();
+
+  {
+    GtkWidget *menu = gtk_menu_new();
+    GtkMenuShell *menu_shell = GTK_MENU_SHELL(menu);
+
+    for (k = 0; k < num_items; k++) {
+      gtk_menu_shell_append(menu_shell,
+			    gtk_menu_item_new_with_label(items[k]));
+    }
+
+    gtk_widget_show_all(menu);
+    gtk_option_menu_set_menu(GTK_OPTION_MENU(widget), menu);
+  }
+
+  if (selected_item >= 0)
+    gtk_option_menu_set_history(GTK_OPTION_MENU(widget), selected_item);
+
+#endif /* not GTK_2_4_OR_LATER */
+
+  return widget;
+}
+
+
+GtkWidget *
+gtk_utils_create_invisible_notebook(void)
+{
+  GtkWidget *notebook = gtk_notebook_new();
+
+  gtk_notebook_set_show_tabs(GTK_NOTEBOOK(notebook), FALSE);
+  gtk_notebook_set_show_border(GTK_NOTEBOOK(notebook), FALSE);
+
+  return notebook;
 }
 
 
