@@ -121,8 +121,8 @@ sgf_game_tree_new (void)
 
   memory_pool_init (&tree->property_pool, sizeof (SgfProperty));
 
-  tree->user_data      = NULL;
-  tree->free_user_data = NULL;
+  tree->notification_callback = NULL;
+  tree->user_data	      = NULL;
 
   tree->map_data_list = NULL;
 
@@ -179,6 +179,9 @@ sgf_game_tree_delete (SgfGameTree *tree)
 {
   assert (tree);
 
+  if (tree->notification_callback)
+    tree->notification_callback (tree, SGF_GAME_TREE_DELETED, tree->user_data);
+
 #if ENABLE_MEMORY_POOLS
 
   memory_pool_traverse (&tree->property_pool,
@@ -198,9 +201,6 @@ sgf_game_tree_delete (SgfGameTree *tree)
   utils_free (tree->char_set);
   utils_free (tree->application_name);
   utils_free (tree->application_version);
-
-  if (tree->free_user_data)
-    tree->free_user_data (tree->user_data);
 
   sgf_game_tree_invalidate_map (tree, NULL);
 
@@ -370,16 +370,14 @@ sgf_game_tree_count_nodes (const SgfGameTree *tree)
 
 
 void
-sgf_game_tree_set_user_data (SgfGameTree *tree, void *user_data,
-			     SgfFreeDataCallback free_user_data)
+sgf_game_tree_set_notification_callback (SgfGameTree *tree,
+					 SgfNotificationCallback callback,
+					 void *user_data)
 {
-  assert (!free_user_data || user_data);
+  assert (tree);
 
-  if (tree->free_user_data)
-    tree->free_user_data (tree->user_data);
-
-  tree->user_data      = user_data;
-  tree->free_user_data = free_user_data;
+  tree->notification_callback = callback;
+  tree->user_data	      = user_data;
 }
 
 

@@ -75,6 +75,19 @@ enum {
 };
 
 
+typedef enum {
+  SGF_ABOUT_TO_MODIFY_MAP,
+  SGF_ABOUT_TO_MODIFY_TREE,
+  SGF_ABOUT_TO_CHANGE_CURRENT_NODE,
+
+  SGF_CURRENT_NODE_CHANGED,
+  SGF_TREE_MODIFIED,
+  SGF_MAP_MODIFIED,
+
+  SGF_GAME_TREE_DELETED
+} SgfNotificationCode;
+
+
 typedef struct _SgfVector		SgfVector;
 typedef struct _SgfVectorList		SgfVectorList;
 
@@ -93,43 +106,45 @@ typedef struct _SgfNodeGeneric		SgfNodeOthello;
 typedef struct _SgfNodeAmazons		SgfNodeAmazons;
 
 
-typedef void (* SgfFreeDataCallback) (void *data);
-
 typedef struct _SgfGameTreeMapData	SgfGameTreeMapData;
 typedef struct _SgfGameTreeMapLine	SgfGameTreeMapLine;
-
 typedef struct _SgfGameTree		SgfGameTree;
+
+typedef void (* SgfNotificationCallback)
+  (SgfGameTree *tree, SgfNotificationCode notification_code, void *user_data);
+
+
 typedef struct _SgfCollection		SgfCollection;
 
 
 struct _SgfVector {
-  BoardPoint		  from_point;
-  BoardPoint		  to_point;
+  BoardPoint		    from_point;
+  BoardPoint		    to_point;
 };
 
 struct _SgfVectorList {
   /* This field is private to the implementation. */
-  int			  allocated_num_vectors;
+  int			    allocated_num_vectors;
 
-  int			  num_vectors;
-  SgfVector		  vectors[1];
+  int			    num_vectors;
+  SgfVector		    vectors[1];
 };
 
 
 struct _SgfLabel {
-  BoardPoint		  point;
-  char			 *text;
+  BoardPoint		    point;
+  char			   *text;
 };
 
 struct _SgfLabelList {
-  int			  num_labels;
-  SgfLabel		  labels[1];
+  int			    num_labels;
+  SgfLabel		    labels[1];
 };
 
 
 struct _SgfFigureDescription {
-  int			  flags;
-  char			 *diagram_name;
+  int			    flags;
+  char			   *diagram_name;
 };
 
 
@@ -140,27 +155,27 @@ struct _SgfFigureDescription {
  * pointer to union (which is allowed by compiler) is a no-no thing.
  */
 union _SgfValue {
-  int			  number;
+  int			    number;
 
   /* Floats have so low precision, that there will be problems with
    * storing fractional number of seconds in it.  Will have to
    * allocate doubles on heap :(
    */
-  double		 *real;
+  double		   *real;
 
-  int			  emphasized;
-  int			  color;
-  void			 *memory_block;
-  char			 *text;
-  BoardPositionList	 *position_list;
-  SgfVectorList		 *vector_list;
-  SgfLabelList		 *label_list;
-  SgfFigureDescription	 *figure;
+  int			    emphasized;
+  int			    color;
+  void			   *memory_block;
+  char			   *text;
+  BoardPositionList	   *position_list;
+  SgfVectorList		   *vector_list;
+  SgfLabelList		   *label_list;
+  SgfFigureDescription	   *figure;
 
   /* For unknown properties.  First string stores identifier, the
    * rest---property values.
    */
-  StringList		 *unknown_value_list;
+  StringList		   *unknown_value_list;
 };
 
 
@@ -176,9 +191,9 @@ union _SgfValue {
 struct _SgfProperty {
   MEMORY_POOL_ITEM_INDEX;
 
-  SgfType		  type : SGF_TYPE_STORAGE_BITS;
-  SgfProperty		 *next;
-  SgfValue		  value;
+  SgfType		    type : SGF_TYPE_STORAGE_BITS;
+  SgfProperty		   *next;
+  SgfValue		    value;
 };
 
 
@@ -191,20 +206,20 @@ struct _SgfProperty {
 struct _SgfNode {
   MEMORY_POOL_ITEM_INDEX;
 
-  unsigned int		  is_collapsed : 1;
-  unsigned int		  has_intermediate_map_data : 1;
+  unsigned int		    is_collapsed : 1;
+  unsigned int		    has_intermediate_map_data : 1;
 
-  unsigned int		  move_color : 2;
-  BoardPoint		  move_point;
+  unsigned int		    move_color : 2;
+  BoardPoint		    move_point;
 
-  SgfNode		 *parent;
-  SgfNode		 *child;
-  SgfNode		 *next;
-  SgfNode		 *current_variation;
+  SgfNode		   *parent;
+  SgfNode		   *child;
+  SgfNode		   *next;
+  SgfNode		   *current_variation;
 
-  SgfProperty		 *properties;
+  SgfProperty		   *properties;
 
-  BoardAbstractMoveData	  data;
+  BoardAbstractMoveData	    data;
 };
 
 /* These two structure are only used in sgf_game_tree_set_game() to
@@ -215,118 +230,118 @@ struct _SgfNode {
 struct _SgfNodeGeneric {
   MEMORY_POOL_ITEM_INDEX;
 
-  unsigned int		  is_collapsed : 1;
-  unsigned int		  has_intermediate_map_data : 1;
+  unsigned int		    is_collapsed : 1;
+  unsigned int		    has_intermediate_map_data : 1;
 
-  unsigned int		  move_color : 2;
-  BoardPoint		  move_point;
+  unsigned int		    move_color : 2;
+  BoardPoint		    move_point;
 
-  SgfNode		 *parent;
-  SgfNode		 *child;
-  SgfNode		 *next;
-  SgfNode		 *current_variation;
+  SgfNode		   *parent;
+  SgfNode		   *child;
+  SgfNode		   *next;
+  SgfNode		   *current_variation;
 
-  SgfProperty		 *properties;
+  SgfProperty		   *properties;
 };
 
 struct _SgfNodeAmazons {
   MEMORY_POOL_ITEM_INDEX;
 
-  unsigned int		  is_collapsed : 1;
-  unsigned int		  has_intermediate_map_data : 1;
+  unsigned int		    is_collapsed : 1;
+  unsigned int		    has_intermediate_map_data : 1;
 
-  unsigned int		  move_color : 2;
-  BoardPoint		  move_point;
+  unsigned int		    move_color : 2;
+  BoardPoint		    move_point;
 
-  SgfNode		 *parent;
-  SgfNode		 *child;
-  SgfNode		 *next;
-  SgfNode		 *current_variation;
+  SgfNode		   *parent;
+  SgfNode		   *child;
+  SgfNode		   *next;
+  SgfNode		   *current_variation;
 
-  SgfProperty		 *properties;
+  SgfProperty		   *properties;
 
-  BoardAmazonsMoveData	  amazons;
+  BoardAmazonsMoveData	    amazons;
 };
 
 
 struct _SgfGameTreeMapData {
-  SgfGameTreeMapData	 *next;
+  SgfGameTreeMapData	   *next;
 
-  SgfNode		 *node;
-  int			  x;
-  int			 *y_level;
-  int			  last_valid_y_level;
+  SgfNode		   *node;
+  int			    x;
+  int			   *y_level;
+  int			    last_valid_y_level;
 
-  int			  largest_x_so_far;
+  int			    largest_x_so_far;
 };
 
 
 struct _SgfGameTreeMapLine {
-  int			  x0;
-  int			  y0;
-  int			  y1;
-  int			  x2;
-  int			  x3;
+  int			    x0;
+  int			    y0;
+  int			    y1;
+  int			    x2;
+  int			    x3;
 };
 
 
 struct _SgfGameTree {
-  SgfGameTree		 *previous;
-  SgfGameTree		 *next;
+  SgfGameTree		   *previous;
+  SgfGameTree		   *next;
 
-  SgfNode		 *root;
-  SgfNode		 *current_node;
-  int			  current_node_depth;
+  SgfNode		   *root;
+  SgfNode		   *current_node;
+  int			    current_node_depth;
 
-  int			  game;
-  int			  board_width;
-  int			  board_height;
-  Board			 *board;
+  int			    game;
+  int			    board_width;
+  int			    board_height;
+  Board			   *board;
 
-  int			  file_format;
-  char			 *char_set;
-  char			 *application_name;
-  char			 *application_version;
-  int			  style_is_set;
-  int			  style;
+  int			    file_format;
+  char			   *char_set;
+  char			   *application_name;
+  char			   *application_version;
+  int			    style_is_set;
+  int			    style;
 
-  MemoryPool		  node_pool;
-  MemoryPool		  property_pool;
+  MemoryPool		    node_pool;
+  MemoryPool		    property_pool;
 
-  void			 *user_data;
-  SgfFreeDataCallback	  free_user_data;
+  void			   *user_data;
+  SgfNotificationCallback   notification_callback;
 
   /* The ``map.'' */
-  int			  map_width;
-  int			  map_height;
+  int			    map_width;
+  int			    map_height;
 
-  SgfGameTreeMapData	 *map_data_list;
-  SgfGameTreeMapData	 *last_valid_data_point;
+  SgfGameTreeMapData	   *map_data_list;
+  SgfGameTreeMapData	   *last_valid_data_point;
 
-  int			  view_port_x0;
-  int			  view_port_y0;
-  int			  view_port_x1;
-  int			  view_port_y1;
+  int			    view_port_x0;
+  int			    view_port_y0;
+  int			    view_port_x1;
+  int			    view_port_y1;
 
-  SgfNode		**view_port_nodes;
+  SgfNode		  **view_port_nodes;
 
-  int			  num_view_port_lines;
-  SgfGameTreeMapLine	 *view_port_lines;
+  int			    num_view_port_lines;
+  SgfGameTreeMapLine	   *view_port_lines;
 };
 
 struct _SgfCollection {
-  int			  num_trees;
-  SgfGameTree		 *first_tree;
-  SgfGameTree		 *last_tree;
+  int			    num_trees;
+  SgfGameTree		   *first_tree;
+  SgfGameTree		   *last_tree;
 };
 
 
 typedef struct _SgfGameTreeState	SgfGameTreeState;
 
 struct _SgfGameTreeState {
-  Board			 *board;
-  SgfNode		 *current_node;
-  int			  current_node_depth;
+  Board			   *board;
+  SgfNode		   *current_node;
+  int			    current_node_depth;
 };
 
 
@@ -390,9 +405,9 @@ SgfNode *	 sgf_game_tree_traverse_backward (const SgfGameTree *tree);
 
 int		 sgf_game_tree_count_nodes (const SgfGameTree *tree);
 
-void		 sgf_game_tree_set_user_data
+void		 sgf_game_tree_set_notification_callback
 		   (SgfGameTree *tree,
-		    void *user_data, SgfFreeDataCallback free_user_data);
+		    SgfNotificationCallback callback, void *user_data);
 
 
 SgfNode *	 sgf_node_new (SgfGameTree *tree, SgfNode *parent);
