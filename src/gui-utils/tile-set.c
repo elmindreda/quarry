@@ -215,12 +215,8 @@ tile_set_dump_recycle(int lazy_recycling)
   while (*link) {
     TileSetListItem *dump_item = *link;
 
-    if (dump_item->reference_count == 0 && !lazy_recycling) {
-      if (!lazy_recycling)
-	dump_item->reference_count = -1;
-
-      link = &dump_item->next;
-    }
+    if (dump_item->reference_count == 0 && !lazy_recycling)
+      dump_item->reference_count = -1;
     else if (dump_item->reference_count == -1
 	     || (lazy_recycling && !dump_item->next)) {
       int k;
@@ -239,7 +235,11 @@ tile_set_dump_recycle(int lazy_recycling)
 
       if (lazy_recycling)
 	return;
+
+      continue;
     }
+
+    link = &dump_item->next;
   }
 }
 
