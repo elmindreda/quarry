@@ -1,0 +1,26 @@
+2004-04-13  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* sgf/sgf-writer.c (do_write_point_or_rectangle): Fix typo ('['
+	instead of ']') that caused severe SGF file corruptions.
+
+	* gui-gtk/gtk-goban-window.c: Add basic support for SGF file
+	saving.  Note: quite dangerous now, because it never checks or
+	asks anything, just writes.
+	(gtk_goban_window_save)
+	(save_file_as_response, save_file_as_destroy): New functions.
+
+	* gui-gtk/gtk-goban-window.c (gtk_goban_window_init): Add menu bar
+	to window (with just few items for now).
+
+	* gui-gtk/Makefile.am: Remove custom build rules for
+	`quarry-stock.o', because `QUARRY_WARNINGS_GTK' does not contain
+	`-Wwrite-strings' (which is problematic for this file) anymore.
+
+
+Changes before the project registration on Gna! (2004-04-12) were not logged.
+
+
+  Copyright (C) 2004 Paul Pogonyshev.
+
+  Copying and distribution of this file, with or without modification,
+  are permitted provided the copyright notice and this notice are preserved.

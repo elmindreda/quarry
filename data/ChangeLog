@@ -1,11 +1,3 @@
-2004-04-13  Paul Pogonyshev  <pogonyshev@gmx.net>
-
-	* configure.ac: Remove `QUARRY_WARNINGS_REDUCED' variable, because
-	`-Wwrite-strings' gives warnings on too many pieces of GTK+ code
-	and it's not worth it to use the flag for some files and not the
-	others.
-
-
 Changes before the project registration on Gna! (2004-04-12) were not logged.
 
 
