@@ -1,3 +1,14 @@
+2004-07-16  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* configure.ac: Remove `-Wbad-function-cast' from
+	`QUARRY_WARNINGS' and `QUARRY_WARNINGS_GTK', because it yells at
+	`(int) floor(...)'.
+
+	* configure.ac: Search for library containing floor() and
+	friends (must be `-lm').
+
+	* AUTHORS: Add Martin Holters.
+
 2004-05-13  Paul Pogonyshev  <pogonyshev@gmx.net>
 
 	* README: Add information about GTP engines to `RUNNING QUARRY'

@@ -1,3 +1,29 @@
+2004-07-16  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* sgf/sgf-tree.c (sgf_game_tree_set_state): New function.
+
+	* gui-utils/parse-configuration.c (configuration_parse_defaults2):
+	Initialize a few variables to avoid compiler warnings.
+	* gui-gtk/gtk-new-game-dialog.c (gtk_new_game_dialog_present):
+	Likewise.
+	(begin_game): Likewise.
+
+2004-07-16  Martin Holters  <martin.holters@gmx.de>
+
+	* board/go.c (go_score_game): Don't use utils_format_double(),
+	format as user's locale specifies.
+	* gui-gtk/gtk-goban-window.c (update_game_specific_information):
+	Likewise.
+
+	* sgf/sgf-tree.c (sgf_node_get_komi): Use utils_parse_double().
+	* gui-utils/configuration.c (configuration_read_from_file):
+	Likewise for parsing values of type `VALUE_TYPE_REAL'.
+
+	* utils/utils.c (utils_format_double): Don't use sprintf() and
+	thus be locale insensitive.
+	(utils_parse_double): New function, parse doubles in
+	locale-insensitive manner.
+
 2004-06-19  Paul Pogonyshev  <pogonyshev@gmx.net>
 
 	* gui-gtk/gtk-utils.c (time_spin_button_input): Use new function
