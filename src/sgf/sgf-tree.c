@@ -216,6 +216,30 @@ sgf_game_tree_set_game(SgfGameTree *tree, Game game)
 }
 
 
+/* Set given tree's associated board and current node and optionally
+ * save old values in `old_state' (if it is not `NULL').
+ */
+void
+sgf_game_tree_set_state(SgfGameTree *tree, Board *board, SgfNode *node,
+			SgfGameTreeState *old_state)
+{
+  assert(tree);
+  assert(board);
+  assert(board->game == tree->game);
+  assert(board->width == tree->board_width);
+  assert(board->height == tree->board_height);
+  assert(node);
+
+  if (old_state) {
+    old_state->board = tree->board;
+    old_state->current_node = tree->current_node;
+  }
+
+  tree->board = board;
+  tree->current_node = node;
+}
+
+
 /* Create a copy of given game tree structure.  Nodes are duplicated
  * (not even root).  Use sgf_game_tree_duplicate_with_nodes() if you
  * need a copy with all nodes. */
@@ -621,28 +645,8 @@ sgf_node_get_komi(const SgfNode *node, double *komi)
 {
   const char *text = sgf_node_get_text_property_value(node, SGF_KOMI);
 
-  if (text) {
-    const char *scan = text;
-    int has_digits = 0;
-    int has_point = 0;
-
-    if (*scan == '+' || *scan == '-')
-      scan++;
-
-    while (*scan) {
-      if ('0' <= *scan && *scan <= '9')
-	has_digits = 1;
-      else if (*scan == '.' && !has_point)
-	has_point = 0;
-      else
-	return 0;
-
-      scan++;
-    }
-
-    *komi = atof(text);
-    return 1;
-  }
+  if (text)
+    return utils_parse_double(text, komi);
 
   return 0;
 }
