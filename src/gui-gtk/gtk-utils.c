@@ -357,6 +357,10 @@ gtk_utils_create_titled_page(GtkWidget *contents,
 GtkWidget *
 gtk_utils_pack_in_box(GType box_type, gint spacing, ...)
 {
+  void (* packing_function) (GtkBox *box, GtkWidget *widget,
+			     gboolean expand, gboolean fill, guint padding)
+    = gtk_box_pack_start;
+
   GtkBox *box = GTK_BOX(g_object_new(box_type, NULL));
   GtkWidget *widget;
   va_list arguments;
@@ -369,10 +373,13 @@ gtk_utils_pack_in_box(GType box_type, gint spacing, ...)
 
     assert(GTK_IS_WIDGET(widget));
 
-    gtk_box_pack_start(box, widget,
-		       packing_parameters & GTK_UTILS_EXPAND ? TRUE : FALSE,
-		       packing_parameters & GTK_UTILS_FILL ? TRUE : FALSE,
-		       packing_parameters & GTK_UTILS_PACK_PADDING_MASK);
+    if (packing_parameters & GTK_UTILS_PACK_END)
+      packing_function = gtk_box_pack_end;
+
+    packing_function(box, widget,
+		     packing_parameters & GTK_UTILS_EXPAND ? TRUE : FALSE,
+		     packing_parameters & GTK_UTILS_FILL ? TRUE : FALSE,
+		     packing_parameters & GTK_UTILS_PACK_PADDING_MASK);
   }
 
   return GTK_WIDGET(box);
@@ -425,6 +432,20 @@ gtk_utils_make_widget_scrollable(GtkWidget *widget,
 
   gtk_widget_show_all(scrolled_window);
   return scrolled_window;
+}
+
+
+
+GtkWidget *
+gtk_utils_create_mnemonic_label(const gchar *label_text,
+				GtkWidget *mnemonic_widget)
+{
+  GtkWidget *label = gtk_label_new_with_mnemonic(label_text);
+
+  gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
+  gtk_label_set_mnemonic_widget(GTK_LABEL(label), mnemonic_widget);
+
+  return label;
 }
 
 

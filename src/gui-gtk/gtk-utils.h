@@ -109,6 +109,8 @@ typedef enum {
 #define GTK_UTILS_FILL			(1 << 17)
 #define GTK_UTILS_PACK_DEFAULT		(GTK_UTILS_EXPAND | GTK_UTILS_FILL)
 
+#define GTK_UTILS_PACK_END		(1 << 18)
+
 #define GTK_UTILS_PACK_PADDING_MASK	0xFFFF
 
 
@@ -145,6 +147,8 @@ GtkWidget *	gtk_utils_make_widget_scrollable
 		   GtkPolicyType hscrollbar_policy,
 		   GtkPolicyType vscrollbar_policy);
 
+GtkWidget *	gtk_utils_create_mnemonic_label(const gchar *label_text,
+						GtkWidget *mnemonic_widget);
 GtkWidget *	gtk_utils_create_entry(const gchar *text);
 GtkWidget *	gtk_utils_create_spin_button(GtkAdjustment *adjustment,
 					     gdouble climb_rate,
