@@ -742,6 +742,24 @@ set_widget_sensitivity_on_input(GtkEntry *entry, GtkWidget *widget)
 
 
 void
+gtk_utils_set_widgets_visible(gboolean visible, ...)
+{
+  GtkWidget *widget;
+  va_list arguments;
+
+  va_start(arguments, visible);
+  while ((widget = va_arg(arguments, GtkWidget *)) != NULL) {
+    if (visible && !GTK_WIDGET_VISIBLE(widget))
+      gtk_widget_show(widget);
+    else if (!visible && GTK_WIDGET_VISIBLE(widget))
+      gtk_widget_hide(widget);
+  }
+
+  va_end(arguments);
+}
+
+
+void
 gtk_utils_set_menu_items_sensitive(GtkItemFactory *item_factory,
 				   gboolean are_sensitive, ...)
 {
