@@ -1,7 +1,8 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *\
  * This file is part of Quarry.                                    *
  *                                                                 *
- * Copyright (C) 2003, 2004 Paul Pogonyshev.                       *
+ * Copyright (C) 2003 Paul Pogonyshev.                             *
+ * Copyright (C) 2004 Paul Pogonyshev and Martin Holters.          *
  *                                                                 *
  * This program is free software; you can redistribute it and/or   *
  * modify it under the terms of the GNU General Public License as  *
@@ -593,6 +594,42 @@ board_position_list_sort(BoardPositionList *list)
  * positions.  This is essential in the following functions and also
  * for SGF writer.
  */
+
+BoardPositionList* 
+board_position_list_union(BoardPositionList *list1, BoardPositionList *list2)
+{
+  int i = 0;
+  int j = 0;
+  int k = 0;
+  BoardPositionList *dest;
+
+  assert(list1);
+  assert(list2);
+
+  dest = board_position_list_new_empty(list1->num_positions 
+				       + list2->num_positions);
+
+  while (i < list1->num_positions || j < list2->num_positions) {
+    if (i >= list1->num_positions 
+	|| list1->positions[i] > list2->positions[j])
+      dest->positions[k++] = list2->positions[j++];
+    else if (j >= list2->num_positions 
+	     || list1->positions[i] < list2->positions[j])
+      dest->positions[k++] = list1->positions[i++];
+    else {
+      /* Same element in both source lists. */
+      dest->positions[k++] = list1->positions[i++];
+      j++;
+    }
+  }
+
+  dest->num_positions = k;
+
+  return utils_realloc(dest, (sizeof(BoardPositionList)
+			      - (BOARD_MAX_POSITIONS - k) * sizeof(int)));
+
+}
+
 
 /* Determine if two position lists are equal, i.e. contain identical
  * positions.

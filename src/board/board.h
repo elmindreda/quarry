@@ -231,6 +231,8 @@ BoardPositionList *  board_position_list_new_empty(int num_positions);
 			       (position_list)->num_positions)		\
 			      * sizeof(int)))))
 
+BoardPositionList *  board_position_list_union(BoardPositionList *list1,
+					       BoardPositionList *list2);
 
 void		     board_position_list_sort(BoardPositionList *list);
 
