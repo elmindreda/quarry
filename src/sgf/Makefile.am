@@ -28,6 +28,7 @@ sgf-properties.c sgf-properties.h : sgf-properties.list parse-sgf-list$(EXEEXT)
 	  || (rm -f sgf-properties.c sgf-properties.h ; exit 1)
 
 libsgf_a_SOURCES =		\
+	sgf-diff-utils.c	\
 	sgf-parser.c		\
 	sgf-tree.c		\
 	sgf-utils.c		\
@@ -50,7 +51,25 @@ parse_sgf_list_LDADD =				\
 	$(top_srcdir)/src/utils/libutils.a
 
 
-EXTRA_PROGRAMS = sgf-test
+# `sgf-diff' can be made optional with `configure'.
+EXTRA_PROGRAMS =	\
+	sgf-diff	\
+	sgf-test
+
+
+if BUILD_SGF_UTILS
+  bin_PROGRAMS = sgf-diff
+else
+  bin_PROGRAMS =
+endif
+
+sgf_diff_SOURCES = sgf-diff.c
+
+sgf_diff_LDADD =				\
+	libsgf.a				\
+	$(top_srcdir)/src/board/libboard.a	\
+	$(top_srcdir)/src/utils/libutils.a
+
 
 sgf_test_SOURCES = sgf-test.c
 
