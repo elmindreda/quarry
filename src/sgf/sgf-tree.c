@@ -1,7 +1,7 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *\
  * This file is part of Quarry.                                    *
  *                                                                 *
- * Copyright (C) 2003, 2004 Paul Pogonyshev.                       *
+ * Copyright (C) 2003, 2004, 2005 Paul Pogonyshev.                 *
  *                                                                 *
  * This program is free software; you can redistribute it and/or   *
  * modify it under the terms of the GNU General Public License as  *
@@ -122,7 +122,7 @@ sgf_game_tree_new (void)
   tree->user_data      = NULL;
   tree->free_user_data = NULL;
 
-  tree->map_width = 0;
+  tree->map_data_list = NULL;
 
   tree->view_port_nodes = NULL;
   tree->view_port_lines = NULL;
@@ -200,8 +200,7 @@ sgf_game_tree_delete (SgfGameTree *tree)
   if (tree->free_user_data)
     tree->free_user_data (tree->user_data);
 
-  utils_free (tree->view_port_nodes);
-  utils_free (tree->view_port_lines);
+  sgf_game_tree_invalidate_map (tree, NULL);
 
   utils_free (tree);
 }
@@ -388,7 +387,8 @@ sgf_node_new (SgfGameTree *tree, SgfNode *parent)
   node->next		  = NULL;
   node->current_variation = NULL;
 
-  node->is_collapsed = 0;
+  node->is_collapsed		  = 0;
+  node->has_intermediate_map_data = 0;
 
   node->move_color = EMPTY;
 
