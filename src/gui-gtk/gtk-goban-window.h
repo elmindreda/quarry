@@ -28,9 +28,10 @@
 #include "gtk-clock.h"
 #include "gtk-game-info-dialog.h"
 #include "gtk-goban.h"
-#include "gtp-client.h"
+#include "gtk-sgf-tree-view.h"
 #include "gtk-progress-dialog.h"
 #include "time-control.h"
+#include "gtp-client.h"
 #include "sgf.h"
 #include "board.h"
 #include "quarry.h"
@@ -85,6 +86,7 @@ struct _GtkGobanWindow {
   GtkWidget		  *cancel_button;
   GtkTextView		  *text_view;
   GtkTextBuffer		  *text_buffer;
+  GtkSgfTreeView	  *sgf_tree_view;
 
   Board			  *board;
   SgfBoardState		   sgf_board_state;

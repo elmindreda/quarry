@@ -34,6 +34,7 @@
 #include "gtk-preferences.h"
 #include "gtk-qhbox.h"
 #include "gtk-qvbox.h"
+#include "gtk-sgf-tree-view.h"
 #include "gtk-utils.h"
 #include "quarry-marshal.h"
 #include "quarry-stock.h"
@@ -214,6 +215,8 @@ static void	 go_scoring_mode_goban_clicked (GtkGobanWindow *goban_window,
 
 static void	 navigate_goban (GtkGobanWindow *goban_window,
 				 GtkGobanNavigationCommand command);
+static void	 switch_to_given_node (GtkGobanWindow *goban_window,
+				       SgfNode *sgf_node);
 
 static int	 find_variation_to_switch_to (GtkGobanWindow *goban_window,
 					      int x, int y,
@@ -466,8 +469,10 @@ gtk_goban_window_init (GtkGobanWindow *goban_window)
   GtkWidget *mode_hint_label;
   GtkWidget *game_action_buttons_hbox;
   GtkWidget *hbox;
+  GtkWidget *vpaned;
   GtkWidget *text_view;
   GtkWidget *scrolled_window;
+  GtkWidget *sgf_tree_view;
   GtkWidget *vbox;
   GtkWidget *qhbox;
   GtkWidget *menu_bar;
@@ -592,6 +597,9 @@ gtk_goban_window_init (GtkGobanWindow *goban_window)
 			     GTK_UTILS_FILL,
 			     NULL);
 
+  /* Paned control for text view and SGF tree view. */
+  vpaned = gtk_vpaned_new ();
+
   /* Multipurpose text view. */
   text_view = gtk_text_view_new ();
   goban_window->text_view = GTK_TEXT_VIEW (text_view);
@@ -608,6 +616,22 @@ gtk_goban_window_init (GtkGobanWindow *goban_window)
 						      GTK_POLICY_AUTOMATIC,
 						      GTK_POLICY_AUTOMATIC);
 
+  gtk_paned_pack1 (GTK_PANED (vpaned), scrolled_window, TRUE, FALSE);
+
+  /* SGF tree view. */
+  sgf_tree_view = gtk_sgf_tree_view_new ();
+  goban_window->sgf_tree_view = GTK_SGF_TREE_VIEW (sgf_tree_view);
+
+  g_signal_connect_swapped (sgf_tree_view, "sgf-tree-view-clicked",
+			    G_CALLBACK (switch_to_given_node), goban_window);
+
+  /* Make it scrollable. */
+  scrolled_window = gtk_utils_make_widget_scrollable (sgf_tree_view,
+						      GTK_POLICY_AUTOMATIC,
+						      GTK_POLICY_AUTOMATIC);
+
+  gtk_paned_pack2 (GTK_PANED (vpaned), scrolled_window, TRUE, FALSE);
+
   /* Sidebar vertical box. */
   vbox = gtk_utils_pack_in_box (GTK_TYPE_VBOX, 0,
 				goban_window->player_table_vbox,
@@ -619,7 +643,7 @@ gtk_goban_window_init (GtkGobanWindow *goban_window)
 				GTK_UTILS_FILL,
 				goban_window->mode_information_vbox,
 				GTK_UTILS_FILL,
-				scrolled_window, GTK_UTILS_PACK_DEFAULT, NULL);
+				vpaned, GTK_UTILS_PACK_DEFAULT, NULL);
 
   g_signal_connect (vbox, "size-request",
 		    G_CALLBACK (force_minimal_width), NULL);
@@ -1345,12 +1369,7 @@ do_find_text (GtkGobanWindow *goban_window, guint callback_action)
 	occurence = do_search (text_to_search_in_normalized,
 			       text_to_find_normalized);
 	if (occurence) {
-	  about_to_change_node (goban_window);
-	  sgf_utils_switch_to_given_node (goban_window->current_tree,
-					  occurence_node,
-					  &goban_window->sgf_board_state);
-	  just_changed_node (goban_window);
-	  update_children_for_new_node (goban_window);
+	  switch_to_given_node (goban_window, occurence_node);
 
 	  text_to_free = NULL;
 	  goto found;
@@ -2006,6 +2025,8 @@ set_current_tree (GtkGobanWindow *goban_window, SgfGameTree *sgf_tree)
 
   update_game_information (goban_window);
   update_children_for_new_node (goban_window);
+
+  gtk_sgf_tree_view_set_sgf_tree (goban_window->sgf_tree_view, sgf_tree);
 }
 
 
@@ -2581,6 +2602,18 @@ navigate_goban (GtkGobanWindow *goban_window,
 }
 
 
+static void
+switch_to_given_node (GtkGobanWindow *goban_window, SgfNode *sgf_node)
+{
+  about_to_change_node (goban_window);
+  sgf_utils_switch_to_given_node (goban_window->current_tree, sgf_node,
+				  &goban_window->sgf_board_state);
+  just_changed_node (goban_window);
+
+  update_children_for_new_node (goban_window);
+}
+
+
 static int
 find_variation_to_switch_to (GtkGobanWindow *goban_window,
 			     int x, int y,
@@ -2661,6 +2694,8 @@ update_children_for_new_node (GtkGobanWindow *goban_window)
 
   comment = sgf_node_get_text_property_value (current_node, SGF_COMMENT);
   gtk_utils_set_text_buffer_text (goban_window->text_buffer, comment);
+
+  gtk_sgf_tree_view_update_view_port (goban_window->sgf_tree_view);
 
   pass_sensitive = (goban_window->board->game == GAME_GO
 		    && USER_CAN_PLAY_MOVES (goban_window)
@@ -3485,6 +3520,8 @@ move_has_been_generated (GtpClient *client, int successful,
       sgf_game_tree_set_state (current_tree,
 			       tree_state.board, tree_state.current_node,
 			       NULL);
+
+      gtk_sgf_tree_view_update_view_port (goban_window->sgf_tree_view);
     }
 
     move_has_been_played (goban_window);
