@@ -1,3 +1,15 @@
+2005-03-14  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* (Quarry version 0.1.14.)
+
+	* gtp/gtp-client.c (store_protocol_version): Guard all accesses to
+	`client', it may be NULL.  Prevents segfaults.
+
+	* gui-gtk/gtk-preferences.c (engine_is_visible_and_supports_game):
+	Gracefully handle cases when called with iterator, for which data
+	is not yet set.  Prevents segfaults (bug #2089,
+	magnade@gmail.com.)
+
 2005-03-13  Paul Pogonyshev  <pogonyshev@gmx.net>
 
 	* (Quarry version 0.1.13.)

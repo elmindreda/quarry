@@ -1,3 +1,8 @@
+2005-03-14  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* configure.ac: Quarry version 0.1.14.
+	* NEWS: Update.
+
 2005-03-13  Paul Pogonyshev  <pogonyshev@gmx.net>
 
 	* configure.ac: Quarry version 0.1.13.
