@@ -1208,6 +1208,7 @@ static void
 engine_selector_destroyed(GtkEngineSelectorData *data)
 {
   gtp_engine_selectors = g_slist_remove(gtp_engine_selectors, data);
+  g_free(data);
 }
 
 
