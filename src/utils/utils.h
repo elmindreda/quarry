@@ -1,7 +1,8 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *\
  * This file is part of Quarry.                                    *
  *                                                                 *
- * Copyright (C) 2003, 2004 Paul Pogonyshev.                       *
+ * Copyright (C) 2003 Paul Pogonyshev.                             *
+ * Copyright (C) 2004 Paul Pogonyshev and Martin Holters.          *
  *                                                                 *
  * This program is free software; you can redistribute it and/or   *
  * modify it under the terms of the GNU General Public License as  *
@@ -234,7 +235,7 @@ struct _MemoryPool {
 
 
 
-/* `stringlist.c' declarations and global functions. */
+/* `string-list.c' declarations and global functions. */
 
 /* Note that string lists and notches (items) are passed to functions
  * as `void *'.  Creating useful derived string lists seems impossible
@@ -295,6 +296,7 @@ void		  string_list_empty(void *abstract_list);
   ((abstract_list)->first != NULL					\
    && (abstract_list)->first == (abstract_list)->last)
 
+int		  string_list_count_items(void *abstract_list);
 
 void		  string_list_fill_from_string(void *abstract_list,
 					       const char *super_string);

@@ -1,7 +1,8 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *\
  * This file is part of Quarry.                                    *
  *                                                                 *
- * Copyright (C) 2003, 2004 Paul Pogonyshev.                       *
+ * Copyright (C) 2003 Paul Pogonyshev.                             *
+ * Copyright (C) 2004 Paul Pogonyshev and Martin Holters.          *
  *                                                                 *
  * This program is free software; you can redistribute it and/or   *
  * modify it under the terms of the GNU General Public License as  *
@@ -144,6 +145,23 @@ string_list_empty(void *abstract_list)
 
   list->first = NULL;
   list->last = NULL;
+}
+
+
+int
+string_list_count_items(void *abstract_list)
+{
+  StringList *list = (StringList *) abstract_list;
+  StringListItem *this_item;
+
+  int num_items = 0;
+
+  assert(list);
+
+  for (this_item = list->first; this_item; this_item = this_item->next)
+    num_items++;
+
+  return num_items;
 }
 
 
