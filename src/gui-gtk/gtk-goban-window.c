@@ -69,6 +69,12 @@
    && ((goban_window)->player_initialization_step[COLOR_INDEX(color)]	\
        == INITIALIZATION_COMPLETE))
 
+#define USER_IS_TO_PLAY(goban_window)					\
+  (!((goban_window)							\
+     ->players[COLOR_INDEX((goban_window)				\
+			   ->game_position_board_state			\
+			   ->color_to_play)]))
+
 
 enum {
   INITIALIZATION_NOT_STARTED,
@@ -595,7 +601,7 @@ gtk_goban_window_enter_game_mode(GtkGobanWindow *goban_window,
   gtk_utils_set_widgets_visible(black_time_control && white_time_control,
 				black_clock_frame, white_clock_frame, NULL);
 
-  if (USER_CAN_PLAY_MOVES(goban_window))
+  if (USER_IS_TO_PLAY(goban_window))
     start_clock_if_needed(goban_window);
 }
 
@@ -2025,12 +2031,14 @@ initialize_gtp_player(GtpClient *client, int successful,
 
       if (handicap > 0) {
 	gboolean is_fixed_handicap = FALSE;
-	const BoardPositionList *handicap_stones = NULL;
-
-	handicap_stones
+	const BoardPositionList *handicap_stones
 	  = sgf_node_get_list_of_point_property_value(root_node,
 						      SGF_ADD_BLACK);
-	if (handicap_stones) {
+
+	if (handicap_stones
+	    && (handicap_stones->num_positions
+		<= go_get_max_fixed_handicap(game_tree->board_width,
+					     game_tree->board_height))) {
 	  BoardPositionList *fixed_handicap_stones
 	    = go_get_fixed_handicap_stones(game_tree->board_width,
 					   game_tree->board_height,
@@ -2139,7 +2147,9 @@ free_handicap_has_been_placed(GtkGobanWindow *goban_window,
     generate_move_via_gtp(goban_window);
   }
 
-  start_clock_if_needed(goban_window);
+  if (USER_IS_TO_PLAY(goban_window)
+      || GTP_ENGINE_CAN_PLAY_MOVES(goban_window, WHITE))
+    start_clock_if_needed(goban_window);
 }
 
 
