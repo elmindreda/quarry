@@ -99,6 +99,11 @@ COPYING-DOC.
 
 * File `data/textures/wood1.jpg' can be distributed freely (1).
 
+* File `data/textures/wood2.jpg' is copyrighted 2005 by Brenn Hill and
+  is distributed under Creative Commons Attribution-NonCommercial-
+  ShareAlike 2.0 license, which can be found at
+  http://creativecommons.org/licenses/by-nc-sa/2.0/legalcode.
+
 * All SVG files in `data/markup-themes' subdirectories are placed in
   public domain by Paul Pogonyshev.
 
