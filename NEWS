@@ -1,3 +1,8 @@
+--- New in Quarry 0.1.14 ---------------------------------------------
+
+* Two bug-fixes, including fix for #2089, which caused segfaults when
+  adding new GTP engines.
+
 --- New in Quarry 0.1.13 ---------------------------------------------
 
 * Warning about potential loss of information is no longer shown on

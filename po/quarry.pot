@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: quarry-dev@gna.org\n"
-"POT-Creation-Date: 2005-03-13 20:57+0200\n"
+"POT-Creation-Date: 2005-03-14 08:55+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -1172,7 +1172,7 @@ msgstr ""
 msgid "Lost connection to GTP Engine (%s)."
 msgstr ""
 
-#: src/gui-gtk/gtk-preferences.c:2619
+#: src/gui-gtk/gtk-preferences.c:2625
 msgid ""
 "Perhaps engine's binary has been deleted or changed. You will probably need "
 "to alter engine's command line in preferences dialog"
