@@ -62,8 +62,6 @@ enum {
 };
 
 
-typedef struct _GtkPlayerInformation	GtkPlayerInformation;
-
 typedef struct _GtkGobanWindow		GtkGobanWindow;
 typedef struct _GtkGobanWindowClass	GtkGobanWindowClass;
 
@@ -126,6 +124,20 @@ struct _GtkGobanWindow {
   int			   switching_y;
   SgfDirection		   switching_direction;
   SgfNode		  *node_to_switch_to;
+
+  GtkDialog		  *find_dialog;
+  GtkEntry		  *search_for_entry;
+  GtkToggleButton	  *case_sensitive_toggle_button;
+  GtkToggleButton	  *wrap_around_toggle_button;
+  GtkToggleButton	  *whole_words_only_toggle_button;
+  GtkToggleButton	  *search_whole_game_tree_toggle_button;
+  GtkToggleButton	  *close_automatically_toggle_button;
+
+  gchar			  *text_to_find;
+  gboolean		   case_sensitive;
+  gboolean		   whole_words_only;
+  gboolean		   wrap_around;
+  gboolean		   search_whole_game_tree;
 
   GtkGameInfoDialog	  *game_info_dialog;
   GtkProgressDialog	  *scoring_progress_dialog;

@@ -23,6 +23,7 @@
 #include "gtk-goban-window.h"
 
 #include "gtk-clock.h"
+#include "gtk-configuration.h"
 #include "gtk-control-center.h"
 #include "gtk-game-info-dialog.h"
 #include "gtk-goban.h"
@@ -73,8 +74,8 @@
 #define USER_IS_TO_PLAY(goban_window)					\
   (!((goban_window)							\
      ->players[COLOR_INDEX ((goban_window)				\
-			   ->game_position_board_state			\
-			   ->color_to_play)]))
+			    ->game_position_board_state			\
+			    ->color_to_play)]))
 
 
 enum {
@@ -98,6 +99,12 @@ enum {
 };
 
 
+enum {
+  GTK_GOBAN_WINDOW_FIND_NEXT = 1,
+  GTK_GOBAN_WINDOW_FIND_PREVIOUS
+};
+
+
 static void	 gtk_goban_window_class_init (GtkGobanWindowClass *class);
 static void	 gtk_goban_window_init (GtkGobanWindow *goban_window);
 
@@ -112,16 +119,30 @@ static void	 gtk_goban_window_save (GtkGobanWindow *goban_window,
 static void	 save_file_as_response (GtkFileSelection *dialog,
 					gint response_id,
 					GtkGobanWindow *goban_window);
-static void	 save_file_as_destroy (GtkGobanWindow *goban_window);
+
+static void	 show_find_dialog (GtkGobanWindow *goban_window);
+static void	 find_dialog_response (GtkGobanWindow *goban_window,
+				       gint response_id);
+static void	 find_dialog_parameters_changed (GtkGobanWindow *goban_window);
+static gboolean	 do_find_text (GtkGobanWindow *goban_window,
+			       guint callback_action);
+static char *	 strstr_whole_word (const char *haystack, const char *needle);
+static char *	 strrstr_whole_word (const char *haystack, const char *needle);
+static gboolean  char_is_word_constituent (const gchar *character);
+inline static gchar *
+		 get_normalized_text (const gchar *text, gint length,
+				      gboolean case_sensitive);
+static gint	 get_offset_in_original_text (const gchar *text, gint length,
+					      gint normalized_text_offset,
+					      gboolean case_sensitive,
+					      gint first_guess);
 
 static void	 show_game_information_dialog (GtkGobanWindow *goban_window);
 static void	 game_info_dialog_property_changed
 		   (GtkGobanWindow *goban_window, SgfType sgf_property_type);
-static void	 game_info_dialog_destroyed (GtkGobanWindow *goban_window);
 
 static void	 show_preferences_dialog (void);
 static void	 show_about_dialog (void);
-static void	 about_dialog_destroy (GtkWindow *window);
 static void	 show_help_contents (void);
 
 static void	 update_territory_markup (GtkGobanWindow *goban_window);
@@ -151,6 +172,8 @@ static void	 play_resign (GtkGobanWindow *goban_window);
 static void	 set_current_tree (GtkGobanWindow *goban_window,
 				   SgfGameTree *sgf_tree);
 static void	 reenter_current_node (GtkGobanWindow *goban_window);
+static void	 about_to_change_node (GtkGobanWindow *goban_window);
+static void	 just_changed_node (GtkGobanWindow *goban_window);
 
 static void	 cancel_amazons_move (GtkGobanWindow *goban_window);
 static void	 reset_amazons_move_data (GtkGobanWindow *goban_window);
@@ -270,54 +293,91 @@ static void
 gtk_goban_window_init (GtkGobanWindow *goban_window)
 {
   static GtkItemFactoryEntry menu_entries[] = {
-    { N_("/_File"),		NULL,		  NULL, 0, "<Branch>" },
-    { N_("/File/_Open..."),	"<ctrl>O",	  gtk_parser_interface_present,
-      0,			    "<StockItem>",  GTK_STOCK_OPEN },
-    { N_("/File/"),		NULL,		  NULL, 0, "<Separator>" },
-    { N_("/File/_Save"),	"<ctrl>S",	  gtk_goban_window_save,
-      GTK_GOBAN_WINDOW_SAVE,	    "<StockItem>",  GTK_STOCK_SAVE },
-    { N_("/File/Save _As..."),	"<shift><ctrl>S", gtk_goban_window_save,
-      GTK_GOBAN_WINDOW_SAVE_AS,	    "<StockItem>",  GTK_STOCK_SAVE_AS },
+    { N_("/_File"), NULL, NULL, 0, "<Branch>" },
+    { N_("/File/_Open..."),		"<ctrl>O",
+      gtk_parser_interface_present,	0,
+      "<StockItem>",			GTK_STOCK_OPEN },
+    { N_("/File/"), NULL, NULL, 0, "<Separator>" },
 
-    { N_("/_Edit"),		NULL,		  NULL, 0, "<Branch>" },
-    { N_("/Edit/Game _Information"),  NULL,	  show_game_information_dialog,
-      0,			    "<Item>" },
-    { N_("/Edit/"),		NULL,		  NULL, 0, "<Separator>" },
-    { N_("/Edit/_Preferences"),	NULL,		  show_preferences_dialog,
-      0,			    "<StockItem>",  GTK_STOCK_PREFERENCES },
+    { N_("/File/_Save"),		"<ctrl>S",
+      gtk_goban_window_save,		GTK_GOBAN_WINDOW_SAVE,
+      "<StockItem>",			GTK_STOCK_SAVE },
+    { N_("/File/Save _As..."),		"<shift><ctrl>S",
+      gtk_goban_window_save,		GTK_GOBAN_WINDOW_SAVE_AS,
+      "<StockItem>",			GTK_STOCK_SAVE_AS },
 
-    { N_("/_Play"),		NULL,		  NULL, 0, "<Branch>" },
-    { N_("/Play/_Pass"),	NULL,		  play_pass_move,
-      0,			    "<Item>" },
-    { N_("/Play/"),		NULL,		  NULL, 0, "<Separator>" },
-    { N_("/Play/_Resign"),	NULL,		  play_resign,
-      0,			    "<Item>" },
 
-    { N_("/_Go"),		NULL,		  NULL, 0, "<Branch>" },
-    { N_("/Go/_Next Node"),	"<alt>Right",	  navigate_goban,
-      GOBAN_NAVIGATE_FORWARD,	    "<StockItem>",  GTK_STOCK_GO_FORWARD },
-    { N_("/Go/_Previous Node"),	"<alt>Left",	  navigate_goban,
-      GOBAN_NAVIGATE_BACK,	    "<StockItem>",  GTK_STOCK_GO_BACK },
-    { N_("/Go/Ten Nodes _Forward"),   "<alt>Page_Down", navigate_goban,
-      GOBAN_NAVIGATE_FORWARD_FAST,  "<Item>" },
-    { N_("/Go/Ten Nodes _Backward"),  "<alt>Page_Up",	navigate_goban,
-      GOBAN_NAVIGATE_BACK_FAST,	    "<Item>" },
-    { N_("/Go/"),		NULL,		  NULL, 0, "<Separator>" },
-    { N_("/Go/_Root Node"),	"<alt>Home",	  navigate_goban,
-      GOBAN_NAVIGATE_ROOT,	    "<StockItem>",  GTK_STOCK_GOTO_FIRST },
-    { N_("/Go/Variation _Last Node"), "<alt>End",	navigate_goban,
-      GOBAN_NAVIGATE_VARIATION_END, "<StockItem>",  GTK_STOCK_GOTO_LAST },
-    { N_("/Go/"),		NULL,		  NULL, 0, "<Separator>" },
-    { N_("/Go/Ne_xt Variation"),      "<alt>Down",	navigate_goban,
-      GOBAN_NAVIGATE_NEXT_VARIATION, "<StockItem>", GTK_STOCK_GO_DOWN },
-    { N_("/Go/Pre_vious Variation"),  "<alt>Up",	navigate_goban,
-      GOBAN_NAVIGATE_PREVIOUS_VARIATION, "<StockItem>", GTK_STOCK_GO_UP },
+    { N_("/_Edit"), NULL, NULL, 0, "<Branch>" },
+    { N_("/Edit/_Find"),		"<ctrl>F",
+      show_find_dialog,			0,
+      "<StockItem>",			GTK_STOCK_FIND },
+    { N_("/Edit/Find Ne_xt"),		"<ctrl>G",
+      (GtkItemFactoryCallback) do_find_text, GTK_GOBAN_WINDOW_FIND_NEXT,
+      "<Item>" },
+    { N_("/Edit/Find Pre_vious"),	"<shift><ctrl>G",
+      (GtkItemFactoryCallback) do_find_text, GTK_GOBAN_WINDOW_FIND_PREVIOUS,
+      "<Item>" },
+    { N_("/Edit/"), NULL, NULL, 0, "<Separator>" },
 
-    { N_("/_Help"),		NULL,		  NULL, 0, "<Branch>" },
-    { N_("/Help/_Contents"),	"F1",		  show_help_contents,
-      0,			    "<StockItem>",  GTK_STOCK_HELP },
-    { N_("/Help/_About"),	NULL,		  show_about_dialog,
-      0,			     "<Item>" }
+    { N_("/Edit/Game _Information"),	NULL,
+      show_game_information_dialog,	0,
+      "<Item>" },
+    { N_("/Edit/"), NULL, NULL, 0, "<Separator>" },
+
+    { N_("/Edit/_Preferences"),		NULL,
+      show_preferences_dialog,		0,
+      "<StockItem>",			GTK_STOCK_PREFERENCES },
+
+
+    { N_("/_Play"), NULL, NULL, 0, "<Branch>" },
+    { N_("/Play/_Pass"),		NULL,
+      play_pass_move,			0,
+      "<Item>" },
+    { N_("/Play/"), NULL, NULL, 0, "<Separator>" },
+
+    { N_("/Play/_Resign"),		NULL,
+      play_resign,			0,
+      "<Item>" },
+
+
+    { N_("/_Go"), NULL, NULL, 0, "<Branch>" },
+    { N_("/Go/_Next Node"),		"<alt>Right",
+      navigate_goban,			GOBAN_NAVIGATE_FORWARD,
+      "<StockItem>",			GTK_STOCK_GO_FORWARD },
+    { N_("/Go/_Previous Node"),		"<alt>Left",
+      navigate_goban,			GOBAN_NAVIGATE_BACK,
+      "<StockItem>",			GTK_STOCK_GO_BACK },
+    { N_("/Go/Ten Nodes _Forward"),	"<alt>Page_Down",
+      navigate_goban,			GOBAN_NAVIGATE_FORWARD_FAST,
+      "<Item>" },
+    { N_("/Go/Ten Nodes _Backward"),	"<alt>Page_Up",
+      navigate_goban,			GOBAN_NAVIGATE_BACK_FAST,
+      "<Item>" },
+    { N_("/Go/"), NULL, NULL, 0, "<Separator>" },
+
+    { N_("/Go/_Root Node"),		"<alt>Home",
+      navigate_goban,			GOBAN_NAVIGATE_ROOT,
+      "<StockItem>",			GTK_STOCK_GOTO_FIRST },
+    { N_("/Go/Variation _Last Node"),	"<alt>End",
+      navigate_goban,			 GOBAN_NAVIGATE_VARIATION_END,
+      "<StockItem>",			GTK_STOCK_GOTO_LAST },
+    { N_("/Go/"), NULL, NULL, 0, "<Separator>" },
+
+    { N_("/Go/Ne_xt Variation"),	"<alt>Down",
+      navigate_goban,			GOBAN_NAVIGATE_NEXT_VARIATION,
+      "<StockItem>",			GTK_STOCK_GO_DOWN },
+    { N_("/Go/Pre_vious Variation"),	"<alt>Up",
+      navigate_goban,			GOBAN_NAVIGATE_PREVIOUS_VARIATION,
+      "<StockItem>",			GTK_STOCK_GO_UP },
+
+
+    { N_("/_Help"), NULL, NULL, 0, "<Branch>" },
+    { N_("/Help/_Contents"),		"F1",
+      show_help_contents,		0,
+      "<StockItem>",			GTK_STOCK_HELP },
+    { N_("/Help/_About"),		NULL,
+      show_about_dialog,		0,
+      "<Item>" }
   };
 
   GtkWidget *goban;
@@ -506,6 +566,9 @@ gtk_goban_window_init (GtkGobanWindow *goban_window)
   goban_window->last_displayed_node = NULL;
   goban_window->last_game_info_node = NULL;
 
+  goban_window->find_dialog = NULL;
+  goban_window->text_to_find = NULL;
+
   goban_window->game_info_dialog = NULL;
 }
 
@@ -655,6 +718,10 @@ gtk_goban_window_finalize (GObject *object)
   if (goban_window->save_as_dialog)
     gtk_widget_destroy (GTK_WIDGET (goban_window->save_as_dialog));
 
+  g_free (goban_window->text_to_find);
+  if (goban_window->find_dialog)
+    gtk_widget_destroy (GTK_WIDGET (goban_window->find_dialog));
+
   G_OBJECT_CLASS (parent_class)->finalize (object);
 }
 
@@ -714,6 +781,8 @@ gtk_goban_window_save (GtkGobanWindow *goban_window, guint callback_action)
 
       goban_window->save_as_dialog = GTK_WINDOW (file_selection);
       gtk_control_center_window_created (goban_window->save_as_dialog);
+      gtk_utils_null_pointer_on_destroy (&goban_window->save_as_dialog, TRUE);
+
       gtk_window_set_transient_for (goban_window->save_as_dialog,
 				    GTK_WINDOW (goban_window));
       gtk_window_set_destroy_with_parent (goban_window->save_as_dialog, TRUE);
@@ -721,9 +790,6 @@ gtk_goban_window_save (GtkGobanWindow *goban_window, guint callback_action)
       gtk_utils_add_file_selection_response_handlers
 	(file_selection, TRUE,
 	 G_CALLBACK (save_file_as_response), goban_window);
-      g_signal_connect_swapped (file_selection, "destroy",
-				G_CALLBACK (save_file_as_destroy),
-				goban_window);
     }
 
     gtk_window_present (goban_window->save_as_dialog);
@@ -752,27 +818,659 @@ save_file_as_response (GtkFileSelection *dialog, gint response_id,
 }
 
 
+
+/* FIXME: Move find dialog to another file? */
+
 static void
-save_file_as_destroy (GtkGobanWindow *goban_window)
+show_find_dialog (GtkGobanWindow *goban_window)
 {
-  gtk_control_center_window_destroyed (goban_window->save_as_dialog);
-  goban_window->save_as_dialog = NULL;
+  static const gchar *radio_button_labels[2]
+    = { N_("Search current no_de"),  N_("Search whole game _tree") };
+
+  if (!goban_window->find_dialog) {
+    GtkWidget *dialog
+      = gtk_dialog_new_with_buttons (_("Find"), GTK_WINDOW (goban_window),
+				     GTK_DIALOG_DESTROY_WITH_PARENT,
+				     GTK_STOCK_CLOSE, GTK_RESPONSE_CANCEL,
+				     QUARRY_STOCK_PREVIOUS,
+				     GTK_GOBAN_WINDOW_FIND_PREVIOUS,
+				     QUARRY_STOCK_NEXT,
+				     GTK_GOBAN_WINDOW_FIND_NEXT, NULL);
+    GtkWidget *entry;
+    GtkWidget *label;
+    GtkWidget *hbox1;
+    GtkWidget *case_sensitive_check_button;
+    GtkWidget *whole_words_only_check_button;
+    GtkWidget *wrap_around_check_button;
+    GtkWidget *vbox1;
+    GtkWidget *radio_buttons[2];
+    GtkWidget *vbox2;
+    GtkWidget *hbox2;
+    GtkWidget *close_automatically_check_button;
+
+    if (!goban_window->text_to_find) {
+      /* The dialog is opened for the first time for this
+       * `goban_window'.  Initialize local configuration.
+       */
+      goban_window->case_sensitive
+	= find_dialog_configuration.case_sensitive;
+      goban_window->whole_words_only
+	= find_dialog_configuration.whole_words_only;
+      goban_window->wrap_around
+	= find_dialog_configuration.wrap_around;
+      goban_window->search_whole_game_tree
+	= find_dialog_configuration.search_whole_game_tree;
+    }
+
+    goban_window->find_dialog = GTK_DIALOG (dialog);
+    gtk_utils_null_pointer_on_destroy (((GtkWindow **)
+					&goban_window->find_dialog),
+				       FALSE);
+
+    g_signal_connect_swapped (dialog, "response",
+			      G_CALLBACK (find_dialog_response), goban_window);
+
+    entry = gtk_utils_create_entry (goban_window->text_to_find,
+				    RETURN_ACTIVATES_DEFAULT);
+    goban_window->search_for_entry = GTK_ENTRY (entry);
+
+    /* FIXME: Implement history, maybe only for GTK+ 2.4. */
+
+    g_signal_connect_swapped (entry, "changed",
+			      G_CALLBACK (find_dialog_parameters_changed),
+			      goban_window);
+
+    label = gtk_utils_create_mnemonic_label (_("Search _for:"), entry);
+
+    hbox1 = gtk_utils_pack_in_box (GTK_TYPE_HBOX, QUARRY_SPACING,
+				   label, GTK_UTILS_FILL,
+				   entry, GTK_UTILS_PACK_DEFAULT, NULL);
+
+    case_sensitive_check_button
+      = gtk_check_button_new_with_mnemonic (_("Case _sensitive"));
+    goban_window->case_sensitive_toggle_button
+      = GTK_TOGGLE_BUTTON (case_sensitive_check_button);
+
+    if (goban_window->case_sensitive) {
+      gtk_toggle_button_set_active (goban_window->case_sensitive_toggle_button,
+				    TRUE);
+    }
+
+    g_signal_connect_swapped (case_sensitive_check_button, "toggled",
+			      G_CALLBACK (find_dialog_parameters_changed),
+			      goban_window);
+
+    whole_words_only_check_button
+      = gtk_check_button_new_with_mnemonic (_("Whole _words only"));
+    goban_window->whole_words_only_toggle_button
+      = GTK_TOGGLE_BUTTON (whole_words_only_check_button);
+
+    if (goban_window->whole_words_only) {
+      gtk_toggle_button_set_active
+	(goban_window->whole_words_only_toggle_button, TRUE);
+    }
+
+    g_signal_connect_swapped (whole_words_only_check_button, "toggled",
+			      G_CALLBACK (find_dialog_parameters_changed),
+			      goban_window);
+
+    wrap_around_check_button
+      = gtk_check_button_new_with_mnemonic (_("Wrap _around"));
+    goban_window->wrap_around_toggle_button
+      = GTK_TOGGLE_BUTTON (wrap_around_check_button);
+
+    if (goban_window->wrap_around) {
+      gtk_toggle_button_set_active (goban_window->wrap_around_toggle_button,
+				    TRUE);
+    }
+
+    g_signal_connect_swapped (wrap_around_check_button, "toggled",
+			      G_CALLBACK (find_dialog_parameters_changed),
+			      goban_window);
+
+    vbox1 = gtk_utils_pack_in_box (GTK_TYPE_VBOX, QUARRY_SPACING_SMALL,
+				   case_sensitive_check_button, GTK_UTILS_FILL,
+				   whole_words_only_check_button,
+				   GTK_UTILS_FILL,
+				   wrap_around_check_button, GTK_UTILS_FILL,
+				   NULL);
+
+    gtk_utils_create_radio_chain (radio_buttons, radio_button_labels, 2);
+    goban_window->search_whole_game_tree_toggle_button
+      = GTK_TOGGLE_BUTTON (radio_buttons[1]);
+
+    if (goban_window->search_whole_game_tree) {
+      gtk_toggle_button_set_active
+	(goban_window->search_whole_game_tree_toggle_button, TRUE);
+    }
+
+    g_signal_connect_swapped (radio_buttons[0], "toggled",
+			      G_CALLBACK (find_dialog_parameters_changed),
+			      goban_window);
+
+    vbox2 = gtk_utils_pack_in_box (GTK_TYPE_VBOX, QUARRY_SPACING_SMALL,
+				   radio_buttons[0], GTK_UTILS_FILL,
+				   radio_buttons[1], GTK_UTILS_FILL, NULL);
+
+    hbox2 = gtk_utils_pack_in_box (GTK_TYPE_HBOX, QUARRY_SPACING_VERY_BIG,
+				   vbox1, GTK_UTILS_PACK_DEFAULT,
+				   vbox2, GTK_UTILS_PACK_DEFAULT, NULL);
+
+    close_automatically_check_button
+      = (gtk_check_button_new_with_mnemonic
+	 (_("Close this dialog a_utomatically")));
+    goban_window->close_automatically_toggle_button
+      = GTK_TOGGLE_BUTTON (close_automatically_check_button);
+
+    if (find_dialog_configuration.close_automatically) {
+      gtk_toggle_button_set_active
+	(goban_window->close_automatically_toggle_button, TRUE);
+    }
+
+    vbox1 = gtk_utils_pack_in_box (GTK_TYPE_VBOX, QUARRY_SPACING_BIG,
+				   hbox1, GTK_UTILS_FILL,
+				   hbox2, GTK_UTILS_FILL,
+				   close_automatically_check_button,
+				   GTK_UTILS_FILL,
+				   NULL);
+
+    gtk_widget_show_all (vbox1);
+    gtk_utils_standardize_dialog (goban_window->find_dialog, vbox1);
+
+    gtk_dialog_set_default_response (goban_window->find_dialog,
+				     GTK_GOBAN_WINDOW_FIND_NEXT);
+
+    /* Desensitize buttons if the entry is empty. */
+    find_dialog_parameters_changed (goban_window);
+  }
+
+  gtk_window_present (GTK_WINDOW (goban_window->find_dialog));
 }
 
 
+static void
+find_dialog_response (GtkGobanWindow *goban_window, gint response_id)
+{
+  if (response_id == GTK_GOBAN_WINDOW_FIND_NEXT
+      || response_id == GTK_GOBAN_WINDOW_FIND_PREVIOUS) {
+    g_free (goban_window->text_to_find);
+    goban_window->text_to_find
+      = g_strdup (gtk_entry_get_text (goban_window->search_for_entry));
+
+    goban_window->case_sensitive
+      = (gtk_toggle_button_get_active
+	 (goban_window->case_sensitive_toggle_button));
+    find_dialog_configuration.case_sensitive = goban_window->case_sensitive;
+
+    goban_window->whole_words_only
+      = (gtk_toggle_button_get_active
+	 (goban_window->whole_words_only_toggle_button));
+    find_dialog_configuration.whole_words_only
+      = goban_window->whole_words_only;
+
+    goban_window->wrap_around
+      = gtk_toggle_button_get_active (goban_window->wrap_around_toggle_button);
+    find_dialog_configuration.wrap_around = goban_window->wrap_around;
+
+    goban_window->search_whole_game_tree
+      = (gtk_toggle_button_get_active
+	 (goban_window->search_whole_game_tree_toggle_button));
+    find_dialog_configuration.search_whole_game_tree
+      = goban_window->search_whole_game_tree;
+
+    find_dialog_configuration.close_automatically
+      = (gtk_toggle_button_get_active
+	 (goban_window->close_automatically_toggle_button));
+
+    if (!do_find_text (goban_window, response_id)
+	|| !find_dialog_configuration.close_automatically) {
+      /* Don't close the dialog. */
+      return;
+    }
+  }
+
+  gtk_widget_destroy (GTK_WIDGET (goban_window->find_dialog));
+}
+
+
+static void
+find_dialog_parameters_changed (GtkGobanWindow *goban_window)
+{
+  gboolean sensitive = (* gtk_entry_get_text (goban_window->search_for_entry)
+			!= 0);
+
+  gtk_dialog_set_response_sensitive (goban_window->find_dialog,
+				     GTK_GOBAN_WINDOW_FIND_NEXT, sensitive);
+  gtk_dialog_set_response_sensitive (goban_window->find_dialog,
+				     GTK_GOBAN_WINDOW_FIND_PREVIOUS,
+				     sensitive);
+}
+
+
+/* This function finds text occurences in comments of current SGF game
+ * tree's nodes.  We don't use GtkTreeBuffer built-in search, because
+ * it would have been very inefficient: we would have had to load each
+ * comment in a buffer before searching.  Also, GtkTreeBuffer
+ * apparently doesn't care much for Unicode character collation etc.
+ */
+static gboolean
+do_find_text (GtkGobanWindow *goban_window, guint callback_action)
+{
+  GtkTextBuffer *text_buffer = goban_window->text_buffer;
+  GtkTextIter start_iterator;
+  GtkTextIter selection_iterator;
+  GtkTextIter end_iterator;
+
+  gboolean case_sensitive = goban_window->case_sensitive;
+
+  gchar *text_to_find_normalized;
+  const gchar *text_to_search_in;
+  gchar *text_to_search_in_normalized;
+  gchar *text_to_free;
+  const gchar *occurence;
+  gint base_offset = 0;
+
+  char * (* do_search) (const char *haystack, const char *needle);
+
+  assert (goban_window->text_to_find);
+
+  text_to_find_normalized = get_normalized_text (goban_window->text_to_find,
+						 -1, case_sensitive);
+
+  if (callback_action == GTK_GOBAN_WINDOW_FIND_NEXT)
+    do_search = (goban_window->whole_words_only ? strstr_whole_word : strstr);
+  else {
+    /* Apparently, g_strrstr() uses naive search, but let's not care. */
+    do_search = (goban_window->whole_words_only
+		 ? strrstr_whole_word : g_strrstr);
+  }
+
+  /* First search in the right portion of the current node's
+   * comments.
+   */
+
+  if (callback_action == GTK_GOBAN_WINDOW_FIND_NEXT) {
+    gtk_text_buffer_get_selection_bounds (text_buffer,
+					  NULL, &selection_iterator);
+    gtk_text_buffer_get_end_iter (text_buffer, &end_iterator);
+
+    text_to_free = gtk_text_iter_get_text (&selection_iterator, &end_iterator);
+  }
+  else {
+    gtk_text_buffer_get_start_iter (text_buffer, &start_iterator);
+    gtk_text_buffer_get_selection_bounds (text_buffer,
+					  &selection_iterator, NULL);
+
+    text_to_free = gtk_text_iter_get_text (&start_iterator,
+					   &selection_iterator);
+  }
+
+  text_to_search_in_normalized = get_normalized_text (text_to_free, -1,
+						      case_sensitive);
+
+  occurence = do_search (text_to_search_in_normalized,
+			 text_to_find_normalized);
+  if (occurence) {
+    text_to_search_in = text_to_free;
+    if (callback_action == GTK_GOBAN_WINDOW_FIND_NEXT)
+      base_offset = gtk_text_iter_get_offset (&selection_iterator);
+
+    goto found;
+  }
+
+  g_free (text_to_search_in_normalized);
+  g_free (text_to_free);
+
+  /* Next traverse the game tree if requested. */
+  if (goban_window->search_whole_game_tree) {
+    SgfNode *occurence_node = goban_window->current_tree->current_node;
+    SgfNode * (* do_traverse) (const SgfNode *sgf_node)
+      = (callback_action == GTK_GOBAN_WINDOW_FIND_NEXT
+	 ? sgf_node_traverse_forward : sgf_node_traverse_backward);
+
+    while (1) {
+      occurence_node = do_traverse (occurence_node);
+      if (!occurence_node) {
+	if (!goban_window->wrap_around)
+	  break;
+
+	if (callback_action == GTK_GOBAN_WINDOW_FIND_NEXT) {
+	  occurence_node
+	      = sgf_game_tree_traverse_forward (goban_window->current_tree);
+	}
+	else {
+	  occurence_node
+	    = sgf_game_tree_traverse_backward (goban_window->current_tree);
+	}
+      }
+
+      /* Can happen when wrapping around. */
+      if (occurence_node == goban_window->current_tree->current_node)
+	break;
+
+      text_to_search_in = sgf_node_get_text_property_value (occurence_node,
+							    SGF_COMMENT);
+      if (text_to_search_in) {
+	text_to_search_in_normalized = get_normalized_text (text_to_search_in,
+							    -1,
+							    case_sensitive);
+
+	occurence = do_search (text_to_search_in_normalized,
+			       text_to_find_normalized);
+	if (occurence) {
+	  about_to_change_node (goban_window);
+	  sgf_utils_switch_to_given_node (goban_window->current_tree,
+					  occurence_node,
+					  &goban_window->sgf_board_state);
+	  just_changed_node (goban_window);
+	  update_children_for_new_node (goban_window);
+
+	  text_to_free = NULL;
+	  goto found;
+	}
+
+	g_free (text_to_search_in_normalized);
+      }
+    }
+  }
+
+  /* Finally, wrap around in the current node's comment, if
+   * requested.
+   */
+  if (goban_window->wrap_around) {
+    if (callback_action == GTK_GOBAN_WINDOW_FIND_NEXT) {
+      gtk_text_buffer_get_start_iter (text_buffer, &start_iterator);
+
+      /* The `selection_iterator' is already set. */
+      text_to_free = gtk_text_iter_get_text (&start_iterator,
+					     &selection_iterator);
+    }
+    else {
+      gtk_text_buffer_get_end_iter (text_buffer, &end_iterator);
+
+      /* The `selection_iterator' is already set. */
+      text_to_free = gtk_text_iter_get_text (&selection_iterator,
+					     &end_iterator);
+    }
+
+    text_to_search_in_normalized = get_normalized_text (text_to_free, -1,
+							case_sensitive);
+
+    occurence = do_search (text_to_search_in_normalized,
+			   text_to_find_normalized);
+    if (occurence) {
+      text_to_search_in = text_to_free;
+      if (callback_action == GTK_GOBAN_WINDOW_FIND_PREVIOUS)
+	base_offset = gtk_text_iter_get_offset (&selection_iterator);
+
+      goto found;
+    }
+
+    g_free (text_to_search_in_normalized);
+    g_free (text_to_free);
+  }
+
+  /* Nothing found. */
+
+  if (goban_window->find_dialog) {
+    if (goban_window->wrap_around
+	|| callback_action == GTK_GOBAN_WINDOW_FIND_NEXT) {
+      gtk_dialog_set_response_sensitive (goban_window->find_dialog,
+					 GTK_GOBAN_WINDOW_FIND_NEXT, FALSE);
+    }
+
+    if (goban_window->wrap_around
+	|| callback_action == GTK_GOBAN_WINDOW_FIND_PREVIOUS) {
+      gtk_dialog_set_response_sensitive (goban_window->find_dialog,
+					 GTK_GOBAN_WINDOW_FIND_PREVIOUS,
+					 FALSE);
+    }
+  }
+
+  g_free (text_to_find_normalized);
+
+  return FALSE;
+
+ found:
+
+  {
+    /* We need to find the boundaries of the found string to adjust
+     * selection in the `text_buffer'.
+     *
+     * The main problem is that g_utf8_normalize() can change the
+     * length of string in characters (not the case with simple ASCII
+     * strings, but we at Unicode handling here.)  So, we find how
+     * `text_to_search_in' maps onto `text_to_search_in_normalized'
+     * here.
+     */
+    const gchar *last_line;
+    const gchar *last_line_normalized;
+    const gchar *scan;
+    gint num_lines;
+    gint remaining_text_length;
+    gint last_line_offset;
+
+    /* First skip all full lines, to speed the things up in case of a
+     * very long text.
+     */
+
+    for (last_line_normalized = text_to_search_in_normalized,
+	   scan = text_to_search_in_normalized, num_lines = 0;
+	 scan < occurence; scan++) {
+      if (*scan == '\n') {
+	num_lines++;
+	last_line_normalized = scan + 1;
+      }
+    }
+
+    for (last_line = text_to_search_in; num_lines > 0; last_line++) {
+      if (IS_UTF8_STARTER (*last_line)) {
+	/* Also adjust `base_offset' as we scan the text. */
+	base_offset++;
+
+	if (*last_line == '\n')
+	  num_lines--;
+      }
+    }
+
+    remaining_text_length = strlen (last_line);
+    last_line_offset
+      = get_offset_in_original_text (last_line, remaining_text_length,
+				     occurence - last_line_normalized,
+				     case_sensitive,
+				     occurence - last_line_normalized);
+
+    gtk_text_buffer_get_iter_at_offset (text_buffer, &selection_iterator,
+					base_offset + last_line_offset);
+    gtk_text_buffer_move_mark_by_name (text_buffer, "insert", &selection_iterator);
+
+    last_line_offset
+      = get_offset_in_original_text (last_line, remaining_text_length,
+				     ((occurence
+				       + strlen (text_to_find_normalized))
+				      - last_line_normalized),
+				     case_sensitive,
+				     (last_line_offset
+				      + strlen (goban_window->text_to_find)));
+
+    gtk_text_buffer_get_iter_at_offset (text_buffer, &selection_iterator,
+					base_offset + last_line_offset);
+    gtk_text_buffer_move_mark_by_name (text_buffer,
+				       "selection_bound", &selection_iterator);
+  }
+
+  g_free (text_to_find_normalized);
+  g_free (text_to_search_in_normalized);
+  g_free (text_to_free);
+
+  return TRUE;
+}
+
+
+static char *
+strstr_whole_word (const char *haystack, const char *needle)
+{
+  gchar *occurence = strstr (haystack, needle);
+
+  if (occurence) {
+    gint needle_length = strlen (needle);
+    gboolean first_char_is_word_constituent
+      = char_is_word_constituent (needle);
+    gboolean last_char_is_word_constituent
+      = char_is_word_constituent (g_utf8_prev_char (needle + needle_length));
+
+    do {
+      if ((!first_char_is_word_constituent
+	   || occurence == haystack
+	   || !char_is_word_constituent (g_utf8_prev_char (occurence)))
+	  && (!last_char_is_word_constituent
+	      || *(occurence + needle_length) == 0
+	      || !char_is_word_constituent (occurence + needle_length)))
+	return occurence;
+
+      occurence = strstr (occurence + 1, needle);
+    } while (occurence);
+  }
+
+  return NULL;
+}
+
+
+static char *
+strrstr_whole_word (const char *haystack, const char *needle)
+{
+  gchar *occurence = g_strrstr (haystack, needle);
+
+  if (occurence) {
+    gint needle_length = strlen (needle);
+    gboolean first_char_is_word_constituent
+      = char_is_word_constituent (needle);
+    gboolean last_char_is_word_constituent
+      = char_is_word_constituent (g_utf8_prev_char (needle + needle_length));
+
+    do {
+      if ((!first_char_is_word_constituent
+	   || occurence == haystack
+	   || !char_is_word_constituent (g_utf8_prev_char (occurence)))
+	  && (!last_char_is_word_constituent
+	      || *(occurence + needle_length) == 0
+	      || !char_is_word_constituent (occurence + needle_length)))
+	return occurence;
+
+      occurence = g_strrstr_len (haystack,
+				 occurence + (needle_length - 1) - haystack,
+				 needle);
+    } while (occurence);
+  }
+
+  return NULL;
+}
+
+
+static gboolean
+char_is_word_constituent (const gchar *character)
+{
+  GUnicodeType character_type = g_unichar_type (g_utf8_get_char (character));
+
+  return (character_type == G_UNICODE_LOWERCASE_LETTER
+	  || character_type == G_UNICODE_MODIFIER_LETTER
+	  || character_type == G_UNICODE_OTHER_LETTER
+	  || character_type == G_UNICODE_TITLECASE_LETTER
+	  || character_type == G_UNICODE_UPPERCASE_LETTER
+	  || character_type == G_UNICODE_DECIMAL_NUMBER
+	  || character_type == G_UNICODE_LETTER_NUMBER
+	  || character_type == G_UNICODE_OTHER_NUMBER);
+}
+
+
+inline static gchar *
+get_normalized_text (const gchar *text, gint length, gboolean case_sensitive)
+{
+  gchar *normalized_text;
+
+  if (case_sensitive)
+    normalized_text = g_utf8_normalize (text, length, G_NORMALIZE_ALL_COMPOSE);
+  else {
+    gchar *case_folded_text = g_utf8_casefold (text, length);
+
+    normalized_text = g_utf8_normalize (case_folded_text, -1,
+					G_NORMALIZE_ALL_COMPOSE);
+    g_free (case_folded_text);
+  }
+
+  return normalized_text;
+}
+
+
+static gint
+get_offset_in_original_text (const gchar *text, gint length,
+			     gint normalized_text_offset,
+			     gboolean case_sensitive, gint first_guess)
+{
+  gint byte_offset = MIN (first_guess, length - 1);
+  gint offset;
+  const gchar *scan;
+
+  if (normalized_text_offset == 0)
+    return 0;
+
+  while (byte_offset < length && !IS_UTF8_STARTER (text[byte_offset]))
+    byte_offset++;
+
+  while (1) {
+    gchar *normalized_text = get_normalized_text (text, byte_offset,
+						  case_sensitive);
+    gint length = strlen (normalized_text);
+
+    g_free (normalized_text);
+
+    if (length == normalized_text_offset)
+      break;
+
+    /* FIXME: Maybe implement something more efficient than one UTF-8
+     *	      character at a time.
+     */
+    if (length < normalized_text_offset) {
+      do
+	byte_offset++;
+      while (byte_offset < length && !IS_UTF8_STARTER (text[byte_offset]));
+
+      if (byte_offset == length)
+	break;
+    }
+    else {
+      do
+	byte_offset--;
+      while (byte_offset > 0 && !IS_UTF8_STARTER (text[byte_offset]));
+
+      if (byte_offset == 0)
+	return 0;
+    }
+  }
+
+  for (offset = 0, scan = text; scan < text + byte_offset; scan++) {
+    if (IS_UTF8_STARTER (*scan))
+      offset++;
+  }
+
+  return offset;
+}
+
+
+
 static void
 show_game_information_dialog (GtkGobanWindow *goban_window)
 {
   if (!goban_window->game_info_dialog) {
     goban_window->game_info_dialog
       = GTK_GAME_INFO_DIALOG (gtk_game_info_dialog_new ());
+    gtk_utils_null_pointer_on_destroy (((GtkWindow **)
+					&goban_window->game_info_dialog),
+				       FALSE);
 
     g_signal_connect_swapped (goban_window->game_info_dialog,
 			      "property-changed",
 			      G_CALLBACK (game_info_dialog_property_changed),
-			      goban_window);
-    g_signal_connect_swapped (goban_window->game_info_dialog, "destroy",
-			      G_CALLBACK (game_info_dialog_destroyed),
 			      goban_window);
 
     gtk_game_info_dialog_set_node (goban_window->game_info_dialog,
@@ -828,13 +1526,6 @@ game_info_dialog_property_changed (GtkGobanWindow *goban_window,
 
 
 static void
-game_info_dialog_destroyed (GtkGobanWindow *goban_window)
-{
-  goban_window->game_info_dialog = NULL;
-}
-
-
-static void
 show_preferences_dialog (void)
 {
   gtk_preferences_dialog_present (GINT_TO_POINTER (-1));
@@ -848,18 +1539,18 @@ show_about_dialog (void)
     GtkWidget *dialog = gtk_dialog_new_with_buttons (_("About Quarry"),
 						     NULL, 0,
 						     GTK_STOCK_CLOSE,
-						     GTK_RESPONSE_CLOSE, NULL);
+						     GTK_RESPONSE_CANCEL,
+						     NULL);
     GtkWidget *quarry_label;
     GtkWidget *description_label;
     GtkWidget *copyright_label;
     GtkWidget *vbox;
 
     about_dialog = GTK_WINDOW (dialog);
+    gtk_utils_null_pointer_on_destroy (&about_dialog, FALSE);
 
-    gtk_dialog_set_default_response (GTK_DIALOG (dialog), GTK_RESPONSE_CLOSE);
+    gtk_dialog_set_default_response (GTK_DIALOG (dialog), GTK_RESPONSE_CANCEL);
 
-    g_signal_connect (dialog, "destroy",
-		      G_CALLBACK (about_dialog_destroy), NULL);
     g_signal_connect (dialog, "response",
 		      G_CALLBACK (gtk_widget_destroy), NULL);
 
@@ -872,8 +1563,10 @@ show_about_dialog (void)
 					 "and Othello board games"));
 
     copyright_label = gtk_label_new (NULL);
+    gtk_label_set_justify (GTK_LABEL (copyright_label), GTK_JUSTIFY_CENTER);
     gtk_label_set_markup (GTK_LABEL (copyright_label),
-			  _("<small>Copyright \xc2\xa9 2004 "
+			  _("<small>Copyright \xc2\xa9 2003 Paul Pogonyshev\n"
+			    "Copyright \xc2\xa9 2004 "
 			    "Paul Pogonyshev and Martin Holters</small>"));
 
     vbox = gtk_utils_pack_in_box (GTK_TYPE_VBOX, QUARRY_SPACING,
@@ -886,14 +1579,6 @@ show_about_dialog (void)
   }
 
   gtk_window_present (about_dialog);
-}
-
-
-static void
-about_dialog_destroy (GtkWindow *window)
-{
-  assert (window == about_dialog);
-  about_dialog = NULL;
 }
 
 
@@ -1094,6 +1779,49 @@ reenter_current_node (GtkGobanWindow *goban_window)
 
   goban_window->last_displayed_node = NULL;
   update_children_for_new_node (goban_window);
+}
+
+
+/* This function must be called before changing to ``arbitrary'' in
+ * some sense node.  More exactly, when the node we are going to
+ * switch to is not being added as a result of playing a move.
+ */
+static void
+about_to_change_node (GtkGobanWindow *goban_window)
+{
+  if (goban_window->in_game_mode && IS_DISPLAYING_GAME_NODE (goban_window)) {
+    /* Goban window is going to display something other than the game
+     * position node.
+     */
+    goban_window->game_position_node
+      = goban_window->current_tree->current_node;
+    goban_window->game_position_board
+      = board_duplicate_without_stacks (goban_window->board);
+
+    goban_window->game_position_board_state
+      = &goban_window->game_position_board_state_holder;
+    memcpy (&goban_window->game_position_board_state_holder,
+	    &goban_window->sgf_board_state, sizeof (SgfBoardState));
+  }
+}
+
+
+/* Similar to about_to_change_node(), but has to be called after the
+ * current node is changed.
+ */
+static void
+just_changed_node (GtkGobanWindow *goban_window)
+{
+  if (goban_window->in_game_mode
+      && !IS_DISPLAYING_GAME_NODE (goban_window)
+      && (goban_window->game_position_node
+	  == goban_window->current_tree->current_node)) {
+    /* The goban window displayed something other than the game
+     * position node, but has just navigated back to that node.
+     */
+    board_delete (goban_window->game_position_board);
+    goban_window->game_position_board_state = &goban_window->sgf_board_state;
+  }
 }
 
 
@@ -1330,9 +2058,11 @@ playing_mode_goban_clicked (GtkGobanWindow *goban_window,
 					? SGF_PREVIOUS : SGF_NEXT))
 	return;
 
+      about_to_change_node (goban_window);
       sgf_utils_switch_to_given_variation (goban_window->current_tree,
 					   goban_window->node_to_switch_to,
 					   &goban_window->sgf_board_state);
+      just_changed_node (goban_window);
       update_children_for_new_node (goban_window);
     }
     else
@@ -1534,19 +2264,7 @@ navigate_goban (GtkGobanWindow *goban_window,
     return;
   }
 
-  if (goban_window->in_game_mode && IS_DISPLAYING_GAME_NODE (goban_window)) {
-    /* Goban window is going to display something other than the game
-     * position node.
-     */
-    goban_window->game_position_node = current_node;
-    goban_window->game_position_board
-      = board_duplicate_without_stacks (goban_window->board);
-
-    goban_window->game_position_board_state
-      = &goban_window->game_position_board_state_holder;
-    memcpy (&goban_window->game_position_board_state_holder,
-	    &goban_window->sgf_board_state, sizeof (SgfBoardState));
-  }
+  about_to_change_node (goban_window);
 
   switch (command) {
   case GOBAN_NAVIGATE_BACK:
@@ -1589,16 +2307,7 @@ navigate_goban (GtkGobanWindow *goban_window,
     break;
   }
 
-  if (goban_window->in_game_mode
-      && !IS_DISPLAYING_GAME_NODE (goban_window)
-      && goban_window->game_position_node == current_tree->current_node) {
-    /* The goban window displayed something other than the game
-     * position node, but has just navigated back to that node.
-     */
-    board_delete (goban_window->game_position_board);
-    goban_window->game_position_board_state = &goban_window->sgf_board_state;
-  }
-
+  just_changed_node (goban_window);
   update_children_for_new_node (goban_window);
 }
 
@@ -1906,7 +2615,8 @@ update_move_information (GtkGobanWindow *goban_window)
   else
     length = sprintf (buffer, _("Game beginning"));
 
-  if (!goban_window->current_tree->current_node->child
+  if (game_info_node
+      && !goban_window->current_tree->current_node->child
       && !goban_window->sgf_board_state.last_main_variation_node)
     result = sgf_node_get_result (game_info_node, &score);
 
