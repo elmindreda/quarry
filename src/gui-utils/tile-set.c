@@ -387,6 +387,14 @@ create_go_stone_images(int cell_size, unsigned char *pixel_data[NUM_TILES],
 	  *pixel_data[k + STONE_50_TRANSPARENT]++ = green;
 	  *pixel_data[k + STONE_50_TRANSPARENT]++ = blue;
 	  *pixel_data[k + STONE_50_TRANSPARENT]++ = opacity / 2;
+
+	  if ((k == WHITE_INDEX && x + y < cell_size)
+	      || (k == BLACK_INDEX && x + y >= cell_size)) {
+	    *pixel_data[MIXED_50_TRANSPARENT]++ = red;
+	    *pixel_data[MIXED_50_TRANSPARENT]++ = green;
+	    *pixel_data[MIXED_50_TRANSPARENT]++ = blue;
+	    *pixel_data[MIXED_50_TRANSPARENT]++ = opacity / 2;
+	  }
 	}
       }
       else {
