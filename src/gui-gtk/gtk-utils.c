@@ -23,6 +23,7 @@
 #include "gtk-utils.h"
 
 #include "gtk-control-center.h"
+#include "gtk-file-dialog.h"
 #include "gtk-file-selector.h"
 #include "gtk-freezable-spin-button.h"
 #include "quarry-stock.h"
@@ -33,25 +34,10 @@
 #include <string.h>
 
 
-typedef void (* GtkUtilsFileSelectionCallback)
-  (GtkFileSelection *file_selection, gint response_id, gpointer user_data);
-
-typedef struct _GtkUtilsFileSelectionData	GtkUtilsFileSelectionData;
-
-struct _GtkUtilsFileSelectionData {
-  GtkFileSelection		*file_selection;
-
-  gboolean			 saving_file;
-
-  GtkUtilsFileSelectionCallback	 response_callback;
-  gpointer			 user_data;
-};
-
-
 typedef struct _GtkUtilsBrowseButtonData	GtkUtilsBrowseButtonData;
 
 struct _GtkUtilsBrowseButtonData {
-  GtkWindow			*browsing_dialog;
+  GtkWidget			*browsing_dialog;
   const gchar			*browsing_dialog_caption;
 
   GtkWidget			*associated_entry;
@@ -76,16 +62,9 @@ static void	 null_pointer_on_destroy (GtkWindow *window,
 static void	 null_pointer_on_destroy_ask_control_center
 		   (GtkWindow *window, GtkWindow **window_pointer);
 
-static void	 file_selection_response (GtkFileSelection *file_selection,
-					  gint response_id,
-					  GtkUtilsFileSelectionData *data);
-static void	 overwrite_confirmation (GtkWidget *message_dialog,
-					 gint response_id,
-					 GtkUtilsFileSelectionData *data);
-
 static void	 browse_button_clicked (GtkWidget *button,
 					GtkUtilsBrowseButtonData *data);
-static void	 browsing_dialog_response (GtkFileSelection *file_selection,
+static void	 browsing_dialog_response (GtkWidget *file_dialog,
 					   gint response_id,
 					   GtkUtilsBrowseButtonData *data);
 
@@ -352,111 +331,6 @@ gtk_utils_workaround_focus_bug (GtkWindow *window)
 }
 
 
-void
-gtk_utils_add_file_selection_response_handlers (GtkWidget *file_selection,
-						gboolean saving_file,
-						GCallback response_callback,
-						gpointer user_data)
-{
-  GtkUtilsFileSelectionData *data
-    = g_malloc (sizeof (GtkUtilsFileSelectionData));
-
-  assert (response_callback);
-
-  data->file_selection = GTK_FILE_SELECTION (file_selection);
-
-  data->saving_file	  = saving_file;
-  data->response_callback = (GtkUtilsFileSelectionCallback) response_callback;
-  data->user_data	  = user_data;
-
-  g_signal_connect (file_selection, "response",
-		    G_CALLBACK (file_selection_response), data);
-  g_signal_connect_swapped (file_selection, "destroy",
-			    G_CALLBACK (g_free), data);
-}
-
-
-static void
-file_selection_response (GtkFileSelection *file_selection, gint response_id,
-			 GtkUtilsFileSelectionData *data)
-{
-  if (response_id == GTK_RESPONSE_OK) {
-    const gchar *filename = gtk_file_selection_get_filename (file_selection);
-
-    if (*filename) {
-      if (g_file_test (filename, G_FILE_TEST_IS_DIR)) {
-	/* Don't try to read directory, just browse into it. */
-	if (filename[strlen (filename) - 1] != G_DIR_SEPARATOR) {
-	  gchar *directory_name = g_strconcat (filename, G_DIR_SEPARATOR_S,
-					       NULL);
-
-	  gtk_file_selection_set_filename (file_selection, directory_name);
-	  g_free (directory_name);
-	}
-	else
-	  gtk_file_selection_set_filename (file_selection, filename);
-
-	/* We are done, no need to try to open/save. */
-	return;
-      }
-      else if (data->saving_file
-	       && g_file_test (filename, G_FILE_TEST_EXISTS)) {
-	static const gchar *hint
-	  = N_("Note that all information in the existing file will be lost "
-	       "permanently if you choose to overwrite it.");
-	static const gchar *message_format_string
-	  = N_("File named `%s' already exists. "
-	       "Do you want to overwrite it with the one you are saving?");
-
-	gchar *filename_in_utf8 = g_filename_to_utf8 (filename, -1,
-						      NULL, NULL, NULL);
-	GtkWidget *confirmation_dialog
-	  = gtk_utils_create_message_dialog (GTK_WINDOW (file_selection),
-					     GTK_STOCK_DIALOG_WARNING,
-					     (GTK_UTILS_NO_BUTTONS
-					      | GTK_UTILS_DONT_SHOW),
-					     _(hint),
-					     _(message_format_string),
-					     filename_in_utf8);
-
-	g_free (filename_in_utf8);
-
-	gtk_dialog_add_buttons (GTK_DIALOG (confirmation_dialog),
-				GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
-				QUARRY_STOCK_OVERWRITE, GTK_RESPONSE_OK, NULL);
-	gtk_dialog_set_default_response (GTK_DIALOG (confirmation_dialog),
-					 GTK_RESPONSE_OK);
-
-	g_signal_connect (confirmation_dialog, "response",
-			  G_CALLBACK (overwrite_confirmation), data);
-
-	gtk_window_present (GTK_WINDOW (confirmation_dialog));
-
-	/* Don't try to overwrite the file before we get user
-	 * confirmation.
-	 */
-	return;
-      }
-    }
-  }
-
-  data->response_callback (file_selection, response_id, data->user_data);
-}
-
-
-static void
-overwrite_confirmation (GtkWidget *message_dialog, gint response_id,
-			GtkUtilsFileSelectionData *data)
-{
-  gtk_widget_destroy (message_dialog);
-
-  if (response_id == GTK_RESPONSE_OK) {
-    data->response_callback (data->file_selection, GTK_RESPONSE_OK,
-			     data->user_data);
-  }
-}
-
-
 GtkWidget *
 gtk_utils_create_titled_page (GtkWidget *contents,
 			      const gchar *icon_stock_id, const gchar *title)
@@ -704,58 +578,45 @@ static void
 browse_button_clicked (GtkWidget *button, GtkUtilsBrowseButtonData *data)
 {
   if (!data->browsing_dialog) {
-    GtkWidget *file_selection_widget
-      = gtk_file_selection_new (data->browsing_dialog_caption);
-    GtkWindow *parent_window = GTK_WINDOW (gtk_widget_get_toplevel (button));
     GtkEntry *entry
       = GTK_ENTRY (GTK_IS_ENTRY (data->associated_entry)
 		   ? data->associated_entry
 		   : GTK_BIN (data->associated_entry)->child);
     const gchar *current_entry_text = gtk_entry_get_text (entry);
 
-    data->browsing_dialog = GTK_WINDOW (file_selection_widget);
-    gtk_window_set_transient_for (data->browsing_dialog, parent_window);
-    gtk_window_set_destroy_with_parent (data->browsing_dialog, TRUE);
+    data->browsing_dialog
+      = gtk_file_dialog_new (data->browsing_dialog_caption,
+			     GTK_WINDOW (gtk_widget_get_toplevel (button)),
+			     TRUE, GTK_STOCK_OPEN,
+			     G_CALLBACK (browsing_dialog_response), data);
 
     if (*current_entry_text) {
-      GtkFileSelection *file_selection
-	= GTK_FILE_SELECTION (data->browsing_dialog);
-      gchar *disk_encoded_filename = NULL;
-
       if (data->is_command_line_entry) {
 	gchar **argv;
 
 	if (g_shell_parse_argv (current_entry_text, NULL, &argv, NULL)) {
-	  disk_encoded_filename = g_filename_from_utf8 (argv[0], -1,
-							NULL, NULL, NULL);
+	  gtk_file_dialog_set_filename (data->browsing_dialog, argv[0]);
 	  g_strfreev (argv);
 	}
       }
       else {
-	disk_encoded_filename = g_filename_from_utf8 (current_entry_text, -1,
-						      NULL, NULL, NULL);
+	gtk_file_dialog_set_filename (data->browsing_dialog,
+				      current_entry_text);
       }
-
-      gtk_file_selection_set_filename (file_selection, disk_encoded_filename);
-      g_free (disk_encoded_filename);
     }
-
-    gtk_utils_add_file_selection_response_handlers
-      (file_selection_widget, FALSE,
-       G_CALLBACK (browsing_dialog_response), data);
   }
 
-  gtk_window_present (data->browsing_dialog);
+  gtk_window_present (GTK_WINDOW (data->browsing_dialog));
 }
 
 
 static void
-browsing_dialog_response (GtkFileSelection *file_selection,
-			  gint response_id, GtkUtilsBrowseButtonData *data)
+browsing_dialog_response (GtkWidget *file_dialog, gint response_id,
+			  GtkUtilsBrowseButtonData *data)
 {
   if (response_id == GTK_RESPONSE_OK) {
     GtkEntry *entry;
-    const gchar *filename   = gtk_file_selection_get_filename (file_selection);
+    const gchar *filename   = gtk_file_dialog_get_filename (file_dialog);
     gchar *filename_in_utf8 = g_filename_to_utf8 (filename, -1,
 						  NULL, NULL, NULL);
 
@@ -780,7 +641,7 @@ browsing_dialog_response (GtkFileSelection *file_selection,
       data->callback (entry, NULL, data->user_data);
   }
 
-  gtk_widget_destroy (GTK_WIDGET (file_selection));
+  gtk_widget_destroy (file_dialog);
   data->browsing_dialog = NULL;
 }
 

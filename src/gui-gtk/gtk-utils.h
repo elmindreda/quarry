@@ -199,10 +199,6 @@ void		gtk_utils_null_pointer_on_destroy
 		  (GtkWindow **window, gboolean ask_control_center);
 void		gtk_utils_workaround_focus_bug (GtkWindow *window);
 
-void		gtk_utils_add_file_selection_response_handlers
-		  (GtkWidget *file_selection, gboolean saving_file,
-		   GCallback response_callback, gpointer user_data);
-
 GtkWidget *	gtk_utils_create_titled_page (GtkWidget *contents,
 					      const gchar *icon_stock_id,
 					      const gchar *title);
