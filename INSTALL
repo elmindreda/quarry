@@ -44,8 +44,8 @@ installed binary, not the one in build directory.
 
 If Quarry won't configure or compile on your system and you are sure
 that you have GTK+ 2.x, I would certainly like to fix that.  Feel free
-to mail to <quarry@gna.org>.  Remember that the more information you
-provide, the more likely I will fix the problem.  In particular,
+to mail to <quarry-dev@gna.org>.  Remember that the more information
+you provide, the more likely I will fix the problem.  In particular,
 please send me several last lines of `configure's and/or `make's
 output, depending on where the problem occured.
 
