@@ -1,3 +1,13 @@
+2004-05-27  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* gui-gtk/gtk-preferences.c (chain_client_initialized): Update
+	engine's information after successful initialization.  I.e. notice
+	version upgrades, etc. automatically.
+
+	* utils/string-list.c (string_list_duplicate_items): Bug-fix:
+	don't leave the new list unterminated, write NULL in the last
+	`next' pointer.
+
 2004-05-21  Paul Pogonyshev  <pogonyshev@gmx.net>
 
 	* gui-gtk/gtk-goban-window.c (initialize_gtp_player): Don't send
