@@ -242,42 +242,6 @@ static void	    find_gtp_tree_model_iterator_by_engines_data
 		      (const GtpEngineListItem *engine_data,
 		       GtkTreeIter *iterator);
 
-
-static const PreferencesDialogCategory preferences_dialog_categories[] = {
-  { NULL,
-    GTK_STOCK_CUT,		N_("<b>Editing &amp; Viewing</b>"),
-    NULL,			NULL },
-  { create_game_tree_page,
-    NULL,			N_("Game Tree"),
-    NULL,			N_("Game Tree") },
-
-  { NULL,			GTK_STOCK_PREFERENCES,	N_("<b>GTP</b>"),
-				NULL,			NULL },
-  { create_gtp_engines_page,	NULL,			N_("GTP Engines"),
-				GTK_STOCK_PREFERENCES,	N_("GTP Engines") },
-
-
-  { NULL,
-    NULL,			N_("<b>Game Records (SGF)</b>"),
-    NULL,			NULL },
-  { create_saving_sgf_page,
-    NULL,			N_("Saving"),
-    GTK_STOCK_SAVE,		N_("Saving Game Records") },
-
-  { NULL,
-    GTK_STOCK_SELECT_COLOR,	N_("<b>Board Appearance</b>"),
-    NULL,			NULL },
-  { create_go_board_appearance_page,
-    NULL,			N_("Go"),
-    GTK_STOCK_SELECT_COLOR,	N_("Go Board Appearance") },
-  { create_amazons_board_appearance_page,
-    NULL,			N_("Amazons"),
-    GTK_STOCK_SELECT_COLOR,	N_("Amazons Board Appearance") },
-  { create_othello_board_appearance_page,
-    NULL,			N_("Othello"),
-    GTK_STOCK_SELECT_COLOR,	N_("Othello Board Appearance") }
-};
-
 static gint		  last_selected_page = 0;
 
 
@@ -372,8 +336,8 @@ gtk_preferences_init (void)
       = gtk_tree_model_filter_new (GTK_TREE_MODEL (gtp_engines_list_store),
 				   NULL);
 
-    gtk_tree_model_filter_set_visible_function
-      (only_one_game_gtp_engines_tree_model[k],
+    gtk_tree_model_filter_set_visible_func
+      (GTK_TREE_MODEL_FILTER (only_one_game_gtp_engines_tree_model[k]),
        engine_is_visible_and_supports_game, GINT_TO_POINTER (k), NULL);
 
     gui_back_end_register_object_to_finalize
@@ -415,6 +379,42 @@ handle_drag_and_drop (GtkTreeModel *gtp_engines_tree_model,
 void
 gtk_preferences_dialog_present (gpointer page_to_select)
 {
+  static const PreferencesDialogCategory preferences_dialog_categories[] = {
+    { NULL,
+      GTK_STOCK_CUT,		N_("<b>Editing &amp; Viewing</b>"),
+      NULL,			NULL },
+    { create_game_tree_page,
+      NULL,			N_("Game Tree"),
+      NULL,			N_("Game Tree") },
+
+    { NULL,
+      GTK_STOCK_PREFERENCES,	N_("<b>GTP</b>"),
+      NULL,			NULL },
+    { create_gtp_engines_page,
+      NULL,			N_("GTP Engines"),
+      GTK_STOCK_EXECUTE,	N_("GTP Engines") },
+
+    { NULL,
+      QUARRY_STOCK_ICON_FILE,	N_("<b>Game Records (SGF)</b>"),
+      NULL,			NULL },
+    { create_saving_sgf_page,
+      NULL,			N_("Saving"),
+      GTK_STOCK_SAVE,		N_("Saving Game Records") },
+
+    { NULL,
+      GTK_STOCK_SELECT_COLOR,	N_("<b>Board Appearance</b>"),
+      NULL,			NULL },
+    { create_go_board_appearance_page,
+      NULL,			N_("Go"),
+      GTK_STOCK_SELECT_COLOR,	N_("Go Board Appearance") },
+    { create_amazons_board_appearance_page,
+      NULL,			N_("Amazons"),
+      GTK_STOCK_SELECT_COLOR,	N_("Amazons Board Appearance") },
+    { create_othello_board_appearance_page,
+      NULL,			N_("Othello"),
+      GTK_STOCK_SELECT_COLOR,	N_("Othello Board Appearance") }
+  };
+
   int k;
   int category_to_select;
   int subcategory_to_select;
