@@ -289,6 +289,34 @@ othello_dump_board(const Board *board)
 }
 
 
+
+/* Othello-specific function. */
+
+void
+othello_count_disks(const Board *board,
+		    int *num_black_disks, int *num_white_disks)
+{
+  int pos;
+
+  assert(board);
+  assert(board->game == GAME_OTHELLO);
+  assert(num_black_disks && num_white_disks);
+
+  *num_black_disks = 0;
+  *num_white_disks = 0;
+
+  for (pos = POSITION(0, 0); ON_GRID(board->grid, pos);
+       pos += (BOARD_MAX_WIDTH + 1) - board->width) {
+    for (; ON_GRID(board->grid, pos); pos++) {
+      if (board->grid[pos] == BLACK)
+	(*num_black_disks)++;
+      else if (board->grid[pos] == WHITE)
+	(*num_white_disks)++;
+    }
+  }
+}
+
+
 /*
  * Local Variables:
  * tab-width: 8

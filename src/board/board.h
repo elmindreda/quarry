@@ -308,6 +308,13 @@ void		     go_mark_territory_on_grid(Board *board, char *grid,
 					       char white_territory_mark);
 
 
+
+/* Othello-specific function. */
+void		     othello_count_disks(const Board *board,
+					 int *num_black_disks,
+					 int *num_white_disks);
+
+
 #endif /* QUARRY_BOARD_H */
 
 
