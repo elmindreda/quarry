@@ -34,6 +34,7 @@
 
 
 enum {
+  PREFERENCES_PAGE_GTK_UI,
   PREFERENCES_PAGE_GAME_TREE,
   PREFERENCES_PAGE_GTP_ENGINES,
   PREFERENCES_PAGE_SGF_SAVING,
@@ -73,6 +74,11 @@ struct _GtkEngineChain {
 void		     gtk_preferences_init (void);
 
 void		     gtk_preferences_dialog_present (gpointer page_to_select);
+
+void		     gtk_preferences_register_main_toolbar
+		       (GtkToolbar *toolbar);
+void		     gtk_preferences_register_navigation_toolbar
+		       (GtkToolbar *toolbar);
 
 BoardAppearance *    game_to_board_appearance_structure (Game game);
 

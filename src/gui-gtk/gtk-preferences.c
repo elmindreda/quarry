@@ -76,6 +76,14 @@ enum {
 };
 
 
+typedef struct _GtkToolbarList		GtkToolbarList;
+
+struct _GtkToolbarList {
+  GSList	     *toolbars;
+  int		     *toolbar_style;
+};
+
+
 typedef struct _UseThemeDefaultsData	UseThemeDefaultsData;
 
 struct _UseThemeDefaultsData {
@@ -135,6 +143,7 @@ static void	    handle_drag_and_drop (GtkTreeModel *gtp_engines_tree_model,
 					  GtkTreeIter *iterator);
 
 
+static GtkWidget *  create_gtk_ui_page (void);
 static GtkWidget *  create_gtp_engines_page (void);
 static GtkWidget *  create_game_tree_page (void);
 static GtkWidget *  create_saving_sgf_page (void);
@@ -154,6 +163,9 @@ static void	    gtk_preferences_dialog_change_page
 		      (GtkTreeSelection *selection, GtkNotebook *notebook);
 static void	    gtk_preferences_dialog_response (GtkWindow *window,
 						     gint response_id);
+
+static void	    change_toolbar_style (GtkWidget *selector,
+					  GtkToolbarList *toolbar_list);
 
 static void	    gtk_preferences_dialog_update_gtp_engine_info
 		      (GtkTreeSelection *selection);
@@ -211,6 +223,11 @@ static inline BoardAppearance *
 		    game_index_to_board_appearance_structure
 		      (GtkGameIndex game_index);
 
+static void	    do_register_toolbar (GtkToolbar *toolbar,
+					 GtkToolbarList *toolbar_list);
+static void	    unregister_toolbar (GtkToolbar *toolbar,
+					GtkToolbarList *toolbar_list);
+static void	    set_toolbar_style (GtkToolbar *toolbar, int style);
 
 static void	    engine_selector_changed (GtkWidget *selector,
 					     GtkEngineSelectorData *data);
@@ -250,6 +267,13 @@ static void	    find_gtp_tree_model_iterator_by_engines_data
 		       GtkTreeIter *iterator);
 
 static gint		  last_selected_page = 0;
+
+
+static GtkToolbarList	  main_toolbar_list =
+  { NULL, &gtk_ui_configuration.main_toolbar_style };
+
+static GtkToolbarList	  navigation_toolbar_list =
+  { NULL, &gtk_ui_configuration.navigation_toolbar_style };
 
 
 static GtkListStore	 *gtp_engines_list_store;
@@ -388,6 +412,12 @@ gtk_preferences_dialog_present (gpointer page_to_select)
 {
   static const PreferencesDialogCategory preferences_dialog_categories[] = {
     { NULL,
+      GTK_STOCK_INDEX,		N_("<b>General</b>"),
+      NULL,			NULL },
+    { create_gtk_ui_page,
+      NULL,			N_("Interface"),
+      NULL,			N_("General Interface") },
+    { NULL,
       GTK_STOCK_CUT,		N_("<b>Editing &amp; Viewing</b>"),
       NULL,			NULL },
     { create_game_tree_page,
@@ -451,9 +481,6 @@ gtk_preferences_dialog_present (gpointer page_to_select)
     preferences_dialog = GTK_WINDOW (dialog);
     gtk_control_center_window_created (preferences_dialog);
     gtk_utils_null_pointer_on_destroy (&preferences_dialog, TRUE);
-
-    gtk_dialog_set_default_response (GTK_DIALOG (preferences_dialog),
-				     GTK_RESPONSE_CLOSE);
 
     g_signal_connect (preferences_dialog, "response",
 		      G_CALLBACK (gtk_preferences_dialog_response), NULL);
@@ -574,6 +601,105 @@ gtk_preferences_dialog_present (gpointer page_to_select)
   gtk_tree_path_free (tree_path);
 
   gtk_window_present (preferences_dialog);
+}
+
+
+static GtkWidget *
+create_gtk_ui_page (void)
+{
+#if GTK_2_4_OR_LATER
+
+  static const gchar *radio_labels[2]
+    = { N_("Use _newer (GTK+ 2.4) file chooser"),
+	N_("Use _old-style file selection dialog") };
+
+  GtkWidget *radio_buttons[2];
+  GtkWidget *file_chooser_named_vbox;
+
+#endif
+
+  /* NOTE: Keep in sync with values in `gtk-configuration.list'. */
+  static const gchar *toolbar_styles[5]
+    = { N_("Desktop default"),
+	N_("Text below icons"), N_("Text besides important icons"),
+	N_("Icons only"), N_("Text only") };
+
+  GtkWidget *selector;
+  GtkWidget *label;
+  GtkWidget *hbox1;
+  GtkWidget *hbox2;
+  GtkWidget *toolbars_named_vbox;
+
+#if GTK_2_4_OR_LATER
+
+  gtk_utils_create_radio_chain (radio_buttons, radio_labels, 2);
+
+  if (!gtk_ui_configuration.use_gtk_file_chooser)
+    gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (radio_buttons[1]), TRUE);
+
+  g_signal_connect (radio_buttons[0], "toggled",
+		    G_CALLBACK (store_toggle_setting),
+		    &gtk_ui_configuration.use_gtk_file_chooser);
+
+  file_chooser_named_vbox = gtk_utils_pack_in_box (GTK_TYPE_NAMED_VBOX,
+						   QUARRY_SPACING_SMALL,
+						   radio_buttons[0],
+						   GTK_UTILS_FILL,
+						   radio_buttons[1],
+						   GTK_UTILS_FILL, NULL);
+  gtk_named_vbox_set_label_text (GTK_NAMED_VBOX (file_chooser_named_vbox),
+				 _("File Chooser Dialog Style"));
+
+#endif /* GTK_2_4_OR_LATER */
+
+  /* FIXME: Need to use GConf for default toolbar style tracking.  And
+   *	    hide ``Desktop default'' item when compiled without GConf.
+   */
+
+  selector = (gtk_utils_create_selector
+	      (toolbar_styles, 5, gtk_ui_configuration.main_toolbar_style));
+
+  g_signal_connect (selector, "changed",
+		    G_CALLBACK (change_toolbar_style), &main_toolbar_list);
+
+  label	   = gtk_utils_create_mnemonic_label (_("_Main toolbar style:"),
+					      selector);
+
+  hbox1 = gtk_utils_pack_in_box (GTK_TYPE_HBOX, QUARRY_SPACING,
+				 label, GTK_UTILS_FILL,
+				 selector, GTK_UTILS_FILL, NULL);
+
+  selector = (gtk_utils_create_selector
+	      (toolbar_styles, 5,
+	       gtk_ui_configuration.navigation_toolbar_style));
+
+  g_signal_connect (selector, "changed",
+		    G_CALLBACK (change_toolbar_style),
+		    &navigation_toolbar_list);
+
+  label	   = gtk_utils_create_mnemonic_label (_("N_avigation toolbar style:"),
+					      selector);
+
+  hbox2 = gtk_utils_pack_in_box (GTK_TYPE_HBOX, QUARRY_SPACING,
+				 label, GTK_UTILS_FILL,
+				 selector, GTK_UTILS_FILL, NULL);
+
+  toolbars_named_vbox = gtk_utils_pack_in_box (GTK_TYPE_NAMED_VBOX,
+					       QUARRY_SPACING_SMALL,
+					       hbox1, GTK_UTILS_FILL,
+					       hbox2, GTK_UTILS_FILL, NULL);
+  gtk_named_vbox_set_label_text (GTK_NAMED_VBOX (toolbars_named_vbox),
+				 _("Toolbar Styles"));
+
+  gtk_utils_align_left_widgets (GTK_CONTAINER (toolbars_named_vbox), NULL);
+
+#if GTK_2_4_OR_LATER
+  return gtk_utils_pack_in_box (GTK_TYPE_VBOX, QUARRY_SPACING_BIG,
+				file_chooser_named_vbox, GTK_UTILS_FILL,
+				toolbars_named_vbox, GTK_UTILS_FILL, NULL);
+#else
+  return toolbars_named_vbox;
+#endif
 }
 
 
@@ -1314,12 +1440,16 @@ gtk_preferences_dialog_response (GtkWindow *window, gint response_id)
 
   if (response_id == GTK_RESPONSE_HELP) {
     switch (last_selected_page) {
-    case PREFERENCES_PAGE_GTP_ENGINES:
-      gtk_help_display ("preferences-gtp-engines");
+    case PREFERENCES_PAGE_GTK_UI:
+      gtk_help_display ("preferences-gtk-ui");
       break;
 
     case PREFERENCES_PAGE_GAME_TREE:
       gtk_help_display ("preferences-game-tree");
+      break;
+
+    case PREFERENCES_PAGE_GTP_ENGINES:
+      gtk_help_display ("preferences-gtp-engines");
       break;
 
     case PREFERENCES_PAGE_SGF_SAVING:
@@ -1337,13 +1467,23 @@ gtk_preferences_dialog_response (GtkWindow *window, gint response_id)
     case PREFERENCES_PAGE_OTHELLO_BOARD_APPEARANCE:
       gtk_help_display ("preferences-othello-board-appearance");
       break;
-
-    default:
-      assert (0);
     }
   }
   else
     gtk_widget_destroy (GTK_WIDGET (preferences_dialog));
+}
+
+
+static void
+change_toolbar_style (GtkWidget *selector, GtkToolbarList *toolbar_list)
+{
+  GSList *item;
+
+  *toolbar_list->toolbar_style
+    = gtk_utils_get_selector_active_item_index (selector);
+
+  for (item = toolbar_list->toolbars; item; item = item->next)
+    set_toolbar_style (GTK_TOOLBAR (item->data), *toolbar_list->toolbar_style);
 }
 
 
@@ -1454,9 +1594,11 @@ do_remove_gtp_engine (void)
   GSList *item;
   GtkTreePath *tree_path;
 
-  assert (gtk_tree_selection_get_selected (gtp_engines_tree_selection,
-					   &gtp_engines_tree_model,
-					   &iterator));
+  if (!gtk_tree_selection_get_selected (gtp_engines_tree_selection,
+					&gtp_engines_tree_model,
+					&iterator))
+    assert (0);
+
   gtk_tree_model_get (gtp_engines_tree_model, &iterator,
 		      ENGINES_DATA, &engine_data, -1);
 
@@ -1522,9 +1664,11 @@ do_move_gtp_engine (gpointer move_upwards)
   GtpEngineListItem *second_engine_data;
   GtkTreePath *tree_path;
 
-  assert (gtk_tree_selection_get_selected (gtp_engines_tree_selection,
-					   &gtp_engines_tree_model,
-					   &first_iterator));
+  if (!gtk_tree_selection_get_selected (gtp_engines_tree_selection,
+					&gtp_engines_tree_model,
+					&first_iterator))
+    assert (0);
+
   gtk_tree_model_get (gtp_engines_tree_model, &first_iterator,
 		      ENGINES_DATA, &first_engine_data, -1);
 
@@ -1620,8 +1764,10 @@ gtk_gtp_engine_dialog_present (gpointer new_engine)
   GtkWidget *label;
 
   if (!GPOINTER_TO_INT (new_engine)) {
-    assert (gtk_tree_selection_get_selected (gtp_engines_tree_selection,
-					     NULL, &iterator));
+    if (!gtk_tree_selection_get_selected (gtp_engines_tree_selection,
+					  NULL, &iterator))
+      assert (0);
+
     gtk_tree_model_get (gtp_engines_tree_model, &iterator,
 			ENGINES_DATA, &engine_data, -1);
   }
@@ -2179,6 +2325,72 @@ game_index_to_board_appearance_structure (GtkGameIndex game_index)
     return &othello_board_appearance;
 
   assert (0);
+}
+
+
+
+void
+gtk_preferences_register_main_toolbar (GtkToolbar *toolbar)
+{
+  do_register_toolbar (toolbar, &main_toolbar_list);
+}
+
+
+void
+gtk_preferences_register_navigation_toolbar (GtkToolbar *toolbar)
+{
+  do_register_toolbar (toolbar, &navigation_toolbar_list);
+}
+
+
+static void
+do_register_toolbar (GtkToolbar *toolbar, GtkToolbarList *toolbar_list)
+{
+  assert (GTK_IS_TOOLBAR (toolbar));
+
+  toolbar_list->toolbars = g_slist_prepend (toolbar_list->toolbars, toolbar);
+  g_signal_connect (toolbar, "destroy",
+		    G_CALLBACK (unregister_toolbar), toolbar_list);
+
+  set_toolbar_style (toolbar, *toolbar_list->toolbar_style);
+}
+
+
+static void
+unregister_toolbar (GtkToolbar *toolbar, GtkToolbarList *toolbar_list)
+{
+  toolbar_list->toolbars = g_slist_remove (toolbar_list->toolbars, toolbar);
+}
+
+
+static void
+set_toolbar_style (GtkToolbar *toolbar, int style)
+{
+  switch (style) {
+  case TOOLBAR_STYLE_DEFAULT:
+    /* FIXME: Not what we want actually.  Need GConf. */
+    gtk_toolbar_unset_style (toolbar);
+    break;
+
+  case TOOLBAR_STYLE_BOTH:
+    gtk_toolbar_set_style (toolbar, GTK_TOOLBAR_BOTH);
+    break;
+
+  case TOOLBAR_STYLE_BOTH_HORIZONTALLY:
+    gtk_toolbar_set_style (toolbar, GTK_TOOLBAR_BOTH_HORIZ);
+    break;
+
+  case TOOLBAR_STYLE_ICONS_ONLY:
+    gtk_toolbar_set_style (toolbar, GTK_TOOLBAR_ICONS);
+    break;
+
+  case TOOLBAR_STYLE_TEXT_ONLY:
+    gtk_toolbar_set_style (toolbar, GTK_TOOLBAR_TEXT);
+    break;
+
+  default:
+    assert (0);
+  }
 }
 
 
