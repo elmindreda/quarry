@@ -69,6 +69,17 @@
 #endif
 
 
+#undef MIN
+#define MIN(a, b)		((a) < (b) ? (a) : (b))
+
+#undef MAX
+#define MAX(a, b)		((a) > (b) ? (a) : (b))
+
+#undef ROUND_DOWN
+#define ROUND_DOWN(value, power_of_2)			\
+  ((value) & ~((power_of_2) - 1))
+
+#undef ROUND_UP
 #define ROUND_UP(value, power_of_2)			\
   (((value) + (power_of_2) - 1) & ~((power_of_2) - 1))
 
