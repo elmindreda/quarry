@@ -186,6 +186,7 @@ libguigtk_a_SOURCES = \
 	gtk-clock.c			\
 	gtk-color-button.c		\
 	gtk-control-center.c		\
+	gtk-freezable-spin-button.c	\
 	gtk-game-info-dialog.c		\
 	gtk-games.c			\
 	gtk-goban.c			\
@@ -209,6 +210,7 @@ libguigtk_a_SOURCES = \
 	gtk-clock.h			\
 	gtk-color-button.h		\
 	gtk-control-center.h		\
+	gtk-freezable-spin-button.h	\
 	gtk-game-info-dialog.h		\
 	gtk-games.h			\
 	gtk-goban.h			\
@@ -253,6 +255,7 @@ libguigtk_a_AR = $(AR) cru
 libguigtk_a_DEPENDENCIES = $(top_srcdir)/src/gui-utils/libguiutils.a
 am_libguigtk_a_OBJECTS = gtk-assistant.$(OBJEXT) gtk-clock.$(OBJEXT) \
 	gtk-color-button.$(OBJEXT) gtk-control-center.$(OBJEXT) \
+	gtk-freezable-spin-button.$(OBJEXT) \
 	gtk-game-info-dialog.$(OBJEXT) gtk-games.$(OBJEXT) \
 	gtk-goban.$(OBJEXT) gtk-goban-window.$(OBJEXT) \
 	gtk-gtp-client-interface.$(OBJEXT) gtk-help.$(OBJEXT) \
@@ -275,6 +278,7 @@ am__depfiles_maybe = depfiles
 @AMDEP_TRUE@	./$(DEPDIR)/gtk-color-button.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/gtk-configuration.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/gtk-control-center.Po \
+@AMDEP_TRUE@	./$(DEPDIR)/gtk-freezable-spin-button.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/gtk-game-info-dialog.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/gtk-games.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/gtk-goban-window.Po \
@@ -332,6 +336,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gtk-color-button.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gtk-configuration.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gtk-control-center.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gtk-freezable-spin-button.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gtk-game-info-dialog.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gtk-games.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gtk-goban-window.Po@am__quote@

@@ -78,6 +78,7 @@ libguigtk_a_SOURCES =			\
 	gtk-clock.c			\
 	gtk-color-button.c		\
 	gtk-control-center.c		\
+	gtk-freezable-spin-button.c	\
 	gtk-game-info-dialog.c		\
 	gtk-games.c			\
 	gtk-goban.c			\
@@ -101,6 +102,7 @@ libguigtk_a_SOURCES =			\
 	gtk-clock.h			\
 	gtk-color-button.h		\
 	gtk-control-center.h		\
+	gtk-freezable-spin-button.h	\
 	gtk-game-info-dialog.h		\
 	gtk-games.h			\
 	gtk-goban.h			\
