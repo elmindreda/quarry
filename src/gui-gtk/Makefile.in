@@ -87,8 +87,6 @@ QUARRY_GTHREAD_LIBS = @QUARRY_GTHREAD_LIBS@
 QUARRY_GTK_CFLAGS = @QUARRY_GTK_CFLAGS@
 QUARRY_GTK_DEPRECATED_FLAGS = @QUARRY_GTK_DEPRECATED_FLAGS@
 QUARRY_GTK_LIBS = @QUARRY_GTK_LIBS@
-QUARRY_RSVG_CFLAGS = @QUARRY_RSVG_CFLAGS@
-QUARRY_RSVG_LIBS = @QUARRY_RSVG_LIBS@
 QUARRY_WARNINGS = @QUARRY_WARNINGS@
 QUARRY_WARNINGS_GTK = @QUARRY_WARNINGS_GTK@
 RANLIB = @RANLIB@
@@ -126,8 +124,7 @@ target_alias = @target_alias@
 QUARRY_FULL_GTK_CFLAGS = \
 	$(QUARRY_GTK_CFLAGS)		\
 	$(QUARRY_GTK_DEPRECATED_FLAGS)	\
-	$(QUARRY_GTHREAD_CFLAGS)	\
-	$(QUARRY_RSVG_CFLAGS)
+	$(QUARRY_GTHREAD_CFLAGS)
 
 
 I_CPPFLAGS = \
@@ -141,7 +138,6 @@ I_CPPFLAGS = \
 
 AM_CPPFLAGS = \
 	-D PACKAGE_DATA_DIR=\"$(datadir)/quarry\"		\
-	-D PACKAGE_TEXTURES_DIR=\"$(datadir)/quarry/textures\"	\
 								\
 	$(QUARRY_WARNINGS_GTK)					\
 								\
@@ -181,6 +177,7 @@ libguigtk_a_SOURCES = \
 	gtk-qbox.c			\
 	gtk-qhbox.c			\
 	gtk-qvbox.c			\
+	gtk-tile-set.c			\
 	gtk-utils.c			\
 	gui-back-end.c			\
 	quarry-stock.c			\
@@ -201,8 +198,8 @@ libguigtk_a_SOURCES = \
 	gtk-qbox.h			\
 	gtk-qhbox.h			\
 	gtk-qvbox.h			\
-	gtk-tile-set-interface.h	\
 	gtk-thread-interface.h		\
+	gtk-tile-set.h			\
 	gtk-utils.h			\
 	gui-back-end.h			\
 	quarry-stock.h
@@ -236,8 +233,9 @@ am_libguigtk_a_OBJECTS = gtk-assistant.$(OBJEXT) gtk-clock.$(OBJEXT) \
 	gtk-named-vbox.$(OBJEXT) gtk-new-game-dialog.$(OBJEXT) \
 	gtk-parser-interface.$(OBJEXT) gtk-preferences.$(OBJEXT) \
 	gtk-progress-dialog.$(OBJEXT) gtk-qbox.$(OBJEXT) \
-	gtk-qhbox.$(OBJEXT) gtk-qvbox.$(OBJEXT) gtk-utils.$(OBJEXT) \
-	gui-back-end.$(OBJEXT) quarry-stock.$(OBJEXT)
+	gtk-qhbox.$(OBJEXT) gtk-qvbox.$(OBJEXT) gtk-tile-set.$(OBJEXT) \
+	gtk-utils.$(OBJEXT) gui-back-end.$(OBJEXT) \
+	quarry-stock.$(OBJEXT)
 am__objects_1 = gtk-configuration.$(OBJEXT) quarry-marshal.$(OBJEXT)
 nodist_libguigtk_a_OBJECTS = $(am__objects_1)
 libguigtk_a_OBJECTS = $(am_libguigtk_a_OBJECTS) \
@@ -261,7 +259,9 @@ am__depfiles_maybe = depfiles
 @AMDEP_TRUE@	./$(DEPDIR)/gtk-preferences.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/gtk-progress-dialog.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/gtk-qbox.Po ./$(DEPDIR)/gtk-qhbox.Po \
-@AMDEP_TRUE@	./$(DEPDIR)/gtk-qvbox.Po ./$(DEPDIR)/gtk-utils.Po \
+@AMDEP_TRUE@	./$(DEPDIR)/gtk-qvbox.Po \
+@AMDEP_TRUE@	./$(DEPDIR)/gtk-tile-set.Po \
+@AMDEP_TRUE@	./$(DEPDIR)/gtk-utils.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/gui-back-end.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/quarry-marshal.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/quarry-stock.Po
@@ -316,6 +316,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gtk-qbox.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gtk-qhbox.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gtk-qvbox.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gtk-tile-set.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gtk-utils.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gui-back-end.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/quarry-marshal.Po@am__quote@

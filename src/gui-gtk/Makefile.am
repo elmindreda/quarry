@@ -3,8 +3,7 @@
 QUARRY_FULL_GTK_CFLAGS = 		\
 	$(QUARRY_GTK_CFLAGS)		\
 	$(QUARRY_GTK_DEPRECATED_FLAGS)	\
-	$(QUARRY_GTHREAD_CFLAGS)	\
-	$(QUARRY_RSVG_CFLAGS)
+	$(QUARRY_GTHREAD_CFLAGS)
 
 I_CPPFLAGS =				\
 	-I $(top_srcdir)/src		\
@@ -16,7 +15,6 @@ I_CPPFLAGS =				\
 
 AM_CPPFLAGS = 							\
 	-D PACKAGE_DATA_DIR=\"$(datadir)/quarry\"		\
-	-D PACKAGE_TEXTURES_DIR=\"$(datadir)/quarry/textures\"	\
 								\
 	$(QUARRY_WARNINGS_GTK)					\
 								\
@@ -92,6 +90,7 @@ libguigtk_a_SOURCES =			\
 	gtk-qbox.c			\
 	gtk-qhbox.c			\
 	gtk-qvbox.c			\
+	gtk-tile-set.c			\
 	gtk-utils.c			\
 	gui-back-end.c			\
 	quarry-stock.c			\
@@ -112,8 +111,8 @@ libguigtk_a_SOURCES =			\
 	gtk-qbox.h			\
 	gtk-qhbox.h			\
 	gtk-qvbox.h			\
-	gtk-tile-set-interface.h	\
 	gtk-thread-interface.h		\
+	gtk-tile-set.h			\
 	gtk-utils.h			\
 	gui-back-end.h			\
 	quarry-stock.h
