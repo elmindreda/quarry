@@ -1,3 +1,30 @@
+2004-10-05  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* sgf/sgf-parser.c (parse_property): Adjust to changed storage of
+	unknown properties.
+	(parse_unknown_property_values): Likewise.  Add
+	`property_value_list' argument; add values to that list.
+
+2004-10-04  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* sgf/sgf-writer.c (do_write_text): Add `terminating_character'
+	argument.  Output `terminating_character' in encoding specified by
+	`CA' property, so that the file is parseable.
+	(sgf_write_simple_text, sgf_write_text, sgf_write_list_of_label):
+	Don't write terminating ']', do_write_text() does this now.
+	(sgf_write_unknown): Adjust to work with changed storage of
+	unknown properties.  Output ']' like do_write_text() now does.
+
+	* sgf/sgf-tree.c (sgf_node_find_unknown_property)
+	(sgf_property_duplicate, free_property_value): Cope with changed
+	storage of unknown properties.
+	(sgf_property_delete): Use free_property_value().
+	(free_property_value): Compile unconditionally (for use from
+	sgf_property_delete()).  Make `inline'.
+
+	* sgf/sgf.h: Change storage of unknown properties: store them in
+	`StringList's now.
+
 2004-10-03  Paul Pogonyshev  <pogonyshev@gmx.net>
 
 	* gui-gtk/gtk-goban.c (gtk_goban_set_parameters): Reset `grid',
