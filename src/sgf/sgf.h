@@ -267,6 +267,8 @@ int		 sgf_node_get_color_property_value(const SgfNode *node,
 						   SgfType type);
 int		 sgf_node_get_handicap(const SgfNode *node);
 int		 sgf_node_get_komi(const SgfNode *node, double *komi);
+int		 sgf_node_get_time_limit(const SgfNode *node,
+					 double *time_limit);
 
 int		 sgf_node_get_real_property_value(const SgfNode *node,
 						  SgfType type, double *value);

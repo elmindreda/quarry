@@ -657,6 +657,18 @@ sgf_node_get_komi(const SgfNode *node, double *komi)
 }
 
 
+int
+sgf_node_get_time_limit(const SgfNode *node, double *time_limit)
+{
+  const char *text = sgf_node_get_text_property_value(node, SGF_TIME_LIMIT);
+
+  if (text)
+    return utils_parse_double(text, time_limit);
+
+  return 0;
+}
+
+
 /* Get the value of `real' property of specified type.  Return value
  * is the same as for sgf_node_get_number_property_value().
  */
