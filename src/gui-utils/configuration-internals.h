@@ -25,6 +25,7 @@
 
 
 #include "configuration.h"
+#include "utils.h"
 #include "quarry.h"
 
 #include <stdlib.h>
