@@ -1,7 +1,7 @@
 dnl  Process this file with Autoconf to produce a `configure' script.
 
 # Package name and version.
-AC_INIT([Quarry], [0.1.5], [quarry-dev@gna.org])
+AC_INIT([Quarry], [0.1.6], [quarry-dev@gna.org])
 AC_PREREQ(2.57)
 
 # Check if the script is running in the proper directory.  Alarm if it
@@ -92,8 +92,8 @@ AC_CHECK_FUNCS(memrchr)
 AC_SEARCH_LIBS(floor, m)
 
 
-# Require GTK+ 2.0.0 or later.
-PKG_CHECK_MODULES(QUARRY_GTK, gtk+-2.0 >= 2.0.0)
+# Require GTK+ 2.0.0 or later and librsvg 2.5.0 or later.
+PKG_CHECK_MODULES(QUARRY_GTK, gtk+-2.0 >= 2.0.0 librsvg-2.0 >= 2.5.0)
 AC_SUBST(QUARRY_GTK_CFLAGS)
 AC_SUBST(QUARRY_GTK_LIBS)
 
@@ -107,19 +107,11 @@ AC_SUBST(QUARRY_GTHREAD_LIBS)
 # `src/gui-gtk/Makefile.am').
 AC_SUBST(GLIB_GENMARSHAL, [`$PKG_CONFIG --variable=glib_genmarshal glib-2.0`])
 
-# Check for librsvg 2.0.0 or later.  However, since it is optional,
-# don't abort if the check fails.
-AH_TEMPLATE(HAVE_LIBRSVG,
-	    [Define to 1 if you have librsvg 2.0.0 or newer installed.])
-
-PKG_CHECK_MODULES(QUARRY_RSVG, librsvg-2.0 >= 2.0.0,
-		  AC_DEFINE(HAVE_LIBRSVG), :)
-AC_SUBST(QUARRY_RSVG_CFLAGS)
-AC_SUBST(QUARRY_RSVG_LIBS)
-
 # Write `Makefile's.
 AC_CONFIG_FILES(Makefile
 		data/Makefile
+		data/markup-themes/Makefile
+		data/markup-themes/default/Makefile
 		data/textures/Makefile
 		src/Makefile
 		src/board/Makefile
