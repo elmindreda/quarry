@@ -480,13 +480,14 @@ gtk_goban_window_init (GtkGobanWindow *goban_window)
 
   /* Multipurpose text view. */
   text_view = gtk_text_view_new ();
-  gtk_text_view_set_left_margin (GTK_TEXT_VIEW (text_view),
+  goban_window->text_view = GTK_TEXT_VIEW (text_view);
+  gtk_text_view_set_left_margin (goban_window->text_view,
 				 QUARRY_SPACING_VERY_SMALL);
-  gtk_text_view_set_right_margin (GTK_TEXT_VIEW (text_view),
+  gtk_text_view_set_right_margin (goban_window->text_view,
 				  QUARRY_SPACING_VERY_SMALL);
-  gtk_text_view_set_wrap_mode (GTK_TEXT_VIEW (text_view), GTK_WRAP_WORD);
+  gtk_text_view_set_wrap_mode (goban_window->text_view, GTK_WRAP_WORD);
   goban_window->text_buffer
-    = gtk_text_view_get_buffer (GTK_TEXT_VIEW (text_view));
+    = gtk_text_view_get_buffer (goban_window->text_view);
 
   /* Scrolled window to keep text view in it. */
   scrolled_window = gtk_utils_make_widget_scrollable (text_view,
@@ -1297,6 +1298,9 @@ do_find_text (GtkGobanWindow *goban_window, guint callback_action)
 					base_offset + last_line_offset);
     gtk_text_buffer_move_mark_by_name (text_buffer,
 				       "selection_bound", &selection_iterator);
+
+    gtk_text_view_scroll_to_iter (goban_window->text_view, &selection_iterator,
+				  0.1, FALSE, 0.0, 0.0);
   }
 
   g_free (text_to_find_normalized);

@@ -80,6 +80,7 @@ struct _GtkGobanWindow {
   GtkLabel		  *mode_hint_label;
   GtkWidget		  *done_button;
   GtkWidget		  *cancel_button;
+  GtkTextView		  *text_view;
   GtkTextBuffer		  *text_buffer;
 
   Board			  *board;
