@@ -20,7 +20,10 @@
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
 
-h_include "../gui-utils/configuration-internals.h"
+mode configuration
+
+
+h_include "configuration-internals.h"
 h_include "board.h"
 h_include "utils.h"
 
@@ -31,7 +34,7 @@ c_include "utils.h"
 
 
 section_list  unnamed gtk_configuration_sections {
-  include_list ../gui-utils/common-configuration-sections.list
+  include_list $top_srcdir$/src/gui-utils/common-configuration-sections.list
 
   SECTION_GTK_UI		"GTK+ User Interface"
 		single
@@ -91,7 +94,7 @@ section_list  unnamed gtk_configuration_sections {
 }
 
 
-include_list ../gui-utils/common-configuration-values.list
+include_list $top_srcdir$/src/gui-utils/common-configuration-values.list
 
 
 values  - gtk_ui_section_values {
@@ -173,7 +176,7 @@ values  - find_dialog_section_values {
 }
 
 
-include_list ../gui-utils/common-configuration-defaults.list
+include_list $top_srcdir$/src/gui-utils/common-configuration-defaults.list
 
 
 defaults  - gtk_ui_defaults {

@@ -20,6 +20,9 @@
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
 
+mode configuration
+
+
 h_include "configuration-internals.h"
 h_include "utils.h"
 

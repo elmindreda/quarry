@@ -20,6 +20,9 @@
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
 
+mode errors
+
+
 c_include "quarry.h"
 
 c_include <stdlib.h>

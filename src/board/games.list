@@ -20,6 +20,9 @@
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
 
+mode games
+
+
 c_include "game-info.h"
 c_include "go.h"
 c_include "othello.h"

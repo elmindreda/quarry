@@ -20,6 +20,9 @@
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
 
+mode properties
+
+
 c_include "sgf-privates.h"
 c_include "sgf-parser.h"
 c_include "sgf-writer.h"

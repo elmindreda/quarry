@@ -47,9 +47,7 @@ defaults  - sgf_configuration_defaults {
 
 defaults  - go_board_appearance_defaults {
   use_background_texture	boolean		true
-  background_texture		string
-					substitute_value PACKAGE_TEXTURES_DIR
-					"/wood1.jpg"
+  background_texture		string		"$PACKAGE_TEXTURES_DIR$/wood1.jpg"
 
   background_color		color		#dbb665
   grid_and_labels_color		color		#000000
@@ -76,9 +74,7 @@ defaults  - amazons_board_appearance_defaults {
 				BoardAppearance board_appearance_dispose
 
     use_background_texture	boolean		true
-    background_texture		string
-					substitute_value PACKAGE_TEXTURES_DIR
-					"/wood1.jpg"
+    background_texture		string		"$PACKAGE_TEXTURES_DIR$/wood1.jpg"
 
     background_color		color		#dbb665
     grid_and_labels_color	color		#000000
