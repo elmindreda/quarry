@@ -121,8 +121,8 @@ static int
 gtk_main_tile_set_compare_keys(const GtkMainTileSetKey *first_key,
 			       const GtkMainTileSetKey *second_key)
 {
-  /* FIXME: make game-dependent when the rest of the code is. */
-  return first_key->tile_size == second_key->tile_size;
+  return (first_key->tile_size == second_key->tile_size
+	  && first_key->game   == second_key->game);
 }
 
 
@@ -165,9 +165,19 @@ gtk_main_tile_set_create(const GtkMainTileSetKey *key)
   assert(gdk_pixbuf_get_rowstride(tile_set->tiles[WHITE_OPAQUE])
 	 == row_stride);
 
-  render_go_stones(tile_size, &go_stones_defaults,
-		   black_pixel_data, row_stride, white_pixel_data, row_stride,
-		   &tile_set->stones_x_offset, &tile_set->stones_y_offset);
+  if (key->game != GAME_OTHELLO) {
+    render_go_stones(tile_size, &go_stones_defaults,
+		     black_pixel_data, row_stride,
+		     white_pixel_data, row_stride,
+		     &tile_set->stones_x_offset, &tile_set->stones_y_offset);
+  }
+  else {
+    render_othello_disks(tile_size, &othello_disks_defaults,
+			 black_pixel_data, row_stride,
+			 white_pixel_data, row_stride,
+			 &tile_set->stones_x_offset,
+			 &tile_set->stones_y_offset);
+  }
 
   pixel_data = duplicate_and_adjust_alpha(3, 4, tile_size,
 					  black_pixel_data, row_stride);
