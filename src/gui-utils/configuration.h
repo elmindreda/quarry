@@ -32,7 +32,8 @@ typedef enum {
   VALUE_TYPE_STRING_LIST,
   VALUE_TYPE_BOOLEAN,
   VALUE_TYPE_INT,
-  VALUE_TYPE_REAL
+  VALUE_TYPE_REAL,
+  VALUE_TYPE_COLOR
 } ConfigurationValueType;
 
 
