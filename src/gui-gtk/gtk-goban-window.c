@@ -141,6 +141,9 @@ static void	 force_minimal_width (GtkWidget *label,
 static void	 do_enter_game_mode (GtkGobanWindow *goban_window);
 static void	 leave_game_mode (GtkGobanWindow *goban_window);
 
+static void	 set_sgf_collection_is_modified (GtkGobanWindow *goban_window,
+						 gboolean is_modified);
+
 static void	 gtk_goban_window_save (GtkGobanWindow *goban_window,
 					guint callback_action);
 static gchar *	 suggest_filename (GtkGobanWindow *goban_window);
@@ -523,7 +526,7 @@ gtk_goban_window_init (GtkGobanWindow *goban_window)
       "<StockItem>",			GTK_STOCK_HELP },
     { N_("/Help/_About"),		NULL,
       show_about_dialog,		0,
-      "<Item>" }
+      QUARRY_STOCK_MENU_ITEM_ABOUT }
   };
 
   GtkWidget *goban;
@@ -878,8 +881,19 @@ gtk_goban_window_new (SgfCollection *sgf_collection, const char *filename)
   goban_window->dead_stones_list = NULL;
 
   goban_window->sgf_collection = sgf_collection;
-  if (filename)
+
+  if (filename) {
     goban_window->filename = g_strdup (filename);
+
+    goban_window->sgf_collection_is_modified = FALSE;
+
+    gtk_utils_set_menu_items_sensitive (goban_window->item_factory, FALSE,
+					_("/File/Save"), NULL);
+    gtk_utils_set_toolbar_buttons_sensitive (goban_window->main_toolbar, FALSE,
+					     &toolbar_save, NULL);
+  }
+  else
+    goban_window->sgf_collection_is_modified = TRUE;
 
   set_current_tree (goban_window, sgf_collection->first_tree);
 
@@ -1099,6 +1113,28 @@ leave_game_mode (GtkGobanWindow *goban_window)
 }
 
 
+/* FIXME: Temporary, this should be tracked in SGF module together
+ *	  with proper undo history.
+ */
+static void
+set_sgf_collection_is_modified (GtkGobanWindow *goban_window,
+				gboolean is_modified)
+{
+  if (goban_window->sgf_collection_is_modified != is_modified) {
+    goban_window->sgf_collection_is_modified = is_modified;
+
+    gtk_utils_set_menu_items_sensitive (goban_window->item_factory,
+					is_modified,
+					_("/File/Save"), NULL);
+    gtk_utils_set_toolbar_buttons_sensitive (goban_window->main_toolbar,
+					     is_modified,
+					     &toolbar_save, NULL);
+
+    update_window_title (goban_window);
+  }
+}
+
+
 static void
 gtk_goban_window_save (GtkGobanWindow *goban_window, guint callback_action)
 {
@@ -1106,6 +1142,8 @@ gtk_goban_window_save (GtkGobanWindow *goban_window, guint callback_action)
     fetch_comment_if_changed (goban_window, TRUE);
     sgf_write_file (goban_window->filename, goban_window->sgf_collection,
 		    sgf_configuration.force_utf8);
+
+    set_sgf_collection_is_modified (goban_window, FALSE);
 
     if (callback_action == GTK_GOBAN_WINDOW_ADJOURN)
       game_has_been_adjourned (goban_window);
@@ -1222,11 +1260,6 @@ save_file_as_response (GtkFileSelection *dialog, gint response_id,
 
     if (sgf_write_file (filename, goban_window->sgf_collection,
 			sgf_configuration.force_utf8)) {
-      gboolean need_window_title_update = (!goban_window->filename
-					   || (strcmp (goban_window->filename,
-						       filename)
-					       != 0));
-
       g_free (goban_window->filename);
       goban_window->filename = g_strdup (filename);
 
@@ -1235,8 +1268,8 @@ save_file_as_response (GtkFileSelection *dialog, gint response_id,
 	return;
       }
 
-      if (need_window_title_update)
-	update_window_title (goban_window);
+      /* This should always update window title. */
+      set_sgf_collection_is_modified (goban_window, FALSE);
     }
   }
 
@@ -1977,6 +2010,8 @@ game_info_dialog_property_changed (GtkGobanWindow *goban_window,
     /* Silence warnings. */
     break;
   }
+
+  set_sgf_collection_is_modified (goban_window, TRUE);
 }
 
 
@@ -2120,7 +2155,25 @@ show_sgf_tree_view_automatically (GtkGobanWindow *goban_window,
 static void
 show_about_dialog (void)
 {
+  static const char *description_string
+    = N_("A GUI program for Go, Amazons and Othello board games");
+  static const char *copyright_string
+    = N_("Copyright \xc2\xa9 2003, 2004, 2005 Paul Pogonyshev and others");
+
   if (!about_dialog) {
+#if GTK_2_6_OR_LATER
+
+    GtkAboutDialog *dialog = GTK_ABOUT_DIALOG (gtk_about_dialog_new ());
+
+    gtk_about_dialog_set_name (dialog, PACKAGE_NAME);
+    gtk_about_dialog_set_version (dialog, PACKAGE_VERSION);
+    gtk_about_dialog_set_copyright (dialog, _(copyright_string));
+    gtk_about_dialog_set_comments (dialog, _(description_string));
+
+    about_dialog = GTK_WINDOW (dialog);
+
+#else /* not GTK_2_6_OR_LATER */
+
     GtkWidget *dialog = gtk_dialog_new_with_buttons (_("About Quarry"),
 						     NULL, 0,
 						     GTK_STOCK_CLOSE,
@@ -2130,6 +2183,8 @@ show_about_dialog (void)
     GtkWidget *description_label;
     GtkWidget *copyright_label;
     GtkWidget *vbox;
+    gchar *copyright_markup = g_strconcat ("<small>", _(copyright_string),
+					   "</small>", NULL);
 
     about_dialog = GTK_WINDOW (dialog);
     gtk_utils_null_pointer_on_destroy (&about_dialog, FALSE);
@@ -2144,14 +2199,12 @@ show_about_dialog (void)
 			  ("<span size=\"larger\" weight=\"bold\">"
 			   PACKAGE_STRING "</span>"));
 
-    description_label = gtk_label_new (_("A GUI program for Go, Amazons "
-					 "and Othello board games"));
+    description_label = gtk_label_new (_(description_string));
 
     copyright_label = gtk_label_new (NULL);
     gtk_label_set_justify (GTK_LABEL (copyright_label), GTK_JUSTIFY_CENTER);
-    gtk_label_set_markup (GTK_LABEL (copyright_label),
-			  _("<small>Copyright \xc2\xa9 2003, 2004, 2005 "
-			    "Paul Pogonyshev and others</small>"));
+    gtk_label_set_markup (GTK_LABEL (copyright_label), copyright_markup);
+    g_free (copyright_markup);
 
     vbox = gtk_utils_pack_in_box (GTK_TYPE_VBOX, QUARRY_SPACING,
 				  quarry_label, GTK_UTILS_FILL,
@@ -2160,6 +2213,8 @@ show_about_dialog (void)
 
     gtk_utils_standardize_dialog (GTK_DIALOG (dialog), vbox);
     gtk_widget_show_all (vbox);
+
+#endif /* not GTK_2_6_OR_LATER */
   }
 
   gtk_window_present (about_dialog);
@@ -2301,6 +2356,8 @@ go_scoring_mode_done (GtkGobanWindow *goban_window)
   sgf_node_add_score_result (game_info_node, goban_window->current_tree,
 			     score, 1);
 
+  set_sgf_collection_is_modified (goban_window, TRUE);
+
   g_free (goban_window->dead_stones);
 
   leave_special_mode (goban_window);
@@ -2439,6 +2496,7 @@ play_pass_move (GtkGobanWindow *goban_window)
 			      &goban_window->sgf_board_state,
 			      goban_window->sgf_board_state.color_to_play,
 			      PASS_X, PASS_Y);
+  set_sgf_collection_is_modified (goban_window, TRUE);
 
   if (goban_window->in_game_mode && IS_DISPLAYING_GAME_NODE (goban_window))
     move_has_been_played (goban_window);
@@ -2484,6 +2542,7 @@ do_resign_game (GtkGobanWindow *goban_window)
 
   sgf_utils_append_variation (goban_window->current_tree,
 			      &goban_window->sgf_board_state, EMPTY);
+  set_sgf_collection_is_modified (goban_window, TRUE);
   update_children_for_new_node (goban_window);
 }
 
@@ -2664,6 +2723,8 @@ playing_mode_goban_clicked (GtkGobanWindow *goban_window,
 				      goban_window->amazons_move);
 	}
       }
+
+      set_sgf_collection_is_modified (goban_window, TRUE);
 
       if (goban_window->in_game_mode && IS_DISPLAYING_GAME_NODE (goban_window))
 	move_has_been_played (goban_window);
@@ -3081,8 +3142,7 @@ update_window_title (GtkGobanWindow *goban_window)
 {
   const SgfNode *game_info_node = goban_window->sgf_board_state.game_info_node;
   const char *game_name = NULL;
-  char *string_to_free = NULL;
-  char *base_name;
+  char *string_to_free  = NULL;
   char *title;
 
   if (game_info_node) {
@@ -3106,27 +3166,30 @@ update_window_title (GtkGobanWindow *goban_window)
   if (goban_window->filename) {
     gchar *filename_in_utf8 = g_filename_to_utf8 (goban_window->filename, -1,
 						  NULL, NULL, NULL);
+    char *base_name = g_path_get_basename (filename_in_utf8);
 
-    base_name = g_path_get_basename (filename_in_utf8);
+    if (game_name)
+      title = utils_cat_strings (NULL, game_name, " (", base_name, ")", NULL);
+    else
+      title = utils_duplicate_string (base_name);
+
+    g_free (base_name);
     g_free (filename_in_utf8);
   }
-  else
-    base_name = NULL;
-
-  if (game_name) {
-    if (base_name) {
-      title = utils_cat_strings (NULL, game_name, " (", base_name, ")", NULL);
-      gtk_window_set_title (GTK_WINDOW (goban_window), title);
-      utils_free (title);
-    }
+  else {
+    if (game_name)
+      title = utils_duplicate_string (game_name);
     else
-      gtk_window_set_title (GTK_WINDOW (goban_window), game_name);
+      title = utils_duplicate_string (_("Unnamed Game"));
   }
-  else if (base_name)
-    gtk_window_set_title (GTK_WINDOW (goban_window), base_name);
 
+  if (goban_window->sgf_collection_is_modified)
+    title = utils_cat_strings (title, " (", _("modified"), ")", NULL);
+
+  gtk_window_set_title (GTK_WINDOW (goban_window), title);
+
+  utils_free (title);
   g_free (string_to_free);
-  g_free (base_name);
 }
 
 
@@ -3441,17 +3504,27 @@ fetch_comment_if_changed (GtkGobanWindow *goban_window,
 				&start_iterator, &end_iterator);
     new_comment = gtk_text_iter_get_text (&start_iterator, &end_iterator);
 
-    /* FIXME: When we track changes in SGF trees for undo history and
-     *	      modified-flag, we need to only do this when the comment
-     *	      is really changed.
-     */
     normalized_comment = sgf_utils_normalize_text (new_comment, 0);
+
+    /* FIXME: It's SGF module that should perform
+     *	      whether-text-value-has-changed checks.
+     */
     if (normalized_comment) {
-      sgf_node_add_text_property (node, goban_window->current_tree,
-				  SGF_COMMENT, normalized_comment, 1);
+      const char *original_comment
+	= sgf_node_get_text_property_value (node, SGF_COMMENT);
+
+      if (!original_comment
+	  || strcmp (original_comment, normalized_comment) != 0) {
+	sgf_node_add_text_property (node, goban_window->current_tree,
+				    SGF_COMMENT, normalized_comment, 1);
+	set_sgf_collection_is_modified (goban_window, TRUE);
+      }
     }
-    else
-      sgf_node_delete_property (node, goban_window->current_tree, SGF_COMMENT);
+    else {
+      if (sgf_node_delete_property (node, goban_window->current_tree,
+				    SGF_COMMENT))
+	set_sgf_collection_is_modified (goban_window, TRUE);
+    }
 
     g_free (new_comment);
 
@@ -3683,19 +3756,21 @@ move_has_been_played (GtkGobanWindow *goban_window)
 
     sgf_node_add_real_property (move_node, goban_window->current_tree,
 				(move_node->move_color == BLACK
-				 ? SGF_TIME_LEFT_4BLACK
-				 : SGF_TIME_LEFT_4WHITE),
+				 ? SGF_TIME_LEFT_FOR_BLACK
+				 : SGF_TIME_LEFT_FOR_WHITE),
 				floor (seconds_left * 1000.0 + 0.5) / 1000.0,
 				0);
 
     if (moves_left) {
       sgf_node_add_number_property (move_node, goban_window->current_tree,
 				    (move_node->move_color == BLACK
-				     ? SGF_MOVES_LEFT_4BLACK
-				     : SGF_MOVES_LEFT_4WHITE),
+				     ? SGF_MOVES_LEFT_FOR_BLACK
+				     : SGF_MOVES_LEFT_FOR_WHITE),
 				    moves_left, 0);
     }
   }
+
+  set_sgf_collection_is_modified (goban_window, TRUE);
 
   if (GTP_ENGINE_CAN_PLAY_MOVES (goban_window,
 				 OTHER_COLOR (move_node->move_color))) {
@@ -4005,6 +4080,7 @@ player_is_out_of_time (GtkClock *clock, GtkGobanWindow *goban_window)
 
   sgf_utils_append_variation (goban_window->current_tree,
 			      &goban_window->sgf_board_state, EMPTY);
+  set_sgf_collection_is_modified (goban_window, TRUE);
   update_children_for_new_node (goban_window);
 }
 

@@ -121,7 +121,12 @@ struct _GtkGobanWindow {
   SgfCollection		  *sgf_collection;
   SgfGameTree		  *current_tree;
 
-  /* NOTE: in file system encoding! */
+  /* FIXME: Temporary, this should be tracked in SGF module together
+   *	    with proper undo history.
+   */
+  gboolean		   sgf_collection_is_modified;
+
+  /* NOTE: In file system encoding! */
   char			  *filename;
 
   GtkWindow		  *save_as_dialog;
