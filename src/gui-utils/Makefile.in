@@ -193,7 +193,7 @@ EXTRA_DIST = \
 
 DISTCLEANFILES = *~
 subdir = src/gui-utils
-mkinstalldirs = $(SHELL) $(top_srcdir)/mkinstalldirs
+mkinstalldirs = $(SHELL) $(top_srcdir)/aux/mkinstalldirs
 CONFIG_HEADER = $(top_builddir)/config.h
 CONFIG_CLEAN_FILES =
 LIBRARIES = $(noinst_LIBRARIES)
@@ -217,7 +217,7 @@ parse_configuration_DEPENDENCIES = \
 parse_configuration_LDFLAGS =
 
 DEFAULT_INCLUDES =  -I. -I$(srcdir) -I$(top_builddir)
-depcomp = $(SHELL) $(top_srcdir)/depcomp
+depcomp = $(SHELL) $(top_srcdir)/aux/depcomp
 am__depfiles_maybe = depfiles
 @AMDEP_TRUE@DEP_FILES = ./$(DEPDIR)/configuration.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/gui-utils.Po \

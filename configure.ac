@@ -7,6 +7,7 @@ AC_PREREQ(2.57)
 # Check if the script is running in the proper directory.  Alarm if it
 # is not.
 AC_CONFIG_SRCDIR(src/quarry.c)
+AC_CONFIG_AUX_DIR(aux)
 
 # Initialize Automake and add maintainer mode as an option.
 AM_INIT_AUTOMAKE
@@ -123,6 +124,8 @@ AC_CONFIG_FILES(Makefile
 		data/markup-themes/Makefile
 		data/markup-themes/default/Makefile
 		data/textures/Makefile
+		help/Makefile
+		help/C/Makefile
 		po/Makefile.in
 		src/Makefile
 		src/board/Makefile

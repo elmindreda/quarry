@@ -173,7 +173,7 @@ DISTCLEANFILES = *~
 
 MOSTLYCLEANFILES = $(EXTRA_PROGRAMS)
 subdir = src/gtp
-mkinstalldirs = $(SHELL) $(top_srcdir)/mkinstalldirs
+mkinstalldirs = $(SHELL) $(top_srcdir)/aux/mkinstalldirs
 CONFIG_HEADER = $(top_builddir)/config.h
 CONFIG_CLEAN_FILES =
 LIBRARIES = $(noinst_LIBRARIES)
@@ -190,7 +190,7 @@ gtp_test_DEPENDENCIES = libgtp.a $(top_srcdir)/src/board/libboard.a \
 gtp_test_LDFLAGS =
 
 DEFAULT_INCLUDES =  -I. -I$(srcdir) -I$(top_builddir)
-depcomp = $(SHELL) $(top_srcdir)/depcomp
+depcomp = $(SHELL) $(top_srcdir)/aux/depcomp
 am__depfiles_maybe = depfiles
 @AMDEP_TRUE@DEP_FILES = ./$(DEPDIR)/gtp-client.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/gtp-test.Po

@@ -182,7 +182,7 @@ TAGS_DEPENDENCIES = \
 
 DISTCLEANFILES = *~
 subdir = src/utils
-mkinstalldirs = $(SHELL) $(top_srcdir)/mkinstalldirs
+mkinstalldirs = $(SHELL) $(top_srcdir)/aux/mkinstalldirs
 CONFIG_HEADER = $(top_builddir)/config.h
 CONFIG_CLEAN_FILES =
 LIBRARIES = $(noinst_LIBRARIES)
@@ -199,7 +199,7 @@ am_libutils_a_OBJECTS = buffered-writer.$(OBJEXT) getopt.$(OBJEXT) \
 libutils_a_OBJECTS = $(am_libutils_a_OBJECTS)
 
 DEFAULT_INCLUDES =  -I. -I$(srcdir) -I$(top_builddir)
-depcomp = $(SHELL) $(top_srcdir)/depcomp
+depcomp = $(SHELL) $(top_srcdir)/aux/depcomp
 am__depfiles_maybe = depfiles
 @AMDEP_TRUE@DEP_FILES = ./$(DEPDIR)/buffered-writer.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/getopt.Po ./$(DEPDIR)/getopt1.Po \

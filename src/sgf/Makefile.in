@@ -220,7 +220,7 @@ DISTCLEANFILES = *~
 
 MOSTLYCLEANFILES = $(BUILT_SOURCES) $(EXTRA_PROGRAMS)
 subdir = src/sgf
-mkinstalldirs = $(SHELL) $(top_srcdir)/mkinstalldirs
+mkinstalldirs = $(SHELL) $(top_srcdir)/aux/mkinstalldirs
 CONFIG_HEADER = $(top_builddir)/config.h
 CONFIG_CLEAN_FILES =
 LIBRARIES = $(noinst_LIBRARIES)
@@ -255,7 +255,7 @@ sgf_test_DEPENDENCIES = libsgf.a $(top_srcdir)/src/board/libboard.a \
 sgf_test_LDFLAGS =
 
 DEFAULT_INCLUDES =  -I. -I$(srcdir) -I$(top_builddir)
-depcomp = $(SHELL) $(top_srcdir)/depcomp
+depcomp = $(SHELL) $(top_srcdir)/aux/depcomp
 am__depfiles_maybe = depfiles
 @AMDEP_TRUE@DEP_FILES = ./$(DEPDIR)/parse-sgf-list.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/sgf-diff-utils.Po \

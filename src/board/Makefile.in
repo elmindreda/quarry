@@ -191,7 +191,7 @@ DISTCLEANFILES = *~
 
 MOSTLYCLEANFILES = $(BUILT_SOURCES)
 subdir = src/board
-mkinstalldirs = $(SHELL) $(top_srcdir)/mkinstalldirs
+mkinstalldirs = $(SHELL) $(top_srcdir)/aux/mkinstalldirs
 CONFIG_HEADER = $(top_builddir)/config.h
 CONFIG_CLEAN_FILES =
 LIBRARIES = $(noinst_LIBRARIES)
@@ -214,7 +214,7 @@ parse_game_list_DEPENDENCIES = $(top_srcdir)/src/utils/libparselist.a \
 parse_game_list_LDFLAGS =
 
 DEFAULT_INCLUDES =  -I. -I$(srcdir) -I$(top_builddir)
-depcomp = $(SHELL) $(top_srcdir)/depcomp
+depcomp = $(SHELL) $(top_srcdir)/aux/depcomp
 am__depfiles_maybe = depfiles
 @AMDEP_TRUE@DEP_FILES = ./$(DEPDIR)/amazons.Po ./$(DEPDIR)/board.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/games.Po ./$(DEPDIR)/go.Po \
