@@ -27,6 +27,7 @@
 #include "gtk-control-center.h"
 #include "gtk-games.h"
 #include "gtk-goban.h"
+#include "gtk-help.h"
 #include "gtk-named-vbox.h"
 #include "gtk-gtp-client-interface.h"
 #include "gtk-progress-dialog.h"
@@ -148,6 +149,8 @@ static GtkWidget *  create_board_appearance_notebook_page
 
 static void	    gtk_preferences_dialog_change_page
 		      (GtkTreeSelection *selection, GtkNotebook *notebook);
+static void	    gtk_preferences_dialog_response(GtkWindow *window,
+						    gint response_id);
 static void	    gtk_preferences_dialog_destroy(GtkWindow *window);
 
 static void	    gtk_preferences_dialog_update_gtp_engine_info
@@ -275,8 +278,8 @@ static GtkWidget	 *move_gtp_engine_down;
 static GtkWidget	 *gtp_engine_info;
 static GtkLabel		 *gtp_engine_name;
 static GtkLabel		 *gtp_engine_version;
-static GtkLabel		 *gtp_engine_command_line;
 static GtkLabel		 *gtp_engine_supported_games;
+static GtkLabel		 *gtp_engine_command_line;
 
 
 static GSList		 *gtp_engine_dialogs = NULL;
@@ -363,7 +366,9 @@ gtk_preferences_dialog_present(gpointer page_to_select)
   if (!preferences_dialog) {
     GtkWidget *dialog = gtk_dialog_new_with_buttons(_("Preferences"), NULL, 0,
 						    GTK_STOCK_CLOSE,
-						    GTK_RESPONSE_CLOSE, NULL);
+						    GTK_RESPONSE_CLOSE,
+						    GTK_STOCK_HELP,
+						    GTK_RESPONSE_HELP, NULL);
     GtkTreeStore *categories;
     GtkWidget *category_list;
     GtkWidget *label;
@@ -381,10 +386,10 @@ gtk_preferences_dialog_present(gpointer page_to_select)
     gtk_dialog_set_default_response(GTK_DIALOG(preferences_dialog),
 				    GTK_RESPONSE_CLOSE);
 
+    g_signal_connect(preferences_dialog, "response",
+		     G_CALLBACK(gtk_preferences_dialog_response), NULL);
     g_signal_connect(preferences_dialog, "destroy",
 		     G_CALLBACK(gtk_preferences_dialog_destroy), NULL);
-    g_signal_connect(preferences_dialog, "response",
-		     G_CALLBACK(gtk_widget_destroy), NULL);
 
     categories = gtk_tree_store_new(CATEGORIES_NUM_COLUMNS,
 				    G_TYPE_INT,
@@ -519,8 +524,8 @@ create_gtp_engines_page(void)
   GtkWidget *info_label;
   GtkWidget *name_hbox;
   GtkWidget *version_hbox;
-  GtkWidget *command_line_hbox;
   GtkWidget *supported_games_hbox;
+  GtkWidget *command_line_hbox;
 
   gtp_engines_widget
     = gtk_tree_view_new_with_model(GTK_TREE_MODEL(gtp_engines_list_store));
@@ -606,18 +611,7 @@ create_gtp_engines_page(void)
 				       NULL);
 
   label
-    = gtk_utils_create_left_aligned_label(_("Command line:"));
-  info_label		  = gtk_utils_create_left_aligned_label(NULL);
-  gtp_engine_command_line = GTK_LABEL(info_label);
-  gtk_label_set_selectable(gtp_engine_command_line, TRUE);
-
-  command_line_hbox = gtk_utils_pack_in_box(GTK_TYPE_HBOX, QUARRY_SPACING,
-					    label, GTK_UTILS_FILL,
-					    info_label, GTK_UTILS_PACK_DEFAULT,
-					    NULL);
-
-  label
-    = gtk_utils_create_left_aligned_label(_("Supported games:"));
+    = gtk_utils_create_left_aligned_label(_("Supported game(s):"));
   info_label		     = gtk_utils_create_left_aligned_label(NULL);
   gtp_engine_supported_games = GTK_LABEL(info_label);
   gtk_label_set_selectable(gtp_engine_supported_games, TRUE);
@@ -628,12 +622,23 @@ create_gtp_engines_page(void)
 					       GTK_UTILS_PACK_DEFAULT,
 					       NULL);
 
+  label
+    = gtk_utils_create_left_aligned_label(_("Command line:"));
+  info_label		  = gtk_utils_create_left_aligned_label(NULL);
+  gtp_engine_command_line = GTK_LABEL(info_label);
+  gtk_label_set_selectable(gtp_engine_command_line, TRUE);
+
+  command_line_hbox = gtk_utils_pack_in_box(GTK_TYPE_HBOX, QUARRY_SPACING,
+					    label, GTK_UTILS_FILL,
+					    info_label, GTK_UTILS_PACK_DEFAULT,
+					    NULL);
+
   gtp_engine_info = gtk_utils_pack_in_box(GTK_TYPE_NAMED_VBOX,
 					  QUARRY_SPACING_SMALL,
 					  name_hbox, GTK_UTILS_FILL,
 					  version_hbox, GTK_UTILS_FILL,
-					  command_line_hbox, GTK_UTILS_FILL,
 					  supported_games_hbox, GTK_UTILS_FILL,
+					  command_line_hbox, GTK_UTILS_FILL,
 					  NULL);
   gtk_named_vbox_set_label_text(GTK_NAMED_VBOX(gtp_engine_info),
 				_("GTP Engine Information"));
@@ -1068,6 +1073,42 @@ gtk_preferences_dialog_change_page(GtkTreeSelection *selection,
 
 
 static void
+gtk_preferences_dialog_response(GtkWindow *window, gint response_id)
+{
+  assert(window == preferences_dialog);
+
+  if (response_id == GTK_RESPONSE_HELP) {
+    switch (last_selected_page) {
+    case PREFERENCES_PAGE_GTP_ENGINES:
+      gtk_help_display("preferences-gtp-engines");
+      break;
+
+    case PREFERENCES_PAGE_SGF_SAVING:
+      gtk_help_display("preferences-saving-game-records");
+      break;
+
+    case PREFERENCES_PAGE_GO_BOARD_APPEARANCE:
+      gtk_help_display("preferences-go-board-appearance");
+      break;
+
+    case PREFERENCES_PAGE_AMAZONS_BOARD_APPEARANCE:
+      gtk_help_display("preferences-amazons-board-appearance");
+      break;
+
+    case PREFERENCES_PAGE_OTHELLO_BOARD_APPEARANCE:
+      gtk_help_display("preferences-othello-board-appearance");
+      break;
+
+    default:
+      assert(0);
+    }
+  }
+  else
+    gtk_widget_destroy(GTK_WIDGET(preferences_dialog));
+}
+
+
+static void
 gtk_preferences_dialog_destroy(GtkWindow *window)
 {
   assert(window == preferences_dialog);
@@ -1108,9 +1149,9 @@ gtk_preferences_dialog_update_gtp_engine_info(GtkTreeSelection *selection)
 		     (engine_data ? engine_data->name : NULL));
   gtk_label_set_text(gtp_engine_version,
 		     (engine_data ? engine_data->version : NULL));
+  gtk_label_set_text(gtp_engine_supported_games, supported_games);
   gtk_label_set_text(gtp_engine_command_line,
 		     (engine_data ? engine_data->command_line : NULL));
-  gtk_label_set_text(gtp_engine_supported_games, supported_games);
 
   utils_free(supported_games);
 }
@@ -1431,6 +1472,13 @@ gtk_gtp_engine_dialog_response(GtkWindow *window, gint response_id,
 				    ((GtkProgressDialogCallback)
 				     cancel_engine_query),
 				    data);
+	/* FIXME: I'd like this to display
+	 *	  `preferences-gtp-engine-information-dialog-freeze'.
+	 *	  Do newer versions of `yelp' still have this bug?
+	 */
+	gtk_progress_dialog_set_help_link_id
+	  (GTK_PROGRESS_DIALOG(data->progress_dialog),
+	   "preferences-gtp-engine-information-dialog");
 	g_object_ref(data->progress_dialog);
 
 	gtp_client_setup_connection(data->client);
@@ -1523,10 +1571,9 @@ client_deleted(GtpClient *client, GError *shutdown_reason, void *user_data)
       configuration_set_string_value(&engine_data->name, client->engine_name);
       configuration_set_string_value(&engine_data->version,
 				     client->engine_version);
-      configuration_set_string_value(&engine_data->command_line, command_line);
-
       configuration_set_string_list_value_steal_strings
 	(&engine_data->supported_games, &client->supported_games);
+      configuration_set_string_value(&engine_data->command_line, command_line);
 
       if (data->engine_data)
 	find_gtp_tree_model_iterator_by_engines_data(engine_data, &iterator);
