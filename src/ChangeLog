@@ -1,3 +1,66 @@
+2004-12-09  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* gui-gtk/gtk-goban-window.c (gtk_goban_window_init): Add an
+	GtkSgfTreeView to the side bar.
+	(set_current_tree): Inform `sgf_tree_view' about the change.
+	(switch_to_given_node): New function.
+	(update_children_for_new_node): Force `sgf_tree_view' view port
+	update.
+	(move_has_been_generated): Likewise if not displaying game node.
+
+	* sgf/sgf-utils.c (sgf_utils_append_variation): Call new function
+	sgf_game_tree_invalidate_map().
+
+	* gui-gtk/gtk-sgf-tree-view.c, gui-gtk/gtk-sgf-tree-view.h: New
+	files.
+
+	* gui-gtk/quarry-marshal.list: New marshaller
+	`VOID:OBJECT,OBJECT'.
+
+	* sgf/sgf-parser.c (complete_node_and_update_board): Make last
+	change work.
+
+2004-12-08  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* utils/utils.c (utils_realloc): Don't choke if `realloc (..., 0)'
+	returns NULL.
+
+	* sgf/sgf-tree-map.c: New file.
+
+	* sgf/sgf-tree.c (sgf_game_tree_new): Initialize new `user_data',
+	`free_user_data', `map_width', `view_port_nodes' and
+	`view_port_lines' fields.
+	(sgf_game_tree_delete): Free `user_data' (if necessary),
+	`view_port_nodes' and `view_port_lines' fields.
+	(sgf_game_tree_set_user_data): New function.
+	(sgf_node_new): Initialize new `is_collapsed' field.
+
+2004-12-06  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* gui-gtk/gtk-preferences.c (update_board_background_texture): Use
+	gtk_goban_base_update_appearance() instead of
+	gtk_goban_update_appearance().
+	(update_board_markup): Likewise.
+	(update_board_appearance): Likewise.
+
+	* gui-gtk/gtk-goban.c (gtk_goban_get_type): Descend from
+	GtkGobanBase, not GtkWidget.
+	(gtk_goban_set_parameters): Use new function
+	gtk_goban_base_set_game() and `appearance-changed' signal.
+	(gtk_goban_size_allocate): Use new function
+	gtk_goban_base_set_cell_size().  Be a nice inherited method and
+	call parent's method instead of doing everything itself.
+	(unreference_cached_objects, set_goban_style_appearance)
+	(gtk_goban_appearance_changed): Remove functions (part of
+	functionality went to `gui-gtk/gtk-goban-base.c'.)
+	(gtk_goban_appearance_changed): New function (inherit most of
+	set_goban_non_style_appearance() functionality.)
+	(gtk_goban_update_appearance): Remove function (functionality
+	inherited by gtk_goban_base_update_appearance().)
+
+	* gui-gtk/gtk-goban-base.c, gui-gtk/gtk-goban-base.h: New
+	files (part of `gui-gtk/gtk-goban.c' fuctionality.)
+
 2004-11-30  Paul Pogonyshev  <pogonyshev@gmx.net>
 
 	* (Quarry version 0.1.10.)
