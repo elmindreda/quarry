@@ -1864,7 +1864,9 @@ play_resign (GtkGobanWindow *goban_window)
 			      &goban_window->sgf_board_state, EMPTY);
   update_children_for_new_node (goban_window);
 
-  gtk_clock_stop (goban_window->clocks[COLOR_INDEX (color)]);
+  if (goban_window->time_controls[COLOR_INDEX (color)])
+    gtk_clock_stop (goban_window->clocks[COLOR_INDEX (color)]);
+
   goban_window->in_game_mode = FALSE;
 }
 
