@@ -82,6 +82,7 @@ libguigtk_a_SOURCES =			\
 	gtk-game-info-dialog.c		\
 	gtk-games.c			\
 	gtk-goban.c			\
+	gtk-goban-base.c		\
 	gtk-goban-window.c		\
 	gtk-gtp-client-interface.c	\
 	gtk-help.c			\
@@ -93,6 +94,7 @@ libguigtk_a_SOURCES =			\
 	gtk-qbox.c			\
 	gtk-qhbox.c			\
 	gtk-qvbox.c			\
+	gtk-sgf-tree-view.c		\
 	gtk-tile-set.c			\
 	gtk-utils.c			\
 	gui-back-end.c			\
@@ -106,6 +108,7 @@ libguigtk_a_SOURCES =			\
 	gtk-game-info-dialog.h		\
 	gtk-games.h			\
 	gtk-goban.h			\
+	gtk-goban-base.h		\
 	gtk-goban-window.h		\
 	gtk-gtp-client-interface.h	\
 	gtk-help.h			\
@@ -117,6 +120,7 @@ libguigtk_a_SOURCES =			\
 	gtk-qbox.h			\
 	gtk-qhbox.h			\
 	gtk-qvbox.h			\
+	gtk-sgf-tree-view.h		\
 	gtk-thread-interface.h		\
 	gtk-tile-set.h			\
 	gtk-utils.h			\
