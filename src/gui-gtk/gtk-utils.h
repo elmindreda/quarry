@@ -55,6 +55,9 @@
 #define GTK_2_4_OR_LATER				\
   (GTK_MAJOR_VERSION >= 2 && GTK_MINOR_VERSION >= 4)
 
+#define GTK_2_6_OR_LATER				\
+  (GTK_MAJOR_VERSION >= 2 && GTK_MINOR_VERSION >= 6)
+
 
 #if !GTK_2_2_OR_LATER
 
@@ -71,6 +74,11 @@
 /* Certain functions are not present in GTK+ 2.0 */
 #define gtk_window_set_skip_taskbar_hint(window, setting)
 #define gtk_window_set_skip_pager_hint(window, setting)
+
+
+/* Workaround GTK+ 2.0 focus slipping problem. */
+#define gtk_dialog_set_default_response(dialog, response_id)		\
+  gtk_utils_workaround_set_default_response (dialog, response_id)
 
 
 #endif
@@ -174,6 +182,9 @@ void		gtk_utils_make_window_only_horizontally_resizable
 #else
 
 #define gtk_utils_make_window_only_horizontally_resizable(window)
+
+void		gtk_utils_workaround_set_default_response (GtkDialog *dialog,
+							   gint response_id);
 
 #endif
 

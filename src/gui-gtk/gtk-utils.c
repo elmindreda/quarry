@@ -305,6 +305,32 @@ null_pointer_on_destroy_ask_control_center (GtkWindow *window,
 }
 
 
+#if !GTK_2_2_OR_LATER
+
+
+/* Workaround GTK+ 2.0 focus slipping problem. */
+void
+gtk_utils_workaround_set_default_response (GtkDialog *dialog, gint response_id)
+{
+  GtkWidget *focused_widget = gtk_window_get_focus (GTK_WINDOW (dialog));
+
+#undef gtk_dialog_set_default_response
+
+  gtk_dialog_set_default_response (dialog, response_id);
+
+#define gtk_dialog_set_default_response(dialog, response_id)		\
+  gtk_utils_workaround_set_default_response (dialog, response_id)
+
+  /* Can't use gtk_widget_grab_focus() since `focused_widget' can be
+   * NULL.
+   */
+  gtk_window_set_focus (GTK_WINDOW (dialog), focused_widget);
+}
+
+
+#endif /* not GTK_2_2_OR_LATER */
+
+
 /* GTK+ has an annoying "feature" (I tend to consider it a bug): if
  * you activate a button from keyboard (i.e. Alt+O for "OK" button),
  * then keyboard changes in the currently focused spin button are not
