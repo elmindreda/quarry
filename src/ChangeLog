@@ -1,3 +1,67 @@
+2005-03-28  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* gui-gtk/gtk-parser-interface.c (open_game_record): Call
+	gtk_goban_window_enter_game_record_mode().
+
+	* gui-gtk/gtk-goban-window.c: Add labels to all navigation toolbar
+	buttons.
+	(gtk_goban_window_init): Add "Undo", "Redo", "Delete Node" and
+	"Delete Node's Children" menu items to "Edit" menu.
+	(gtk_goban_window_enter_game_record_mode): New function.
+	(leave_game_mode): Call gtk_goban_window_enter_game_record_mode().
+	(update_children_for_new_node): Don't try to fetch comment if
+	`goban_window->last_displayed_node' is NULL.
+	(update_commands_sensitivity): Sensitize/desensitize new menu
+	items as appropriate.
+	(undo_operation, redo_operation, delete_current_node)
+	(delete_current_node_children): New functions.
+
+	* sgf/sgf-utils.c (sgf_utils_append_variation): Rely on
+	apply_undo_history_entry() and functions it invokes for performing
+	the main job.
+	(sgf_utils_delete_current_node)
+	(sgf_utils_delete_current_node_children, sgf_utils_undo)
+	(sgf_utils_redo, sgf_undo_history_new, sgf_undo_history_delete)
+	(sgf_undo_history_delete_dont_free_data): New functions.
+	(do_switch_to_given_node): New function, break out of
+	sgf_utils_switch_to_given_node().
+	(apply_undo_history_entry, sgf_operation_add_node)
+	(sgf_operation_delete_node, sgf_operation_new_node_free_data)
+	(sgf_operation_delete_node_free_data)
+	(sgf_operation_delete_node_children_undo)
+	(sgf_operation_delete_node_children_redo)
+	(sgf_operation_delete_node_children_free_data, find_node_link):
+	New functions.
+
+	* sgf/sgf.h (sgf_utils_can_undo, sgf_utils_can_redo): New macros.
+
+	* sgf/sgf-tree.c (sgf_game_tree_new): Initialize new
+	`undo_history' field with NULL.
+	(sgf_game_tree_delete): Delete undo history if needed.
+	(sgf_node_append_child): Remove function.
+	(sgf_node_get_last_child): New function.
+	(sgf_node_is_game_info_node): Don't use links where they are not
+	needed.
+	(GET_PROPERTY_VALUE): Likewise.
+	(sgf_node_get_number_property_value): Likewise.
+	(sgf_node_get_real_property_value): Likewise.
+
+	* sgf/sgf-undo.h: New file.
+	* sgf/sgf-undo-operations.list: New file.
+
+	* sgf/parse-sgf-list.c: Add mode to parse undo operations list.
+	(undo_operation_list_parse_undo_operation2): New function.
+
+2005-03-20  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* gui-gtk/gtk-goban-window.c (gtk_goban_window_init): Force
+	`goban' widget to grab focus.
+	(show_game_information_dialog): Make `game_info_dialog' always
+	stay above `goban_window'.
+
+	* gui-gtk/gtk-file-selector.c (gtk_file_selector_finalize): Free
+	`last_directory' string, don't leak it.
+
 2005-03-19  Paul Pogonyshev  <pogonyshev@gmx.net>
 
 	* gui-gtk/gtk-goban-window.c (gtk_goban_window_init): Register
