@@ -240,7 +240,7 @@ do_write_point_or_rectangle(SgfWritingData *data,
     do_write_point(data, right_bottom);
   }
 
-  buffered_writer_add_character(&data->writer, '[');
+  buffered_writer_add_character(&data->writer, ']');
   if (data->writer.column >= FILL_BREAK_POINT)
     buffered_writer_add_newline(&data->writer);
 }
