@@ -24,6 +24,7 @@
 #define QUARRY_GTK_GOBAN_H
 
 
+#include "gtk-goban-base.h"
 #include "gtk-tile-set.h"
 #include "sgf.h"
 #include "board.h"
@@ -78,22 +79,24 @@ typedef enum {
   GOBAN_FEEDBACK_FORCE_TILE_NONE,
 
   GOBAN_FEEDBACK_OPAQUE,
-  GOBAN_FEEDBACK_BLACK_OPAQUE = GOBAN_FEEDBACK_OPAQUE + BLACK_INDEX,
-  GOBAN_FEEDBACK_WHITE_OPAQUE = GOBAN_FEEDBACK_OPAQUE + WHITE_INDEX,
+  GOBAN_FEEDBACK_BLACK_OPAQUE	     = GOBAN_FEEDBACK_OPAQUE + BLACK_INDEX,
+  GOBAN_FEEDBACK_WHITE_OPAQUE	     = GOBAN_FEEDBACK_OPAQUE + WHITE_INDEX,
 
   GOBAN_FEEDBACK_GHOST,
-  GOBAN_FEEDBACK_BLACK_GHOST = GOBAN_FEEDBACK_GHOST + BLACK_INDEX,
-  GOBAN_FEEDBACK_WHITE_GHOST = GOBAN_FEEDBACK_GHOST + WHITE_INDEX,
+  GOBAN_FEEDBACK_BLACK_GHOST	     = GOBAN_FEEDBACK_GHOST + BLACK_INDEX,
+  GOBAN_FEEDBACK_WHITE_GHOST	     = GOBAN_FEEDBACK_GHOST + WHITE_INDEX,
 
   GOBAN_FEEDBACK_THICK_GHOST,
-  GOBAN_FEEDBACK_THICK_BLACK_GHOST = GOBAN_FEEDBACK_THICK_GHOST + BLACK_INDEX,
-  GOBAN_FEEDBACK_THICK_WHITE_GHOST = GOBAN_FEEDBACK_THICK_GHOST + WHITE_INDEX,
+  GOBAN_FEEDBACK_THICK_BLACK_GHOST   = (GOBAN_FEEDBACK_THICK_GHOST
+					+ BLACK_INDEX),
+  GOBAN_FEEDBACK_THICK_WHITE_GHOST   = (GOBAN_FEEDBACK_THICK_GHOST
+					+ WHITE_INDEX),
 
   GOBAN_FEEDBACK_PRESS_DEFAULT,
 
   GOBAN_FEEDBACK_MOVE,
-  GOBAN_FEEDBACK_BLACK_MOVE = GOBAN_FEEDBACK_MOVE + BLACK_INDEX,
-  GOBAN_FEEDBACK_WHITE_MOVE = GOBAN_FEEDBACK_MOVE + WHITE_INDEX,
+  GOBAN_FEEDBACK_BLACK_MOVE	     = GOBAN_FEEDBACK_MOVE + BLACK_INDEX,
+  GOBAN_FEEDBACK_WHITE_MOVE	     = GOBAN_FEEDBACK_MOVE + WHITE_INDEX,
 
   GOBAN_FEEDBACK_ADD_OR_REMOVE,
   GOBAN_FEEDBACK_ADD_BLACK_OR_REMOVE = (GOBAN_FEEDBACK_ADD_OR_REMOVE
@@ -131,14 +134,14 @@ typedef enum {
 #endif
 
 enum {
-  GOBAN_TILE_DONT_CHANGE = NUM_TILES,
+  GOBAN_TILE_DONT_CHANGE	 = NUM_TILES,
 
-  GOBAN_MARKUP_GHOSTIFY = 1 << 4,
+  GOBAN_MARKUP_GHOSTIFY		 = 1 << 4,
   GOBAN_MARKUP_GHOSTIFY_SLIGHTLY = 1 << 5,
 
-  GOBAN_MARKUP_FLAGS_MASK = (GOBAN_MARKUP_GHOSTIFY
-			     | GOBAN_MARKUP_GHOSTIFY_SLIGHTLY),
-  GOBAN_MARKUP_TILE_MASK = ~GOBAN_MARKUP_FLAGS_MASK
+  GOBAN_MARKUP_FLAGS_MASK	 = (GOBAN_MARKUP_GHOSTIFY
+				    | GOBAN_MARKUP_GHOSTIFY_SLIGHTLY),
+  GOBAN_MARKUP_TILE_MASK	 = ~GOBAN_MARKUP_FLAGS_MASK
 };
 
 
@@ -150,9 +153,8 @@ typedef struct _GtkGoban		GtkGoban;
 typedef struct _GtkGobanClass		GtkGobanClass;
 
 struct _GtkGoban {
-  GtkWidget		 widget;
+  GtkGobanBase		 base;
 
-  Game			 game;
   int			 width;
   int			 height;
 
@@ -167,9 +169,6 @@ struct _GtkGoban {
   int			 last_move_x;
   int			 last_move_y;
 
-  gint			 cell_size;
-
-  PangoFontDescription  *font_description;
   gint			 font_size;
   gint			 character_height;
   gint			 digit_width;
@@ -197,9 +196,7 @@ struct _GtkGoban {
   int			 num_hoshi_points;
   BoardPoint		 hoshi_points[9];
 
-  GtkMainTileSet	*main_tile_set;
   GtkMainTileSet	*small_tile_set;
-  GtkSgfMarkupTileSet	*sgf_markup_tile_set;
   GObject		*checkerboard_pattern_object;
 
   int			 pointer_x;
@@ -215,7 +212,7 @@ struct _GtkGoban {
 };
 
 struct _GtkGobanClass {
-  GtkWidgetClass  parent_class;
+  GtkGobanBaseClass	 parent_class;
 
   GtkGobanPointerFeedback (* pointer_moved) (GtkGoban *goban,
 					     GtkGobanPointerData *data);
@@ -228,7 +225,7 @@ struct _GtkGobanClass {
 #define KEEP_SGF_LABELS		((const SgfLabelList *) -1)
 
 
-GtkType 	gtk_goban_get_type (void);
+GType	 	gtk_goban_get_type (void);
 
 GtkWidget *	gtk_goban_new (void);
 
@@ -258,9 +255,6 @@ void		gtk_goban_diff_against_grid
 
 gint		gtk_goban_negotiate_width (GtkWidget *widget, gint height);
 gint		gtk_goban_negotiate_height (GtkWidget *widget, gint width);
-
-
-void		gtk_goban_update_appearance (Game game);
 
 
 #endif /* QUARRY_GTK_GOBAN_H */
