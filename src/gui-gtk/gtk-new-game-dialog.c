@@ -499,10 +499,11 @@ set_handicap_adjustment_limits(GtkAdjustment *board_size_adjustment,
   gint board_size = gtk_adjustment_get_value(board_size_adjustment);
   int max_fixed_handicap = go_get_max_fixed_handicap(board_size, board_size);
 
-  g_object_set(data->handicaps[0],
-	       "upper", (gdouble) max_fixed_handicap, NULL);
-  g_object_set(data->handicaps[1],
-	       "upper", (gdouble) (board_size * board_size - 1), NULL);
+  data->handicaps[0]->upper = (gdouble) max_fixed_handicap;
+  gtk_adjustment_changed(data->handicaps[0]);
+
+  data->handicaps[1]->upper = (gdouble) (board_size * board_size - 1);
+  gtk_adjustment_changed(data->handicaps[1]);
 }
 
 
