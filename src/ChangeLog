@@ -1,3 +1,69 @@
+2005-03-01  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* gui-gtk/gtk-sgf-tree-view.c (SHOULD_TRACK_CURRENT_NODE): New
+	macro, broken out of gtk_sgf_tree_view_update_view_port().
+	(gtk_sgf_tree_view_realize): Only request events for the
+	`output_window' to avoid unnecessary exposures.
+	(gtk_sgf_tree_view_expose): Use precomputed tile maps for drawing.
+	(gtk_sgf_tree_view_unrealize): Free tile maps.
+	(gtk_sgf_tree_view_set_sgf_tree): Hook up handlers to
+	GtkSgfTreeSignalProxy signals.
+	(gtk_sgf_tree_view_update_view_port): Don't try to track current
+	node (it's buggy here since the map might have changed.)
+	(track_current_node): New function, broken out of
+	gtk_sgf_tree_view_update_view_port().
+	(update_view_port): Compute tile maps based on result of
+	sgf_game_tree_fill_map_view_port() and
+	sgf_game_tree_get_current_branch_marks().
+	(about_to_modify_map, about_to_change_current_node)
+	(current_node_changed, map_modified): New functions; track current
+	node here.
+
+	* gui-gtk/gtk-goban-window.c (set_current_tree): Attach a
+	GtkSgfTreeSignalProxy to the tree.
+	(sgf_tree_view_clicked): Don't call
+	gtk_sgf_tree_view_update_view_port().
+	(update_children_for_new_node): Likewise.
+	(move_has_been_generated): Likewise.
+
+	* gtk-sgf-tree-signal-proxy.h, gtk-sgf-tree-signal-proxy.c: New
+	files.
+
+	* gui-gtk/quarry-marshal.list: New marshaller
+	`VOID:POINTER,POINTER'.
+
+	* sgf/sgf-utils.c (DO_NOTIFY): New macro.
+	(sgf_utils_go_down_in_tree): Send `about-to-change-current-node'
+	and `current-node-changed' notifications.
+	(sgf_utils_go_up_in_tree): Likewise.
+	(sgf_utils_switch_to_variation): Likewise.
+	(sgf_utils_switch_to_given_variation): Likewise.
+	(sgf_utils_switch_to_given_node): Likewise.
+	(sgf_utils_append_variation): Send various notifications.
+	(sgf_utils_set_node_is_collapsed): Send `about-to-modify-map' and
+	`map-modified' notifications.
+
+2005-02-26  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* sgf/sgf-tree.c (sgf_game_tree_new): Initialize new
+	`notification_callback' field; don't initialize removed
+	`free_user_data'.
+	(sgf_game_tree_delete): Send deletion notification.  Don't use
+	removed `free_user_data'.
+	(sgf_game_tree_set_user_data): Remove function.
+	(sgf_game_tree_set_notification_callback): New function.
+
+2005-01-28  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* gui-gtk/gtk-progress-dialog.c: Don't comment it out when
+	`THREADS_SUPPORTED' is false, the widget is usable either way.
+	Compiling without threads was impossible because of this.
+
+2005-01-25  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* quarry.c: Update copyright string.
+	* gui-gtk/gtk-goban-window.c (show_about_dialog): Likewise.
+
 2005-01-22  Paul Pogonyshev  <pogonyshev@gmx.net>
 
 	* gui-gtk/gtk-goban-window.c (gtk_goban_window_init): Add "Resume
