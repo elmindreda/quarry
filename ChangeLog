@@ -1,3 +1,16 @@
+2004-11-30  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* configure.ac: Quarry version 0.1.10.
+	* NEWS: Update.
+
+2004-11-29  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* aux/xmldocs.make: Make XML installation conditional on
+	ScrollKeeper presence.  If it is not present, then only install
+	HTML file.
+
+	* configure.ac: Check if ScrollKeeper package is installed.
+
 2004-10-22  Paul Pogonyshev  <pogonyshev@gmx.net>
 
 	* configure.ac: Generate `Makefile' in `data/markup-themes/bold'.
