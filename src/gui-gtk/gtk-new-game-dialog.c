@@ -31,6 +31,7 @@
 #include "gtk-preferences.h"
 #include "gtk-utils.h"
 #include "quarry-stock.h"
+#include "time-control.h"
 #include "sgf.h"
 #include "board.h"
 #include "game-info.h"
@@ -205,7 +206,8 @@ gtk_new_game_dialog_present (void)
 
     /* Selector (combo box/option menu) for computer player. */
     data->engine_selectors[k]
-      = gtk_preferences_create_engine_selector (GTK_GAME_GO, engine_name,
+      = gtk_preferences_create_engine_selector (GTK_GAME_GO, FALSE,
+						engine_name,
 						update_game_and_players_page,
 						data);
     gtk_utils_set_sensitive_on_toggle (data->player_radio_buttons[k][1],

@@ -95,10 +95,12 @@ struct _GtkEngineSelectorData {
   GtkWidget	     *selector;
   gpointer	     *user_data;
 
+  GtkGameIndex	      selector_game_index;
+
 #if GTK_2_4_OR_LATER
   GtkCellRenderer    *pixbuf_cell;
 #else
-  GtkGameIndex	      selector_game_index;
+  gboolean	      only_this_game;
   GtpEngineListItem  *last_selection;
 #endif
 };
@@ -217,12 +219,17 @@ static void	    set_pixbuf_cell_image
 		       GtkTreeModel *gtp_engines_tree_model,
 		       GtkTreeIter *iterator, gpointer data);
 
+static gboolean	    engine_is_visible_and_supports_game
+		      (GtkTreeModel *tree_model, GtkTreeIter *iterator,
+		       gpointer game_index);
+
 #else
 
 static void	    prepare_to_rebuild_menus (void);
 static void	    rebuild_all_menus (void);
 static void	    build_and_attach_menu (GtkWidget *option_menu,
-					   GtkGameIndex game_index);
+					   GtkGameIndex game_index,
+					   gboolean only_this_game);
 
 #endif
 
@@ -279,6 +286,7 @@ static GSList		 *gtp_engine_selectors = NULL;
 
 #if GTK_2_4_OR_LATER
 static GtkTreeModel	 *non_hidden_gtp_engines_tree_model;
+static GtkTreeModel *only_one_game_gtp_engines_tree_model[NUM_SUPPORTED_GAMES];
 #endif
 
 
@@ -308,6 +316,8 @@ gtk_preferences_init (void)
   GtpEngineListItem *engine_data;
 
 #if GTK_2_4_OR_LATER
+  int k;
+
   gtp_engines_list_store = gtk_list_store_new (ENGINES_NUM_COLUMNS,
 					       G_TYPE_POINTER, G_TYPE_BOOLEAN,
 					       G_TYPE_STRING, G_TYPE_STRING);
@@ -356,6 +366,19 @@ gtk_preferences_init (void)
      ENGINES_IS_VISIBLE);
 
   gui_back_end_register_object_to_finalize (non_hidden_gtp_engines_tree_model);
+
+  for (k = 0; k < NUM_SUPPORTED_GAMES; k++) {
+    only_one_game_gtp_engines_tree_model[k]
+      = gtk_tree_model_filter_new (GTK_TREE_MODEL (gtp_engines_list_store),
+				   NULL);
+
+    gtk_tree_model_filter_set_visible_function
+      (only_one_game_gtp_engines_tree_model[k],
+       engine_is_visible_and_supports_game, GINT_TO_POINTER (k), NULL);
+
+    gui_back_end_register_object_to_finalize
+      (only_one_game_gtp_engines_tree_model[k]);
+  }
 
 #endif
 }
@@ -2117,6 +2140,7 @@ gtk_preferences_have_non_hidden_gtp_engine (void)
 
 GtkWidget *
 gtk_preferences_create_engine_selector (GtkGameIndex game_index,
+					gboolean only_this_game,
 					const gchar *engine_name,
 					GtkEngineChanged callback,
 					gpointer user_data)
@@ -2129,30 +2153,44 @@ gtk_preferences_create_engine_selector (GtkGameIndex game_index,
 
 #if GTK_2_4_OR_LATER
 
-  GtkWidget *widget
-    = gtk_combo_box_new_with_model (non_hidden_gtp_engines_tree_model);
-  GtkCellRenderer *cell = gtk_cell_renderer_text_new ();
+  GtkWidget *widget;
+  GtkCellRenderer *cell_renderer;
 
-  gtk_cell_layout_pack_start (GTK_CELL_LAYOUT (widget), cell, FALSE);
-  gtk_cell_layout_add_attribute (GTK_CELL_LAYOUT (widget), cell,
+  if (only_this_game) {
+    widget = (gtk_combo_box_new_with_model
+	      (only_one_game_gtp_engines_tree_model[game_index]));
+  }
+  else
+    widget = gtk_combo_box_new_with_model (non_hidden_gtp_engines_tree_model);
+
+  cell_renderer = gtk_cell_renderer_text_new ();
+  gtk_cell_layout_pack_start (GTK_CELL_LAYOUT (widget), cell_renderer, FALSE);
+  gtk_cell_layout_add_attribute (GTK_CELL_LAYOUT (widget), cell_renderer,
 				 "text", ENGINES_NAME);
 
-  data->pixbuf_cell = gtk_cell_renderer_pixbuf_new ();
-  g_object_set (data->pixbuf_cell, "xpad", QUARRY_SPACING_SMALL, NULL);
-  gtk_cell_layout_pack_start (GTK_CELL_LAYOUT (widget), data->pixbuf_cell,
-			      FALSE);
+  if (!only_this_game) {
+    data->pixbuf_cell = gtk_cell_renderer_pixbuf_new ();
+    g_object_set (data->pixbuf_cell, "xpad", QUARRY_SPACING_SMALL, NULL);
+    gtk_cell_layout_pack_start (GTK_CELL_LAYOUT (widget), data->pixbuf_cell,
+				FALSE);
 
-  gtk_cell_layout_set_cell_data_func (GTK_CELL_LAYOUT (widget),
-				      data->pixbuf_cell,
-				      set_pixbuf_cell_image,
-				      GINT_TO_POINTER (game_index), NULL);
+    gtk_cell_layout_set_cell_data_func (GTK_CELL_LAYOUT (widget),
+					data->pixbuf_cell,
+					set_pixbuf_cell_image,
+					GINT_TO_POINTER (game_index), NULL);
+
+    data->selector_game_index = GTK_GAME_UNSUPPORTED;
+  }
+  else
+    data->selector_game_index = game_index;
 
 #else /* not GTK_2_4_OR_LATER */
 
   GtkWidget *widget = gtk_option_menu_new ();
 
-  build_and_attach_menu (widget, game_index);
+  build_and_attach_menu (widget, game_index, only_this_game);
   data->selector_game_index = game_index;
+  data->only_this_game	    = only_this_game;
 
 #endif /* not GTK_2_4_OR_LATER */
 
@@ -2187,22 +2225,30 @@ gtk_preferences_set_engine_selector_game_index (GtkWidget *selector,
 
     if (data->selector == selector) {
 #if GTK_2_4_OR_LATER
+
+      assert (data->selector_game_index == GTK_GAME_UNSUPPORTED);
+
       gtk_cell_layout_set_cell_data_func (GTK_CELL_LAYOUT (selector),
 					  data->pixbuf_cell,
 					  set_pixbuf_cell_image,
 					  GINT_TO_POINTER (game_index), NULL);
+
 #else
+
+      assert (!data->only_this_game);
+
       if (game_index != data->selector_game_index) {
 	gtk_utils_block_signal_handlers (data->selector,
 					 engine_selector_changed);
 
-	build_and_attach_menu (data->selector, game_index);
+	build_and_attach_menu (data->selector, game_index, FALSE);
 
 	gtk_utils_unblock_signal_handlers (data->selector,
 					   engine_selector_changed);
       }
 
       data->selector_game_index = game_index;
+
 #endif
 
       break;
@@ -2212,19 +2258,44 @@ gtk_preferences_set_engine_selector_game_index (GtkWidget *selector,
 
 
 void
-gtk_preferences_set_engine_selector_selection (GtkWidget *selector,
-					       GtpEngineListItem *engine_data)
+gtk_preferences_set_engine_selector_selection
+  (GtkWidget *selector, const GtpEngineListItem *engine_data)
 {
   gint engine_to_select;
 
   if (engine_data) {
+    GSList *item;
     GtpEngineListItem *engine_scan;
+    GtkEngineSelectorData *data;
+
+    for (item = gtp_engine_selectors; ; item = item->next) {
+      assert (item);
+
+      data = (GtkEngineSelectorData *) (item->data);
+      if (data->selector == selector)
+	break;
+    }
 
     for (engine_scan = gtp_engines.first, engine_to_select = 0;
 	 engine_scan && engine_scan != engine_data;
 	 engine_scan = engine_scan->next) {
-      if (!engine_scan->is_hidden)
-	engine_to_select++;
+      if (!engine_scan->is_hidden) {
+#if GTK_2_4_OR_LATER
+
+	if (data->pixbuf_cell
+	    || gtk_games_engine_supports_game (engine_scan,
+					       data->selector_game_index))
+	  engine_to_select++;
+
+#else
+
+	if (!data->only_this_game
+	    || gtk_games_engine_supports_game (engine_scan,
+					       data->selector_game_index))
+	  engine_to_select++;
+
+#endif
+      }
     }
 
     if (!engine_scan)
@@ -2244,14 +2315,41 @@ gtk_preferences_set_engine_selector_selection (GtkWidget *selector,
 GtpEngineListItem *
 gtk_preferences_get_engine_selector_selection (GtkWidget *selector)
 {
+  GSList *item;
+  GtkEngineSelectorData *data;
   GtpEngineListItem *engine_data;
   gint selected_engine = gtk_utils_get_selector_active_item_index (selector);
+
+  for (item = gtp_engine_selectors; ; item = item->next) {
+    assert (item);
+
+    data = (GtkEngineSelectorData *) (item->data);
+    if (data->selector == selector)
+      break;
+  }
 
   for (engine_data = gtp_engines.first; engine_data;
        engine_data = engine_data->next) {
     if (!engine_data->is_hidden) {
-      if (selected_engine-- == 0)
-	break;
+#if GTK_2_4_OR_LATER
+
+      if (data->pixbuf_cell
+	  || gtk_games_engine_supports_game (engine_data,
+					     data->selector_game_index)) {
+	if (selected_engine-- == 0)
+	  break;
+      }
+
+#else
+
+      if (!data->only_this_game
+	  || gtk_games_engine_supports_game (engine_data,
+					     data->selector_game_index)) {
+	if (selected_engine-- == 0)
+	  break;
+      }
+
+#endif
     }
   }
 
@@ -2298,6 +2396,21 @@ set_pixbuf_cell_image (GtkCellLayout *cell_layout, GtkCellRenderer *cell,
 }
 
 
+static gboolean
+engine_is_visible_and_supports_game (GtkTreeModel *tree_model,
+				     GtkTreeIter *iterator,
+				     gpointer game_index)
+{
+  GtpEngineListItem *engine_data;
+
+  gtk_tree_model_get (tree_model, iterator, ENGINES_DATA, &engine_data, -1);
+
+  return (!engine_data->is_hidden
+	  && gtk_games_engine_supports_game (engine_data,
+					     GPOINTER_TO_INT (game_index)));
+}
+
+
 #else /* not GTK_2_4_OR_LATER */
 
 
@@ -2325,7 +2438,8 @@ rebuild_all_menus (void)
 
     gtk_utils_block_signal_handlers (data->selector, engine_selector_changed);
 
-    build_and_attach_menu (data->selector, data->selector_game_index);
+    build_and_attach_menu (data->selector, data->selector_game_index,
+			   data->only_this_game);
     gtk_preferences_set_engine_selector_selection (data->selector,
 						   data->last_selection);
 
@@ -2336,7 +2450,8 @@ rebuild_all_menus (void)
 
 
 static void
-build_and_attach_menu (GtkWidget *option_menu, GtkGameIndex game_index)
+build_and_attach_menu (GtkWidget *option_menu, GtkGameIndex game_index,
+		       gboolean only_this_game)
 {
   GtkWidget *menu = gtk_menu_new ();
   GtpEngineListItem *engine_data;
@@ -2347,21 +2462,28 @@ build_and_attach_menu (GtkWidget *option_menu, GtkGameIndex game_index)
       = gtk_games_engine_supports_game (engine_data, game_index);
 
     if (!engine_data->is_hidden) {
-      GtkWidget *menu_item = gtk_menu_item_new ();
-      GtkWidget *icon;
-      GtkWidget *hbox;
+      if (!only_this_game) {
+	GtkWidget *menu_item = gtk_menu_item_new ();
+	GtkWidget *icon;
+	GtkWidget *hbox;
 
-      icon = gtk_image_new_from_stock ((engine_supports_game
-					? GTK_STOCK_YES : GTK_STOCK_NO),
-				       GTK_ICON_SIZE_MENU);
+	icon = gtk_image_new_from_stock ((engine_supports_game
+					  ? GTK_STOCK_YES : GTK_STOCK_NO),
+					 GTK_ICON_SIZE_MENU);
 
-      hbox = gtk_utils_pack_in_box (GTK_TYPE_HBOX, QUARRY_SPACING_SMALL,
-				    gtk_label_new (engine_data->screen_name),
-				    GTK_UTILS_FILL,
-				    icon, GTK_UTILS_FILL, NULL);
+	hbox = gtk_utils_pack_in_box (GTK_TYPE_HBOX, QUARRY_SPACING_SMALL,
+				      gtk_label_new (engine_data->screen_name),
+				      GTK_UTILS_FILL,
+				      icon, GTK_UTILS_FILL, NULL);
 
-      gtk_container_add (GTK_CONTAINER (menu_item), hbox);
-      gtk_menu_shell_append (GTK_MENU_SHELL (menu), menu_item);
+	gtk_container_add (GTK_CONTAINER (menu_item), hbox);
+	gtk_menu_shell_append (GTK_MENU_SHELL (menu), menu_item);
+      }
+      else if (gtk_games_engine_supports_game (engine_data, game_index)) {
+	gtk_menu_shell_append
+	  (GTK_MENU_SHELL (menu),
+	   gtk_menu_item_new_with_label (engine_data->screen_name));
+      }
     }
   }
 

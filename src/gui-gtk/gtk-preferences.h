@@ -1,7 +1,7 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *\
  * This file is part of Quarry.                                    *
  *                                                                 *
- * Copyright (C) 2003, 2004 Paul Pogonyshev.                       *
+ * Copyright (C) 2003, 2004, 2005 Paul Pogonyshev.                 *
  *                                                                 *
  * This program is free software; you can redistribute it and/or   *
  * modify it under the terms of the GNU General Public License as  *
@@ -79,12 +79,14 @@ BoardAppearance *    game_to_board_appearance_structure (Game game);
 gboolean	     gtk_preferences_have_non_hidden_gtp_engine (void);
 
 GtkWidget *	     gtk_preferences_create_engine_selector
-		       (GtkGameIndex game_index, const gchar *engine_name,
+		       (GtkGameIndex game_index, gboolean only_this_game,
+			const gchar *engine_name,
 			GtkEngineChanged callback, gpointer user_data);
 void		     gtk_preferences_set_engine_selector_game_index
 		       (GtkWidget *selector, GtkGameIndex game_index);
 void		     gtk_preferences_set_engine_selector_selection
-		       (GtkWidget *selector, GtpEngineListItem *engine_data);
+		       (GtkWidget *selector,
+			const GtpEngineListItem *engine_data);
 GtpEngineListItem *  gtk_preferences_get_engine_selector_selection
 		       (GtkWidget *selector);
 
