@@ -560,6 +560,30 @@ gtk_utils_set_menu_items_sensitive(GtkItemFactory *item_factory,
 }
 
 
+void
+gtk_utils_set_gdk_color(GdkColor *gdk_color, QuarryColor quarry_color)
+{
+  assert(gdk_color);
+
+  gdk_color->red   = (quarry_color.red * G_MAXUINT16) / G_MAXUINT8;
+  gdk_color->green = (quarry_color.green * G_MAXUINT16) / G_MAXUINT8;
+  gdk_color->blue  = (quarry_color.blue * G_MAXUINT16) / G_MAXUINT8;
+}
+
+
+void
+gtk_utils_set_quarry_color(QuarryColor *quarry_color,
+			   const GdkColor *gdk_color)
+{
+  assert(quarry_color);
+  assert(gdk_color);
+
+  quarry_color->red   = (gdk_color->red * G_MAXUINT8) / G_MAXUINT16;
+  quarry_color->green = (gdk_color->green * G_MAXUINT8) / G_MAXUINT16;
+  quarry_color->blue  = (gdk_color->blue * G_MAXUINT8) / G_MAXUINT16;
+}
+
+
 /*
  * Local Variables:
  * tab-width: 8

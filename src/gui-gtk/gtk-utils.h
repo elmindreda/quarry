@@ -24,6 +24,7 @@
 #define QUARRY_GTK_UTILS_H
 
 
+#include "utils.h"
 #include "quarry.h"
 
 #include <gtk/gtk.h>
@@ -145,6 +146,12 @@ void		gtk_utils_set_sensitive_on_input(GtkEntry *entry,
 
 void		gtk_utils_set_menu_items_sensitive(GtkItemFactory *item_factory,
 						   gboolean are_sensitive, ...);
+
+
+void		gtk_utils_set_gdk_color(GdkColor *gdk_color,
+					QuarryColor quarry_color);
+void		gtk_utils_set_quarry_color(QuarryColor *quarry_color,
+					   const GdkColor *gdk_color);
 
 
 #endif /* QUARRY_GTK_UTILS_H */
