@@ -26,7 +26,7 @@
 #include "gtk-configuration.h"
 #include "gtk-control-center.h"
 #include "gtk-games.h"
-#include "gtk-goban.h"
+#include "gtk-goban-base.h"
 #include "gtk-help.h"
 #include "gtk-named-vbox.h"
 #include "gtk-gtp-client-interface.h"
@@ -1701,7 +1701,8 @@ update_board_background_texture (GtkEntry *entry, GdkEventFocus *event,
     configuration_set_string_value (&board_appearance->background_texture,
 				    new_texture);
 
-    gtk_goban_update_appearance (index_to_game[GPOINTER_TO_INT (game_index)]);
+    gtk_goban_base_update_appearance
+      (index_to_game[GPOINTER_TO_INT (game_index)]);
   }
 
   return FALSE;
@@ -1720,7 +1721,8 @@ update_board_markup (GtkWidget *widget, gpointer game_index)
 
   if (strcmp (board_appearance->markup_theme, selected_theme->name) != 0) {
     board_appearance->markup_theme = selected_theme->name;
-    gtk_goban_update_appearance (index_to_game[GPOINTER_TO_INT (game_index)]);
+    gtk_goban_base_update_appearance
+      (index_to_game[GPOINTER_TO_INT (game_index)]);
   }
 }
 
@@ -1768,7 +1770,7 @@ update_board_appearance (GtkWidget *widget, gpointer value_storage)
   else
     assert (0);
 
-  gtk_goban_update_appearance (game);
+  gtk_goban_base_update_appearance (game);
 }
 
 
