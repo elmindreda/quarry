@@ -241,13 +241,53 @@ string_buffer_vprintf(StringBuffer *string_buffer,
 		       format_string, arguments_copy);
     va_end(arguments_copy);
 
-    if (length < string_buffer->current_size - string_buffer->length) {
+    if (length < string_buffer->current_size - string_buffer->length
+	&& length != -1) {
       string_buffer->length += length;
       break;
     }
 
     reallocate_if_needed(string_buffer,
 			 length > -1 ? length : string_buffer->size_increment);
+  }
+}
+
+
+void
+string_buffer_cprintf(StringBuffer *string_buffer,
+		      const char *format_string, ...)
+{
+  va_list arguments;
+
+  va_start(arguments, format_string);
+  string_buffer_vcprintf(string_buffer, format_string, arguments);
+  va_end(arguments);
+}
+
+
+void
+string_buffer_vcprintf(StringBuffer *string_buffer,
+		       const char *format_string, va_list arguments)
+{
+  int length;
+  va_list arguments_copy;
+
+  assert(string_buffer);
+  assert(format_string);
+
+  QUARRY_VA_COPY(arguments_copy, arguments);
+  length = utils_vncprintf(string_buffer->string + string_buffer->length,
+			   string_buffer->current_size - string_buffer->length,
+			   format_string, arguments_copy);
+  va_end(arguments_copy);
+
+  if (length < string_buffer->current_size - string_buffer->length)
+    string_buffer->length += length;
+  else {
+    reallocate_if_needed(string_buffer, length);
+    utils_vncprintf(string_buffer->string + string_buffer->length,
+		    string_buffer->current_size - string_buffer->length,
+		    format_string, arguments);
   }
 }
 
