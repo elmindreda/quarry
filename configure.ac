@@ -31,15 +31,18 @@ if test "$GCC" = "yes"; then
   # and `FIRST_XXX' is zero.  It also complains about missing
   # initializers of private fields of GTK+ structures, which I don't
   # want to touch.
+  #
+  # `-Wbad-function-cast' is generally good, but yells at things like
+  # `(int) floor(...)', which is intolerable.
 
-  QUARRY_WARNINGS='-Wall -Waggregate-return -Wbad-function-cast -Wcast-align -Wcast-qual -Wmissing-declarations -Wmissing-prototypes -Wnested-externs -Wpointer-arith -Wredundant-decls -Wshadow -Wstrict-prototypes -Wunused-parameter -Wwrite-strings'
+  QUARRY_WARNINGS='-Wall -Waggregate-return -Wcast-align -Wcast-qual -Wmissing-declarations -Wmissing-prototypes -Wnested-externs -Wpointer-arith -Wredundant-decls -Wshadow -Wstrict-prototypes -Wunused-parameter -Wwrite-strings'
 
   # `-Wstrict-prototypes' and `-Wshadow' launch alarms on GTK+
   # headers, so they are excluded.  `-Wwrite-strings' is excluded,
   # because certain GTK+ structures lack `const' attribute for `gchar
   # *' fields.
 
-  QUARRY_WARNINGS_GTK='-Wall -Waggregate-return -Wbad-function-cast -Wcast-align -Wcast-qual -Wmissing-declarations -Wmissing-prototypes -Wnested-externs -Wpointer-arith -Wredundant-decls -Wunused-parameter'
+  QUARRY_WARNINGS_GTK='-Wall -Waggregate-return -Wcast-align -Wcast-qual -Wmissing-declarations -Wmissing-prototypes -Wnested-externs -Wpointer-arith -Wredundant-decls -Wunused-parameter'
 
 else
   QUARRY_WARNINGS=''
@@ -84,6 +87,10 @@ AC_TYPE_SIZE_T
 AC_FUNC_VPRINTF
 AC_FUNC_MEMCMP
 AC_CHECK_FUNCS(memrchr)
+
+# Require math library.
+AC_SEARCH_LIBS(floor, m)
+
 
 # Require GTK+ 2.0.0 or later.
 #
