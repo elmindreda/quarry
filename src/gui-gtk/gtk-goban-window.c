@@ -591,7 +591,32 @@ gtk_goban_window_finalize(GObject *object)
 static void
 gtk_goban_window_save(GtkGobanWindow *goban_window, guint callback_action)
 {
-  if (callback_action == GTK_GOBAN_WINDOW_SAVE_AS || !goban_window->filename) {
+  if (callback_action == GTK_GOBAN_WINDOW_SAVE && goban_window->filename) {
+    static const gchar *hint_text
+      = ("Note that if this file was created with another SGF editor, "
+	 "there is a small chance that some information will be lost. "
+	 "This warning will be removed when Quarry is more mature.");
+
+    GtkWidget *warning_dialog
+      = gtk_utils_create_message_dialog(GTK_WINDOW(goban_window),
+					GTK_STOCK_DIALOG_WARNING,
+					(GTK_UTILS_NO_BUTTONS
+					 | GTK_UTILS_DONT_SHOW),
+					hint_text,
+					"Save game record back to file `%s'?",
+					goban_window->filename);
+    gtk_dialog_add_buttons(GTK_DIALOG(warning_dialog),
+			   GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
+			   GTK_STOCK_SAVE, GTK_RESPONSE_OK, NULL);
+    gtk_dialog_set_default_response(GTK_DIALOG(warning_dialog),
+				    GTK_RESPONSE_OK);
+    if (gtk_dialog_run(GTK_DIALOG(warning_dialog)) == GTK_RESPONSE_OK)
+      sgf_write_file(goban_window->filename, goban_window->sgf_collection);
+
+    gtk_widget_destroy(warning_dialog);
+  }
+  else {
+    /* "Save as..." command invoked or we don't have a filename. */
     if (!goban_window->save_as_dialog) {
       GtkWidget *file_selection = gtk_file_selection_new("Save As...");
 
