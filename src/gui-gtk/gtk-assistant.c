@@ -260,6 +260,7 @@ gtk_assistant_add_page(GtkAssistant *assistant, GtkWidget *widget,
     page = gtk_utils_create_titled_page(widget, icon_stock_id, title);
 
   gtk_notebook_append_page(assistant->notebook, page, NULL);
+  gtk_widget_show(page);
   gtk_assistant_update_buttons(assistant);
 
   page_data->shown_callback = shown_callback;
