@@ -72,7 +72,7 @@ properties  SgfType property_info {
   RO	SGF_ROUND		simple_text	sgf_parse_simple_text
   PC	SGF_PLACE		simple_text	sgf_parse_simple_text
   DT	SGF_DATE		simple_text	sgf_parse_date
-  RU	SGF_RULES		simple_text	sgf_parse_simple_text
+  RU	SGF_RULE_SET		simple_text	sgf_parse_simple_text
 
   #> `HA' and `KM' are specific to Go.
   HA	SGF_HANDICAP		fake_simple_text  sgf_parse_handicap
