@@ -25,11 +25,10 @@
 #include "gtk-parser-interface.h"
 #include "gtk-preferences.h"
 #include "gtk-thread-interface.h"
-#include "gtk-tile-set-interface.h"
+#include "gtk-tile-set.h"
 #include "gui-back-end.h"
 #include "quarry-stock.h"
 #include "configuration.h"
-#include "tile-set.h"
 #include "time-control.h"
 #include "utils.h"
 
@@ -108,28 +107,6 @@ gui_back_end_register_object_to_finalize(void *object)
 
 
 
-void *
-gui_back_end_image_new(const unsigned char *pixel_data, int width, int height)
-{
-  GdkPixbuf *pixbuf =
-    gdk_pixbuf_new_from_data(pixel_data, GDK_COLORSPACE_RGB,
-			     TRUE, 8, width, height,
-			     width * 4 * sizeof(unsigned char),
-			     (GdkPixbufDestroyNotify) utils_free, NULL);
-
-  assert(pixbuf);
-  return (void *) pixbuf;
-}
-
-
-void
-gui_back_end_image_delete(void *image)
-{
-  assert(image);
-  g_object_unref(image);
-}
-
-
 void *
 gui_back_end_timer_restart(void *timer_object)
 {
@@ -264,9 +241,8 @@ run_main_loop(void)
 
   gtk_main();
 
-  /* Ensure that dumped tile sets are all deleted. */
-  tile_set_dump_recycle(0);
-  tile_set_dump_recycle(0);
+  object_cache_free(&gtk_main_tile_set_cache);
+  object_cache_free(&gtk_sgf_markup_tile_set_cache);
 
 #if THREADS_SUPPORTED
   g_source_destroy(thread_events);
@@ -291,7 +267,8 @@ run_cleanup_tasks(gpointer data)
 {
   UNUSED(data);
 
-  tile_set_dump_recycle(0);
+  object_cache_recycle_dump(&gtk_main_tile_set_cache, 0);
+  object_cache_recycle_dump(&gtk_sgf_markup_tile_set_cache, 0);
 
   return TRUE;
 }
