@@ -147,13 +147,15 @@ sysconfdir = @sysconfdir@
 target_alias = @target_alias@
 
 AM_CPPFLAGS = \
-	-D PACKAGE_DATA_DIR=\"$(datadir)/quarry\"	\
-							\
-	$(QUARRY_WARNINGS)				\
-							\
-	-I $(top_srcdir)/src				\
-	-I $(top_srcdir)/src/board			\
-	-I $(top_builddir)/src/board			\
+	-D PACKAGE_DATA_DIR=\"$(pkgdatadir)\"	\
+						\
+	$(QUARRY_WARNINGS)			\
+						\
+	-I $(top_srcdir)/src			\
+	-I $(top_srcdir)/src/sgf		\
+	-I $(top_builddir)/src/sgf		\
+	-I $(top_srcdir)/src/board		\
+	-I $(top_builddir)/src/board		\
 	-I $(top_srcdir)/src/utils
 
 
@@ -178,6 +180,9 @@ SUFFIXES = .list
 #
 PARSE_LIST = $(PARSE_LIST_COMMAND) $(PARSE_LIST_FLAGS)
 
+# We use `cmp' here to avoid unneeded recompilations of files that
+# depend on generated ones (only really useful for `.h' files.)
+#
 PARSE_LIST_BUILD_RULE = \
 	if $(PARSE_LIST) `test -f '$<' || echo '$(srcdir)/'`$<	\
 			 $*.h.new $*.c.new; then		\
@@ -521,17 +526,14 @@ uninstall-am: uninstall-info-am
 
 $(LIST_STAMP_FILES) : Makefile $(PARSE_LIST_COMMAND)
 
-# We use `cmp' here to avoid unneeded recompilations of files that
-# depend on generated ones (only really useful for `.h' files.)
-#
 .list.stamp:
 	$(PARSE_LIST_BUILD_RULE)
 
-# Since these don't (at least shouldn't) have any dependencies, if
-# this rule is being executed, it probably means that one of the
-# files was removed.  Then all we can do is to force rebuilding of
-# corresponding stamp file, which builds the required sources
-# ``by side-effect.''
+# Since $(LIST_GENERATED_FILES) defined by the includer don't (at
+# least shouldn't) have any dependencies, if this rule is being
+# executed, it probably means that one of the files was removed.
+# Then all we can do is to force rebuilding of corresponding stamp
+# file, which builds the required sources ``by side-effect.''
 #
 $(LIST_GENERATED_FILES):
 	rm -f $*.stamp;
