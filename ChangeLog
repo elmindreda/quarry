@@ -1,3 +1,24 @@
+2004-10-11  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* COPYING-DOC: New file.
+
+	* help: New directory.
+	* aux/omf.make, aux/xmldocs.make: New files.
+
+2004-10-06  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* configure.ac: Declare `aux/' as auxiliary directory.
+
+	* aux: New directory, pile auxiliary files there; use this
+	`ChangeLog'.
+	* aux/config.guess: Move from `config.guess'.
+	* aux/config.rpath: Likewise.
+	* aux/config.sub: Likewise.
+	* aux/depcomp: Likewise.
+	* aux/install-sh: Likewise.
+	* aux/missing: Likewise.
+	* aux/mkinstalldirs: Likewise.
+
 2004-09-11  Paul Pogonyshev  <pogonyshev@gmx.net>
 
 	* NEWS: Add all news from version 0.1.2 to 0.1.7 (change in

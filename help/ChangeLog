@@ -1,0 +1,23 @@
+2004-10-11  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* quarry-help.css: New file.
+
+	* C/figures: New directory.
+	* C/figures/control-center.png: New file.
+
+	* C: New directory.
+	* C/Makefile.am: New file.
+	* C/quarry-C.omf: New file.
+	* C/quarry.xml: New file.
+	* C/legal.xml: New file.
+	* C/fdl.xml: New file.
+	* C/quarry.html: New file.
+
+	* Makefile.am: New file.
+	* quarry-help.sed: New file.
+
+
+  Copyright (C) 2004 Paul Pogonyshev.
+
+  Copying and distribution of this file, with or without modification,
+  are permitted provided the copyright notice and this notice are preserved.

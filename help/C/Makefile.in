@@ -50,7 +50,7 @@
 #	Version: 0.1.2 (last updated: March 20, 2002)
 #
 
-# 2004-10-09  Paul Pogonyshev
+# 2004-10-11  Paul Pogonyshev
 #
 #	Change path to `omf.make' from `$(top_srcdir)/' to
 #	`$(top_srcdir)/aux/' (Quarry-specific).  Change `docdir'.

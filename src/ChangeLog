@@ -1,3 +1,42 @@
+2004-10-11  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* gui-gtk/gtk-preferences.c (gtk_preferences_dialog_present): Add
+	help button.
+	(create_gtp_engines_page): Change "Supported games" label to
+	"Supported game(s)".  Make "Supported game(s)" go before "Command
+	line".
+	(gtk_preferences_dialog_destroy): New function.
+	(gtk_gtp_engine_dialog_response): Call
+	gtk_progress_dialog_set_help_link_id().
+	* gui-gtk/gtk-preferences.h: Add previously missed
+	`PREFERENCES_PAGE_SGF_SAVING'.
+
+	* gui-gtk/gtk-progress-dialog.c (gtk_progress_dialog_init): Reset
+	new `help_link_id' field to NULL.
+	(gtk_progress_dialog_update): New function.
+	(gtk_progress_dialog_response): Handle `GTK_RESPONSE_HELP'.
+
+	* gui-gtk/gtk-new-game-dialog.c (gtk_new_game_dialog_present):
+	Change some mnemonic keys to make space for new "Help" button.
+	Set help links for both assistant pages.
+	(instantiate_players): New function.
+
+	* gui-gtk/gtk-assistant.c (gtk_assistant_init): Initialize new
+	`help_button' field to NULL.
+	(gtk_assistant_update_buttons): Sensitize or desensitize help
+	button if present.
+	(gtk_assistant_response): Handle `GTK_RESPONSE_HELP'.
+	(gtk_assistant_add_page): Reset new `help_link_id' and
+	`help_link_id_callback' fields to NULL.
+	(gtk_assistant_set_page_help_link_id)
+	(gtk_assistant_set_page_help_link_id_callback): New functions.
+
+	* gui-gtk/gtk-goban-window.c (gtk_goban_window_init): Add
+	"Contents" (of "Help") menu item.
+	(show_help_contents): New function.
+
+	* gui-gtk/gtk-help.c, gui-gtk/gtk-help.h: New files.
+
 2004-10-05  Paul Pogonyshev  <pogonyshev@gmx.net>
 
 	* sgf/sgf-parser.c (parse_property): Adjust to changed storage of
