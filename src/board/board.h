@@ -230,9 +230,20 @@ BoardPositionList *  board_position_list_new_empty(int num_positions);
 			      * sizeof(int)))))
 
 
+void		     board_position_list_sort(BoardPositionList *list);
+
 int		     board_position_lists_are_equal
-		       (const BoardPositionList *list1,
-			const BoardPositionList *list2);
+		       (const BoardPositionList *first_list,
+			const BoardPositionList *second_list);
+int		     board_position_lists_overlap
+		       (const BoardPositionList *first_list,
+			const BoardPositionList *second_list);
+int		     board_position_list_find_position
+		       (const BoardPositionList *list, int pos);
+
+void		     board_position_list_mark_on_grid
+		       (const BoardPositionList *list,
+			char grid[BOARD_GRID_SIZE], char value);
 
 
 #define SUGGESTED_POSITION_LIST_BUFFER_SIZE	(4 * BOARD_MAX_POSITIONS)
@@ -282,6 +293,19 @@ int		     go_get_max_fixed_handicap(int board_width,
 BoardPositionList *  go_get_fixed_handicap_stones(int board_width,
 						  int board_height,
 						  int num_stones);
+
+BoardPositionList *  go_get_string_stones(Board *board, int x, int y);
+BoardPositionList *  go_get_logically_dead_stones(Board *board, int x, int y);
+
+void		     go_score_game(Board *board, const char *dead_stones,
+				   double komi,
+				   double *score, char **detailed_score,
+				   BoardPositionList **black_territory,
+				   BoardPositionList **white_territory);
+void		     go_mark_territory_on_grid(Board *board, char *grid,
+					       const char *dead_stones,
+					       char black_territory_mark,
+					       char white_territory_mark);
 
 
 #endif /* QUARRY_BOARD_H */
