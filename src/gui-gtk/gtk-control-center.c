@@ -31,9 +31,6 @@
 #include <assert.h>
 
 
-static void	gtk_control_center_destroy(GtkWindow *window);
-
-
 static GSList	  *windows = NULL;
 static int	   num_other_reasons_to_live = 0;
 
@@ -41,7 +38,7 @@ static GtkWindow  *control_center = NULL;
 
 
 void
-gtk_control_center_present(void)
+gtk_control_center_present (void)
 {
   if (!control_center) {
     GtkWidget *vbox;
@@ -49,78 +46,67 @@ gtk_control_center_present(void)
     GtkWidget *open_game_record_button;
     GtkWidget *preferences_button;
 
-    control_center = (GtkWindow *) gtk_window_new(GTK_WINDOW_TOPLEVEL);
-    gtk_control_center_window_created(control_center);
+    control_center = (GtkWindow *) gtk_window_new (GTK_WINDOW_TOPLEVEL);
+    gtk_control_center_window_created (control_center);
+    gtk_utils_null_pointer_on_destroy (&control_center, TRUE);
 
-    gtk_window_set_title(control_center, _("Quarry Control Center"));
-    gtk_window_set_resizable(control_center, FALSE);
-    gtk_container_set_border_width(GTK_CONTAINER(control_center),
-				   QUARRY_SPACING);
-    g_signal_connect(control_center, "destroy",
-		     G_CALLBACK(gtk_control_center_destroy), NULL);
+    gtk_window_set_title (control_center, _("Quarry Control Center"));
+    gtk_window_set_resizable (control_center, FALSE);
+    gtk_container_set_border_width (GTK_CONTAINER (control_center),
+				    QUARRY_SPACING);
 
-    new_game_button = gtk_button_new_from_stock(QUARRY_STOCK_NEW_GAME);
-    g_signal_connect(new_game_button, "clicked",
-		     G_CALLBACK(gtk_new_game_dialog_present), NULL);
+    new_game_button = gtk_button_new_from_stock (QUARRY_STOCK_NEW_GAME);
+    g_signal_connect (new_game_button, "clicked",
+		      G_CALLBACK (gtk_new_game_dialog_present), NULL);
 
     open_game_record_button
-      = gtk_button_new_from_stock(QUARRY_STOCK_OPEN_GAME_RECORD);
-    g_signal_connect(open_game_record_button, "clicked",
-		     G_CALLBACK(gtk_parser_interface_present), NULL);
+      = gtk_button_new_from_stock (QUARRY_STOCK_OPEN_GAME_RECORD);
+    g_signal_connect (open_game_record_button, "clicked",
+		      G_CALLBACK (gtk_parser_interface_present), NULL);
 
-    preferences_button = gtk_button_new_from_stock(GTK_STOCK_PREFERENCES);
-    g_signal_connect_swapped(preferences_button, "clicked",
-			     G_CALLBACK(gtk_preferences_dialog_present),
-			     GINT_TO_POINTER(-1));
+    preferences_button = gtk_button_new_from_stock (GTK_STOCK_PREFERENCES);
+    g_signal_connect_swapped (preferences_button, "clicked",
+			      G_CALLBACK (gtk_preferences_dialog_present),
+			      GINT_TO_POINTER (-1));
 
-    vbox = gtk_utils_pack_in_box(GTK_TYPE_VBOX, QUARRY_SPACING_SMALL,
-				 new_game_button, GTK_UTILS_FILL,
-				 gtk_hseparator_new(),
-				 GTK_UTILS_FILL | QUARRY_SPACING_SMALL,
-				 open_game_record_button, GTK_UTILS_FILL,
-				 gtk_hseparator_new(),
-				 GTK_UTILS_FILL | QUARRY_SPACING_SMALL,
-				 preferences_button, GTK_UTILS_FILL, NULL);
-    gtk_container_add(GTK_CONTAINER(control_center), vbox);
-    gtk_widget_show_all(vbox);
+    vbox = gtk_utils_pack_in_box (GTK_TYPE_VBOX, QUARRY_SPACING_SMALL,
+				  new_game_button, GTK_UTILS_FILL,
+				  gtk_hseparator_new (),
+				  GTK_UTILS_FILL | QUARRY_SPACING_SMALL,
+				  open_game_record_button, GTK_UTILS_FILL,
+				  gtk_hseparator_new (),
+				  GTK_UTILS_FILL | QUARRY_SPACING_SMALL,
+				  preferences_button, GTK_UTILS_FILL, NULL);
+    gtk_container_add (GTK_CONTAINER (control_center), vbox);
+    gtk_widget_show_all (vbox);
   }
 
-  gtk_window_present(control_center);
-}
-
-
-static void
-gtk_control_center_destroy(GtkWindow *window)
-{
-  assert(window == control_center);
-
-  if (gtk_control_center_window_destroyed(window));
-    control_center = NULL;
+  gtk_window_present (control_center);
 }
 
 
 
 inline void
-gtk_control_center_window_created(GtkWindow *window)
+gtk_control_center_window_created (GtkWindow *window)
 {
-  windows = g_slist_prepend(windows, window);
+  windows = g_slist_prepend (windows, window);
 }
 
 
 gint
-gtk_control_center_window_destroyed(const GtkWindow *window)
+gtk_control_center_window_destroyed (const GtkWindow *window)
 {
-  GSList *element = g_slist_find(windows, window);
+  GSList *element = g_slist_find (windows, window);
 
   if (element) {
-    windows = g_slist_delete_link(windows, element);
+    windows = g_slist_delete_link (windows, element);
 
     if (windows != NULL || num_other_reasons_to_live > 0) {
       if (control_center && windows->next == NULL)
-	gtk_control_center_present();
+	gtk_control_center_present ();
     }
     else
-      gtk_main_quit();
+      gtk_main_quit ();
 
     return TRUE;
   }
@@ -130,17 +116,17 @@ gtk_control_center_window_destroyed(const GtkWindow *window)
 
 
 inline void
-gtk_control_center_new_reason_to_live(void)
+gtk_control_center_new_reason_to_live (void)
 {
   num_other_reasons_to_live++;
 }
 
 
 inline void
-gtk_control_center_lost_reason_to_live(void)
+gtk_control_center_lost_reason_to_live (void)
 {
   if (--num_other_reasons_to_live == 0 && windows == NULL)
-    gtk_main_quit();
+    gtk_main_quit ();
 }
 
 

@@ -151,7 +151,6 @@ static void	    gtk_preferences_dialog_change_page
 		      (GtkTreeSelection *selection, GtkNotebook *notebook);
 static void	    gtk_preferences_dialog_response (GtkWindow *window,
 						     gint response_id);
-static void	    gtk_preferences_dialog_destroy (GtkWindow *window);
 
 static void	    gtk_preferences_dialog_update_gtp_engine_info
 		      (GtkTreeSelection *selection);
@@ -382,13 +381,13 @@ gtk_preferences_dialog_present (gpointer page_to_select)
 
     preferences_dialog = GTK_WINDOW (dialog);
     gtk_control_center_window_created (preferences_dialog);
+    gtk_utils_null_pointer_on_destroy (&preferences_dialog, TRUE);
+
     gtk_dialog_set_default_response (GTK_DIALOG (preferences_dialog),
 				     GTK_RESPONSE_CLOSE);
 
     g_signal_connect (preferences_dialog, "response",
 		      G_CALLBACK (gtk_preferences_dialog_response), NULL);
-    g_signal_connect (preferences_dialog, "destroy",
-		      G_CALLBACK (gtk_preferences_dialog_destroy), NULL);
 
     categories = gtk_tree_store_new (CATEGORIES_NUM_COLUMNS,
 				     G_TYPE_INT,
@@ -1111,16 +1110,6 @@ gtk_preferences_dialog_response (GtkWindow *window, gint response_id)
   }
   else
     gtk_widget_destroy (GTK_WIDGET (preferences_dialog));
-}
-
-
-static void
-gtk_preferences_dialog_destroy (GtkWindow *window)
-{
-  assert (window == preferences_dialog);
-
-  if (gtk_control_center_window_destroyed (window))
-    preferences_dialog = NULL;
 }
 
 
