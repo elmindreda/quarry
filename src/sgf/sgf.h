@@ -1,7 +1,7 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *\
  * This file is part of Quarry.                                    *
  *                                                                 *
- * Copyright (C) 2003, 2004 Paul Pogonyshev.                       *
+ * Copyright (C) 2003, 2004, 2005 Paul Pogonyshev                  *
  *                                                                 *
  * This program is free software; you can redistribute it and/or   *
  * modify it under the terms of the GNU General Public License as  *
@@ -63,6 +63,7 @@ typedef struct _SgfNodeAmazons		SgfNodeAmazons;
 
 typedef void (* SgfFreeDataCallback) (void *data);
 
+typedef struct _SgfGameTreeMapData	SgfGameTreeMapData;
 typedef struct _SgfGameTreeMapLine	SgfGameTreeMapLine;
 
 typedef struct _SgfGameTree		SgfGameTree;
@@ -70,13 +71,13 @@ typedef struct _SgfCollection		SgfCollection;
 
 
 struct _SgfLabel {
-  BoardPoint		      point;
-  char			     *text;
+  BoardPoint		  point;
+  char			 *text;
 };
 
 struct _SgfLabelList {
-  int			      num_labels;
-  SgfLabel		      labels[1];
+  int			  num_labels;
+  SgfLabel		  labels[1];
 };
 
 /* Union is a very handy thing, but unfortunately, standard C doesn't
@@ -86,25 +87,25 @@ struct _SgfLabelList {
  * pointer to union (which is allowed by compiler) is a no-no thing.
  */
 union _SgfValue {
-  int			      number;
+  int			  number;
 
   /* Floats have so low precision, that there will be problems with
    * storing fractional number of seconds in it.  Will have to
    * allocate doubles on heap :(
    */
-  double		     *real;
+  double		 *real;
 
-  int			      emphasized;
-  int			      color;
-  void			     *memory_block;
-  char			     *text;
-  BoardPositionList	     *position_list;
-  SgfLabelList		     *label_list;
+  int			  emphasized;
+  int			  color;
+  void			 *memory_block;
+  char			 *text;
+  BoardPositionList	 *position_list;
+  SgfLabelList		 *label_list;
 
   /* For unknown properties.  First string stores identifier, the
    * rest---property values.
    */
-  StringList		     *unknown_value_list;
+  StringList		 *unknown_value_list;
 };
 
 
@@ -120,9 +121,9 @@ union _SgfValue {
 struct _SgfProperty {
   MEMORY_POOL_ITEM_INDEX;
 
-  SgfType		      type : SGF_TYPE_STORAGE_BITS;
-  SgfProperty		     *next;
-  SgfValue		      value;
+  SgfType		  type : SGF_TYPE_STORAGE_BITS;
+  SgfProperty		 *next;
+  SgfValue		  value;
 };
 
 
@@ -136,6 +137,7 @@ struct _SgfNode {
   MEMORY_POOL_ITEM_INDEX;
 
   unsigned int		  is_collapsed : 1;
+  unsigned int		  has_intermediate_map_data : 1;
 
   unsigned int		  move_color : 2;
   BoardPoint		  move_point;
@@ -159,6 +161,7 @@ struct _SgfNodeGeneric {
   MEMORY_POOL_ITEM_INDEX;
 
   unsigned int		  is_collapsed : 1;
+  unsigned int		  has_intermediate_map_data : 1;
 
   unsigned int		  move_color : 2;
   BoardPoint		  move_point;
@@ -175,6 +178,7 @@ struct _SgfNodeAmazons {
   MEMORY_POOL_ITEM_INDEX;
 
   unsigned int		  is_collapsed : 1;
+  unsigned int		  has_intermediate_map_data : 1;
 
   unsigned int		  move_color : 2;
   BoardPoint		  move_point;
@@ -187,6 +191,18 @@ struct _SgfNodeAmazons {
   SgfProperty		 *properties;
 
   BoardAmazonsMoveData	  amazons;
+};
+
+
+struct _SgfGameTreeMapData {
+  SgfGameTreeMapData	 *next;
+
+  SgfNode		 *node;
+  int			  x;
+  int			 *y_level;
+  int			  last_valid_y_level;
+
+  int			  largest_x_so_far;
 };
 
 
@@ -226,6 +242,9 @@ struct _SgfGameTree {
   /* The ``map.'' */
   int			  map_width;
   int			  map_height;
+
+  SgfGameTreeMapData	 *map_data_list;
+  SgfGameTreeMapData	 *last_valid_data_point;
 
   int			  view_port_x0;
   int			  view_port_y0;
@@ -609,6 +628,10 @@ void	      sgf_utils_append_variation (SgfGameTree *tree,
 					  SgfBoardState *board_state,
 					  int color, ...);
 
+void	      sgf_utils_set_node_is_collapsed (SgfGameTree *tree,
+					       SgfNode *node,
+					       int is_collapsed);
+
 void	      sgf_utils_get_markup (const SgfGameTree *tree,
 				    char markup[BOARD_GRID_SIZE]);
 void	      sgf_utils_mark_territory_on_grid (const SgfGameTree *tree,
@@ -635,18 +658,31 @@ SgfCollection *	 sgf_diff (const SgfCollection *from_collection,
 
 /* `sgf-tree-map.c' global functions. */
 
-void		sgf_game_tree_activate_map (SgfGameTree *tree);
-void		sgf_game_tree_deactivate_map (SgfGameTree *tree);
+void		sgf_game_tree_invalidate_map (SgfGameTree *tree,
+					      SgfNode *node);
 
-void		sgf_game_tree_invalidate_map (SgfGameTree *tree);
-
-void		sgf_game_tree_update_view_port
+void		sgf_game_tree_get_map_dimensions (SgfGameTree *tree,
+						  int *map_width,
+						  int *map_height);
+void		sgf_game_tree_fill_map_view_port
 		  (SgfGameTree *tree,
 		   int view_port_x0, int view_port_y0,
 		   int view_port_x1, int view_port_y1,
 		   SgfNode ***view_port_nodes,
 		   SgfGameTreeMapLine **view_port_lines,
 		   int *num_view_port_lines);
+
+int		sgf_game_tree_get_node_coordinates (SgfGameTree *tree,
+						    const SgfNode *node,
+						    int *node_x, int *node_y);
+int		sgf_game_tree_node_is_within_view_port (SgfGameTree *tree,
+							const SgfNode *node,
+							int view_port_x0,
+							int view_port_y0,
+							int view_port_x1,
+							int view_port_y1,
+							int *node_x,
+							int *node_y);
 
 
 #endif /* QUARRY_SGF_H */
