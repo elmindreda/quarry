@@ -151,8 +151,8 @@ sgf_utils_go_down_in_tree (SgfGameTree *tree, int num_nodes,
  * the function to go up to the root.
  *
  * As a speed optimization for very deep trees, ascending to root node
- * is done with sgf_utils_enter_tree() instead of undoing from curent
- * node.
+ * is done with sgf_utils_enter_tree() instead of undoing from the
+ * current node.
  */
 void
 sgf_utils_go_up_in_tree (SgfGameTree *tree, int num_nodes,
@@ -669,9 +669,10 @@ do_enter_tree (SgfGameTree *tree, SgfNode *down_to, SgfBoardState *board_state)
   /* Use a fake SGF node so that descend_nodes() has something to
    * descend from.
    */
-  root_predecessor.child = tree->root;
+  root_predecessor.child	     = tree->root;
   root_predecessor.current_variation = tree->root;
-  tree->current_node = &root_predecessor;
+  tree->current_node		     = &root_predecessor;
+  tree->current_node_depth	     = -1;
 
   descend_nodes (tree, num_nodes, board_state);
 }
@@ -687,6 +688,8 @@ descend_nodes (SgfGameTree *tree, int num_nodes, SgfBoardState *board_state)
 {
   SgfNode *node = tree->current_node;
 
+  tree->current_node_depth += num_nodes;
+
   do {
     if (node->current_variation) {
       if (node->current_variation != node->child
@@ -694,8 +697,10 @@ descend_nodes (SgfGameTree *tree, int num_nodes, SgfBoardState *board_state)
 	board_state->last_main_variation_node = node;
     }
     else {
-      if (!node->child)
+      if (!node->child) {
+	tree->current_node_depth -= num_nodes;
 	break;
+      }
 
       node->current_variation = node->child;
     }
@@ -828,7 +833,9 @@ ascend_nodes (SgfGameTree *tree, int num_nodes, SgfBoardState *board_state)
     if (board_state->game_info_node)
       board_state->game_info_node = find_game_info_node (tree->root, node);
 
-    tree->current_node = node;
+    tree->current_node	      = node;
+    tree->current_node_depth -= num_nodes;
+
     determine_final_color_to_play (tree, board_state);
   }
   else
