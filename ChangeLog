@@ -1,3 +1,8 @@
+2004-10-14  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* configure.ac: Quarry version 0.1.8.
+	* NEWS: Update.
+
 2004-10-11  Paul Pogonyshev  <pogonyshev@gmx.net>
 
 	* COPYING-DOC: New file.
