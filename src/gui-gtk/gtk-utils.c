@@ -400,6 +400,25 @@ set_widget_sensitivity_on_input(GtkEntry *entry, GtkWidget *widget)
 }
 
 
+void
+gtk_utils_set_menu_items_sensitive(GtkItemFactory *item_factory,
+				   gboolean are_sensitive, ...)
+{
+  va_list arguments;
+  const gchar *path;
+
+  assert(GTK_IS_ITEM_FACTORY(item_factory));
+
+  va_start(arguments, are_sensitive);
+  while ((path = va_arg(arguments, const gchar *)) != NULL) {
+    gtk_widget_set_sensitive(gtk_item_factory_get_widget(item_factory, path),
+			     are_sensitive);
+  }
+
+  va_end(arguments);
+}
+
+
 /*
  * Local Variables:
  * tab-width: 8

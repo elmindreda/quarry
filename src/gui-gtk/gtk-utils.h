@@ -135,6 +135,9 @@ void		gtk_utils_set_sensitive_on_toggle
 void		gtk_utils_set_sensitive_on_input(GtkEntry *entry,
 						 GtkWidget *widget);
 
+void		gtk_utils_set_menu_items_sensitive(GtkItemFactory *item_factory,
+						   gboolean are_sensitive, ...);
+
 
 #endif /* QUARRY_GTK_UTILS_H */
 
