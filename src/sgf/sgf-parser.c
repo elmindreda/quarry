@@ -361,16 +361,19 @@ parse_buffer(SgfParsingData *data,
   data->board = NULL;
   data->error_list = *error_list;
 
+  next_token(data);
+
   do {
     /* Skip any junk that might appear before game tree. */
-    next_token(data);
     if (data->token == '(') {
       next_token(data);
       if (data->token != ';')
 	continue;
     }
-    else
+    else {
+      next_token(data);
       continue;
+    }
 
     /* Parse the tree. */
     data->tree = sgf_game_tree_new();
