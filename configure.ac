@@ -123,6 +123,7 @@ AC_CONFIG_FILES(Makefile
 		data/Makefile
 		data/markup-themes/Makefile
 		data/markup-themes/default/Makefile
+		data/markup-themes/bold/Makefile
 		data/textures/Makefile
 		help/Makefile
 		help/C/Makefile
