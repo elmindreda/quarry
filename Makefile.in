@@ -171,7 +171,7 @@ RECURSIVE_TARGETS = info-recursive dvi-recursive pdf-recursive \
 	installdirs-recursive install-recursive uninstall-recursive \
 	check-recursive installcheck-recursive
 DIST_COMMON = README $(srcdir)/Makefile.in $(srcdir)/configure AUTHORS \
-	COPYING ChangeLog INSTALL Makefile.am NEWS acinclude.m4 \
+	COPYING ChangeLog INSTALL Makefile.am NEWS THANKS acinclude.m4 \
 	aclocal.m4 aux/config.guess aux/config.rpath aux/config.sub \
 	aux/depcomp aux/install-sh aux/missing aux/mkinstalldirs \
 	config.h.in configure configure.ac
