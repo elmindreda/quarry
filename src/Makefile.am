@@ -25,7 +25,8 @@ quarry_SOURCES =	\
 	quarry.c	\
 			\
 	gettext.h	\
-	quarry.h
+	quarry.h	\
+	quarry-main.h
 
 quarry_LDADD = 			\
 	gui-gtk/libguigtk.a	\
