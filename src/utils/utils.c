@@ -73,27 +73,27 @@ char	       *program_directory = NULL;
  * though, so this is not implemented.
  */
 void *
-utils_malloc(size_t size)
+utils_malloc (size_t size)
 {
-  void *pointer = malloc(size);
+  void *pointer = malloc (size);
 
 #if ENABLE_MEMORY_PROFILING
 
   num_mallocs++;
   num_bytes_allocated += size;
-  num_bytes_on_heap += (sizeof(void *)
-			+ (((size + sizeof(int) - 1) / sizeof(int))
-			   * sizeof(int)));
+  num_bytes_on_heap += (sizeof (void *)
+			+ (((size + sizeof (int) - 1) / sizeof (int))
+			   * sizeof (int)));
 
 #endif
 
   if (pointer)
     return pointer;
 
-  fprintf(stderr, ("%s: fatal error: out of memory "
-		   "(failed to allocate %d bytes)\n"),
-	  short_program_name, size);
-  exit(255);
+  fprintf (stderr, ("%s: fatal error: out of memory "
+		    "(failed to allocate %d bytes)\n"),
+	   short_program_name, size);
+  exit (255);
 }
 
 
@@ -101,23 +101,23 @@ utils_malloc(size_t size)
  * bytes to zero.
  */
 void *
-utils_malloc0(size_t size)
+utils_malloc0 (size_t size)
 {
-  void *pointer = utils_malloc(size);
+  void *pointer = utils_malloc (size);
 
-  memset(pointer, 0, size);
+  memset (pointer, 0, size);
   return pointer;
 }
 
 
 /* Same as utils_malloc(), but based on realloc() instead of malloc().
  *
- * When memory profiling is enabled, utils_realloc(NULL, ...) and
- * utils_realloc(..., 0) calls are counted as calls to utils_malloc()
+ * When memory profiling is enabled, utils_realloc (NULL, ...) and
+ * utils_realloc (..., 0) calls are counted as calls to utils_malloc()
  * and utils_free() respectively.
  */
 void *
-utils_realloc(void *pointer, size_t size)
+utils_realloc (void *pointer, size_t size)
 {
 #if ENABLE_MEMORY_PROFILING
 
@@ -132,14 +132,14 @@ utils_realloc(void *pointer, size_t size)
 
 #endif
 
-  pointer = realloc(pointer, size);
+  pointer = realloc (pointer, size);
   if (pointer)
     return pointer;
 
-  fprintf(stderr, ("%s: fatal error: out of memory "
-		   "(failed to allocate %d bytes)\n"),
-	  short_program_name, size);
-  exit(255);
+  fprintf (stderr, ("%s: fatal error: out of memory "
+		    "(failed to allocate %d bytes)\n"),
+	   short_program_name, size);
+  exit (255);
 }
 
 
@@ -148,11 +148,11 @@ utils_realloc(void *pointer, size_t size)
 
 /* Free given memory block and log profiling information. */
 void
-utils_free(void *pointer)
+utils_free (void *pointer)
 {
   if (pointer) {
     num_frees++;
-    free(pointer);
+    free (pointer);
   }
 }
 
@@ -161,30 +161,30 @@ utils_free(void *pointer)
  * been freed.
  */
 void
-utils_print_memory_profiling_info(void)
+utils_print_memory_profiling_info (void)
 {
-  fputs("Memory profiling information:\n\n", stderr);
-  fprintf(stderr, ("Numbers of calls:\n  utils_malloc():  %10u\n"
-		   "  utils_realloc(): %10u\n  utils_free():    %10u\n\n"),
-	  num_mallocs, num_reallocs, num_frees);
+  fputs ("Memory profiling information:\n\n", stderr);
+  fprintf (stderr, ("Numbers of calls:\n  utils_malloc():  %10u\n"
+		    "  utils_realloc(): %10u\n  utils_free():    %10u\n\n"),
+	   num_mallocs, num_reallocs, num_frees);
 
   if (num_mallocs > num_frees) {
-    fprintf(stderr, "%u memory blocks were not freed!\n\n",
-	    num_mallocs - num_frees);
+    fprintf (stderr, "%u memory blocks were not freed!\n\n",
+	     num_mallocs - num_frees);
   }
 
-  fprintf(stderr, ("Total %u bytes allocated\n"
-		   "Guessed total dynamic memory footprint: %u bytes\n\n"),
-	  num_bytes_allocated, num_bytes_on_heap);
+  fprintf (stderr, ("Total %u bytes allocated\n"
+		    "Guessed total dynamic memory footprint: %u bytes\n\n"),
+	   num_bytes_allocated, num_bytes_on_heap);
 
 #if ENABLE_MEMORY_POOLS
 
-  fprintf(stderr, "Total %d memory pools initialized, %d flushed\n\n",
-	  num_pools_initialized, num_pools_flushed);
+  fprintf (stderr, "Total %d memory pools initialized, %d flushed\n\n",
+	   num_pools_initialized, num_pools_flushed);
 
   if (num_pools_initialized > num_pools_flushed) {
-    fprintf(stderr, "%d memory pools were not flushed!\n\n",
-	    num_pools_initialized - num_pools_flushed);
+    fprintf (stderr, "%d memory pools were not flushed!\n\n",
+	     num_pools_initialized - num_pools_flushed);
   }
 
 #endif
@@ -200,13 +200,13 @@ utils_print_memory_profiling_info(void)
  * nor POSIX).
  */
 char *
-utils_duplicate_string(const char *string)
+utils_duplicate_string (const char *string)
 {
   if (string) {
-    int length = strlen(string);
-    char *new_string = utils_malloc(length + 1);
+    int length = strlen (string);
+    char *new_string = utils_malloc (length + 1);
 
-    memcpy(new_string, string, length + 1);
+    memcpy (new_string, string, length + 1);
     return new_string;
   }
 
@@ -216,11 +216,11 @@ utils_duplicate_string(const char *string)
 
 /* Allocate a copy of given buffer (pointer + length) on heap. */
 void *
-utils_duplicate_buffer(const void *buffer, int length)
+utils_duplicate_buffer (const void *buffer, int length)
 {
-  char *buffer_copy = utils_malloc(length);
+  char *buffer_copy = utils_malloc (length);
 
-  memcpy(buffer_copy, buffer, length);
+  memcpy (buffer_copy, buffer, length);
   return buffer_copy;
 }
 
@@ -229,11 +229,11 @@ utils_duplicate_buffer(const void *buffer, int length)
  * to the copy, thus making it a valid ASCIIZ string.
  */
 char *
-utils_duplicate_as_string(const char *buffer, int length)
+utils_duplicate_as_string (const char *buffer, int length)
 {
-  char *string = utils_malloc(length + 1);
+  char *string = utils_malloc (length + 1);
 
-  memcpy(string, buffer, length);
+  memcpy (string, buffer, length);
   string[length] = 0;
 
   return string;
@@ -243,16 +243,17 @@ utils_duplicate_as_string(const char *buffer, int length)
 /* Append second string to first.  The first string is reallocated to
  * fit the concatenation.  It must be a result of a previous heap
  * allocation or NULL.  In the latter case, this function behaves just
- * like `utils_duplicate_string(to_cat)'.
+ * like `utils_duplicate_string (to_cat)'.
  */
 char *
-utils_cat_string(char *string, const char *to_cat)
+utils_cat_string (char *string, const char *to_cat)
 {
-  int current_length = (string ? strlen(string) : 0);
-  int to_cat_length = strlen(to_cat);
-  char *new_string = utils_realloc(string, current_length + to_cat_length + 1);
+  int current_length = (string ? strlen (string) : 0);
+  int to_cat_length = strlen (to_cat);
+  char *new_string = utils_realloc (string,
+				    current_length + to_cat_length + 1);
 
-  memcpy(new_string + current_length, to_cat, to_cat_length + 1);
+  memcpy (new_string + current_length, to_cat, to_cat_length + 1);
   return new_string;
 }
 
@@ -266,49 +267,49 @@ utils_cat_string(char *string, const char *to_cat)
  * stored in a newly allocated buffer.
  */
 char *
-utils_cat_strings(char *string, ...)
+utils_cat_strings (char *string, ...)
 {
   int k;
-  int current_length = (string ? strlen(string) : 0);
+  int current_length = (string ? strlen (string) : 0);
   int to_cat_lengths[16];
   int length_increase = 0;
   char *new_string;
   va_list arguments;
 
-  va_start(arguments, string);
+  va_start (arguments, string);
   for (k = 0; ;) {
     int length;
-    const char *to_cat = va_arg(arguments, const char *);
+    const char *to_cat = va_arg (arguments, const char *);
 
     if (!to_cat)
       break;
 
-    length = strlen(to_cat);
-    if (k < (int) (sizeof(to_cat_lengths) / sizeof(int)))
+    length = strlen (to_cat);
+    if (k < (int) (sizeof to_cat_lengths / sizeof (int)))
       to_cat_lengths[k++] = length;
 
     length_increase += length;
   }
 
-  va_end(arguments);
+  va_end (arguments);
 
-  new_string = utils_realloc(string, current_length + length_increase + 1);
+  new_string = utils_realloc (string, current_length + length_increase + 1);
 
-  va_start(arguments, string);
+  va_start (arguments, string);
   for (k = 0; ;) {
     int length;
-    const char *to_cat = va_arg(arguments, const char *);
+    const char *to_cat = va_arg (arguments, const char *);
 
     if (!to_cat)
       break;
 
-    length = (k < (int) (sizeof(to_cat_lengths) / sizeof(int))
-	      ? to_cat_lengths[k++] : (int) strlen(to_cat));
-    memcpy(new_string + current_length, to_cat, length);
+    length = (k < (int) (sizeof to_cat_lengths / sizeof (int))
+	      ? to_cat_lengths[k++] : (int) strlen (to_cat));
+    memcpy (new_string + current_length, to_cat, length);
     current_length += length;
   }
 
-  va_end(arguments);
+  va_end (arguments);
 
   new_string[current_length] = 0;
   return new_string;
@@ -320,15 +321,15 @@ utils_cat_strings(char *string, ...)
  * string, of course.
  *
  * The `string' can be NULL, in which case calling this function is
- * identical to calling `utils_duplicate_as_string(buffer, length)'.
+ * identical to calling `utils_duplicate_as_string (buffer, length)'.
  */
 char *
-utils_cat_as_string(char *string, const char *buffer, int length)
+utils_cat_as_string (char *string, const char *buffer, int length)
 {
-  int current_length = (string ? strlen(string) : 0);
-  char *new_string = utils_realloc(string, current_length + length + 1);
+  int current_length = (string ? strlen (string) : 0);
+  char *new_string = utils_realloc (string, current_length + length + 1);
 
-  memcpy(new_string + current_length, buffer, length);
+  memcpy (new_string + current_length, buffer, length);
   new_string[current_length + length] = 0;
 
   return new_string;
@@ -343,35 +344,35 @@ utils_cat_as_string(char *string, const char *buffer, int length)
  * As for all other `utils_cat_*' functions, `string' can be NULL.
  */
 char *
-utils_cat_as_strings(char *string, ...)
+utils_cat_as_strings (char *string, ...)
 {
-  int current_length = (string ? strlen(string) : 0);
+  int current_length = (string ? strlen (string) : 0);
   int length_increase = 0;
   char *new_string;
   va_list arguments;
 
-  va_start(arguments, string);
-  while (va_arg(arguments, const char *))
-    length_increase += va_arg(arguments, int);
+  va_start (arguments, string);
+  while (va_arg (arguments, const char *))
+    length_increase += va_arg (arguments, int);
 
-  va_end(arguments);
+  va_end (arguments);
 
-  new_string = utils_realloc(string, current_length + length_increase + 1);
+  new_string = utils_realloc (string, current_length + length_increase + 1);
 
-  va_start(arguments, string);
+  va_start (arguments, string);
   while (1) {
     int length;
-    const char *buffer = va_arg(arguments, const char *);
+    const char *buffer = va_arg (arguments, const char *);
 
     if (!buffer)
       break;
 
-    length = va_arg(arguments, int);
-    memcpy(new_string + current_length, buffer, length);
+    length = va_arg (arguments, int);
+    memcpy (new_string + current_length, buffer, length);
     current_length += length;
   }
 
-  va_end(arguments);
+  va_end (arguments);
 
   new_string[current_length] = 0;
   return new_string;
@@ -386,12 +387,12 @@ utils_cat_as_strings(char *string, ...)
  * FIXME: DIRECTORY_SEPARATOR is still always '/'.
  */
 void
-utils_remember_program_name(const char *argv0)
+utils_remember_program_name (const char *argv0)
 {
   int short_name_pos;
   int length;
 
-  length = strlen(argv0);
+  length = strlen (argv0);
   for (short_name_pos = length; short_name_pos >= 0; short_name_pos--) {
     if (argv0[short_name_pos] == DIRECTORY_SEPARATOR)
       break;
@@ -399,10 +400,10 @@ utils_remember_program_name(const char *argv0)
 
   short_name_pos++;
 
-  full_program_name  = utils_duplicate_as_string(argv0, length);
-  short_program_name = utils_duplicate_as_string(argv0 + short_name_pos,
-						 length - short_name_pos);
-  program_directory  = utils_duplicate_as_string(argv0, short_name_pos);
+  full_program_name  = utils_duplicate_as_string (argv0, length);
+  short_program_name = utils_duplicate_as_string (argv0 + short_name_pos,
+						  length - short_name_pos);
+  program_directory  = utils_duplicate_as_string (argv0, short_name_pos);
 }
 
 
@@ -412,11 +413,11 @@ utils_remember_program_name(const char *argv0)
  * to do that in the first place.
  */
 void
-utils_free_program_name_strings(void)
+utils_free_program_name_strings (void)
 {
-  utils_free(full_program_name);
-  utils_free(short_program_name);
-  utils_free(program_directory);
+  utils_free (full_program_name);
+  utils_free (short_program_name);
+  utils_free (program_directory);
 }
 
 
@@ -426,14 +427,14 @@ utils_free_program_name_strings(void)
  * is taken into account.
  */
 char *
-utils_printf(const char *format_string, ...)
+utils_printf (const char *format_string, ...)
 {
   char *string;
   va_list arguments;
 
-  va_start(arguments, format_string);
-  string = utils_vprintf(format_string, arguments);
-  va_end(arguments);
+  va_start (arguments, format_string);
+  string = utils_vprintf (format_string, arguments);
+  va_end (arguments);
 
   return string;
 }
@@ -441,30 +442,31 @@ utils_printf(const char *format_string, ...)
 
 /* Same as utils_printf(), but `arguments' are passed as `va_list'. */
 char *
-utils_vprintf(const char *format_string, va_list arguments)
+utils_vprintf (const char *format_string, va_list arguments)
 {
   char buffer[0x1000];
   char *string = NULL;
   int length;
   va_list arguments_copy;
 
-  QUARRY_VA_COPY(arguments_copy, arguments);
-  length = vsnprintf(buffer, sizeof(buffer), format_string, arguments_copy);
-  va_end(arguments_copy);
+  QUARRY_VA_COPY (arguments_copy, arguments);
+  length = vsnprintf (buffer, sizeof buffer, format_string, arguments_copy);
+  va_end (arguments_copy);
 
-  if (-1 < length && length < (int) sizeof(buffer))
-    return utils_duplicate_as_string(buffer, length);
+  if (-1 < length && length < (int) sizeof buffer)
+    return utils_duplicate_as_string (buffer, length);
 
-  length = (length > -1 ? length + 1 : 2 * sizeof(buffer));
+  length = (length > -1 ? length + 1 : 2 * sizeof buffer);
 
   while (1) {
     int required_length;
 
-    string = utils_realloc(string, length);
+    string = utils_realloc (string, length);
 
-    QUARRY_VA_COPY(arguments_copy, arguments);
-    required_length = vsnprintf(string, length, format_string, arguments_copy);
-    va_end(arguments_copy);
+    QUARRY_VA_COPY (arguments_copy, arguments);
+    required_length = vsnprintf (string, length, format_string,
+				 arguments_copy);
+    va_end (arguments_copy);
 
     if (-1 < required_length && required_length < length)
       return string;
@@ -480,21 +482,21 @@ utils_vprintf(const char *format_string, va_list arguments)
  * be formatted according to C locale.
  */
 char *
-utils_cprintf(const char *format_string, ...)
+utils_cprintf (const char *format_string, ...)
 {
   char *string;
   int num_bytes_required;
   va_list arguments;
 
-  va_start(arguments, format_string);
-  num_bytes_required = utils_vncprintf(NULL, 0, format_string, arguments) + 1;
-  va_end(arguments);
+  va_start (arguments, format_string);
+  num_bytes_required = utils_vncprintf (NULL, 0, format_string, arguments) + 1;
+  va_end (arguments);
 
-  string = utils_malloc(num_bytes_required);
+  string = utils_malloc (num_bytes_required);
 
-  va_start(arguments, format_string);
-  utils_vncprintf(string, num_bytes_required, format_string, arguments);
-  va_end(arguments);
+  va_start (arguments, format_string);
+  utils_vncprintf (string, num_bytes_required, format_string, arguments);
+  va_end (arguments);
 
   return string;
 }
@@ -504,19 +506,20 @@ utils_cprintf(const char *format_string, ...)
  * `va_list'.
  */
 char *
-utils_vcprintf(const char *format_string, va_list arguments)
+utils_vcprintf (const char *format_string, va_list arguments)
 {
   char *string;
   int num_bytes_required;
   va_list arguments_copy;
 
-  QUARRY_VA_COPY(arguments_copy, arguments);
-  num_bytes_required = (utils_vncprintf(NULL, 0, format_string, arguments_copy)
+  QUARRY_VA_COPY (arguments_copy, arguments);
+  num_bytes_required = (utils_vncprintf (NULL, 0, format_string,
+					 arguments_copy)
 			+ 1);
-  va_end(arguments_copy);
+  va_end (arguments_copy);
 
-  string = utils_malloc(num_bytes_required);
-  utils_vncprintf(string, num_bytes_required, format_string, arguments);
+  string = utils_malloc (num_bytes_required);
+  utils_vncprintf (string, num_bytes_required, format_string, arguments);
 
   return string;
 }
@@ -534,6 +537,10 @@ utils_vcprintf(const char *format_string, va_list arguments)
  * A '+' before `%d' or `%f' forces sign before positive numbers (by
  * default it is omitted).
  *
+ * Width is supported for `%d', `%f' and `%s' conversions.  As
+ * usually, width starting with zero digit implies zero padding
+ * instead of blank padding.
+ *
  * Default precision for `%f' conversion is 6.  Precision can be
  * changed in the conversion specifier in one of the following ways:
  *
@@ -547,15 +554,15 @@ utils_vcprintf(const char *format_string, va_list arguments)
  *   "1.250000", while 1.0 would get formatted as "1.0", not as "1.".
  */
 int
-utils_ncprintf(char *buffer, int buffer_size, const char *format_string, ...)
+utils_ncprintf (char *buffer, int buffer_size, const char *format_string, ...)
 {
   int num_bytes_required;
   va_list arguments;
 
-  va_start(arguments, format_string);
-  num_bytes_required = utils_vncprintf(buffer, buffer_size,
-				       format_string, arguments);
-  va_end(arguments);
+  va_start (arguments, format_string);
+  num_bytes_required = utils_vncprintf (buffer, buffer_size,
+					format_string, arguments);
+  va_end (arguments);
 
   return num_bytes_required;
 }
@@ -574,14 +581,14 @@ utils_ncprintf(char *buffer, int buffer_size, const char *format_string, ...)
  * `va_list'.
  */
 int
-utils_vncprintf(char *buffer, int buffer_size,
-		const char *format_string, va_list arguments)
+utils_vncprintf (char *buffer, int buffer_size,
+		 const char *format_string, va_list arguments)
 {
   int num_bytes_required = 0;
   char *buffer_end = (buffer ? buffer + buffer_size - 1 : NULL);
 
-  assert(buffer_size > 1 || !buffer);
-  assert(format_string);
+  assert (buffer_size > 1 || !buffer);
+  assert (format_string);
 
   while (*format_string) {
     if (*format_string != '%') {
@@ -595,12 +602,23 @@ utils_vncprintf(char *buffer, int buffer_size,
     }
     else {
       const char *format_specifier = ++format_string;
-      int sign_is_forced = 0;
-      int precision = PRECISION_DEFAULT;
+      int sign_is_forced     = 0;
+      int field_width	     = -1;
+      char padding_character = ' ';
+      int precision	     = PRECISION_DEFAULT;
 
       if (*format_string == '+') {
 	sign_is_forced = 1;
 	format_string++;
+      }
+
+      if ('0' <= *format_string && *format_string <= '9') {
+	if (*format_string == '0')
+	  padding_character = '0';
+
+	field_width = *format_string++ - '0';
+	while ('0' <= *format_string && *format_string <= '9')
+	  field_width = field_width * 10 + (*format_string++ - '0');
       }
 
       if (*format_string == '.') {
@@ -625,8 +643,8 @@ utils_vncprintf(char *buffer, int buffer_size,
 
       switch (*format_string++) {
       case 'c':
-	if (!sign_is_forced) {
-	  char character = (char) va_arg(arguments, int);
+	if (!sign_is_forced || field_width != -1) {
+	  char character = (char) va_arg (arguments, int);
 
 	  if (buffer) {
 	    *buffer++ = (!(character & 0x80) ? character : ' ');
@@ -642,18 +660,17 @@ utils_vncprintf(char *buffer, int buffer_size,
 
       case 'd':
 	{
-	  int number = va_arg(arguments, int);
+	  int number = va_arg (arguments, int);
+	  char sign = 0;
 	  unsigned magnitude = (number >= 0 ? number : -number);
 	  unsigned magnitude_copy = magnitude;
 	  int num_digits = 0;
 
 	  if (number < 0 || sign_is_forced) {
-	    if (buffer) {
-	      *buffer++ = (number < 0 ? '-' : '+');
-	      CHECK_FOR_END_OF_BUFFER;
-	    }
+	    sign = (number < 0 ? '-' : '+');
 
 	    num_bytes_required++;
+	    field_width--;
 	  }
 
 	  do {
@@ -661,7 +678,40 @@ utils_vncprintf(char *buffer, int buffer_size,
 	    magnitude_copy /= 10;
 	  } while (magnitude_copy);
 
-	  num_bytes_required += num_digits;
+	  if (field_width <= num_digits) {
+	    if (sign && buffer) {
+	      *buffer++ = sign;
+	      CHECK_FOR_END_OF_BUFFER;
+	    }
+
+	    num_bytes_required += num_digits;
+	  }
+	  else {
+	    if (sign && padding_character == '0' && buffer) {
+	      *buffer++ = sign;
+	      CHECK_FOR_END_OF_BUFFER;
+	    }
+
+	    if (buffer) {
+	      if (buffer_end - buffer > field_width - num_digits) {
+		memset (buffer, padding_character, field_width - num_digits);
+		buffer += field_width - num_digits;
+
+		if (sign && padding_character == ' ' && buffer) {
+		  *buffer++ = sign;
+		  CHECK_FOR_END_OF_BUFFER;
+		}
+	      }
+	      else {
+		memset (buffer, padding_character, buffer_end - buffer);
+
+		*buffer_end = 0;
+		buffer = NULL;
+	      }
+	    }
+
+	    num_bytes_required += field_width;
+	  }
 
 	  if (buffer) {
 	    int k;
@@ -685,71 +735,104 @@ utils_vncprintf(char *buffer, int buffer_size,
 
       case 'f':
 	if (precision == PRECISION_PASSED_IN) {
-	  precision = va_arg(arguments, int);
+	  precision = va_arg (arguments, int);
 	  if (precision < 0)
 	    precision = 0;
 	}
 
 	{
-	  double number = va_arg(arguments, double);
+	  double number = va_arg (arguments, double);
+	  char sign = 0;
 	  int shift;
 	  int num_bytes_to_write;
 
 	  if (number < 0.0 || sign_is_forced) {
-	    if (buffer) {
-	      *buffer++ = (number < 0.0 ? '-' : '+');
-	      CHECK_FOR_END_OF_BUFFER;
-	    }
-
+	    sign = (number < 0.0 ? '-' : '+');
 	    if (number < 0.0)
 	      number = -number;
 
 	    num_bytes_required++;
+	    field_width--;
 	  }
 
 	  if (precision != PRECISION_SPECIAL) {
 	    /* After this addition, proper rounding becomes simple
 	     * truncation.
 	     */
-	    number += 0.5 * pow(10, -precision);
+	    number += 0.5 * pow (10, -precision);
 	  }
 	  else {
 	    double fraction;
 
-	    number += 0.5 * pow(10, -PRECISION_DEFAULT);
-	    fraction = ((number - floor(number))
-			* pow(10, PRECISION_DEFAULT - 1));
+	    number += 0.5 * pow (10, -PRECISION_DEFAULT);
+	    fraction = ((number - floor (number))
+			* pow (10, PRECISION_DEFAULT - 1));
 
 	    /* Calculate precision: reduce from `PRECISION_DEFAULT'
 	     * down to 1 for as long as last digit is zero.
 	     */
 	    for (precision = PRECISION_DEFAULT;
-		 precision > 1 && fraction - floor(fraction) < 0.1;
+		 precision > 1 && fraction - floor (fraction) < 0.1;
 		 precision--)
 	      fraction /= 10.0;
 	  }
 
 	  if (number >= 10.0)
-	    shift = 1 + floor(log10(number));
+	    shift = 1 + floor (log10 (number));
 	  else
 	    shift = 1;
 
-	  num_bytes_to_write  = shift + (precision > 0 ? precision + 1 : 0);
-	  num_bytes_required += num_bytes_to_write;
+	  num_bytes_to_write = shift + (precision > 0 ? precision + 1 : 0);
+
+	  if (field_width <= num_bytes_to_write) {
+	    if (sign && buffer) {
+	      *buffer++ = sign;
+	      CHECK_FOR_END_OF_BUFFER;
+	    }
+
+	    num_bytes_required += num_bytes_to_write;
+	  }
+	  else {
+	    if (sign && padding_character == '0' && buffer) {
+	      *buffer++ = sign;
+	      CHECK_FOR_END_OF_BUFFER;
+	    }
+
+	    if (buffer) {
+	      if (buffer_end - buffer > field_width - num_bytes_to_write) {
+		memset (buffer, padding_character,
+			field_width - num_bytes_to_write);
+		buffer += field_width - num_bytes_to_write;
+
+		if (sign && padding_character == ' ' && buffer) {
+		  *buffer++ = sign;
+		  CHECK_FOR_END_OF_BUFFER;
+		}
+	      }
+	      else {
+		memset (buffer, padding_character, buffer_end - buffer);
+
+		*buffer_end = 0;
+		buffer = NULL;
+	      }
+	    }
+
+	    num_bytes_required += field_width;
+	  }
 
 	  if (buffer) {
 	    int k;
 
 	    /* Make number less than 10.0. */
-	    number *= pow(10, (double) -(shift - 1));
+	    number *= pow (10, (double) -(shift - 1));
 
 	    if (num_bytes_to_write > buffer_end - buffer)
 	      num_bytes_to_write = buffer_end - buffer;
 
 	    for (k = 0; k < num_bytes_to_write; k++) {
 	      if (shift--) {
-		*buffer++ = '0' + (char) (int) floor(number);
-		number = (number - floor(number)) * 10.0;
+		*buffer++ = '0' + (char) (int) floor (number);
+		number = (number - floor (number)) * 10.0;
 	      }
 	      else
 		*buffer++ = '.';
@@ -763,23 +846,38 @@ utils_vncprintf(char *buffer, int buffer_size,
 
       case 's':
 	if (!sign_is_forced) {
-	  const char *string = va_arg(arguments, const char *);
-	  int length = strlen(string);
+	  const char *string = va_arg (arguments, const char *);
+	  int length = strlen (string);
 
 	  if (buffer) {
-	    if (buffer_end - buffer > length) {
-	      memcpy(buffer, string, length);
-	      buffer += length;
-	    }
-	    else {
-	      memcpy(buffer, string, buffer_end - buffer);
+	    if (field_width > length) {
+	      if (buffer_end - buffer > field_width - length) {
+		memset (buffer, padding_character, field_width - length);
+		buffer += field_width - length;
+	      }
+	      else {
+		memset (buffer, padding_character, buffer_end - buffer);
 
-	      *buffer_end = 0;
-	      buffer = NULL;
+		*buffer_end = 0;
+		buffer = NULL;
+	      }
+	    }
+
+	    if (buffer) {
+	      if (buffer_end - buffer > length) {
+		memcpy (buffer, string, length);
+		buffer += length;
+	      }
+	      else {
+		memcpy (buffer, string, buffer_end - buffer);
+
+		*buffer_end = 0;
+		buffer = NULL;
+	      }
 	    }
 	  }
 
-	  num_bytes_required += length;
+	  num_bytes_required += MAX (length, field_width);
 	}
 	else
 	  format_string = format_specifier;
@@ -800,21 +898,21 @@ utils_vncprintf(char *buffer, int buffer_size,
 
 
 char *
-utils_special_printf(const char *format_string, ...)
+utils_special_printf (const char *format_string, ...)
 {
   char *string;
   va_list arguments;
 
-  va_start(arguments, format_string);
-  string = utils_special_vprintf(format_string, arguments);
-  va_end(arguments);
+  va_start (arguments, format_string);
+  string = utils_special_vprintf (format_string, arguments);
+  va_end (arguments);
 
   return string;
 }
 
 
 char *
-utils_special_vprintf(const char *format_string, va_list arguments)
+utils_special_vprintf (const char *format_string, va_list arguments)
 {
   char *string = NULL;
   const char *chunk_beginning = format_string;
@@ -824,12 +922,12 @@ utils_special_vprintf(const char *format_string, va_list arguments)
     if (*string_scan == '%' || ! *string_scan) {
       if (string_scan > chunk_beginning) {
 	if (string) {
-	  string = utils_cat_as_string(string, chunk_beginning,
-				       string_scan - chunk_beginning);
+	  string = utils_cat_as_string (string, chunk_beginning,
+					string_scan - chunk_beginning);
 	}
 	else {
-	  string = utils_duplicate_as_string(chunk_beginning,
-					     string_scan - chunk_beginning);
+	  string = utils_duplicate_as_string (chunk_beginning,
+					      string_scan - chunk_beginning);
 	}
       }
 
@@ -839,13 +937,13 @@ utils_special_vprintf(const char *format_string, va_list arguments)
 
 	chunk_beginning = string_scan;
 
-	QUARRY_VA_COPY(arguments_copy, arguments);
-	while ((format_character = va_arg(arguments_copy, int)) != 0) {
-	  const char *substitution = va_arg(arguments_copy, const char *);
+	QUARRY_VA_COPY (arguments_copy, arguments);
+	while ((format_character = va_arg (arguments_copy, int)) != 0) {
+	  const char *substitution = va_arg (arguments_copy, const char *);
 
 	  if (format_character == (int) *string_scan) {
 	    if (substitution)
-	      string = utils_cat_string(string, substitution);
+	      string = utils_cat_string (string, substitution);
 
 	    chunk_beginning++;
 
@@ -853,7 +951,7 @@ utils_special_vprintf(const char *format_string, va_list arguments)
 	  }
 	}
 
-	va_end(arguments_copy);
+	va_end (arguments_copy);
       }
     }
   } while (*string_scan++);
@@ -871,7 +969,7 @@ utils_special_vprintf(const char *format_string, va_list arguments)
  * and `*length' is set to zero.
  */
 char *
-utils_fgets(FILE *file, int *length)
+utils_fgets (FILE *file, int *length)
 {
   char buffer[0x1000];
   char *string = NULL;
@@ -879,13 +977,13 @@ utils_fgets(FILE *file, int *length)
   if (length)
     *length = 0;
 
-  while (fgets(buffer, sizeof(buffer), file)) {
-    int chunk_length = strlen(buffer);
+  while (fgets (buffer, sizeof buffer, file)) {
+    int chunk_length = strlen (buffer);
 
     if (!string)
-      string = utils_duplicate_as_string(buffer, chunk_length);
+      string = utils_duplicate_as_string (buffer, chunk_length);
     else
-      string = utils_cat_as_string(string, buffer, chunk_length);
+      string = utils_cat_as_string (string, buffer, chunk_length);
 
     if (length)
       *length += chunk_length;
@@ -903,7 +1001,7 @@ utils_fgets(FILE *file, int *length)
  * sorting array of `int's in ascending order.
  */
 int
-utils_compare_ints(const void *first_int, const void *second_int)
+utils_compare_ints (const void *first_int, const void *second_int)
 {
   return * (const int *) first_int - * (const int *) second_int;
 }
@@ -919,7 +1017,7 @@ utils_compare_ints(const void *first_int, const void *second_int)
  * nonzero.
  */
 int
-utils_parse_double(const char *float_string, double *result)
+utils_parse_double (const char *float_string, double *result)
 {
   const char *scan = float_string;
   int is_negative = 0;
@@ -950,7 +1048,7 @@ utils_parse_double(const char *float_string, double *result)
 
 
 int
-utils_parse_time(const char *time_string)
+utils_parse_time (const char *time_string)
 {
   const char *scan;
   int num_colons = 0;
@@ -976,7 +1074,7 @@ utils_parse_time(const char *time_string)
 
     if (num_colons == 2) {
       if (*time_string != ':') {
-	sscanf(time_string, "%d:%n", &hours, &num_chars_eaten);
+	sscanf (time_string, "%d:%n", &hours, &num_chars_eaten);
 	time_string += num_chars_eaten;
       }
       else
@@ -984,19 +1082,19 @@ utils_parse_time(const char *time_string)
     }
 
     if (*time_string != ':') {
-      sscanf(time_string, "%d:%n", &minutes, &num_chars_eaten);
+      sscanf (time_string, "%d:%n", &minutes, &num_chars_eaten);
       time_string += num_chars_eaten;
     }
     else
       time_string++;
 
-    sscanf(time_string, "%d", &seconds);
+    sscanf (time_string, "%d", &seconds);
 
     return (hours * 60 + minutes) * 60 + seconds;
   }
   else {
     char *minutes_end;
-    double minutes_double = strtod(time_string, &minutes_end);
+    double minutes_double = strtod (time_string, &minutes_end);
 
     if (minutes_end == time_string
 	|| minutes_double < 0.0 || minutes_double > (INT_MAX / 60.0) - 1.0)
