@@ -329,6 +329,7 @@ configuration_read_from_file(const ConfigurationSection *sections,
     }
 
     fclose(file);
+    return 1;
   }
 
   return 0;
