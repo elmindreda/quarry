@@ -49,7 +49,7 @@ static void	    do_write_amazons_move(SgfWritingData *data, SgfNode *node);
 
 
 static int	    do_write_text(SgfWritingData *data, const char *text,
-				  int simple);
+				  char terminating_character, int simple);
 
 
 /* NOTE: if `filename' is NULL, write to stdout.
@@ -347,8 +347,14 @@ sgf_write_color(SgfWritingData *data, SgfValue value)
 }
 
 
+/* FIXME: Comment.
+ *
+ * Argument `terminating_character' should be ither ']' or ':'.  Other
+ * values are not prohibited, but they don't make sense in SGF.
+ */
 static int
-do_write_text(SgfWritingData *data, const char *text, int simple)
+do_write_text(SgfWritingData *data, const char *text,
+	      char terminating_character, int simple)
 {
   const char *lookahead;
   const char *written_up_to;
@@ -437,6 +443,11 @@ do_write_text(SgfWritingData *data, const char *text, int simple)
     }
   }
 
+  /* Note that terminating character is written in encoding specified
+   * by `CA' property.  SGF specification remains silent about this,
+   * but otherwise files can become unparseable in certain encodings.
+   */
+  buffered_writer_add_character(&data->writer, terminating_character);
   buffered_writer_set_iconv_handle(&data->writer, NULL);
 
   return multi_line_value;
@@ -449,8 +460,7 @@ sgf_write_simple_text(SgfWritingData *data, SgfValue value)
   int multi_line_value;
 
   buffered_writer_add_character(&data->writer, '[');
-  multi_line_value = do_write_text(data, value.text, 1);
-  buffered_writer_add_character(&data->writer, ']');
+  multi_line_value = do_write_text(data, value.text, ']', 1);
 
   if (multi_line_value)
     buffered_writer_add_newline(&data->writer);
@@ -493,8 +503,7 @@ sgf_write_text(SgfWritingData *data, SgfValue value)
   int multi_line_value;
 
   buffered_writer_add_character(&data->writer, '[');
-  multi_line_value = do_write_text(data, value.text, 0);
-  buffered_writer_add_character(&data->writer, ']');
+  multi_line_value = do_write_text(data, value.text, ']', 0);
 
   if (multi_line_value)
     buffered_writer_add_newline(&data->writer);
@@ -622,9 +631,9 @@ sgf_write_list_of_label(SgfWritingData *data, SgfValue value)
     do_write_point(data, label_list->labels[k].point);
     buffered_writer_add_character(&data->writer, ':');
 
-    multi_line_value += do_write_text(data, label_list->labels[k].text, 1);
+    multi_line_value += do_write_text(data,
+				      label_list->labels[k].text, ']', 1);
 
-    buffered_writer_add_character(&data->writer, ']');
     if (data->writer.column >= FILL_BREAK_POINT)
       buffered_writer_add_newline(&data->writer);
   }
@@ -638,37 +647,45 @@ sgf_write_list_of_label(SgfWritingData *data, SgfValue value)
 void
 sgf_write_unknown(SgfWritingData *data, SgfValue value)
 {
-  const char *text = value.text;
-  int need_newline = 0;
+  const StringListItem *list_item = value.unknown_value_list->first;
+  int need_newline;
 
-  do
-    buffered_writer_add_character(&data->writer, *text++);
-  while (*text != '[');
+  buffered_writer_cat_string(&data->writer, list_item->text);
 
-  do {
+  list_item = list_item->next;
+
+  if (!list_item->next) {
     const char *lookahead;
 
-    buffered_writer_add_character(&data->writer, '[');
-
-    for (lookahead = text; *++lookahead !=']';) {
+    need_newline = 0;
+    for (lookahead = list_item->text; *lookahead; lookahead++) {
       if (*lookahead == '\\')
 	lookahead++;
-      if (*lookahead == '\n')
+
+      if (*lookahead == '\n') {
 	need_newline = 1;
+	break;
+      }
     }
+  }
+  else
+    need_newline = 1;
+
+  do {
+    buffered_writer_add_character(&data->writer, '[');
 
     buffered_writer_set_iconv_handle(&data->writer,
 				     data->utf8_to_tree_encoding);
-    buffered_writer_cat_as_string(&data->writer, text, lookahead - text);
+    buffered_writer_cat_string(&data->writer, list_item->text);
+    buffered_writer_add_character(&data->writer, ']');
     buffered_writer_set_iconv_handle(&data->writer, NULL);
 
-    buffered_writer_add_character(&data->writer, ']');
-
-    text = lookahead + 1;
-    if (*text) {
+    list_item = list_item->next;
+    if (list_item) {
+      const char *lookahead;
       int columns_left = FILL_COLUMN - data->writer.column - 1;
 
-      for (lookahead = text + 1; *lookahead != ']' && *lookahead != '\n';
+      for (lookahead = list_item->text; *lookahead && *lookahead != '\n';
 	   lookahead++) {
 	if (IS_UTF8_STARTER(*lookahead)) {
 	  if (*lookahead == '\\') {
@@ -682,10 +699,8 @@ sgf_write_unknown(SgfWritingData *data, SgfValue value)
 	  }
 	}
       }
-
-      need_newline = 1;
     }
-  } while (*text);
+  } while (list_item);
 
   if (need_newline && data->writer.column > 0)
     buffered_writer_add_newline(&data->writer);

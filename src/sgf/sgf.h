@@ -95,6 +95,11 @@ union _SgfValue {
   char			 *text;
   BoardPositionList	 *position_list;
   SgfLabelList		 *label_list;
+
+  /* For unknown properties.  First string stores identifier, the
+   * rest---property values.
+   */
+  StringList		 *unknown_value_list;
 };
 
 

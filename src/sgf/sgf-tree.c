@@ -32,11 +32,7 @@
 #include <string.h>
 
 
-#if ENABLE_MEMORY_POOLS
-
-static void	free_property_value(SgfProperty *property);
-
-#endif
+inline static void  free_property_value(SgfProperty *property);
 
 
 
@@ -514,12 +510,12 @@ sgf_node_find_unknown_property(SgfNode *node, char *id, int length,
 
   if (sgf_node_find_property(node, SGF_UNKNOWN, link)) {
     for (; **link; *link = & (**link)->next) {
-      char *stored_id = (**link)->value.text;
+      char *stored_id = (**link)->value.unknown_value_list->first->text;
       int relation = strncmp(stored_id, id, length);
 
       if (relation > 0)
 	return 0;
-      if (relation == 0 && stored_id[length] == '[')
+      if (relation == 0 && !stored_id[length])
 	return 1;
     }
   }
@@ -1048,13 +1044,7 @@ sgf_property_delete(SgfProperty *property, SgfGameTree *tree)
   assert(property);
   assert(tree);
 
-  if (SGF_FIRST_MALLOC_TYPE <= property_info[property->type].value_type
-      && property_info[property->type].value_type <= SGF_LAST_MALLOC_TYPE
-      && property_info[property->type].value_type != SGF_LIST_OF_LABEL)
-    utils_free(property->value.memory_block);
-  else if (property_info[property->type].value_type == SGF_LIST_OF_LABEL)
-    sgf_label_list_delete(property->value.label_list);
-
+  free_property_value(property);
   memory_pool_free(&tree->property_pool, property);
 }
 
@@ -1094,8 +1084,13 @@ sgf_property_duplicate(const SgfProperty *property, SgfGameTree *tree,
   case SGF_SIMPLE_TEXT:
   case SGF_FAKE_SIMPLE_TEXT:
   case SGF_TEXT:
-  case SGF_TYPE_UNKNOWN:
     property_copy->value.text = utils_duplicate_string(property->value.text);
+    break;
+
+  case SGF_TYPE_UNKNOWN:
+    property_copy->value.unknown_value_list = string_list_new();
+    string_list_duplicate_items(property_copy->value.unknown_value_list,
+				property->value.unknown_value_list);
     break;
 
   case SGF_LIST_OF_POINT:
@@ -1124,22 +1119,20 @@ sgf_property_duplicate(const SgfProperty *property, SgfGameTree *tree,
 }
 
 
-#if ENABLE_MEMORY_POOLS
-
-
-static void
+inline static void
 free_property_value(SgfProperty *property)
 {
+
   if (SGF_FIRST_MALLOC_TYPE <= property_info[property->type].value_type
       && property_info[property->type].value_type <= SGF_LAST_MALLOC_TYPE
-      && property_info[property->type].value_type != SGF_LIST_OF_LABEL)
+      && property_info[property->type].value_type != SGF_LIST_OF_LABEL
+      && property_info[property->type].value_type != SGF_TYPE_UNKNOWN)
     utils_free(property->value.memory_block);
   else if (property_info[property->type].value_type == SGF_LIST_OF_LABEL)
     sgf_label_list_delete(property->value.label_list);
+  else if (property_info[property->type].value_type == SGF_TYPE_UNKNOWN)
+    string_list_delete(property->value.unknown_value_list);
 }
-
-
-#endif /* ENABLE_MEMORY_POOLS */
 
 
 

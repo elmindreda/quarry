@@ -139,7 +139,8 @@ static void	    create_position_lists
 
 static void	    discard_single_value(SgfParsingData *data);
 static void	    discard_values(SgfParsingData *data);
-static void	    parse_unknown_property_values(SgfParsingData *data);
+static void	    parse_unknown_property_values
+		      (SgfParsingData *data, StringList *property_value_list);
 
 
 static int	    do_parse_number(SgfParsingData *data, int *number);
@@ -815,30 +816,25 @@ parse_property(SgfParsingData *data)
     else {
       /* An unknown property.  We preserve it for it might be used by
        * some other program (and SGF specification requires us to do
-       * so).  The property is preserved as a string:
+       * so).  The property is preserved as a string list:
        *
-       *   "name[value][value]..."
+       *   name (identifier), value, value ...
        */
       SgfProperty **link;
 
-      parse_unknown_property_values(data);
-
-      if (sgf_node_find_unknown_property(data->node, data->buffer,
-					 name_end - data->buffer, &link)) {
-	/* Duplicated unknown properties.  Assume list value type. */
-	(*link)->value.text
-	  = utils_cat_as_string((*link)->value.text,
-				name_end, data->temp_buffer - name_end);
-	*name_end = 0;
-	add_error(data, SGF_WARNING_UNKNOWN_PROPERTIES_MERGED, data->buffer);
+      if (!sgf_node_find_unknown_property(data->node, data->buffer,
+					  name_end - data->buffer, &link)) {
+	*link = sgf_property_new(data->tree, SGF_UNKNOWN, *link);
+	(*link)->value.unknown_value_list = string_list_new();
+	string_list_add_from_buffer((*link)->value.unknown_value_list,
+				    data->buffer, name_end - data->buffer);
       }
       else {
-	*link = sgf_property_new(data->tree, SGF_UNKNOWN, *link);
-	(*link)->value.text
-	  = utils_duplicate_as_string(data->buffer,
-				      data->temp_buffer - data->buffer);
+	/* Duplicated unknown properties.  Assume list value type. */
+	add_error(data, SGF_WARNING_UNKNOWN_PROPERTIES_MERGED, data->buffer);
       }
 
+      parse_unknown_property_values(data, (*link)->value.unknown_value_list);
       return;
     }
   }
@@ -1136,14 +1132,17 @@ discard_values(SgfParsingData *data)
  * bracket and doesn't terminate value string.  Unknown properties are
  * always allowed to have a list of values.
  *
- * The function stores value(s) where `data->temp_buffer' points to.
- * The pointer is supposed to be set already and is not reset.
+ * FIXME: Add charsets support.
  */
 static void
-parse_unknown_property_values(SgfParsingData *data)
+parse_unknown_property_values(SgfParsingData *data,
+			      StringList *property_value_list)
 {
   do {
-    do {
+    data->temp_buffer = data->buffer;
+
+    next_character(data);
+    while (data->token != ']' && data->token != SGF_END) {
       *data->temp_buffer++ = data->token;
       if (data->token == '\\') {
 	next_character(data);
@@ -1151,9 +1150,14 @@ parse_unknown_property_values(SgfParsingData *data)
       }
 
       next_character(data);
-    } while (data->token != ']' && data->token != SGF_END);
+    }
 
-    *data->temp_buffer++ = ']';
+    if (data->token == SGF_END)
+      return;
+
+    string_list_add_from_buffer(property_value_list,
+				data->buffer,
+				data->temp_buffer - data->buffer);
     next_token(data);
   } while (data->token == '[');
 }
