@@ -82,6 +82,9 @@ static gboolean	 gtk_goban_key_press_event(GtkWidget *widget,
 static gboolean	 gtk_goban_key_release_event(GtkWidget *widget,
 					     GdkEventKey *event);
 
+static gboolean	 gtk_goban_focus_in_or_out_event(GtkWidget *widget,
+						 GdkEventFocus *event);
+
 static void	 gtk_goban_finalize(GObject *object);
 
 static void	 set_goban_style_appearance(GtkGoban *goban);
@@ -179,6 +182,8 @@ gtk_goban_class_init(GtkGobanClass *class)
   widget_class->leave_notify_event   = gtk_goban_leave_notify_event;
   widget_class->key_press_event	     = gtk_goban_key_press_event;
   widget_class->key_release_event    = gtk_goban_key_release_event;
+  widget_class->focus_in_event	     = gtk_goban_focus_in_or_out_event;
+  widget_class->focus_out_event	     = gtk_goban_focus_in_or_out_event;
 
   class->pointer_moved = NULL;
   class->goban_clicked = NULL;
@@ -484,6 +489,15 @@ gtk_goban_expose(GtkWidget *widget, GdkEventExpose *event)
 
   if (!GTK_WIDGET_DRAWABLE(widget))
     return FALSE;
+
+  if (GTK_WIDGET_HAS_FOCUS(widget)) {
+    /* Draw a small rectangle to indicate focus. */
+    gdk_draw_rectangle(window, gc, FALSE,
+		       goban->coordinates_x_left - 1,
+		       (goban->coordinates_y_top + goban->character_height / 2
+			- 4),
+		       7, 7);
+  }
 
   /* Draw grid lines. */
 
@@ -791,6 +805,8 @@ gtk_goban_button_press_event(GtkWidget *widget, GdkEventButton *event)
 
       emit_pointer_moved(goban, x, y, modifiers & MODIFIER_MASK);
     }
+    else if (goban->button_pressed == 0 && !GTK_WIDGET_HAS_FOCUS(widget))
+      gtk_widget_grab_focus(widget);
   }
 
   return FALSE;
@@ -909,6 +925,27 @@ gtk_goban_key_release_event(GtkWidget *widget, GdkEventKey *event)
   }
 
   return parent_class->key_release_event(widget, event);
+}
+
+
+static gboolean
+gtk_goban_focus_in_or_out_event(GtkWidget *widget, GdkEventFocus *event)
+{
+  GtkGoban *goban = GTK_GOBAN(widget);
+  GdkRectangle rectangle = { goban->coordinates_x_left - 1,
+			     (goban->coordinates_y_top
+			      + goban->character_height / 2
+			      - 4),
+			     8, 8 };
+
+  UNUSED(event);
+
+  gdk_window_invalidate_rect(widget->window, &rectangle, FALSE);
+
+  /* Don't fallback to default handler, since we don't need full
+   * widget redraw.
+   */
+  return FALSE;
 }
 
 
