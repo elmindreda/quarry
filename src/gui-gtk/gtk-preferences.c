@@ -32,6 +32,7 @@
 #include "gtk-progress-dialog.h"
 #include "gtk-utils.h"
 #include "quarry-stock.h"
+#include "utils.h"
 
 #include <assert.h>
 #include <gtk/gtk.h>
@@ -219,6 +220,10 @@ static GtkWidget	 *remove_gtp_engine;
 static GtkWidget	 *move_gtp_engine_up;
 static GtkWidget	 *move_gtp_engine_down;
 static GtkWidget	 *gtp_engine_info;
+static GtkLabel		 *gtp_engine_name;
+static GtkLabel		 *gtp_engine_version;
+static GtkLabel		 *gtp_engine_command_line;
+static GtkLabel		 *gtp_engine_supported_games;
 
 
 static GSList		 *gtp_engine_dialogs = NULL;
@@ -429,6 +434,14 @@ create_gtp_engines_page(void)
   GtkWidget *button_box;
   GtkWidget *hbox;
   GtkWidget *vbox;
+  GtkWidget *name_label;
+  GtkWidget *name_hbox;
+  GtkWidget *version_label;
+  GtkWidget *version_hbox;
+  GtkWidget *command_line_label;
+  GtkWidget *command_line_hbox;
+  GtkWidget *supported_games_label;
+  GtkWidget *supported_games_hbox;
 
   gtp_engines_widget
     = gtk_tree_view_new_with_model(GTK_TREE_MODEL(gtp_engines_list_store));
@@ -494,8 +507,62 @@ create_gtp_engines_page(void)
 			       label, GTK_UTILS_FILL,
 			       hbox, GTK_UTILS_PACK_DEFAULT, NULL);
 
-  gtp_engine_info = gtk_named_vbox_new("GTP Engine Information",
-				       FALSE, QUARRY_SPACING_SMALL);
+  name_label	  = gtk_utils_create_left_aligned_label("Name:");
+  label		  = gtk_utils_create_left_aligned_label(NULL);
+  gtp_engine_name = GTK_LABEL(label);
+  gtk_label_set_selectable(gtp_engine_name, TRUE);
+
+  name_hbox = gtk_utils_pack_in_box(GTK_TYPE_HBOX, QUARRY_SPACING,
+				    name_label, GTK_UTILS_FILL,
+				    label, GTK_UTILS_PACK_DEFAULT,
+				    NULL);
+
+  version_label      = gtk_utils_create_left_aligned_label("Version:");
+  label		     = gtk_utils_create_left_aligned_label(NULL);
+  gtp_engine_version = GTK_LABEL(label);
+  gtk_label_set_selectable(gtp_engine_version, TRUE);
+
+  version_hbox = gtk_utils_pack_in_box(GTK_TYPE_HBOX, QUARRY_SPACING,
+				       version_label, GTK_UTILS_FILL,
+				       label, GTK_UTILS_PACK_DEFAULT,
+				       NULL);
+
+  command_line_label
+    = gtk_utils_create_left_aligned_label("Command line:");
+  label			  = gtk_utils_create_left_aligned_label(NULL);
+  gtp_engine_command_line = GTK_LABEL(label);
+  gtk_label_set_selectable(gtp_engine_command_line, TRUE);
+
+  command_line_hbox = gtk_utils_pack_in_box(GTK_TYPE_HBOX, QUARRY_SPACING,
+					    command_line_label, GTK_UTILS_FILL,
+					    label, GTK_UTILS_PACK_DEFAULT,
+					    NULL);
+
+  supported_games_label
+    = gtk_utils_create_left_aligned_label("Supported games:");
+  label			     = gtk_utils_create_left_aligned_label(NULL);
+  gtp_engine_supported_games = GTK_LABEL(label);
+  gtk_label_set_selectable(gtp_engine_supported_games, TRUE);
+
+  gtk_utils_create_size_group(GTK_SIZE_GROUP_HORIZONTAL,
+			      name_label, version_label, command_line_label,
+			      supported_games_label, NULL);
+
+  supported_games_hbox = gtk_utils_pack_in_box(GTK_TYPE_HBOX, QUARRY_SPACING,
+					       supported_games_label,
+					       GTK_UTILS_FILL,
+					       label, GTK_UTILS_PACK_DEFAULT,
+					       NULL);
+
+  gtp_engine_info = gtk_utils_pack_in_box(GTK_TYPE_NAMED_VBOX,
+					  QUARRY_SPACING_SMALL,
+					  name_hbox, GTK_UTILS_FILL,
+					  version_hbox, GTK_UTILS_FILL,
+					  command_line_hbox, GTK_UTILS_FILL,
+					  supported_games_hbox, GTK_UTILS_FILL,
+					  NULL);
+  gtk_named_vbox_set_label_text(GTK_NAMED_VBOX(gtp_engine_info),
+				"GTP Engine Information");
 
   gtp_engines_tree_selection
     = gtk_tree_view_get_selection(gtp_engines_tree_view);
@@ -679,11 +746,13 @@ gtk_preferences_dialog_update_gtp_engine_info(GtkTreeSelection *selection)
   GtkTreeModel *gtp_engines_tree_model;
   GtkTreeIter iterator;
   GtpEngineListItem *engine_data = NULL;
+  char *supported_games = NULL;
 
   if (gtk_tree_selection_get_selected(selection, &gtp_engines_tree_model,
 				      &iterator)) {
     gtk_tree_model_get(gtp_engines_tree_model, &iterator,
 		       ENGINES_DATA, &engine_data, -1);
+    supported_games = string_list_implode(&engine_data->supported_games, ", ");
   }
 
   gtk_widget_set_sensitive(modify_gtp_engine, engine_data != NULL);
@@ -697,6 +766,16 @@ gtk_preferences_dialog_update_gtp_engine_info(GtkTreeSelection *selection)
 			    && engine_data != gtp_engines.last));
 
   gtk_widget_set_sensitive(gtp_engine_info, engine_data != NULL);
+
+  gtk_label_set_text(gtp_engine_name,
+		     (engine_data ? engine_data->name : NULL));
+  gtk_label_set_text(gtp_engine_version,
+		     (engine_data ? engine_data->version : NULL));
+  gtk_label_set_text(gtp_engine_command_line,
+		     (engine_data ? engine_data->command_line : NULL));
+  gtk_label_set_text(gtp_engine_supported_games, supported_games);
+
+  utils_free(supported_games);
 }
 
 
@@ -941,10 +1020,9 @@ gtk_gtp_engine_dialog_present(gpointer new_engine)
   label = gtk_utils_create_mnemonic_label("Screen _name:", entry);
   gtk_table_attach(table, label, 0, 1, 1, 2, GTK_FILL, 0, 0, 0);
 
-  label = gtk_label_new(NULL);
+  label = gtk_utils_create_left_aligned_label(NULL);
   gtk_label_set_line_wrap(GTK_LABEL(label), TRUE);
   gtk_label_set_markup(GTK_LABEL(label), hint_text);
-  gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
   gtk_table_attach(table, label, 0, 2, 2, 3, GTK_EXPAND | GTK_FILL, 0, 0, 0);
 
   gtk_utils_standardize_dialog(GTK_DIALOG(dialog), table_widget);
