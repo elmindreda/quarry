@@ -1,3 +1,9 @@
+2005-03-12  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* INSTALL: Add `BUILDING IN A SEPARATE DIRECTORY' section.
+
+	* aux/list.make: New file.
+
 2005-01-22  Paul Pogonyshev  <pogonyshev@gmx.net>
 
 	* TODO: New file.

@@ -1,3 +1,75 @@
+2005-03-12  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* gui-gtk/gtk-preferences.c (create_background_table): Use
+	GtkFileSelector for background texture selection when the widget
+	is defined (on GTK+ 2.4 and up.)
+	(board_background_texture_changed): New function.
+
+	* gui-gtk/gtk-utils.c (gtk_utils_create_browse_button): Assert
+	that `associated_entry' is a GtkEntry or GtkFileSelector.
+	(browse_button_clicked): Handle GtkFileSelector case.
+	(browsing_dialog_response): Likewise.
+
+	* gui-gtk/quarry-marshal.glist: Rename from `quarry-marshal.list'.
+
+	* Makefile.am: Use `top_builddir' where appropriate to allow
+	building in a separate directory.
+	* utils/Makefile.am: Likewise.
+	* board/Makefile.am: Likewise.
+	* sgf/Makefile.am: Likewise.
+	* gtp/Makefile.am: Likewise.
+	* gui-utils/Makefile.am: Likewise.
+	* gtk-utils/Makefile.am: Likewise.
+
+	* gtp/Makefile.am: Include `$(EXTRA_PROGRAMS)' in `CLEANFILES',
+	not `MOSTLYCLEANFILES'.
+	* sgf/Makefile.am: Likewise.
+
+	* board/Makefile.am: Use `$(top_srcdir)/aux/list.make' to generate
+	rules to parse `games.list'.
+
+	* sgf/Makefile.am: Likewise for `sgf-errors.list' and
+	`sgf-properties.list'.
+
+	* gui-utils/Makefile.am: Likewise for
+	`markup-theme-configuration.list'.  Add missing
+	`MOSTLYCLEANFILES'.
+
+	* gui-gtk/Makefile.am: Likewise for `gtk-configuration.list'.
+
+2005-03-11  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* board/games.list: Add `mode' command at the beginning.
+	* sgf/sgf-errors.list: Likewise.
+	* sgf/sgf-properties.list: Likewise.
+	* gui-utils/markup-theme-configuration.list: Likewise.
+	* gui-gtk/gtk-configuration.list: Likewise.
+
+	* gui-gtk/gtk-configuration.list: Adapt to new substitution
+	scheme.  Use `$top_srcdir$' passed through command line instead of
+	relative path to allow building in a separate directory.
+
+	* gui-utils/common-configuration-defaults.list: Adapt to new
+	substitution scheme.
+
+	* board/parse-game-list.c: Specify mode in `game_lists' (now
+	required.)
+	* gui-utils/parse-configuration.c: Likewise for `list_set'.
+
+	* utils/parse-list.c (parse_list_main): Signal error if a
+	substitution name contains a dollar sign.  Get mode from list
+	file, not from command line.
+	(print_usage): Remove `list_sets' and `num_sets' arguments and
+	code to output information about removed command line argument.
+	(read_line): Reimplement substitutions: replace
+	`$substition-name$' with corresponding substituion value in all
+	lines before any further processing, even `include_list' checks.
+
+2005-03-10  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* gui-gtk/gtk-file-selector.c, gui-gtk/gtk-file-selector.h: New
+	files.
+
 2005-03-06  Paul Pogonyshev  <pogonyshev@gmx.net>
 
 	* sgf/sgf-properties.list: Rename `SGF_TIME_LEFT_4BLACK' to
@@ -121,8 +193,8 @@
 	(update_children_for_new_node): Likewise.
 	(move_has_been_generated): Likewise.
 
-	* gtk-sgf-tree-signal-proxy.h, gtk-sgf-tree-signal-proxy.c: New
-	files.
+	* gui-gtk/gtk-sgf-tree-signal-proxy.h: New file.
+	* gui-gtk/gtk-sgf-tree-signal-proxy.c: New file.
 
 	* gui-gtk/quarry-marshal.list: New marshaller
 	`VOID:POINTER,POINTER'.
@@ -1398,13 +1470,13 @@
 
 2004-08-24  Martin Holters  <martin.holters@gmx.de>
 
-	* src/board/board.c (board_position_list_union): New function.
+	* board/board.c (board_position_list_union): New function.
 
-	* src/utils/string-list.c (string_list_count_items): New function.
+	* utils/string-list.c (string_list_count_items): New function.
 
-	* src/gtp/gtp-client.c (gtp_client_final_status_list)
+	* gtp/gtp-client.c (gtp_client_final_status_list)
 	(parse_final_status_list): New functions.
-	* src/gui-gtk/gtk-goban-window.c (engine_has_scored)
+	* gui-gtk/gtk-goban-window.c (engine_has_scored)
 	(enter_scoring_mode, cancel_scoring): New functions.
 	(move_has_been_played): Invoke gtp_client_final_status_list() of
 	GTP engine player(s) (if any) before user may score.
@@ -1422,7 +1494,7 @@
 
 	* Makefile.am (AM_CPPFLAGS): Add `src/gui-utils' and `src/board'
 	to include path (the latter is required by
-	`src/gui-utils/gui-utils.h', not by `quarry.c' itself).
+	`gui-utils/gui-utils.h', not by `quarry.c' itself).
 
 	* gui-utils/gui-utils.c (gui_utils_enumerate_themes)
 	(gui_utils_discard_theme_lists): New functions.
