@@ -29,4 +29,11 @@ libparselist_a_SOURCES =	\
 	parse-list.h
 
 
+# This libraries are used for automated generation of source files in
+# other directories.
+TAGS_DEPENDENCIES =		\
+	libutils.a		\
+	libparselist.a
+
+
 DISTCLEANFILES = *~
