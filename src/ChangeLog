@@ -1,3 +1,96 @@
+2005-01-06  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* (Quarry version 0.1.11.)
+
+	* gui-gtk/gtk-goban-window.c (gtk_goban_window_init): Maximize the
+	window by default.
+	(sgf_tree_view_clicked): New function.
+
+	* gui-gtk/gtk-utils.c (gtk_utils_set_sensitive_on_toggle): Add
+	`reverse_meaning' argument.
+	(set_widget_sensitivity_on_toggle_reversed): New function.
+
+	* gui-gtk/gtk-preferences.c (create_game_tree_page): Add controls
+	for tracking current node configuration parameters.
+	(store_radio_button_setting): Bug-fix: radio button groups are in
+	reverse-creation order, cope with that.  Use library functions.
+	(update_markup_theme_defaults_usage): Always initialize
+	`use_theme_defaults'.
+
+	* gui-utils/common-configuration-sections.list: Rename "Editing
+	and Viewing" section to "Game Tree View".
+	* gui-utils/common-configuration-values.list: Add values for
+	whether to track current node in the game tree view.
+	* gui-utils/common-configuration-defaults.list: Likewise.  Also
+	change the default for `show_game_tree' to
+	`SHOW_GAME_TREE_AUTOMATICALLY'.
+
+	* gui-gtk/gtk-sgf-tree-view.c (gtk_sgf_tree_view_class_init): Add
+	integer `button_index' argument to "sgf-tree-view-clicked" signal.
+	(gtk_sgf_tree_view_init): Don't call gtk_goban_base_set_game().
+	Initialize new `map_width' and `map_height' fields.
+	(gtk_sgf_tree_view_realize): Call
+	sgf_game_tree_get_map_dimensions() instead of update_view_port().
+	(gtk_sgf_tree_view_size_request): Base size request on internal
+	`map_width' and `map_height' fields.
+	(gtk_sgf_tree_view_expose): Draw a cross over collapsed nodes.
+	(gtk_sgf_tree_view_button_press_event)
+	(gtk_sgf_tree_view_button_release_event): Also pass on right
+	button clicks.
+	(gtk_sgf_tree_view_unrealize): Free view port data.
+	(gtk_sgf_tree_view_finalize): Don't free view port (unneeded.)
+	(gtk_sgf_tree_view_set_sgf_tree): Don't call removed
+	sgf_game_tree_activate_map(); call gtk_goban_base_set_game().
+	(gtk_sgf_tree_view_update_view_port): Scroll view port as needed
+	when tracking the current node.
+	(configure_adjustment): Use `map_width' and `map_height'.
+	(update_view_port_and_maybe_move_or_resize_window): Make
+	`original_hadjustment_value' and `original_vadjustment_value'
+	arguments.  Replace first call to update_view_port() with a call
+	to sgf_game_tree_get_map_dimensions().  Request full redraw if
+	window size changes.
+
+	* gui-gtk/quarry-marshal.list: New marshaller `VOID:POINTER,INT'.
+
+	* sgf/sgf-utils.c (sgf_utils_append_variation): Pass
+	`tree->current_node' to sgf_game_tree_invalidate_map().
+	(sgf_utils_set_node_is_collapsed): New function.
+
+	* sgf/sgf-tree-map.c (REPORT_PERFORMANCE_STATISTICS): Rename macro
+	from `PRINT_RUN_TIMES'.
+	(DECLARE_TIME_VARIABLES, STORE_STARTING_TIME, PRINT_RUN_TIME)
+	(MIN_NODES_PER_DATA_CHUNK): New macros.
+	(sgf_game_tree_activate_map, sgf_game_tree_deactivate_map): Remove
+	functions.
+	(sgf_game_tree_invalidate_map): Add `node' parameter and rewrite
+	to handle new intermediate data.
+	(sgf_game_tree_get_map_dimensions): New function.
+	(sgf_game_tree_fill_map_view_port): Rename from
+	sgf_game_tree_update_view_port().
+	(sgf_game_tree_get_node_coordinates)
+	(sgf_game_tree_node_is_within_view_port)
+	(find_intermediate_data_for_node, view_port_is_after_data_point)
+	(view_port_is_before_data_point, free_map_data_point)
+	(update_internal_map_data): New functions.
+	(update_internal_view_port): Optimize for speed capitalizing on
+	data stored by update_internal_map_data().
+	(do_update_internal_view_port): Break out of
+	update_internal_view_port().
+	(get_node_coordinates): New function.
+
+2005-01-03  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* sgf/sgf-tree.c (sgf_game_tree_new): Initialize new
+	`map_data_list' field.
+	(sgf_game_tree_delete): Call sgf_game_tree_invalidate_map() to
+	free all memory allocated for the map.
+	(sgf_node_new): Initialize new `has_intermediate_map_data' field.
+
+2004-12-31  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* gui-gtk/gtk-goban-base.c (gtk_goban_base_unrealize): Call
+	parent's method.
+
 2004-12-30  Paul Pogonyshev  <pogonyshev@gmx.net>
 
 	* board/board.c (board_position_list_union): Rewrite to avoid
@@ -1813,7 +1906,7 @@
 Changes before the project registration on Gna! (2004-04-12) were not logged.
 
 
-  Copyright (C) 2004 Paul Pogonyshev.
+  Copyright (C) 2004, 2005 Paul Pogonyshev.
 
   Copying and distribution of this file, with or without modification,
   are permitted provided the copyright notice and this notice are preserved.
