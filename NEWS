@@ -1,0 +1,103 @@
+--- New in Quarry 0.1.7 ----------------------------------------------
+
+* Partial support for different encodings of SGF files.  It is not yet
+  complete, but at least all single-byte encodings should work.
+
+* GTP engines now automatically score games they play.  (by Martin
+  Holters)
+
+* Comments can now be edited.  Just modify the text in the comment
+  pane and your changes will be remembered.
+
+* Mouse wheel can be used to go back and forth between moves
+  (suggested by David Gómez).
+
+* Othello disks now look like disks, not like Go stones.
+
+* Markup appearance is now configurable.
+
+* Quarry is internationalized, though there are no translations yet.
+
+* Other small improvements and bug-fixes.
+
+
+--- New in Quarry 0.1.6 ----------------------------------------------
+
+* False eyes are now carefully examined and don't yield territory when
+  they shouldn't when scoring Go games.  However, sekis are still not
+  handled.
+
+* SGF markup is finally displayed on board.  Note that if you have
+  customized board background, markup can appear just barely
+  noticeable to you.  Markup appearance will be customizeable in the
+  next version.
+
+* Many miscellaneous improvements in Preferences dialog.  It shouldn't
+  crash anymore.
+
+* Board (goban) now visually indicates when it has focus and so when
+  arrow keys without Alt can be used for navigation.
+
+* Bug-fixes (including bug #522) and minor improvements.
+
+--- New in Quarry 0.1.5 ----------------------------------------------
+
+* Time control.  This includes time limit per game, time limit per
+  move and Canadian overtime (also known as Canadian byo-yomi).  Of
+  course games without time limits are possible as well.  Note that at
+  present if a player runs out of time, he doesn't lose automatically.
+
+* Important game information is now displayed under player names.  For
+  Go this is the number of captures and the komi.  For Othello this is
+  the number of disks a player has on board.
+
+* It is now safe to navigate game tree while a game is played.  For
+  instance, when you have two GTP engines playing against each other,
+  you can go back to the game beginning and study moves at whatever
+  speed you like.  In earlier versions this would lead to a corrupted
+  game.
+
+* Bug-fixes, including better support for locales.
+
+--- New in Quarry 0.1.4 ----------------------------------------------
+
+* Severe bug in 0.1.3 fixed.
+
+--- New in Quarry 0.1.3 ----------------------------------------------
+
+* Support for game rules.  This includes board size for all three
+  games and hadicap (both fixed and free) and komi for Go.
+
+* Go games can now be scored by the user.  Automatic scoring by the
+  playing GTP engines is not yet implemented.
+
+* Customizable board appearance (only backround at present, not the
+  pieces).  Because of the appearance of certain internal machinery,
+  all three games now look differently by default: Go looks just like
+  before, Amazons has checkerboard pattern and Othello has dark green
+  solid background.
+
+* Bug-fixes, including some backports to pre-2.4 GTK+.
+
+--- New in Quarry 0.1.2 ----------------------------------------------
+
+* Support for saving SGF files integrated into GUI.
+
+* Finally a way to pass when playing Go.
+
+* New feature: SGF diff.  It will allow to generate difference between
+  two SGF files as a third SGF file.  This way you will be able to
+  easily find what has changed between two version of an SGF file as
+  easily as you can find difference between versions of a text file
+  with UNIX `diff' program.
+
+  At present the feature is far from being really useful.  It is added
+  as a proof of concept.  Look for program `sgf-diff' in `src/sgf/' if
+  you want to give it a try.
+
+* Many bug-fixes.
+
+
+Local Variables:
+coding: iso-8859-1
+End:
