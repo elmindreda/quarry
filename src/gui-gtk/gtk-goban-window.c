@@ -47,6 +47,12 @@
 
 #define NAVIGATE_FAST_NUM_MOVES	10
 
+#define USER_CAN_PLAY_MOVES(goban_window)				\
+  (!(goban_window)->in_game_mode					\
+   || !((goban_window)							\
+	->players[COLOR_INDEX((goban_window)				\
+			      ->sgf_board_state.color_to_play)]))
+
 
 enum {
   GTK_GOBAN_WINDOW_SAVE = 1,
@@ -66,6 +72,8 @@ static void	 save_file_as_response(GtkFileSelection *dialog,
 				       gint response_id,
 				       GtkGobanWindow *goban_window);
 static void	 save_file_as_destroy(GtkGobanWindow *goban_window);
+
+static void	 play_pass_move(GtkGobanWindow *goban_window);
 
 
 static void	 set_current_tree(GtkGobanWindow *goban_window,
@@ -165,11 +173,15 @@ gtk_goban_window_init(GtkGobanWindow *goban_window)
       GTK_GOBAN_WINDOW_SAVE,	    "<StockItem>",  GTK_STOCK_SAVE },
     { "/File/Save _As...",	"<shift><ctrl>S", gtk_goban_window_save,
       GTK_GOBAN_WINDOW_SAVE_AS,	    "<StockItem>",  GTK_STOCK_SAVE_AS },
-    { "/_Go",			NULL,		  NULL, 0, "<Branch>" },
+
+    { "/_Play",			NULL,		  NULL, 0, "<Branch>" },
+    { "/Play/_Pass",		NULL,		  play_pass_move,
+      1,			    "<Item>" },
 
     /* FIXME: At some point these should be generalized for not
      *	      playing mode only.
      */
+    { "/_Go",			NULL,		  NULL, 0, "<Branch>" },
     { "/Go/_Next Node",		"<alt>Right",	  playing_mode_navigate_goban,
       GOBAN_NAVIGATE_FORWARD,	    "<StockItem>",  GTK_STOCK_GO_FORWARD },
     { "/Go/_Previous Node",	"<alt>Left",	  playing_mode_navigate_goban,
@@ -475,6 +487,23 @@ set_current_tree(GtkGobanWindow *goban_window, SgfGameTree *sgf_tree)
 
 
 static void
+play_pass_move(GtkGobanWindow *goban_window)
+{
+  int color_to_play = goban_window->sgf_board_state.color_to_play;
+
+  assert(goban_window->board->game == GAME_GO
+	 && USER_CAN_PLAY_MOVES(goban_window));
+
+  sgf_utils_append_move_variation(goban_window->current_tree,
+				  &goban_window->sgf_board_state,
+				  color_to_play, PASS_X, PASS_Y);
+  move_has_been_played(goban_window);
+
+  update_children_for_new_node(goban_window);
+}
+
+
+static void
 cancel_amazons_move(GtkGobanWindow *goban_window)
 {
   if (goban_window->amazons_move_stage == SHOOTING_ARROW) {
@@ -511,8 +540,7 @@ playing_mode_pointer_moved(GtkGobanWindow *goban_window,
 {
   int color_to_play = goban_window->sgf_board_state.color_to_play;
 
-  if (!goban_window->in_game_mode
-      || !goban_window->players[COLOR_INDEX(color_to_play)]) {
+  if (USER_CAN_PLAY_MOVES(goban_window)) {
     switch (data->button) {
     case 0:
       if (!(data->modifiers & GDK_SHIFT_MASK)) {
@@ -782,6 +810,11 @@ update_children_for_new_node(GtkGobanWindow *goban_window)
   comment = sgf_node_get_text_property_value(current_node, SGF_COMMENT);
   gtk_text_buffer_set_text(goban_window->text_buffer,
 			   comment ? comment : "", -1);
+
+  gtk_utils_set_menu_items_sensitive(goban_window->item_factory,
+				     (goban_window->board->game == GAME_GO
+				      && USER_CAN_PLAY_MOVES(goban_window)),
+				     "/Play/Pass", NULL);
 
   gtk_utils_set_menu_items_sensitive(goban_window->item_factory,
 				     current_node->child != NULL,
