@@ -1,7 +1,8 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *\
  * This file is part of Quarry.                                    *
  *                                                                 *
- * Copyright (C) 2003, 2004 Paul Pogonyshev.                       *
+ * Copyright (C) 2003 Paul Pogonyshev.                             *
+ * Copyright (C) 2004 Paul Pogonyshev and Martin Holters.          *
  *                                                                 *
  * This program is free software; you can redistribute it and/or   *
  * modify it under the terms of the GNU General Public License as  *
@@ -27,6 +28,7 @@
 #include "gtk-clock.h"
 #include "gtk-goban.h"
 #include "gtp-client.h"
+#include "gtk-progress-dialog.h"
 #include "time-control.h"
 #include "sgf.h"
 #include "board.h"
@@ -106,6 +108,9 @@ struct _GtkGobanWindow {
   char			   sgf_markup[BOARD_GRID_SIZE];
 
   char			  *dead_stones;
+  BoardPositionList	  *dead_stones_list;
+  int			  scoring_engine_player;
+  gboolean		  engine_scoring_cancelled;
 
   SgfCollection		  *sgf_collection;
   SgfGameTree		  *current_tree;
@@ -120,6 +125,8 @@ struct _GtkGobanWindow {
   int			   switching_y;
   SgfDirection		   switching_direction;
   SgfNode		  *node_to_switch_to;
+
+  GtkProgressDialog	  *scoring_progress_dialog;
 };
 
 struct _GtkGobanWindowClass {

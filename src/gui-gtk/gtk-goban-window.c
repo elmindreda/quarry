@@ -110,8 +110,17 @@ static void	 enter_special_mode(GtkGobanWindow *goban_window,
 				    SpecialModeButtonClicked cancel_callback);
 static void	 leave_special_mode(GtkGobanWindow *goban_window);
 
-static void	 free_handicap_mode_done(GtkGobanWindow *goban_window);
+static void	 engine_has_scored(GtpClient *client, int successful,
+				   GtkGobanWindow *goban_window,
+				   GtpStoneStatus status, 
+				   BoardPositionList *dead_stones);
+static void	 cancel_scoring(GtkProgressDialog *progress_dialog, 
+   				GtkGobanWindow *goban_window);
+static void	 enter_scoring_mode(GtkGobanWindow *goban_window);
+
 static void	 go_scoring_mode_done(GtkGobanWindow *goban_window);
+static void	 free_handicap_mode_done(GtkGobanWindow *goban_window);
+
 
 static void	 play_pass_move(GtkGobanWindow *goban_window);
 
@@ -460,6 +469,8 @@ gtk_goban_window_new(SgfCollection *sgf_collection, const char *filename)
   assert(sgf_collection);
 
   goban_window->board = NULL;
+
+  goban_window->dead_stones_list = NULL;
 
   goban_window->sgf_collection = sgf_collection;
   if (filename)
@@ -1408,13 +1419,17 @@ update_children_for_new_node(GtkGobanWindow *goban_window)
 
   comment = sgf_node_get_text_property_value(current_node, SGF_COMMENT);
   if (comment) {
+    GtkTextIter start_iterator;
     GtkTextIter end_iterator;
 
     gtk_text_buffer_set_text(goban_window->text_buffer, comment, -1);
 
     /* Add newline at the end of the comment, to ease editing. */
-    gtk_text_buffer_get_end_iter(goban_window->text_buffer, &end_iterator);
+    gtk_text_buffer_get_bounds(goban_window->text_buffer,
+			       &start_iterator, &end_iterator);
+    gtk_text_buffer_place_cursor(goban_window->text_buffer, &start_iterator);
     gtk_text_buffer_insert(goban_window->text_buffer, &end_iterator, "\n", 1);
+
   }
   else
     gtk_text_buffer_set_text(goban_window->text_buffer, "", 0);
@@ -1641,20 +1656,26 @@ fetch_comment_if_changed(GtkGobanWindow *goban_window,
 			 gboolean for_current_node)
 {
   if (gtk_text_buffer_get_modified(goban_window->text_buffer)) {
+    SgfNode *node = (for_current_node
+		     ? goban_window->current_tree->current_node
+		     : goban_window->last_displayed_node);
     GtkTextIter start_iterator;
     GtkTextIter end_iterator;
     gchar *new_comment;
+    char *normalized_comment;
 
     gtk_text_buffer_get_bounds(goban_window->text_buffer,
 			       &start_iterator, &end_iterator);
     new_comment = gtk_text_iter_get_text(&start_iterator, &end_iterator);
 
-    sgf_node_add_text_property((for_current_node
-				? goban_window->current_tree->current_node
-				: goban_window->last_displayed_node),
-			       goban_window->current_tree,
-			       SGF_COMMENT,
-			       sgf_utils_normalize_text(new_comment), 1);
+    normalized_comment = sgf_utils_normalize_text(new_comment);
+    if (normalized_comment) {
+      sgf_node_add_text_property(node, goban_window->current_tree,
+				 SGF_COMMENT, normalized_comment, 1);
+    }
+    else
+      sgf_node_delete_property(node, goban_window->current_tree, SGF_COMMENT);
+
     g_free(new_comment);
 
     gtk_text_buffer_set_modified(goban_window->text_buffer, FALSE);
@@ -1898,19 +1919,132 @@ move_has_been_played(GtkGobanWindow *goban_window)
   }
   else {
     if (goban_window->board->game == GAME_GO) {
+      int player;
+
       goban_window->dead_stones = g_malloc(BOARD_GRID_SIZE * sizeof(char));
       board_fill_grid(goban_window->board, goban_window->dead_stones, 0);
 
-      enter_special_mode(goban_window,
-			 _("Please select dead stones\nto score the game"),
-			 go_scoring_mode_done, NULL); 
-      set_goban_signal_handlers(goban_window,
-				G_CALLBACK(go_scoring_mode_pointer_moved),
-				G_CALLBACK(go_scoring_mode_goban_clicked));
+      goban_window->scoring_engine_player = -1;
 
-      update_territory_markup(goban_window);
+      for (player = 0; player < NUM_COLORS; player++) {
+	if (goban_window->players[player]) {
+	  goban_window->dead_stones_list = NULL;
+	  goban_window->engine_scoring_cancelled = FALSE;
+	  goban_window->scoring_progress_dialog 
+	    = ((GtkProgressDialog *)
+	       gtk_progress_dialog_new(NULL,
+				       "Quarry", _("GTP engine is scoring..."),
+				       NULL,
+				       (GtkProgressDialogCallback) cancel_scoring, 
+				       goban_window));
+	  gtk_progress_dialog_set_fraction(goban_window->scoring_progress_dialog, 
+					   0.0, NULL);
+	  goban_window->scoring_engine_player = player;
+	  gtp_client_final_status_list(goban_window->players[player],
+				       (GtpClientFinalStatusListCallback) 
+				         engine_has_scored, 
+				       goban_window, 
+				       GTP_DEAD);
+	  break;
+	}
+      }
+
+      if (goban_window->scoring_engine_player == -1)
+	enter_scoring_mode(goban_window);
     }
   }
+}
+
+
+static void 
+engine_has_scored(GtpClient *client, int successful,
+		  GtkGobanWindow *goban_window,
+		  GtpStoneStatus status, BoardPositionList *dead_stones)
+{
+  int player;
+
+  UNUSED(client);
+
+  if (goban_window->engine_scoring_cancelled)
+    return;
+
+  if (successful) {
+    assert(status == GTP_DEAD);
+
+    board_position_list_mark_on_grid(dead_stones, 
+				     goban_window->dead_stones, 1);
+  }
+
+  for (player = goban_window->scoring_engine_player + 1; 
+       player < NUM_COLORS; 
+       player++) {
+    if (goban_window->players[player]) {
+      /* Store dead stone list of first engine and let second engine
+       * score.
+       */
+      goban_window->dead_stones_list 
+	= board_position_list_duplicate(dead_stones);
+      gtk_progress_dialog_set_fraction(goban_window->scoring_progress_dialog, 
+				       0.5, NULL);
+      goban_window->scoring_engine_player = player;
+      gtp_client_final_status_list(goban_window->players[player],
+				   ((GtpClientFinalStatusListCallback)
+				    engine_has_scored),
+				   goban_window,
+				   GTP_DEAD);
+      break;
+    }
+  }
+
+  if (goban_window->scoring_engine_player != player) {
+    gtk_widget_destroy((GtkWidget*) goban_window->scoring_progress_dialog);
+
+    if (!goban_window->dead_stones_list 
+	|| !board_position_lists_are_equal(goban_window->dead_stones_list, 
+					   dead_stones)) {
+      /* Either one human player or engines disagree. */
+      enter_scoring_mode(goban_window);
+    }
+    else
+      go_scoring_mode_done(goban_window);
+
+    if (goban_window->dead_stones_list) {
+      board_position_list_delete(goban_window->dead_stones_list);
+      goban_window->dead_stones_list = NULL;
+    }
+  }
+}
+
+
+static void
+cancel_scoring(GtkProgressDialog *progress_dialog, 
+    	       GtkGobanWindow *goban_window)
+{
+  /* TODO: Would be nice to tell the GTP client about the
+   *	   cancellation.  /mh
+   *
+   *       With GTP 2 it is not possible to tell the engine to cancel
+   *       a command execution.  Or do you mean to have the client not
+   *       invoke engine_has_scored() callback?  That might be a good
+   *       idea.  /pp
+   */
+  goban_window->engine_scoring_cancelled = TRUE;
+  gtk_widget_destroy((GtkWidget*) progress_dialog);
+  enter_scoring_mode(goban_window);
+}
+
+
+static void
+enter_scoring_mode(GtkGobanWindow *goban_window)
+{
+  enter_special_mode(goban_window,
+		     _("Please select dead stones\nto score the game"),
+		     go_scoring_mode_done, NULL); 
+  set_goban_signal_handlers(goban_window,
+			    G_CALLBACK(go_scoring_mode_pointer_moved),
+			    G_CALLBACK(go_scoring_mode_goban_clicked));
+
+  update_territory_markup(goban_window);
 }
 
 
