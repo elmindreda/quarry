@@ -1,7 +1,7 @@
 dnl  Process this file with Autoconf to produce a `configure' script.
 
 # Package name and version.
-AC_INIT([Quarry], [0.1.9], [quarry-dev@gna.org])
+AC_INIT([Quarry], [0.1.10], [quarry-dev@gna.org])
 AC_PREREQ(2.57)
 
 # Check if the script is running in the proper directory.  Alarm if it
@@ -101,6 +101,15 @@ AC_SEARCH_LIBS(iconv, iconv)
 
 # Turn on GNU gettext support.
 AM_GNU_GETTEXT([external])
+
+# Check for ScrollKeeper.
+AC_CHECK_PROG(have_scrollkeeper, scrollkeeper-config, yes, no)
+AM_CONDITIONAL(HAVE_SCROLLKEEPER, test "$have_scrollkeeper" = "yes")
+
+if test "$have_scrollkeeper" = "yes"; then
+  AC_DEFINE(HAVE_SCROLLKEEPER, 1,
+	    [Define if you have ScrollKeeper package installed.])
+fi
 
 
 # Require GTK+ 2.0.0 or later and librsvg 2.5.0 or later.
