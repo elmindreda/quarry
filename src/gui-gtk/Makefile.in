@@ -207,6 +207,7 @@ libguigtk_a_SOURCES = \
 	gtk-qhbox.c			\
 	gtk-qvbox.c			\
 	gtk-resume-game-dialog.c	\
+	gtk-sgf-tree-signal-proxy.c	\
 	gtk-sgf-tree-view.c		\
 	gtk-tile-set.c			\
 	gtk-utils.c			\
@@ -234,6 +235,7 @@ libguigtk_a_SOURCES = \
 	gtk-qhbox.h			\
 	gtk-qvbox.h			\
 	gtk-resume-game-dialog.h	\
+	gtk-sgf-tree-signal-proxy.h	\
 	gtk-sgf-tree-view.h		\
 	gtk-thread-interface.h		\
 	gtk-tile-set.h			\
@@ -274,7 +276,8 @@ am_libguigtk_a_OBJECTS = gtk-assistant.$(OBJEXT) gtk-clock.$(OBJEXT) \
 	gtk-new-game-dialog.$(OBJEXT) gtk-parser-interface.$(OBJEXT) \
 	gtk-preferences.$(OBJEXT) gtk-progress-dialog.$(OBJEXT) \
 	gtk-qbox.$(OBJEXT) gtk-qhbox.$(OBJEXT) gtk-qvbox.$(OBJEXT) \
-	gtk-resume-game-dialog.$(OBJEXT) gtk-sgf-tree-view.$(OBJEXT) \
+	gtk-resume-game-dialog.$(OBJEXT) \
+	gtk-sgf-tree-signal-proxy.$(OBJEXT) gtk-sgf-tree-view.$(OBJEXT) \
 	gtk-tile-set.$(OBJEXT) gtk-utils.$(OBJEXT) \
 	gui-back-end.$(OBJEXT) quarry-stock.$(OBJEXT)
 am__objects_1 = gtk-configuration.$(OBJEXT) quarry-marshal.$(OBJEXT)
@@ -306,6 +309,7 @@ am__depfiles_maybe = depfiles
 @AMDEP_TRUE@	./$(DEPDIR)/gtk-qbox.Po ./$(DEPDIR)/gtk-qhbox.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/gtk-qvbox.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/gtk-resume-game-dialog.Po \
+@AMDEP_TRUE@	./$(DEPDIR)/gtk-sgf-tree-signal-proxy.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/gtk-sgf-tree-view.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/gtk-tile-set.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/gtk-utils.Po \
@@ -368,6 +372,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gtk-qhbox.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gtk-qvbox.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gtk-resume-game-dialog.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gtk-sgf-tree-signal-proxy.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gtk-sgf-tree-view.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gtk-tile-set.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gtk-utils.Po@am__quote@
