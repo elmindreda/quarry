@@ -1,3 +1,19 @@
+2004-08-27  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* gui-gtk/gtk-tile-set.c (gtk_main_tile_set_create_or_reuse):
+	Restore accidentially removed special case: only use odd-sized
+	tiles for Go (otherwise they won't center properly).
+
+	* gui-utils/tile-renderer.c (render_go_stones): Fix stone center
+	positioning once more (previous fix didn't work in all cases).
+	Remove debug output accidentially left in the code.
+	(render_othello_disks): Likewise for disk center positioning.
+
+	* gui-gtk/gtk-goban-window.c (gtk_goban_window_init): Make sure
+	right side doesn't shrink below certain width (suggested by Arend
+	Bayer).
+	(force_minimal_width): New function.
+
 2004-08-26  Paul Pogonyshev  <pogonyshev@gmx.net>
 
 	* gui-utils/tile-renderer.c (render_othello_disks): New function.
