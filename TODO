@@ -1,0 +1,91 @@
+Things that need to be done before releasing 0.2.
+
+
+* Playing games
+
+** Display move list?  Right column is already quite filled...
+
+* Viewing game records
+
+** Display remaining time as stored in game records.
+
+** Display values of various SGF properties (`VA',  `BM' etc.)
+
+** Game tree view
+
+*** Make non-current branches a little ghostly.
+
+*** Maybe add command to narrow to a subtree.
+
+** Text search
+
+*** Implement search history.
+
+*** Maybe search other properties too?  `N' seems like a good
+    candidate.
+
+** Support multiple games in one files (postpone?)
+
+* Editing game records
+
+** Add a command to create a game record without starting a game.
+
+** Add setup stones mode (add black/white stones or delete stones.)
+
+** Add SGF markup editing mode.
+
+** Add SGF labels editing mode.
+
+** Add commands to delete node with children/children only.
+
+** Add a command to score current position.
+
+** Support editing various SGF properties (`VA', `BM' etc.)
+
+** Add undo/redo commands.  Disable saving for unmodified files.
+
+** Add command(s) to rearrange children of given node.
+
+** Game information
+
+*** Add a way to revert to original values.  Maybe a button to undo
+    changes one by one (property by property.)
+
+* Board Appearance
+
+** Make Amazons queens look like chess queens (with SVG.)
+
+* General GUI
+
+** Do something about the Control Center, it is kinda ugly.
+   (Oh, graphical artist, where art thou?)
+
+** Support GTK+ 2.4 file chooser dialog.
+
+** Think of what to add to the toolbars (help of anyone who uses
+   toolbars is welcome.)
+
+* SGF parsing
+
+** Complete support for charsets.
+
+** Handle file read errors gracefully.
+
+* Internal board code
+
+** Score sekis properly.
+
+* Internal GTP code
+
+** Issue `clear_board' command after `boardsize'.
+
+* General
+
+** Expand and fix manual.
+
+** Browse all FIXMEs in the code and fix all that are bad.
+
+
+Local variables:
+mode: outline
+End:
