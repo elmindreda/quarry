@@ -133,6 +133,7 @@ static void	    handle_drag_and_drop(GtkTreeModel *gtp_engines_tree_model,
 
 
 static GtkWidget *  create_gtp_engines_page(void);
+static GtkWidget *  create_saving_sgf_page(void);
 static GtkWidget *  create_go_board_appearance_page(void);
 static GtkWidget *  create_amazons_board_appearance_page(void);
 static GtkWidget *  create_othello_board_appearance_page(void);
@@ -176,8 +177,9 @@ static gboolean	    show_progress_dialog(GtkProgressDialog *progress_dialog,
 static gboolean	    cancel_engine_query(GtkProgressDialog *progress_dialog,
 					GtkEngineDialogData *data);
 
-static void	    update_board_background(GtkToggleButton *toggle_button,
-					    gpointer game_index);
+static void	    store_toggle_setting(GtkToggleButton *toggle_button,
+					 int *value_storage);
+
 static void	    update_board_background_texture(GtkEntry *entry,
 						    GdkEvent *event,
 						    gpointer game_index);
@@ -232,6 +234,13 @@ static const PreferencesDialogCategory preferences_dialog_categories[] = {
 				NULL,			NULL },
   { create_gtp_engines_page,	NULL,			N_("GTP Engines"),
 				GTK_STOCK_PREFERENCES,	N_("GTP Engines") },
+
+  { NULL,
+    NULL,			N_("<b>Game Records (SGF)</b>"),
+    NULL,			NULL },
+  { create_saving_sgf_page,
+    NULL,			N_("Saving"),
+    GTK_STOCK_SAVE,		N_("Saving Game Records") },
 
   { NULL,
     GTK_STOCK_SELECT_COLOR,	N_("<b>Board Appearance</b>"),
@@ -507,13 +516,10 @@ create_gtp_engines_page(void)
   GtkWidget *button_box;
   GtkWidget *hbox;
   GtkWidget *vbox;
-  GtkWidget *name_label;
+  GtkWidget *info_label;
   GtkWidget *name_hbox;
-  GtkWidget *version_label;
   GtkWidget *version_hbox;
-  GtkWidget *command_line_label;
   GtkWidget *command_line_hbox;
-  GtkWidget *supported_games_label;
   GtkWidget *supported_games_hbox;
 
   gtp_engines_widget
@@ -580,51 +586,46 @@ create_gtp_engines_page(void)
 			       label, GTK_UTILS_FILL,
 			       hbox, GTK_UTILS_PACK_DEFAULT, NULL);
 
-  name_label	  = gtk_utils_create_left_aligned_label(_("Name:"));
-  label		  = gtk_utils_create_left_aligned_label(NULL);
-  gtp_engine_name = GTK_LABEL(label);
+  label		  = gtk_utils_create_left_aligned_label(_("Name:"));
+  info_label	  = gtk_utils_create_left_aligned_label(NULL);
+  gtp_engine_name = GTK_LABEL(info_label);
   gtk_label_set_selectable(gtp_engine_name, TRUE);
 
   name_hbox = gtk_utils_pack_in_box(GTK_TYPE_HBOX, QUARRY_SPACING,
-				    name_label, GTK_UTILS_FILL,
-				    label, GTK_UTILS_PACK_DEFAULT,
-				    NULL);
+				    label, GTK_UTILS_FILL,
+				    info_label, GTK_UTILS_PACK_DEFAULT, NULL);
 
-  version_label      = gtk_utils_create_left_aligned_label(_("Version:"));
-  label		     = gtk_utils_create_left_aligned_label(NULL);
-  gtp_engine_version = GTK_LABEL(label);
+  label		     = gtk_utils_create_left_aligned_label(_("Version:"));
+  info_label	     = gtk_utils_create_left_aligned_label(NULL);
+  gtp_engine_version = GTK_LABEL(info_label);
   gtk_label_set_selectable(gtp_engine_version, TRUE);
 
   version_hbox = gtk_utils_pack_in_box(GTK_TYPE_HBOX, QUARRY_SPACING,
-				       version_label, GTK_UTILS_FILL,
-				       label, GTK_UTILS_PACK_DEFAULT,
+				       label, GTK_UTILS_FILL,
+				       info_label, GTK_UTILS_PACK_DEFAULT,
 				       NULL);
 
-  command_line_label
+  label
     = gtk_utils_create_left_aligned_label(_("Command line:"));
-  label			  = gtk_utils_create_left_aligned_label(NULL);
-  gtp_engine_command_line = GTK_LABEL(label);
+  info_label		  = gtk_utils_create_left_aligned_label(NULL);
+  gtp_engine_command_line = GTK_LABEL(info_label);
   gtk_label_set_selectable(gtp_engine_command_line, TRUE);
 
   command_line_hbox = gtk_utils_pack_in_box(GTK_TYPE_HBOX, QUARRY_SPACING,
-					    command_line_label, GTK_UTILS_FILL,
-					    label, GTK_UTILS_PACK_DEFAULT,
+					    label, GTK_UTILS_FILL,
+					    info_label, GTK_UTILS_PACK_DEFAULT,
 					    NULL);
 
-  supported_games_label
+  label
     = gtk_utils_create_left_aligned_label(_("Supported games:"));
-  label			     = gtk_utils_create_left_aligned_label(NULL);
-  gtp_engine_supported_games = GTK_LABEL(label);
+  info_label		     = gtk_utils_create_left_aligned_label(NULL);
+  gtp_engine_supported_games = GTK_LABEL(info_label);
   gtk_label_set_selectable(gtp_engine_supported_games, TRUE);
 
-  gtk_utils_create_size_group(GTK_SIZE_GROUP_HORIZONTAL,
-			      name_label, version_label, command_line_label,
-			      supported_games_label, NULL);
-
   supported_games_hbox = gtk_utils_pack_in_box(GTK_TYPE_HBOX, QUARRY_SPACING,
-					       supported_games_label,
-					       GTK_UTILS_FILL,
-					       label, GTK_UTILS_PACK_DEFAULT,
+					       label, GTK_UTILS_FILL,
+					       info_label,
+					       GTK_UTILS_PACK_DEFAULT,
 					       NULL);
 
   gtp_engine_info = gtk_utils_pack_in_box(GTK_TYPE_NAMED_VBOX,
@@ -637,6 +638,8 @@ create_gtp_engines_page(void)
   gtk_named_vbox_set_label_text(GTK_NAMED_VBOX(gtp_engine_info),
 				_("GTP Engine Information"));
 
+  gtk_utils_align_left_widgets(GTK_CONTAINER(gtp_engine_info), NULL);
+
   gtp_engines_tree_selection
     = gtk_tree_view_get_selection(gtp_engines_tree_view);
   g_signal_connect(gtp_engines_tree_selection, "changed",
@@ -647,6 +650,42 @@ create_gtp_engines_page(void)
   return gtk_utils_pack_in_box(GTK_TYPE_VBOX, QUARRY_SPACING_BIG,
 			       vbox, GTK_UTILS_PACK_DEFAULT,
 			       gtp_engine_info, GTK_UTILS_FILL, NULL);
+}
+
+
+static GtkWidget *
+create_saving_sgf_page(void)
+{
+  static const gchar *radio_labels[2] = { N_("Always use UTF-8 (recommended)"),
+					  N_("Preserve original encoding") };
+  static const gchar *hint
+    = N_("Note that many characters cannot be represented in non-UTF-8 "
+	 "encodings and thus some information may be lost if you use them. "
+	 "Quarry also works fastest with UTF-8; this may be important "
+	 "if you have very large SGF files.");
+
+  GtkWidget *radio_buttons[2];
+  GtkWidget *label;
+  GtkWidget *named_vbox;
+
+  gtk_utils_create_radio_chain(radio_buttons, radio_labels, 2);
+  if (!sgf_configuration.force_utf8)
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(radio_buttons[1]), TRUE);
+
+  g_signal_connect(radio_buttons[0], "toggled",
+		   G_CALLBACK(store_toggle_setting),
+		   &sgf_configuration.force_utf8);
+
+  label = gtk_utils_create_left_aligned_label(_(hint));
+  gtk_label_set_line_wrap(GTK_LABEL(label), TRUE);
+
+  named_vbox = gtk_utils_pack_in_box(GTK_TYPE_NAMED_VBOX, QUARRY_SPACING_SMALL,
+				     radio_buttons[0], GTK_UTILS_FILL,
+				     radio_buttons[1], GTK_UTILS_FILL,
+				     label, GTK_UTILS_FILL, NULL);
+  gtk_named_vbox_set_label_text(GTK_NAMED_VBOX(named_vbox), _("Encoding"));
+
+  return named_vbox;
 }
 
 
@@ -770,13 +809,14 @@ create_background_table(GtkGameIndex game_index, gint num_table_rows)
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(radio_buttons[1]), TRUE);
 
   g_signal_connect(radio_buttons[0], "toggled",
-		   G_CALLBACK(update_board_background),
-		   GINT_TO_POINTER(game_index));
+		   G_CALLBACK(update_board_appearance),
+		   &board_appearance->use_background_texture);
 
   gtk_table_attach(table, radio_buttons[0], 0, 1, 0, 1, GTK_FILL, 0, 0, 0);
   gtk_table_attach(table, radio_buttons[1], 0, 1, 1, 2, GTK_FILL, 0, 0, 0);
 
-  entry = gtk_utils_create_entry(board_appearance->background_texture);
+  entry = gtk_utils_create_entry(board_appearance->background_texture,
+				 RETURN_DEFAULT_MODE);
   gtk_utils_set_sensitive_on_toggle(GTK_TOGGLE_BUTTON(radio_buttons[0]),
 				    entry);
 
@@ -890,8 +930,8 @@ create_markup_box(GtkGameIndex game_index, const gchar *labels[4])
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(check_button), TRUE);
 
   g_signal_connect(check_button, "toggled",
-		   G_CALLBACK(update_board_markup),
-		   GINT_TO_POINTER(game_index));
+		   G_CALLBACK(update_board_appearance),
+		   &board_appearance->markup_size_is_relative);
 
   vbox = gtk_utils_pack_in_box(GTK_TYPE_VBOX, QUARRY_SPACING_SMALL,
 			       hbox, GTK_UTILS_FILL,
@@ -1082,6 +1122,11 @@ do_remove_gtp_engine(void)
   GtkTreeModel *gtp_engines_tree_model;
   GtkTreeIter iterator;
   GtpEngineListItem *engine_data;
+
+#if !GTK_2_4_OR_LATER
+  gboolean deleting_last_item;
+#endif
+
   GSList *item;
   GtkTreePath *tree_path;
 
@@ -1092,6 +1137,10 @@ do_remove_gtp_engine(void)
 		     ENGINES_DATA, &engine_data, -1);
 
   item = find_gtp_engine_dialog_by_engine_data(engine_data);
+#if !GTK_2_4_OR_LATER
+  deleting_last_item = (engine_data->next == NULL);
+#endif
+
   if (item) {
     GtkEngineDialogData *data= (GtkEngineDialogData *) (item->data);
 
@@ -1120,8 +1169,19 @@ do_remove_gtp_engine(void)
 #endif
 
   tree_path = gtk_tree_model_get_path(gtp_engines_tree_model, &iterator);
+
+#if GTK_2_4_OR_LATER
+
   if (!gtk_list_store_remove(gtp_engines_list_store, &iterator))
     gtk_tree_path_prev(tree_path);
+
+#else
+
+  gtk_list_store_remove(gtp_engines_list_store, &iterator);
+  if (deleting_last_item)
+    gtk_tree_path_prev(tree_path);
+
+#endif
 
   gtk_tree_view_set_cursor(gtp_engines_tree_view, tree_path, NULL, FALSE);
   gtk_tree_path_free(tree_path);
@@ -1295,8 +1355,9 @@ gtk_gtp_engine_dialog_present(gpointer new_engine)
   gtk_entry_set_activates_default(data->command_line_entry, TRUE);
 
 #else
-  entry = gtk_utils_create_entry(engine_data
-				 ? engine_data->command_line : NULL);
+  entry = gtk_utils_create_entry((engine_data
+				  ? engine_data->command_line : NULL),
+				 RETURN_ACTIVATES_DEFAULT);
   data->command_line_entry = GTK_ENTRY(entry);
 #endif
 
@@ -1312,8 +1373,10 @@ gtk_gtp_engine_dialog_present(gpointer new_engine)
 					  NULL, NULL);
   gtk_table_attach(table, button, 2, 3, 0, 1, GTK_FILL, 0, 0, 0);
 
-  entry = gtk_utils_create_entry(engine_data && engine_data->screen_name_format
-				 ? engine_data->screen_name_format : "%n %v");
+  entry
+    = gtk_utils_create_entry((engine_data && engine_data->screen_name_format
+			      ? engine_data->screen_name_format : "%n %v"),
+			     RETURN_ACTIVATES_DEFAULT);
   data->name_entry = GTK_ENTRY(entry);
   gtk_table_attach(table, entry, 1, 2, 1, 2, GTK_EXPAND | GTK_FILL, 0, 0, 0);
 
@@ -1568,15 +1631,9 @@ cancel_engine_query(GtkProgressDialog *progress_dialog,
 
 
 static void
-update_board_background(GtkToggleButton *toggle_button, gpointer game_index)
+store_toggle_setting(GtkToggleButton *toggle_button, int *value_storage)
 {
-  BoardAppearance *board_appearance
-    = game_index_to_board_appearance_structure(GPOINTER_TO_INT(game_index));
-
-  board_appearance->use_background_texture =
-      gtk_toggle_button_get_active(toggle_button);
-
-  gtk_goban_update_appearance(index_to_game[GPOINTER_TO_INT(game_index)]);
+  *value_storage = gtk_toggle_button_get_active(toggle_button);
 }
 
 
@@ -1605,24 +1662,14 @@ update_board_markup(GtkWidget *widget, gpointer game_index)
 {
   BoardAppearance *board_appearance
     = game_index_to_board_appearance_structure(GPOINTER_TO_INT (game_index));
+  gint selected_theme_index = gtk_utils_get_selector_active_item_index(widget);
+  MarkupThemeListItem *selected_theme
+    = markup_theme_list_get_item(&markup_themes, selected_theme_index);
 
-  if (GTK_IS_CHECK_BUTTON(widget)) {
-    board_appearance->markup_size_is_relative
-      = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget));
-  }
-  else {
-    gint selected_theme_index
-      = gtk_utils_get_selector_active_item_index(widget);
-    MarkupThemeListItem *selected_theme
-      = markup_theme_list_get_item(&markup_themes, selected_theme_index);
-
-    if (strcmp(board_appearance->markup_theme, selected_theme->name) == 0)
-      return;
-
+  if (strcmp(board_appearance->markup_theme, selected_theme->name) != 0) {
     board_appearance->markup_theme = selected_theme->name;
+    gtk_goban_update_appearance(index_to_game[GPOINTER_TO_INT(game_index)]);
   }
-
-  gtk_goban_update_appearance(index_to_game[GPOINTER_TO_INT(game_index)]);
 }
 
 
@@ -1631,13 +1678,13 @@ update_board_appearance(GtkWidget *widget, gpointer value_storage)
 {
   Game game;
 
-  if ((gpointer) &go_board_appearance < value_storage
+  if ((gpointer) &go_board_appearance <= value_storage
       && value_storage < (gpointer) (&go_board_appearance + 1))
     game = GAME_GO;
-  else if ((gpointer) &amazons_board_appearance < value_storage
+  else if ((gpointer) &amazons_board_appearance <= value_storage
 	   && value_storage < ((gpointer) (&amazons_board_appearance + 1)))
     game = GAME_AMAZONS;
-  else if ((gpointer) &othello_board_appearance < value_storage
+  else if ((gpointer) &othello_board_appearance <= value_storage
       && value_storage < (gpointer) (&othello_board_appearance + 1))
     game = GAME_OTHELLO;
   else
@@ -1649,6 +1696,10 @@ update_board_appearance(GtkWidget *widget, gpointer value_storage)
 
   if (GTK_IS_RANGE(widget))
     * (double *) value_storage = gtk_range_get_value(GTK_RANGE(widget));
+  else if (GTK_IS_TOGGLE_BUTTON(widget)) {
+    * (int *) value_storage
+      = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget));
+  }
   else if (GTK_IS_COLOR_BUTTON(widget)) {
     GdkColor gdk_color;
     QuarryColor quarry_color;
