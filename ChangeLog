@@ -1,3 +1,8 @@
+2004-04-14  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* configure.ac: Add `AM_MAINTAINER_MODE' so that `Makefile's don't
+	try to run Autoconf and/or Automake by default.
+
 2004-04-13  Paul Pogonyshev  <pogonyshev@gmx.net>
 
 	* configure.ac: Remove `QUARRY_WARNINGS_REDUCED' variable, because
