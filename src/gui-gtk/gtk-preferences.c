@@ -22,6 +22,7 @@
 
 #include "gtk-preferences.h"
 
+#include "gtk-color-button.h"
 #include "gtk-configuration.h"
 #include "gtk-control-center.h"
 #include "gtk-games.h"
