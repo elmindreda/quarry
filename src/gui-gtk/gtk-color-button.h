@@ -70,9 +70,25 @@ G_BEGIN_DECLS
 #define GTK_IS_COLOR_BUTTON_CLASS(klass)  (G_TYPE_CHECK_CLASS_TYPE ((klass), GTK_TYPE_COLOR_BUTTON))
 #define GTK_COLOR_BUTTON_GET_CLASS(obj)   (G_TYPE_INSTANCE_GET_CLASS ((obj), GTK_TYPE_COLOR_BUTTON, GtkColorButtonClass))
 
+typedef struct _GtkColorButtonPrivate   GtkColorButtonPrivate;
 typedef struct _GtkColorButton          GtkColorButton;
 typedef struct _GtkColorButtonClass     GtkColorButtonClass;
-typedef struct _GtkColorButtonPrivate   GtkColorButtonPrivate;
+
+struct _GtkColorButtonPrivate 
+{
+  GdkPixbuf *pixbuf;    /* Pixbuf for rendering sample */
+  GdkGC *gc;            /* GC for drawing */
+  
+  GtkWidget *drawing_area;/* Drawing area for color sample */
+  GtkWidget *cs_dialog; /* Color selection dialog */
+  
+  gchar *title;         /* Title for the color selection window */
+  
+  GdkColor color;
+  guint16 alpha;
+  
+  guint use_alpha : 1;  /* Use alpha or not */
+};
 
 struct _GtkColorButton {
   GtkButton button;
@@ -93,22 +109,6 @@ struct _GtkColorButtonClass {
   void (*_gtk_reserved2) (void);
   void (*_gtk_reserved3) (void);
   void (*_gtk_reserved4) (void);
-};
-
-struct _GtkColorButtonPrivate 
-{
-  GdkPixbuf *pixbuf;    /* Pixbuf for rendering sample */
-  GdkGC *gc;            /* GC for drawing */
-  
-  GtkWidget *drawing_area;/* Drawing area for color sample */
-  GtkWidget *cs_dialog; /* Color selection dialog */
-  
-  gchar *title;         /* Title for the color selection window */
-  
-  GdkColor color;
-  guint16 alpha;
-  
-  guint use_alpha : 1;  /* Use alpha or not */
 };
 
 
