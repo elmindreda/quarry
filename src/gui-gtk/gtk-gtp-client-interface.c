@@ -384,7 +384,8 @@ log_gtp_stream (const char *line, int is_command, int internal_index,
 static void
 log_gtp_stream_error (GtpError error, int command_id, GtkGtpClientData *data)
 {
-  assert (data->log_file);
+  if (!data->log_file)
+    return;
 
   switch (error) {
   case GTP_ERROR_WRONG_RESPONSE_FORMAT:
