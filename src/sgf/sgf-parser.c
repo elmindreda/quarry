@@ -2047,6 +2047,8 @@ sgf_parse_list_of_label (SgfParsingData *data)
       int pos = POINT_TO_POSITION (label_list->labels[k].point);
 
       labels[pos] = label_list->labels[k].text;
+      label_list->labels[k].text = NULL;
+
       data->common_marked_positions[pos] = data->board_common_mark;
     }
 
