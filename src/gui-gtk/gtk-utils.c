@@ -1,7 +1,7 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *\
  * This file is part of Quarry.                                    *
  *                                                                 *
- * Copyright (C) 2003, 2004 Paul Pogonyshev.                       *
+ * Copyright (C) 2003, 2004, 2005 Paul Pogonyshev                  *
  *                                                                 *
  * This program is free software; you can redistribute it and/or   *
  * modify it under the terms of the GNU General Public License as  *
@@ -105,6 +105,8 @@ static void	 set_toolbar_item_sensitive
 		    const GtkUtilsToolbarCallbackArguments *arguments);
 
 static void	 set_widget_sensitivity_on_toggle
+		   (GtkToggleButton *toggle_button, GtkWidget *widget);
+static void	 set_widget_sensitivity_on_toggle_reversed
 		   (GtkToggleButton *toggle_button, GtkWidget *widget);
 static void	 set_widget_sensitivity_on_input (GtkEntry *entry,
 						  GtkWidget *widget);
@@ -1163,14 +1165,21 @@ gtk_utils_set_text_buffer_text (GtkTextBuffer *text_buffer, const gchar *text)
 
 void
 gtk_utils_set_sensitive_on_toggle (GtkToggleButton *toggle_button,
-				   GtkWidget *widget)
+				   GtkWidget *widget, gboolean reverse_meaning)
 {
+  void (* set_widget_sensitivity_function) (GtkToggleButton *toggle_button,
+					    GtkWidget *widget)
+    = (reverse_meaning
+       ? set_widget_sensitivity_on_toggle_reversed
+       : set_widget_sensitivity_on_toggle);
+
   assert (GTK_IS_TOGGLE_BUTTON (toggle_button));
   assert (GTK_IS_WIDGET (widget));
 
-  set_widget_sensitivity_on_toggle (toggle_button, widget);
+  set_widget_sensitivity_function (toggle_button, widget);
   g_signal_connect (toggle_button, "toggled",
-		    G_CALLBACK (set_widget_sensitivity_on_toggle), widget);
+		    G_CALLBACK (set_widget_sensitivity_function),
+		    widget);
 }
 
 
@@ -1180,6 +1189,15 @@ set_widget_sensitivity_on_toggle (GtkToggleButton *toggle_button,
 {
   gtk_widget_set_sensitive (widget,
 			    gtk_toggle_button_get_active (toggle_button));
+}
+
+
+static void
+set_widget_sensitivity_on_toggle_reversed (GtkToggleButton *toggle_button,
+					   GtkWidget *widget)
+{
+  gtk_widget_set_sensitive (widget,
+			    !gtk_toggle_button_get_active (toggle_button));
 }
 
 

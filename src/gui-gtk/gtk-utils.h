@@ -251,7 +251,8 @@ void		gtk_utils_set_text_buffer_text (GtkTextBuffer *text_buffer,
 
 
 void		gtk_utils_set_sensitive_on_toggle
-		  (GtkToggleButton *toggle_button, GtkWidget *widget);
+		  (GtkToggleButton *toggle_button, GtkWidget *widget,
+		   gboolean reverse_meaning);
 void		gtk_utils_set_sensitive_on_input (GtkEntry *entry,
 						  GtkWidget *widget);
 

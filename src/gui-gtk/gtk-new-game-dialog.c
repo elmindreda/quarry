@@ -196,7 +196,7 @@ gtk_new_game_dialog_present (void)
 				    RETURN_ACTIVATES_DEFAULT);
     data->human_name_entries[k] = GTK_ENTRY (entry);
     gtk_utils_set_sensitive_on_toggle (data->player_radio_buttons[k][0],
-				       entry);
+				       entry, FALSE);
 
     /* Pack it together with corresponding radio button. */
     hboxes[0] = gtk_utils_pack_in_box (GTK_TYPE_HBOX, QUARRY_SPACING_VERY_BIG,
@@ -209,7 +209,7 @@ gtk_new_game_dialog_present (void)
 						update_game_and_players_page,
 						data);
     gtk_utils_set_sensitive_on_toggle (data->player_radio_buttons[k][1],
-				       data->engine_selectors[k]);
+				       data->engine_selectors[k], FALSE);
     g_signal_connect (radio_buttons[1], "toggled",
 		      G_CALLBACK (update_game_and_players_page), data);
 
@@ -558,7 +558,7 @@ gtk_new_game_dialog_present (void)
 	handicap_spin_buttons[i]
 	  = gtk_utils_create_spin_button (data->handicaps[i], 0.0, 0, TRUE);
 	gtk_utils_set_sensitive_on_toggle (data->handicap_toggle_buttons[i],
-					   handicap_spin_buttons[i]);
+					   handicap_spin_buttons[i], FALSE);
 
 	hboxes[i] = gtk_utils_pack_in_box (GTK_TYPE_HBOX, QUARRY_SPACING,
 					   radio_buttons[i], 0,
