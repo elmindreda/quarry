@@ -1,3 +1,48 @@
+2005-03-05  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* gui-gtk/gtk-goban-window.c (gtk_goban_window_init): Add
+	"Recenter on Current Node" menu item in "View" menu.  Desensitize
+	it if game tree view is not shown right away.
+	(do_find_text): Don't assert for `text_to_find', call
+	show_find_dialog() if it is not set.
+	(game_info_dialog_property_changed): Call update_window_title()
+	when `SGF_GAME_NAME' property is changed.
+	(show_or_hide_sgf_tree_view): Sensitize/desensitize "Recenter on
+	Current Node" menu item depending on `sgf_tree_view' visibility.
+	Recenter `sgf_tree_view' after showing it.
+	(recenter_sgf_tree_view): New function.
+	(update_player_information): Standardize function prototype and
+	compute SGF property types from `player_color' argument.
+
+	* gui-gtk/gtk-sgf-tree-view.c (gtk_sgf_tree_view_style_set): New
+	function.
+	(gtk_sgf_tree_view_center_on_current_node): New function.
+	(track_current_node): Use
+	update_view_port_and_maybe_move_or_resize_window().
+	(center_on_current_node): New function, break out of
+	track_current_node().
+	(update_view_port_and_maybe_move_or_resize_window): Always call
+	gtk_widget_queue_draw() for now.
+	(about_to_modify_map): Don't do anything if the view's widget is
+	not realized.
+	(about_to_change_current_node): Likewise.
+	(current_node_changed): Likewise.
+	(map_modified): Likewise.
+
+	* sgf/sgf-tree-map.c (update_internal_view_port): Allocate one
+	more SgfGameTreeMapLine, because do_update_internal_view_port()
+	can write there without advancing the pointer.
+	(update_internal_view_port): Add another skipping optimization.
+
+	* sgf/sgf-tree.c (sgf_game_tree_delete): Call
+	sgf_game_tree_invalidate_map() before deleting all nodes to avoid
+	accessing freed memory.
+
+2005-03-02  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* gui-gtk/gtk-resume-game-dialog.c (guess_engine_by_player_name):
+	Don't crash if `player_name' is NULL, just return NULL.
+
 2005-03-01  Paul Pogonyshev  <pogonyshev@gmx.net>
 
 	* gui-gtk/gtk-sgf-tree-view.c (SHOULD_TRACK_CURRENT_NODE): New
