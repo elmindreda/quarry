@@ -73,10 +73,18 @@ All files are licensed under the GNU General Public License version 2
 or (at your option) any later version except as noted below.  GNU GPL
 version 2 may be found in the file COPYING.
 
+* Three files `src/utils/getopt.c', `src/utils/getopt1.c' and
+  `src/utils/getopt.h' are copyrighted by the Free Software Foundation
+  and are distributed under GNU LGPL version 2.1 or later.
+
+* Files `src/gui-gtk/gtk-color-button.c' and
+  `src/gui-gtk/gtk-color-button.h' are copyrighted 1998, 1999 by Red
+  Hat, Inc.  They are licensed GNU LGPL version 2 or later.
+
 * Files `src/gui-gtk/gtk-qhbox.c' and `src/gui-gtk/gtk-qvbox.c' are
   copyrighted 1995-1997 by Peter Mattis, Spencer Kimball and Josh
   MacDonald and copyrighted 2003, 2004 by Paul Pogonyshev.  They are
-  licensed under GNU GPL version 2 or later too.
+  licensed under GNU GPL version 2 or later.
 
 * File `data/textures/wood1.jpg' can be distributed freely (1).
 
@@ -112,4 +120,4 @@ version 2 may be found in the file COPYING.
     licensed in a non-restrictive way that allows redistribution and
     modification or is in public domain.  If you happen to have/know
     about such a texture that would fit Quarry's look, please send it
-    or a link to it to <quarry@gna.org>.
+    or a link to it to <quarry-dev@gna.org>.
