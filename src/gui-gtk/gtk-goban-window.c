@@ -3394,12 +3394,34 @@ free_handicap_has_been_placed (GtkGobanWindow *goban_window,
 static void
 move_has_been_played (GtkGobanWindow *goban_window)
 {
-  const SgfNode *move_node
+  SgfNode *move_node
     = goban_window->game_position_board_state->last_move_node;
+  const TimeControl *time_control
+    = goban_window->time_controls[COLOR_INDEX (move_node->move_color)];
   int color_to_play = goban_window->game_position_board_state->color_to_play;
 
-  if (goban_window->time_controls[COLOR_INDEX (move_node->move_color)])
+  if (time_control) {
+    double seconds_left;
+    int moves_left;
+
     gtk_clock_stop (goban_window->clocks[COLOR_INDEX (move_node->move_color)]);
+    seconds_left = time_control_get_time_left (time_control, &moves_left);
+
+    sgf_node_add_real_property (move_node, goban_window->current_tree,
+				(move_node->move_color == BLACK
+				 ? SGF_TIME_LEFT_4BLACK
+				 : SGF_TIME_LEFT_4WHITE),
+				floor (seconds_left * 1000.0 + 0.5) / 1000.0,
+				0);
+
+    if (moves_left) {
+      sgf_node_add_number_property (move_node, goban_window->current_tree,
+				    (move_node->move_color == BLACK
+				     ? SGF_MOVES_LEFT_4BLACK
+				     : SGF_MOVES_LEFT_4WHITE),
+				    moves_left, 0);
+    }
+  }
 
   if (GTP_ENGINE_CAN_PLAY_MOVES (goban_window,
 				 OTHER_COLOR (move_node->move_color))) {
