@@ -1,3 +1,15 @@
+2004-08-13  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* markup-themes, markup-themes/default: New directories.
+
+	* markup-themes/Makefile.am, markup-themes/default/Makefile.am:
+	New files.
+	* markup-themes/default/circle.svg: New file.
+	* markup-themes/default/cross.svg: New file.
+	* markup-themes/default/square.svg: New file.
+	* markup-themes/default/selected.svg: New file.
+	* markup-themes/default/triangle.svg: New file.
+
 Changes before the project registration on Gna! (2004-04-12) were not logged.
 
 

@@ -1,3 +1,17 @@
+2004-08-15  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* configure.ac: Quarry version 0.1.6.
+
+2004-08-13  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* configure.ac: Generate `Makefile's also in `data/markup-themes'
+	and `data/markup-themes/default'.
+
+	* configure.ac: Require `librsvg': on the second thought, it is
+	not worth the work to provide an alternative way of generating
+	markup pixbufs.  Also, require librsvg 2.5.0 at least, because
+	earlier versions fail to render certain files.
+
 2004-08-09  Paul Pogonyshev  <pogonyshev@gmx.net>
 
 	* configure.ac: Don't abort configuration if `gthread' library is

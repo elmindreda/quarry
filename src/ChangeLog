@@ -1,3 +1,49 @@
+2004-08-15  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* gui-utils/tile-renderer.c (render_go_stones): Fix stone center
+	positioning (used to be off by 0.5 pixels both horizontally and
+	vertically).
+
+2004-08-14  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* gui-gtk/gtk-goban.c: Tweak stones' placement and size.
+	(gtk_goban_size_allocate): Create a tile set for drawing SGF
+	markup.
+	(gtk_goban_expose): Draw SGF markup.
+	(unreference_cached_objects): New function.
+	(gtk_goban_update): Handle incoming SGF markup, don't ignore it.
+
+	* gui-gtk/gui-back-end.c (gui_back_end_image_new)
+	(gui_back_end_image_delete): Remove functions.
+
+	* gui-gtk/gtk-tile-set.h: Rename from `gtk-tile-set-interface.h'.
+	* gui-gtk/gtk-tile-set.c: New file (part of `gui-utils/tile-set.c'
+	functionality and more).
+
+	* gui-utils/tile-renderer.c (PIXEL): Remove macro.
+	(tile_set_create_or_reuse, tile_set_unreference)
+	(tile_set_dump_recycle): Remove functions.
+	(render_go_stones): Rename from `create_go_stone_images'.  Only
+	render basic images here (one black, one white).
+	(duplicate_and_adjust_alpha, combine_pixels_diagonally): New
+	functions.
+
+	* gui-utils/tile-renderer.c: Rename from `tile-set.c'.
+	* gui-utils/tile-renderer.h: Rename from `tile-set.h'.
+
+	* utils/object-cache.c: New file (part of `gui-utils/tile-set.c'
+	functionality).
+
+2004-08-13  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* Makefile.am (quarry_LDADD): Remove recently added
+	`QUARRY_RSVG_LIBS' (it is now merged into `QUARRY_GTHREAD_LIBS').
+	* gui-gtk/Makefile.am (QUARRY_FULL_GTK_CFLAGS): Remove
+	`QUARRY_RSVG_CFLAGS' (it is now merged into
+	`QUARRY_GTHREAD_CFLAGS').
+	(AM_CPPFLAGS): Remove `PACKAGE_TEXTURES_DIR', it is obviously
+	derivable from `PACKAGE_DATA_DIR'.
+
 2004-08-12  Paul Pogonyshev  <pogonyshev@gmx.net>
 
 	* gui-gtk/gtk-preferences.c (gtk_gtp_engine_dialog_present):
