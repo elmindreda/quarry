@@ -51,6 +51,7 @@ static const char *configuration_file_intro_comment =
 
 
 static char *	parse_string (char **line_scan, char fuzzy_terminator);
+static int	parse_integer (const char *integer_string, int *result);
 
 static void	write_section (BufferedWriter *writer,
 			       const ConfigurationSection *section,
@@ -193,17 +194,42 @@ configuration_read_from_file (const ConfigurationSection *sections,
 		    break;
 
 		  case VALUE_TYPE_INT:
+		    parse_integer (actual_contents, (int *) field);
+		    break;
+
+		  case VALUE_TYPE_ENUMERATION:
 		    {
-		      /* FIXME: Can be improved. */
-		      const char *digit_scan = actual_contents;
+		      const char *value_string;
+		      int enumeration_value;
+		      int actual_contents_length = strlen (actual_contents);
+		      int numeric_value;
 
-		      if (*digit_scan == '+' || *digit_scan == '-')
-			digit_scan++;
+		      for (value_string = value->enumeration_values_as_strings,
+			     enumeration_value = 0;
+			   *value_string; enumeration_value++) {
+			do {
+			  int value_string_length = strlen (value_string);
 
-		      if ('0' <= *digit_scan && *digit_scan <= '9') 
-			* (int *) field = atoi (actual_contents);
+			  if (actual_contents_length == value_string_length
+			      && (strcasecmp (actual_contents, value_string)
+				  == 0)) {
+			    * (int *) field = enumeration_value;
+			    goto enumeration_value_found;
+			  }
+
+			  value_string += value_string_length + 1;
+			} while (*value_string);
+
+			value_string++;
+		      }
+
+		      if (parse_integer (actual_contents, &numeric_value)
+			  && 0 <= numeric_value
+			  && numeric_value < enumeration_value)
+			* (int *) field = numeric_value;
 		    }
 
+		  enumeration_value_found:
 		    break;
 
 		  case VALUE_TYPE_REAL:
@@ -218,7 +244,8 @@ configuration_read_from_file (const ConfigurationSection *sections,
 			actual_contents++;
 
 		      for (num_digits = 0;
-			   ((('0' <= *actual_contents && *actual_contents <= '9')
+			   ((('0' <= *actual_contents
+			      && *actual_contents <= '9')
 			     || ('a' <= *actual_contents
 				 && *actual_contents <= 'f')
 			     || ('A' <= *actual_contents
@@ -396,6 +423,24 @@ parse_string (char **line_scan, char fuzzy_terminator)
 
 
 int
+parse_integer (const char *integer_string, int *result)
+{
+  /* FIXME: Can be improved. */
+  const char *digit_scan = integer_string;
+
+  if (*digit_scan == '+' || *digit_scan == '-')
+    digit_scan++;
+
+  if ('0' <= *integer_string && *integer_string <= '9') {
+    *result = atoi (integer_string);
+    return 1;
+  }
+
+  return 0;
+}
+
+
+int
 configuration_write_to_file (const ConfigurationSection *sections,
 			     int num_sections, const char *filename)
 {
@@ -491,6 +536,26 @@ write_section (BufferedWriter *writer, const ConfigurationSection *section,
 
     case VALUE_TYPE_INT:
       buffered_writer_cprintf (writer, "%d", * (const int *) field);
+      break;
+
+    case VALUE_TYPE_ENUMERATION:
+      {
+	const char *value_string;
+	int enumeration_value;
+
+	for (value_string = value->enumeration_values_as_strings,
+	       enumeration_value = * (const int *) field;
+	     enumeration_value--; ) {
+	  do
+	    value_string += strlen (value_string) + 1;
+	  while (*value_string);
+
+	  value_string++;
+	}
+
+	write_string (writer, value_string);
+      }
+
       break;
 
     case VALUE_TYPE_REAL:
