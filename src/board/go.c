@@ -1,4 +1,4 @@
-/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *\
+/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *	\
  * This file is part of Quarry.                                    *
  *                                                                 *
  * Copyright (C) 2003, 2004 Paul Pogonyshev.                       *
@@ -1227,39 +1227,53 @@ go_score_game(Board *board, const char *dead_stones, double komi,
 }
 
 
-/* Mark territory on given grid with specified marks.  Grid
- * `dead_stones' should have non-zeros in positions of dead stones and
- * zeros elsewhere.  It is assumed that `dead_stones' are filled
- * sanely, i.e all stones of any string are either dead or alive.
+/* Mark territory on given grid with specified marks.  The grid must
+ * be reset to whatever value the caller wants before calling this
+ * function.  go_mark_territory_on_grid() will not overwrite grid
+ * values' at dame and stone positions.
  *
- * FIXME: Improve this function.  It doesn't detect sekis and false
- *	  eyes.
+ * Grid `dead_stones' should have non-zeros in positions of dead
+ * stones and zeros elsewhere.  It is assumed that `dead_stones' are
+ * filled sanely, i.e all stones of any string are either dead or
+ * alive.
+ *
+ * FIXME: Improve this function.  It doesn't detect sekis.
  */
 void
 go_mark_territory_on_grid(Board *board, char *grid, const char *dead_stones,
 			  char black_territory_mark, char white_territory_mark)
 {
+  const char *board_grid = board->grid;
   int x;
   int y;
   int pos;
+  char territory[BOARD_GRID_SIZE];
+  char false_eyes[BOARD_GRID_SIZE];
+  int queue[BOARD_MAX_POSITIONS];
 
   assert(board);
   assert(board->game == GAME_GO);
   assert(grid);
   assert(dead_stones);
 
+  /* First simply look for regions bounded by alive stones of only one
+   * color and claim they are territory.  Also look for false eyes.
+   */
+
+  board_fill_grid(board, territory, EMPTY);
+  board_fill_grid(board, false_eyes, 0);
+
   board->data.go.position_mark++;
 
   for (y = 0, pos = POSITION(0, 0); y < board->height; y++) {
     for (x = 0; x < board->width; x++, pos++) {
       if (UNMARKED_POSITION(board, pos)
-	  && (board->grid[pos] == EMPTY || dead_stones[pos])) {
+	  && (board_grid[pos] == EMPTY || dead_stones[pos])) {
 	/* Found another connected set of empty vertices and/or dead
 	 * stones.  Loop over it marking positions and determine if it
 	 * is a proper territory, i.e. if it has adjacent living
 	 * stones of only one color.
 	 */
-	int queue[BOARD_MAX_POSITIONS];
 	int queue_start = 0;
 	int queue_end = 1;
 	char alive_neighbors = 0;
@@ -1274,25 +1288,119 @@ go_mark_territory_on_grid(Board *board, char *grid, const char *dead_stones,
 	  for (k = 0; k < 4; k++) {
 	    int neighbor = pos2 + delta[k];
 
-	    if ((board->grid[neighbor] == EMPTY
-		 || (IS_STONE(board->grid[neighbor])
+	    if ((board_grid[neighbor] == EMPTY
+		 || (IS_STONE(board_grid[neighbor])
 		     && dead_stones[neighbor]))
 		&& UNMARKED_POSITION(board, neighbor)) {
 	      queue[queue_end++] = neighbor;
 	      MARK_POSITION(board, neighbor);
 	    }
-	    else if (IS_STONE(board->grid[neighbor]) && !dead_stones[neighbor])
-	      alive_neighbors |= board->grid[neighbor];
+	    else if (IS_STONE(board_grid[neighbor]) && !dead_stones[neighbor])
+	      alive_neighbors |= board_grid[neighbor];
 	  }
 	} while (queue_start < queue_end);
 
 	if (IS_STONE(alive_neighbors)) {
-	  char mark = (alive_neighbors == BLACK
-		       ? black_territory_mark : white_territory_mark);
+	  for (queue_start = 0; queue_start < queue_end; queue_start++) {
+	    int k;
+	    int pos2 = queue[queue_start];
+	    int other = OTHER_COLOR(alive_neighbors);
+	    int diagonal_score = 0;
 
-	  for (queue_start = 0; queue_start < queue_end; queue_start++)
-	    grid[queue[queue_start]] = mark;
+	    territory[pos2] = alive_neighbors;
+
+	    /* Does this position look like a false eye? */
+	    for (k = 4; k < 8; k++) {
+	      if (board_grid[pos2 + delta[k]] == other
+		  && !dead_stones[pos2 + delta[k]])
+		diagonal_score += 2;
+	      else if (!ON_GRID(board_grid, pos2 + delta[k]))
+		diagonal_score++;
+	    }
+
+	    if (diagonal_score >= 4)
+	      false_eyes[pos2] = 1;
+	  }
 	}
+      }
+    }
+
+    pos += BOARD_MAX_WIDTH + 1 - board->width;
+  }
+
+  /* Determine which false eyes don't yield territory points and erase
+   * territory under them.
+   */
+
+  do {
+  restart_false_eye_checking:
+    board->data.go.position_mark++;
+
+    for (y = 0, pos = POSITION(0, 0); y < board->height; y++) {
+      for (x = 0; x < board->width; x++, pos++) {
+	if (UNMARKED_POSITION(board, pos)
+	    && board_grid[pos] != EMPTY
+	    && !dead_stones[pos]) {
+	  int color = board_grid[pos];
+	  int queue_start = 0;
+	  int queue_end = 1;
+	  int affected_false_eye = NULL_POSITION;
+	  int not_connected_to_an_eye = 1;
+
+	  queue[0] = pos;
+	  MARK_POSITION(board, pos);
+
+	  do {
+	    int k;
+	    int pos2 = queue[queue_start++];
+
+	    for (k = 0; k < 4; k++) {
+	      int neighbor = pos2 + delta[k];
+
+	      if (ON_GRID(board_grid, neighbor)) {
+		if ((board_grid[neighbor] == color
+		     || ((board_grid[neighbor] == EMPTY
+			  || dead_stones[neighbor])
+			 && !false_eyes[neighbor]
+			 && (territory[neighbor] != EMPTY
+			     || (board_grid[neighbor] == EMPTY
+				 && board_grid[pos2] == color))))
+		    && UNMARKED_POSITION(board, neighbor)) {
+		  queue[queue_end++] = neighbor;
+		  MARK_POSITION(board, neighbor);
+
+		  if (territory[neighbor] != EMPTY)
+		    not_connected_to_an_eye = 0;
+		}
+		else if (false_eyes[neighbor]
+			 && territory[neighbor] != EMPTY) {
+		  if (affected_false_eye != NULL_POSITION
+		      && neighbor != affected_false_eye)
+		    not_connected_to_an_eye = 0;
+
+		  affected_false_eye = neighbor;
+		}
+	      }
+	    }
+	  } while (queue_start < queue_end);
+
+	  if (not_connected_to_an_eye && affected_false_eye != NULL_POSITION) {
+	    territory[affected_false_eye] = EMPTY;
+	    goto restart_false_eye_checking;
+	  }
+	}
+      }
+
+      pos += BOARD_MAX_WIDTH + 1 - board->width;
+    }
+  } while (0);
+
+  /* Finally, mark the territory on the supplied grid. */
+  for (y = 0, pos = POSITION(0, 0); y < board->height; y++) {
+    for (x = 0; x < board->width; x++, pos++) {
+      if (territory[pos] != EMPTY) {
+	grid[pos] = (territory[pos] == BLACK
+		     ? black_territory_mark : white_territory_mark);
       }
     }
 
