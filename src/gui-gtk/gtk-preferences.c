@@ -2465,6 +2465,12 @@ engine_is_visible_and_supports_game (GtkTreeModel *tree_model,
 
   gtk_tree_model_get (tree_model, iterator, ENGINES_DATA, &engine_data, -1);
 
+  /* This function is also called immediately after
+   * gtk_list_store_append(), when data is not yet set.
+   */
+  if (!engine_data)
+    return FALSE;
+
   return (!engine_data->is_hidden
 	  && gtk_games_engine_supports_game (engine_data,
 					     GPOINTER_TO_INT (game_index)));
