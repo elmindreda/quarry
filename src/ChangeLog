@@ -1,3 +1,13 @@
+2004-08-17  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* gui-gtk/gtk-goban.c (gtk_goban_scroll_event): New
+	function (navigate goban in respond to mouse wheel movement).
+
+2004-08-16  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* gui-gtk/gtk-parser-interface.c (analyze_parsed_data): Free
+	`data', don't leak memory.
+
 2004-08-15  Paul Pogonyshev  <pogonyshev@gmx.net>
 
 	* gui-utils/tile-renderer.c (render_go_stones): Fix stone center
