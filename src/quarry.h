@@ -84,6 +84,13 @@
   (((value) + (power_of_2) - 1) & ~((power_of_2) - 1))
 
 
+/* Determine if given byte (`character') starts an UTF-8 character,
+ * probably a multi-byte one.
+ */
+#define IS_UTF8_STARTER(character)		\
+  ((signed char) (character) >= (signed char) 0xc0)
+
+
 #endif /* QUARRY_H */
 
 
