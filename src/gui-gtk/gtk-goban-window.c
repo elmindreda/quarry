@@ -272,7 +272,7 @@ gtk_goban_window_init(GtkGobanWindow *goban_window)
 
   /* Table that holds players' information and clocks. */
   table = gtk_table_new(2, 2, FALSE);
-  gtk_table_set_row_spacings(GTK_TABLE(table), QUARRY_SPACING_GOBAN_WINDOW);
+  gtk_table_set_row_spacings(GTK_TABLE(table), QUARRY_SPACING_SMALL);
   gtk_table_set_col_spacings(GTK_TABLE(table), QUARRY_SPACING);
 
   /* Information labels and clocks for each player. */
@@ -493,6 +493,8 @@ static void
 gtk_goban_window_finalize(GObject *object)
 {
   GtkGobanWindow *goban_window = GTK_GOBAN_WINDOW(object);
+
+  g_object_unref(goban_window->item_factory);
 
   if (goban_window->board)
     board_delete(goban_window->board);
