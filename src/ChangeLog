@@ -1,3 +1,72 @@
+2004-04-26  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* gui-gtk/gtk-color-button.c, gui-gtk/gtk-color-button.h: New
+	files, copy from GTK+ version 2.4.0.  Rename to follow Quarry
+	filename standard.  Modify to avoid compilation if GTK+ 2.4 is
+	present anyway.
+
+	* gui-gtk/gtk-preferences.c (create_board_appearance_page):
+	Implement.  Add controls for all implemented board appearance
+	configuration variables.
+	(update_board_background, update_board_background_texture)
+	(update_board_foreground): New functions.
+
+	* gui-gtk/gtk-goban.c: Keep track of all goban widgets.
+	(gtk_goban_update_appearance): New function.
+
+	* utils/utils.h (QUARRY_COLORS_ARE_EQUAL): New macro.
+
+	* gui-utils/common-configuration-defaults.list: Use value
+	substitution for default texture file paths.
+	* gui-gtk/Makefile.am: Pass `PACKAGE_TEXTURES_DIR' variable to
+	`parse-configuration' utility.
+
+	* gui-utils/parse-configuration.c (configuration_parse_defaults2):
+	Read defaults of type `string' with parse_multiline_string() so
+	that value substitution makes sense.
+
+	* utils/parse-list.c: Add new `substitute_value' command support.
+	Add command-line options support.
+	(parse_list_main): Print help/usage messages to `stdout' or
+	`stderr' according to GNU standards.
+	(print_usage): New function.
+
+	* utils/utils.h (AssociationList): New global string list type.
+	* utils/string-list.c (association_list_item_dispose)
+	(association_list_find_association): New functions.
+
+	* utils/getopt.c, utils/getopt1.c, utils/getopt.h: New files, copy
+	from GNU C Library version 2.3.2.
+
+2004-04-25  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* gui-gtk/gtk-goban.c: Use style modifiers instead of new style
+	for changing widget appearance.
+	(set_goban_appearance_style): New function.
+	* gui-gtk/gtk-utils.c (gtk_utils_set_gdk_color)
+	(gtk_utils_set_quarry_color): New functions.
+
+	* gui-utils/parse-configuration.c (configuration_parse_sections2):
+	Bug-fix: don't try to define new structure several times.
+
+	* gui-utils/common-configuration-sections.list: Add configuration
+	data for board appearance for Go, Amazons and Othello games.
+	* gui-utils/common-configuration-values.list: Likewise.
+	* gui-utils/common-configuration-defaults.list: Likewise.
+
+	* gui-utils/configuration.c (configuration_read_from_file): Only
+	consider first word of value when parsing values of non-string
+	configuration variables.
+
+	* gui-utils/parse-configuration.c: Add support for `color'
+	configuration value type.
+	* gui-utils/configuration.c: Likewise.
+
+	* utils/utils.h (QuarryColor): New structure.
+	* utils/parse-list.c (parse_color): New function.
+	* gui-utils/configuration-internals.h: Include `utils.h' for the
+	`QuarryColor' structure.
+
 2004-04-24  Paul Pogonyshev  <pogonyshev@gmx.net>
 
 	* gui-utils/configuration.c (configuration_read_from_file): Close
