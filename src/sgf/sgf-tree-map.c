@@ -91,6 +91,16 @@
 #define Y_LEVEL_ARRAY_SIZE_GRAIN	0x400
 
 
+#define VIEW_PORT_NODE(tree, x, y)				\
+  ((tree)->view_port_nodes					\
+   + (((y) - (tree)->view_port_y0)				\
+      * ((tree)->view_port_x1 - (tree)->view_port_x0))		\
+   + ((x) - (tree)->view_port_x0))
+
+#define VIEW_PORT_LINE_ADJUSTMENT(tree, width)			\
+  (((tree)->view_port_x1 - (tree)->view_port_x0) - (width))
+
+
 static SgfGameTreeMapData *  find_intermediate_data_for_node
 			       (const SgfGameTree *tree, const SgfNode *node,
 				int strictly_before_node);
@@ -212,15 +222,9 @@ sgf_game_tree_fill_map_view_port (SgfGameTree *tree,
   assert (view_port_lines);
   assert (num_view_port_lines);
 
-  if (!tree->view_port_nodes
-      || tree->view_port_x0 > view_port_x0
-      || tree->view_port_y0 > view_port_y0
-      || tree->view_port_x1 < view_port_x1
-      || tree->view_port_y1 < view_port_y1) {
-    update_internal_view_port (tree,
-			       view_port_x0, view_port_y0,
-			       view_port_x1, view_port_y1);
-  }
+  update_internal_view_port (tree,
+			     view_port_x0, view_port_y0,
+			     view_port_x1, view_port_y1);
 
   if (tree->view_port_x0 == view_port_x0
       && tree->view_port_x1 == view_port_x1) {
@@ -242,10 +246,7 @@ sgf_game_tree_fill_map_view_port (SgfGameTree *tree,
 				     * sizeof (SgfNode *));
 
     copy_pointer     = *view_port_nodes;
-    original_pointer = (tree->view_port_nodes
-			+ ((view_port_y0 - tree->view_port_y0)
-			   * (tree->view_port_x1 - tree->view_port_x0))
-			+ (view_port_x0 - tree->view_port_x0));
+    original_pointer = VIEW_PORT_NODE (tree, view_port_x0, view_port_y0);
 
     for (y = 0; y < view_port_height; y++) {
       memcpy (copy_pointer, original_pointer,
@@ -260,6 +261,88 @@ sgf_game_tree_fill_map_view_port (SgfGameTree *tree,
 					     (tree->num_view_port_lines
 					      * sizeof (SgfGameTreeMapLine)));
   *num_view_port_lines = tree->num_view_port_lines;
+}
+
+
+/* FIXME: Urgently releasing 0.1.12, this function is not yet used and
+ *	  is completely untested.
+ */
+char *
+sgf_game_tree_get_current_branch_marks (SgfGameTree *tree, 
+					int view_port_x0, int view_port_y0,
+					int view_port_x1, int view_port_y1)
+{
+  int view_port_width  = view_port_x1 - view_port_x0;
+  int view_port_height = view_port_y1 - view_port_y0;
+  char *current_branch_marks = utils_malloc (view_port_width * view_port_height
+					     * sizeof (char));
+  const SgfNode *const *view_port_scan;
+  char *current_branch_marks_scan;
+  int x;
+  int y;
+  SgfNode *node;
+
+  assert (tree);
+  assert (tree->current_node);
+  assert (0 <= view_port_x0 && view_port_x0 < view_port_x1);
+  assert (0 <= view_port_y0 && view_port_y0 < view_port_y1);
+
+  update_internal_view_port (tree,
+			     view_port_x0, view_port_y0,
+			     view_port_x1, view_port_y1);
+
+  for (view_port_scan = ((const SgfNode *const *)
+			 VIEW_PORT_NODE (tree, view_port_x0, view_port_y0)),
+	 current_branch_marks_scan = current_branch_marks,
+	 y = view_port_y0;
+       y < view_port_y1;
+       view_port_scan += VIEW_PORT_LINE_ADJUSTMENT (tree, view_port_width),
+	 y++) {
+    for (x = view_port_x0; x < view_port_x1; x++) {
+      if (*view_port_scan++)
+	*current_branch_marks_scan++ = SGF_NON_CURRENT_BRANCH_NODE;
+      else
+	*current_branch_marks_scan++ = SGF_NO_NODE;
+    }
+  }
+
+  node = tree->current_node;
+  for (x = tree->current_node_depth; x > view_port_x0; x--)
+    node = node->parent;
+
+  do {
+    if (x >= view_port_x0) {
+      for (view_port_scan = ((const SgfNode *const *)
+			     VIEW_PORT_NODE (tree, x, view_port_y0)),
+	     y = view_port_y0;
+	   y < view_port_y1;
+	   view_port_scan += tree->view_port_x1 - tree->view_port_x0, y++) {
+	if (*view_port_scan == node) {
+	  * (current_branch_marks
+	     + (y - view_port_y0) * view_port_width
+	     + (x - view_port_x0))
+	    = (x < tree->current_node_depth
+	       ? SGF_CURRENT_BRANCH_HEAD_NODE
+	       : (x > tree->current_node_depth
+		  ? SGF_CURRENT_BRANCH_TAIL_NODE : SGF_CURRENT_NODE));
+
+	  break;
+	}
+      }
+    }
+
+    if (!node->current_variation) {
+      if (!node->child)
+	return current_branch_marks;
+
+      node->current_variation = node->child;
+    }
+
+    node = node->current_variation;
+    x++;
+  } while (x < view_port_x1);
+
+  return current_branch_marks;
 }
 
 
@@ -308,6 +391,7 @@ sgf_game_tree_node_is_within_view_port (SgfGameTree *tree, const SgfNode *node,
 					int *node_x, int *node_y)
 {
   const SgfNode *const *view_port_scan;
+  int view_port_width = view_port_x1 - view_port_x0;
   int x;
   int y;
 
@@ -316,19 +400,16 @@ sgf_game_tree_node_is_within_view_port (SgfGameTree *tree, const SgfNode *node,
   assert (0 <= view_port_x0 && view_port_x0 < view_port_x1);
   assert (0 <= view_port_y0 && view_port_y0 < view_port_y1);
 
-  if (!tree->view_port_nodes
-      || tree->view_port_x0 > view_port_x0
-      || tree->view_port_y0 > view_port_y0
-      || tree->view_port_x1 < view_port_x1
-      || tree->view_port_y1 < view_port_y1) {
-    update_internal_view_port (tree,
-			       view_port_x0, view_port_y0,
-			       view_port_x1, view_port_y1);
-  }
+  update_internal_view_port (tree,
+			     view_port_x0, view_port_y0,
+			     view_port_x1, view_port_y1);
 
-  for (view_port_scan = (const SgfNode *const *) tree->view_port_nodes,
+  for (view_port_scan = ((const SgfNode *const *)
+			 VIEW_PORT_NODE (tree, view_port_x0, view_port_y0)),
 	 y = view_port_y0;
-       y < view_port_y1; y++) {
+       y < view_port_y1;
+       view_port_scan += VIEW_PORT_LINE_ADJUSTMENT (tree, view_port_width),
+	 y++) {
     for (x = view_port_x0; x < view_port_x1; x++) {
       if (*view_port_scan++ == node) {
 	if (node_x)
@@ -774,6 +855,15 @@ update_internal_view_port (SgfGameTree *tree,
 
 #endif /* not REPORT_PERFORMANCE_STATISTICS */
 
+  if (tree->view_port_nodes
+      && tree->view_port_x0 <= view_port_x0
+      && tree->view_port_y0 <= view_port_y0
+      && tree->view_port_x1 >= view_port_x1
+      && tree->view_port_y1 >= view_port_y1) {
+    /* Nothing to update. */
+    return;
+  }
+
   tree->view_port_x0 = view_port_x0;
   tree->view_port_y0 = view_port_y0;
   tree->view_port_x1 = view_port_x1;
@@ -919,16 +1009,16 @@ do_update_internal_view_port (const SgfGameTree *tree,
 
       x++;
       node = node->child;
+    }
 
-      if (view_port_y0 == 0 && view_port_x0 <= x) {
-	line_pointer->x0 = 0;
-	line_pointer->y0 = 0;
-	line_pointer->y1 = 0;
-	line_pointer->x2 = 0;
-	line_pointer->x3 = x;
+    if (view_port_y0 == 0 && view_port_x0 <= x) {
+      line_pointer->x0 = 0;
+      line_pointer->y0 = 0;
+      line_pointer->y1 = 0;
+      line_pointer->x2 = 0;
+      line_pointer->x3 = x;
 
-	line_pointer++;
-      }
+      line_pointer++;
     }
   }
 

@@ -221,6 +221,7 @@ struct _SgfGameTree {
 
   SgfNode		 *root;
   SgfNode		 *current_node;
+  int			  current_node_depth;
 
   int			  game;
   int			  board_width;
@@ -269,6 +270,7 @@ typedef struct _SgfGameTreeState	SgfGameTreeState;
 struct _SgfGameTreeState {
   Board			 *board;
   SgfNode		 *current_node;
+  int			  current_node_depth;
 };
 
 
@@ -320,8 +322,9 @@ void		 sgf_game_tree_delete (SgfGameTree *tree);
 
 void		 sgf_game_tree_set_game (SgfGameTree *tree, Game game);
 void		 sgf_game_tree_set_state (SgfGameTree *tree,
-					  Board *board, SgfNode *node,
-					  SgfGameTreeState *old_state);
+					  const SgfGameTreeState *state);
+void		 sgf_game_tree_get_state (SgfGameTree *tree,
+					  SgfGameTreeState *state);
 
 SgfGameTree *	 sgf_game_tree_duplicate (const SgfGameTree *tree);
 SgfGameTree *	 sgf_game_tree_duplicate_with_nodes (const SgfGameTree *tree);
@@ -656,7 +659,16 @@ SgfCollection *	 sgf_diff (const SgfCollection *from_collection,
 
 
 
-/* `sgf-tree-map.c' global functions. */
+/* `sgf-tree-map.c' global declarations and functions. */
+
+enum {
+  SGF_NO_NODE,
+  SGF_NON_CURRENT_BRANCH_NODE,
+  SGF_CURRENT_BRANCH_HEAD_NODE,
+  SGF_CURRENT_NODE,
+  SGF_CURRENT_BRANCH_TAIL_NODE
+};
+
 
 void		sgf_game_tree_invalidate_map (SgfGameTree *tree,
 					      SgfNode *node);
@@ -671,6 +683,11 @@ void		sgf_game_tree_fill_map_view_port
 		   SgfNode ***view_port_nodes,
 		   SgfGameTreeMapLine **view_port_lines,
 		   int *num_view_port_lines);
+char *		sgf_game_tree_get_current_branch_marks (SgfGameTree *tree,
+							int view_port_x0,
+							int view_port_y0,
+							int view_port_x1,
+							int view_port_y1);
 
 int		sgf_game_tree_get_node_coordinates (SgfGameTree *tree,
 						    const SgfNode *node,

@@ -2178,10 +2178,10 @@ about_to_change_node (GtkGobanWindow *goban_window)
     /* Goban window is going to display something other than the game
      * position node.
      */
-    goban_window->game_position_node
-      = goban_window->current_tree->current_node;
-    goban_window->game_position_board
-      = board_duplicate_without_stacks (goban_window->board);
+    sgf_game_tree_get_state (goban_window->current_tree,
+			     &goban_window->game_position);
+    goban_window->game_position.board
+      = board_duplicate_without_stacks (goban_window->game_position.board);
 
     goban_window->game_position_board_state
       = &goban_window->game_position_board_state_holder;
@@ -2199,12 +2199,12 @@ just_changed_node (GtkGobanWindow *goban_window)
 {
   if (goban_window->in_game_mode
       && !IS_DISPLAYING_GAME_NODE (goban_window)
-      && (goban_window->game_position_node
+      && (goban_window->game_position.current_node
 	  == goban_window->current_tree->current_node)) {
     /* The goban window displayed something other than the game
      * position node, but has just navigated back to that node.
      */
-    board_delete (goban_window->game_position_board);
+    board_delete (goban_window->game_position.board);
     goban_window->game_position_board_state = &goban_window->sgf_board_state;
   }
 }
@@ -3661,10 +3661,8 @@ move_has_been_generated (GtpClient *client, int successful,
     }
 
     if (!IS_DISPLAYING_GAME_NODE (goban_window)) {
-      sgf_game_tree_set_state (current_tree,
-			       goban_window->game_position_board,
-			       goban_window->game_position_node,
-			       &tree_state);
+      sgf_game_tree_get_state (current_tree, &tree_state);
+      sgf_game_tree_set_state (current_tree, &goban_window->game_position);
     }
 
     /* FIXME: Validate move and alert if it is illegal. */
@@ -3683,14 +3681,12 @@ move_has_been_generated (GtpClient *client, int successful,
     if (IS_DISPLAYING_GAME_NODE (goban_window))
       update_children_for_new_node (goban_window);
     else {
-      goban_window->game_position_node = current_tree->current_node;
-      sgf_game_tree_set_state (current_tree,
-			       tree_state.board, tree_state.current_node,
-			       NULL);
+      goban_window->game_position.current_node = current_tree->current_node;
+      sgf_game_tree_set_state (current_tree, &tree_state);
 
       gtk_sgf_tree_view_update_view_port (goban_window->sgf_tree_view);
-      show_sgf_tree_view_automatically (goban_window,
-					goban_window->game_position_node);
+      show_sgf_tree_view_automatically
+	(goban_window, goban_window->game_position.current_node);
     }
 
     move_has_been_played (goban_window);

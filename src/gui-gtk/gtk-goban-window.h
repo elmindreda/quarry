@@ -92,8 +92,7 @@ struct _GtkGobanWindow {
   Board			  *board;
   SgfBoardState		   sgf_board_state;
 
-  SgfNode		  *game_position_node;
-  Board			  *game_position_board;
+  SgfGameTreeState	   game_position;
   SgfBoardState		  *game_position_board_state;
   SgfBoardState		   game_position_board_state_holder;
 
