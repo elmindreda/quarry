@@ -539,61 +539,14 @@ time_spin_button_output(GtkSpinButton *spin_button)
 static gint
 time_spin_button_input(GtkSpinButton *spin_button, gdouble *new_value)
 {
-  const gchar *text_value = gtk_entry_get_text(GTK_ENTRY(spin_button));
-  const gchar *scan;
-  int num_colons = 0;
-  int digits_and_colons_only = 1;
+  int seconds = utils_parse_time(gtk_entry_get_text(GTK_ENTRY(spin_button)));
 
-  for (scan = text_value; *scan; scan++) {
-    if (*scan == ':') {
-      if (++num_colons > 2 || !digits_and_colons_only)
-	return GTK_INPUT_ERROR;
-    }
-    else if (*scan < '0' || '9' < *scan) {
-      digits_and_colons_only = 0;
-      if (num_colons != 0)
-	return GTK_INPUT_ERROR;
-    }
+  if (seconds >= 0) {
+    *new_value = (gdouble) seconds;
+    return TRUE;
   }
 
-  if (num_colons > 0) {
-    int hours = 0;
-    int minutes = 0;
-    int seconds = 0;
-    int num_chars_eaten;
-
-    if (num_colons == 2) {
-      if (*text_value != ':') {
-	sscanf(text_value, "%d:%n", &hours, &num_chars_eaten);
-	text_value += num_chars_eaten;
-      }
-      else
-	text_value++;
-    }
-
-    if (*text_value != ':') {
-      sscanf(text_value, "%d:%n", &minutes, &num_chars_eaten);
-      text_value += num_chars_eaten;
-    }
-    else
-      text_value++;
-
-    sscanf(text_value, "%d", &seconds);
-
-    *new_value = (hours * 60 + minutes) * 60 + seconds;
-  }
-  else {
-    gdouble minutes_double;
-    gchar *err = NULL;
-
-    minutes_double = g_strtod(text_value, &err);
-    if (*err)
-      return GTK_INPUT_ERROR;
-
-    *new_value = (gdouble) (gint) (60.0 * minutes_double + 0.5);
-  }
-
-  return TRUE;
+  return GTK_INPUT_ERROR;
 }
 
 
@@ -617,7 +570,9 @@ gtk_utils_create_selector(const gchar **items, gint num_items,
     for (k = 0; k < num_items; k++)
       gtk_combo_box_append_text(combo_box, items[k]);
 
-    gtk_combo_box_set_active(combo_box, MAX(selected_item, 0));
+    gtk_combo_box_set_active(combo_box,
+			     (0 <= selected_item && selected_item < num_items
+			      ? selected_item : 0));
   }
 
 #else /* not GTK_2_4_OR_LATER */
@@ -637,7 +592,7 @@ gtk_utils_create_selector(const gchar **items, gint num_items,
     gtk_option_menu_set_menu(GTK_OPTION_MENU(widget), menu);
   }
 
-  if (selected_item >= 0)
+  if (0 <= selected_item && selected_item < num_items)
     gtk_option_menu_set_history(GTK_OPTION_MENU(widget), selected_item);
 
 #endif /* not GTK_2_4_OR_LATER */

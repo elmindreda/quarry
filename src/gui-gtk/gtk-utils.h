@@ -184,13 +184,19 @@ void		gtk_utils_set_quarry_color(QuarryColor *quarry_color,
 
 #if GTK_2_4_OR_LATER
 
-#define gtk_utils_get_selector_active_item_index(selector)	\
+#define gtk_utils_get_selector_active_item_index(selector)		\
   gtk_combo_box_get_active(GTK_COMBO_BOX(selector))
+
+#define gtk_utils_set_selector_active_item_index(selector, index)	\
+  gtk_combo_box_set_active(GTK_COMBO_BOX(selector), (index))
 
 #else
 
-#define gtk_utils_get_selector_active_item_index(selector)	\
+#define gtk_utils_get_selector_active_item_index(selector)		\
   gtk_option_menu_get_history(GTK_OPTION_MENU(selector))
+
+#define gtk_utils_set_selector_active_item_index(selector, index)	\
+  gtk_option_menu_set_history(GTK_OPTION_MENU(selector), (index))
 
 #endif
 
