@@ -221,7 +221,7 @@ handle_engine_output(GIOChannel *read_output_from, GIOCondition condition,
        * still hasn't been deleted.  This means the engine hung up
        * before replying to `quit' command (if it was sent at all).
        */
-      g_set_error(&data->shutdown_reason, 0, 0, "Engine hung up");
+      g_set_error(&data->shutdown_reason, 0, 0, _("Engine hung up"));
              
        /* It is OK not to schedule deletion (see comments above). */
       data->deletion_scheduled = TRUE;

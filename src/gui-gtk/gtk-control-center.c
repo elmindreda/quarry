@@ -52,7 +52,7 @@ gtk_control_center_present(void)
     control_center = (GtkWindow *) gtk_window_new(GTK_WINDOW_TOPLEVEL);
     gtk_control_center_window_created(control_center);
 
-    gtk_window_set_title(control_center, "Quarry Control Center");
+    gtk_window_set_title(control_center, _("Quarry Control Center"));
     gtk_window_set_resizable(control_center, FALSE);
     gtk_container_set_border_width(GTK_CONTAINER(control_center),
 				   QUARRY_SPACING);

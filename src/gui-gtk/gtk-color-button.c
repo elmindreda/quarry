@@ -28,7 +28,12 @@
  * GTK+ at ftp://ftp.gtk.org/pub/gtk/. 
  */
 
-/* 2004-04-27  Paul Pogonyshev
+/* 2004-08-20  Paul Pogonyshev
+ *
+ *	Return `gettext' _() macro invocation in the only user-visible
+ *	place.
+ *
+ * 2004-04-27  Paul Pogonyshev
  *
  *	Remove `gettext' stuff as not yet supported in Quarry.
  *
@@ -569,7 +574,7 @@ gtk_color_button_init (GtkColorButton *color_button)
   gtk_container_add (GTK_CONTAINER (frame), color_button->priv->drawing_area);
   gtk_widget_show (color_button->priv->drawing_area);
 
-  color_button->priv->title = g_strdup ("Pick a Color"); /* default title */
+  color_button->priv->title = g_strdup (_("Pick a Color")); /* default title */
 
   /* Create the buffer for the image so that we can create an image.  
    * Also create the picker's pixmap.
