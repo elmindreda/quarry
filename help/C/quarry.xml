@@ -385,7 +385,7 @@
       </para>
 
       <para>
-	<command>gnugo --mode gtp --quit</command>
+	<command>gnugo --mode gtp --quiet</command>
       </para>
 
       <para>
