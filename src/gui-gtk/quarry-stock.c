@@ -48,19 +48,19 @@ static const IconMap quarry_icon_map[] = {
   { QUARRY_STOCK_OVERWRITE,	    GTK_STOCK_SAVE	 }
 };
 
-static const GtkStockItem quarry_stock_items[] = {
-  { QUARRY_STOCK_NEW_GAME,	    "_New Game",	  0, 0, NULL },
-  { QUARRY_STOCK_OPEN_GAME_RECORD,  "_Open Game Record",  0, 0, NULL },
+static GtkStockItem quarry_stock_items[] = {
+  { QUARRY_STOCK_NEW_GAME,	    N_("_New Game"),	      0, 0, NULL },
+  { QUARRY_STOCK_OPEN_GAME_RECORD,  N_("_Open Game Record"),  0, 0, NULL },
 
-  { QUARRY_STOCK_NEXT,		    "_Next",		  0, 0, NULL },
-  { QUARRY_STOCK_PLAY,		    "_Play",		  0, 0, NULL },
+  { QUARRY_STOCK_NEXT,		    N_("_Next"),	      0, 0, NULL },
+  { QUARRY_STOCK_PLAY,		    N_("_Play"),	      0, 0, NULL },
 
-  { QUARRY_STOCK_DONE,		    "_Done",		  0, 0, NULL },
-  { QUARRY_STOCK_BROWSE,	    "_Browse...",	  0, 0, NULL },
-  { QUARRY_STOCK_MODIFY,	    "_Modify",		  0, 0, NULL },
-  { QUARRY_STOCK_MOVE_UP,	    "Move _Up",		  0, 0, NULL },
-  { QUARRY_STOCK_MOVE_DOWN,	    "Move _Down",	  0, 0, NULL },
-  { QUARRY_STOCK_OVERWRITE,	    "_Overwrite",	  0, 0, NULL }
+  { QUARRY_STOCK_DONE,		    N_("_Done"),	      0, 0, NULL },
+  { QUARRY_STOCK_BROWSE,	    N_("_Browse..."),	      0, 0, NULL },
+  { QUARRY_STOCK_MODIFY,	    N_("_Modify"),	      0, 0, NULL },
+  { QUARRY_STOCK_MOVE_UP,	    N_("Move _Up"),	      0, 0, NULL },
+  { QUARRY_STOCK_MOVE_DOWN,	    N_("Move _Down"),	      0, 0, NULL },
+  { QUARRY_STOCK_OVERWRITE,	    N_("_Overwrite"),	      0, 0, NULL }
 };
 
 
@@ -79,6 +79,13 @@ quarry_stock_init(void)
   }
 
   gtk_icon_factory_add_default(icon_factory);
+
+#if ENABLE_NLS
+  /* Gettextize labels first. */
+  for (k = 0; k < (int) (sizeof(quarry_stock_items) / sizeof(GtkStockItem));
+       k++)
+    quarry_stock_items[k].label = _(quarry_stock_items[k].label);
+#endif
 
   gtk_stock_add_static(quarry_stock_items,
 		       sizeof(quarry_stock_items) / sizeof(GtkStockItem));

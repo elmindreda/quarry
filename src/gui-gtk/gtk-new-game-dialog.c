@@ -97,15 +97,15 @@ void
 gtk_new_game_dialog_present(void)
 {
   static const gchar *hint_text
-    = ("Note that most GTP engines support only one game. Hence certain "
-       "game / computer player combinations may be not possible to play.");
+    = N_("Note that most GTP engines support only one game. Hence certain "
+	 "game / computer player combinations may be not possible to play.");
 
-  static const gchar *handicap_radio_button_labels[2] = { "Fi_xed handicap:",
-							  "_Free handicap:" };
+  static const gchar *handicap_radio_button_labels[2]
+    = { N_("Fi_xed handicap:"), N_("_Free handicap:") };
 
   static const gchar *time_control_types[]
-    = { "No limit", "Limited time for entire game", "Limited time per move",
-	"Canadian overtime" };
+    = { N_("No limit"), N_("Limited time for entire game"),
+	N_("Limited time per move"), N_("Canadian overtime") };
 
   NewGameDialogData *data = g_malloc(sizeof(NewGameDialogData));
   gint game_index = gtk_games_name_to_index(new_game_configuration.game_name,
@@ -126,7 +126,7 @@ gtk_new_game_dialog_present(void)
   int k;
 
   /* Create assistant dialog that will hold two pages. */
-  assistant = gtk_assistant_new("New Game", data);
+  assistant = gtk_assistant_new(_("New Game"), data);
   data->assistant = GTK_ASSISTANT(assistant);
   gtk_assistant_set_finish_button(data->assistant, QUARRY_STOCK_PLAY);
   gtk_utils_make_window_only_horizontally_resizable(GTK_WINDOW(assistant));
@@ -159,7 +159,7 @@ gtk_new_game_dialog_present(void)
   }
 
   /* Hint about engine/game (non-)compatibility. */
-  label = gtk_label_new(hint_text);
+  label = gtk_label_new(_(hint_text));
   gtk_label_set_line_wrap(GTK_LABEL(label), TRUE);
   gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.0);
 
@@ -169,13 +169,14 @@ gtk_new_game_dialog_present(void)
 			       label, GTK_UTILS_PACK_DEFAULT, NULL);
 
   /* And pack everything into a box with caption saying "Game". */
-  named_vbox = gtk_named_vbox_new("Game", FALSE, QUARRY_SPACING_SMALL);
+  named_vbox = gtk_named_vbox_new(_("Game"), FALSE, QUARRY_SPACING_SMALL);
   gtk_box_pack_start_defaults(GTK_BOX(named_vbox), hbox);
 
   /* Create identical set of controls for each of the players. */
   for (k = 0; k < NUM_COLORS; k++) {
     static const char *radio_labels[NUM_COLORS][2]
-      = { { "H_uman", "Compu_ter" }, { "_Human", "Com_puter" } };
+      = { { N_("H_uman"), N_("Compu_ter") },
+	  { N_("_Human"), N_("Com_puter") } };
 
     GtkWidget *entry;
     const char *engine_name = new_game_configuration.engine_names[k];
@@ -222,7 +223,7 @@ gtk_new_game_dialog_present(void)
 					     hboxes[1], GTK_UTILS_FILL, NULL);
     gtk_named_vbox_set_label_text(GTK_NAMED_VBOX(player_vboxes[k]),
 				  (k == BLACK_INDEX
-				   ? "Black Player" : "White Player"));
+				   ? _("Black Player") : _("White Player")));
   }
 
   /* Make sure the radio buttons line up nicely. */
@@ -234,7 +235,7 @@ gtk_new_game_dialog_present(void)
 			      vbox1, NULL);
 
   /* Button which opens "Preferences" dialog at "GTP Engines" page. */
-  button = gtk_button_new_with_mnemonic("_Manage Engine List");
+  button = gtk_button_new_with_mnemonic(_("_Manage Engine List"));
   g_signal_connect_swapped(button, "clicked",
 			   G_CALLBACK(gtk_preferences_dialog_present),
 			   GINT_TO_POINTER(PREFERENCES_PAGE_GTP_ENGINES));
@@ -254,7 +255,7 @@ gtk_new_game_dialog_present(void)
   gtk_utils_create_size_group(GTK_SIZE_GROUP_VERTICAL, button, label, NULL);
 
   /* A button that allows to quickly swap colors of the players. */
-  button = gtk_button_new_with_mnemonic("_Swap");
+  button = gtk_button_new_with_mnemonic(_("_Swap"));
   g_signal_connect_swapped(button, "clicked", G_CALLBACK(swap_players), data);
 
   /* Pack the button into a box with top and bottom padding so it ends
@@ -282,7 +283,8 @@ gtk_new_game_dialog_present(void)
 			    named_vbox, GTK_UTILS_FILL,
 			    hbox, GTK_UTILS_FILL, NULL);
   gtk_assistant_add_page(data->assistant, game_and_players_page,
-			 GTK_STOCK_REFRESH, "Game &amp; Players", NULL, NULL);
+			 GTK_STOCK_REFRESH, _("Game &amp; Players"),
+			 NULL, NULL);
   gtk_widget_show_all(game_and_players_page);
 
   if (game_index != -1)
@@ -351,6 +353,7 @@ gtk_new_game_dialog_present(void)
     }
 
     /* "Game Rules" named vertical box. */
+    /* FIXME: i18n. */
     sprintf(rules_vbox_title, "%s Rules", game_info[index_to_game[k]].name);
     rules_vbox_widget = gtk_named_vbox_new(rules_vbox_title, FALSE,
 					   QUARRY_SPACING_SMALL);
@@ -359,7 +362,7 @@ gtk_new_game_dialog_present(void)
     /* Board size spin button and a label for it. */
     board_size_spin_button = gtk_utils_create_spin_button(data->board_sizes[k],
 							  0.0, 0, TRUE);
-    board_size_label = gtk_utils_create_mnemonic_label("Board _size:",
+    board_size_label = gtk_utils_create_mnemonic_label(_("Board _size:"),
 						       board_size_spin_button);
 
     /* Pack them into a box and add to "Game Rules" box. */
@@ -376,7 +379,7 @@ gtk_new_game_dialog_present(void)
 						   / sizeof(const gchar *)),
 						  -1);
     time_control_type_label
-      = gtk_utils_create_mnemonic_label("Time control _type:",
+      = gtk_utils_create_mnemonic_label(_("Time control _type:"),
 					time_control_type);
 
     /* Pack the selector and the label together. */
@@ -398,10 +401,10 @@ gtk_new_game_dialog_present(void)
 			      hbox, GTK_UTILS_FILL,
 			      time_control_notebook, GTK_UTILS_FILL, NULL);
     gtk_named_vbox_set_label_text(GTK_NAMED_VBOX(time_control_named_vbox),
-				  "Time Limit");
+				  _("Time Limit"));
 
     check_button
-      = gtk_check_button_new_with_mnemonic("K_eep track of total time");
+      = gtk_check_button_new_with_mnemonic(_("K_eep track of total time"));
     time_control_data->track_total_time_button
       = GTK_TOGGLE_BUTTON(check_button);
     if (time_control_configuration->track_total_time) {
@@ -422,13 +425,14 @@ gtk_new_game_dialog_present(void)
       = gtk_utils_create_time_spin_button(time_control_data->game_time_limit,
 					  60.0);
     game_time_limit_label
-      = gtk_utils_create_mnemonic_label("Time _limit for game:",
+      = gtk_utils_create_mnemonic_label(_("Time _limit for game:"),
 					game_time_limit_spin_button);
 
     hbox = gtk_utils_pack_in_box(GTK_TYPE_HBOX, QUARRY_SPACING,
 				 game_time_limit_label, GTK_UTILS_FILL,
 				 game_time_limit_spin_button, GTK_UTILS_FILL,
-				 gtk_label_new("(per player)"), GTK_UTILS_FILL,
+				 gtk_label_new(_("(per player)")),
+				 GTK_UTILS_FILL,
 				 NULL);
     gtk_notebook_append_page(time_control_data->notebook,
 			     gtk_utils_align_widget(hbox, 0.0, 0.0), NULL);
@@ -442,7 +446,7 @@ gtk_new_game_dialog_present(void)
       = gtk_utils_create_time_spin_button(time_control_data->move_time_limit,
 					  5.0);
     move_time_limit_label
-      = gtk_utils_create_mnemonic_label("Time _limit for move:",
+      = gtk_utils_create_mnemonic_label(_("Time _limit for move:"),
 					move_time_limit_spin_button);
 
     hbox = gtk_utils_pack_in_box(GTK_TYPE_HBOX, QUARRY_SPACING,
@@ -459,7 +463,7 @@ gtk_new_game_dialog_present(void)
 
     main_time_spin_button
       = gtk_utils_create_time_spin_button(time_control_data->main_time, 60.0);
-    main_time_label = gtk_utils_create_mnemonic_label("_Main time:",
+    main_time_label = gtk_utils_create_mnemonic_label(_("_Main time:"),
 						      main_time_spin_button);
 
     hboxes[0] = gtk_utils_pack_in_box(GTK_TYPE_HBOX, QUARRY_SPACING,
@@ -476,7 +480,7 @@ gtk_new_game_dialog_present(void)
       = gtk_utils_create_time_spin_button(time_control_data->overtime_period,
 					  60.0);
     overtime_period_label
-      = gtk_utils_create_mnemonic_label("_Overtime period length:",
+      = gtk_utils_create_mnemonic_label(_("_Overtime period length:"),
 					overtime_period_spin_button);
 
     hboxes[1] = gtk_utils_pack_in_box(GTK_TYPE_HBOX, QUARRY_SPACING,
@@ -494,7 +498,7 @@ gtk_new_game_dialog_present(void)
       = gtk_utils_create_spin_button(time_control_data->moves_per_overtime,
 				     0.0, 0, TRUE);
     moves_per_overtime_label
-      = gtk_utils_create_mnemonic_label("Mo_ves per overtime:",
+      = gtk_utils_create_mnemonic_label(_("Mo_ves per overtime:"),
 					moves_per_overtime_spin_button);
 
     hboxes[2] = gtk_utils_pack_in_box(GTK_TYPE_HBOX, QUARRY_SPACING,
@@ -598,7 +602,7 @@ gtk_new_game_dialog_present(void)
       komi_spin_button = gtk_utils_create_spin_button(data->komi,
 						      0.0, 1, FALSE);
 
-      label = gtk_utils_create_mnemonic_label("_Komi:", komi_spin_button);
+      label = gtk_utils_create_mnemonic_label(_("_Komi:"), komi_spin_button);
 
       /* Pack the spin button and label together and add them to the
        * rules box.
@@ -624,7 +628,7 @@ gtk_new_game_dialog_present(void)
 
   /* Finally, add the game rules notebook as an assistant page. */
   gtk_assistant_add_page(data->assistant, games_notebook,
-			 GTK_STOCK_PREFERENCES, "Game Rules",
+			 GTK_STOCK_PREFERENCES, _("Game Rules"),
 			 ((GtkAssistantPageShownCallback)
 			  show_game_specific_rules),
 			 ((GtkAssistantPageAcceptableCallback)

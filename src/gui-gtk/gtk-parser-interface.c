@@ -53,17 +53,18 @@
 #endif
 
 
-static const gchar *reading_error = "Error reading file `%s'.";
+static const gchar *reading_error = N_("Error reading file `%s'.");
 static const gchar *not_sgf_file_error =
-  "File `%s' doesn't appear to be a valid SGF file.";
+  N_("File `%s' doesn't appear to be a valid SGF file.");
 
 static const gchar *reading_error_hint =
-  "Please check that the file exists and its permission allow you to read it.";
+  N_("Please check that the file exists "
+     "and its permission allow you to read it.");
 
 static const gchar *not_sgf_file_error_hint =
-  "Quarry uses SGF file format for storing game records. SGF files would "
-  "normally have `sgf' extension, but that's not necessarily true. Please "
-  "make sure you select a proper SGF file.";
+  N_("Quarry uses SGF file format for storing game records. SGF files would "
+     "normally have `sgf' extension, but that's not necessarily true. Please "
+     "make sure you select a proper SGF file.");
 
 
 static void	 open_file_response(GtkFileSelection *dialog, gint response_id);
@@ -72,7 +73,7 @@ static void	 open_file_response(GtkFileSelection *dialog, gint response_id);
 void
 gtk_parser_interface_present(void)
 {
-  GtkWidget *file_selection = gtk_file_selection_new("Open SGF File...");
+  GtkWidget *file_selection = gtk_file_selection_new(_("Open SGF File..."));
 
   gtk_control_center_window_created(GTK_WINDOW(file_selection));
 
@@ -128,7 +129,7 @@ gtk_parse_sgf_file(const char *filename, GtkWindow *parent)
   data->cancellation_flag = 0;
   data->parent		  = GTK_WIDGET(parent);
 
-  label_text = g_strdup_printf("Parsing file `%s'...", filename);
+  label_text = g_strdup_printf(_("Parsing file `%s'..."), filename);
   data->progress_dialog
     = gtk_progress_dialog_new(parent, "Quarry", label_text,
 			      (GtkProgressDialogCallback) update_progress_bar,
@@ -237,10 +238,11 @@ analyze_parsed_data(void *result)
 				    (GTK_UTILS_BUTTONS_OK
 				     | GTK_UTILS_DESTROY_ON_RESPONSE),
 				    (data->result == SGF_ERROR_READING_FILE
-				     ? reading_error_hint
-				     : not_sgf_file_error_hint),
+				     ? _(reading_error_hint)
+				     : _(not_sgf_file_error_hint)),
 				    (data->result == SGF_ERROR_READING_FILE
-				     ? reading_error : not_sgf_file_error),
+				     ? _(reading_error)
+				     : _(not_sgf_file_error)),
 				    data->filename);
   }
 
@@ -289,10 +291,11 @@ gtk_parse_sgf_file(const char *filename, GtkWindow *parent)
 				    GTK_UTILS_BUTTONS_OK,
 				    G_CALLBACK(gtk_widget_destroy),
 				    (result == SGF_ERROR_READING_FILE
-				     ? reading_error_hint
-				     : not_sgf_file_error_hint),
+				     ? _(reading_error_hint)
+				     : _(not_sgf_file_error_hint)),
 				    (result == SGF_ERROR_READING_FILE
-				     ? reading_error : not_sgf_file_error),
+				     ? _(reading_error)
+				     : _(not_sgf_file_error)),
 				    data->filename);
   }
 }

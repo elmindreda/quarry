@@ -206,23 +206,23 @@ static void	    find_gtp_tree_model_iterator_by_engines_data
 
 
 static const PreferencesDialogCategory preferences_dialog_categories[] = {
-  { NULL,			GTK_STOCK_PREFERENCES,	"<b>GTP</b>",
+  { NULL,			GTK_STOCK_PREFERENCES,	N_("<b>GTP</b>"),
 				NULL,			NULL },
-  { create_gtp_engines_page,	NULL,			"GTP Engines",
-				GTK_STOCK_PREFERENCES,	"GTP Engines" },
+  { create_gtp_engines_page,	NULL,			N_("GTP Engines"),
+				GTK_STOCK_PREFERENCES,	N_("GTP Engines") },
 
   { NULL,
-    GTK_STOCK_SELECT_COLOR,	"<b>Board Appearance</b>",
+    GTK_STOCK_SELECT_COLOR,	N_("<b>Board Appearance</b>"),
     NULL,			NULL },
   { create_go_board_appearance_page,
-    NULL,			"Go",
-    GTK_STOCK_SELECT_COLOR,	"Go Board Appearance" },
+    NULL,			N_("Go"),
+    GTK_STOCK_SELECT_COLOR,	N_("Go Board Appearance") },
   { create_amazons_board_appearance_page,
-    NULL,			"Amazons",
-    GTK_STOCK_SELECT_COLOR,	"Amazons Board Appearance" },
+    NULL,			N_("Amazons"),
+    GTK_STOCK_SELECT_COLOR,	N_("Amazons Board Appearance") },
   { create_othello_board_appearance_page,
-    NULL,			"Othello",
-    GTK_STOCK_SELECT_COLOR,	"Othello Board Appearance" }
+    NULL,			N_("Othello"),
+    GTK_STOCK_SELECT_COLOR,	N_("Othello Board Appearance") }
 };
 
 static gint		  last_selected_page = 0;
@@ -327,7 +327,7 @@ gtk_preferences_dialog_present(gint page_to_select)
   GtkTreePath *tree_path;
 
   if (!preferences_dialog) {
-    GtkWidget *dialog = gtk_dialog_new_with_buttons("Preferences", NULL, 0,
+    GtkWidget *dialog = gtk_dialog_new_with_buttons(_("Preferences"), NULL, 0,
 						    GTK_STOCK_CLOSE,
 						    GTK_RESPONSE_CLOSE, NULL);
     GtkTreeStore *categories;
@@ -352,20 +352,19 @@ gtk_preferences_dialog_present(gint page_to_select)
     g_signal_connect(preferences_dialog, "response",
 		     G_CALLBACK(gtk_widget_destroy), NULL);
 
+    categories = gtk_tree_store_new(CATEGORIES_NUM_COLUMNS,
+				    G_TYPE_INT,
 #if GTK_2_2_OR_LATER
-    categories = gtk_tree_store_new(CATEGORIES_NUM_COLUMNS,
-				    G_TYPE_INT, G_TYPE_STRING, G_TYPE_STRING);
-#else
-    categories = gtk_tree_store_new(CATEGORIES_NUM_COLUMNS,
-				    G_TYPE_INT, G_TYPE_STRING);
+				    G_TYPE_STRING,
 #endif
+				    G_TYPE_STRING);
 
     category_list = gtk_tree_view_new_with_model(GTK_TREE_MODEL(categories));
     category_tree_view = GTK_TREE_VIEW(category_list);
     gtk_tree_view_set_headers_visible(category_tree_view, FALSE);
     g_object_unref(categories);
 
-    label = gtk_utils_create_mnemonic_label("Cat_egory:", category_list);
+    label = gtk_utils_create_mnemonic_label(_("Cat_egory:"), category_list);
 
     vbox = gtk_utils_pack_in_box(GTK_TYPE_VBOX, QUARRY_SPACING_SMALL,
 				 label, GTK_UTILS_FILL,
@@ -408,7 +407,7 @@ gtk_preferences_dialog_present(gint page_to_select)
 	GtkWidget *page
 	  = gtk_utils_create_titled_page(category_data->create_page(),
 					 category_data->page_icon_stock_id,
-					 category_data->page_title);
+					 _(category_data->page_title));
 
 	gtk_notebook_append_page(notebook, page, NULL);
 
@@ -421,16 +420,12 @@ gtk_preferences_dialog_present(gint page_to_select)
 	this_page_index = -1;
       }
 
+      gtk_tree_store_set(categories, &iterator,
+			 CATEGORIES_PAGE_INDEX, this_page_index,
 #if GTK_2_2_OR_LATER
-      gtk_tree_store_set(categories, &iterator,
-			 CATEGORIES_PAGE_INDEX, this_page_index,
 			 CATEGORIES_ICON, category_data->tree_icon_stock_id,
-			 CATEGORIES_TEXT, category_data->tree_title, -1);
-#else
-      gtk_tree_store_set(categories, &iterator,
-			 CATEGORIES_PAGE_INDEX, this_page_index,
-			 CATEGORIES_TEXT, category_data->tree_title, -1);
 #endif
+			 CATEGORIES_TEXT, _(category_data->tree_title), -1);
     }
 
     gtk_tree_view_expand_all(category_tree_view);
@@ -515,7 +510,7 @@ create_gtp_engines_page(void)
 						     GTK_POLICY_AUTOMATIC,
 						     GTK_POLICY_AUTOMATIC);
 
-  label = gtk_utils_create_mnemonic_label("_List of GTP engines:",
+  label = gtk_utils_create_mnemonic_label(_("_List of GTP engines:"),
 					  gtp_engines_widget);
 
   add_gtp_engine = gtk_button_new_from_stock(GTK_STOCK_ADD);
@@ -563,7 +558,7 @@ create_gtp_engines_page(void)
 			       label, GTK_UTILS_FILL,
 			       hbox, GTK_UTILS_PACK_DEFAULT, NULL);
 
-  name_label	  = gtk_utils_create_left_aligned_label("Name:");
+  name_label	  = gtk_utils_create_left_aligned_label(_("Name:"));
   label		  = gtk_utils_create_left_aligned_label(NULL);
   gtp_engine_name = GTK_LABEL(label);
   gtk_label_set_selectable(gtp_engine_name, TRUE);
@@ -573,7 +568,7 @@ create_gtp_engines_page(void)
 				    label, GTK_UTILS_PACK_DEFAULT,
 				    NULL);
 
-  version_label      = gtk_utils_create_left_aligned_label("Version:");
+  version_label      = gtk_utils_create_left_aligned_label(_("Version:"));
   label		     = gtk_utils_create_left_aligned_label(NULL);
   gtp_engine_version = GTK_LABEL(label);
   gtk_label_set_selectable(gtp_engine_version, TRUE);
@@ -584,7 +579,7 @@ create_gtp_engines_page(void)
 				       NULL);
 
   command_line_label
-    = gtk_utils_create_left_aligned_label("Command line:");
+    = gtk_utils_create_left_aligned_label(_("Command line:"));
   label			  = gtk_utils_create_left_aligned_label(NULL);
   gtp_engine_command_line = GTK_LABEL(label);
   gtk_label_set_selectable(gtp_engine_command_line, TRUE);
@@ -595,7 +590,7 @@ create_gtp_engines_page(void)
 					    NULL);
 
   supported_games_label
-    = gtk_utils_create_left_aligned_label("Supported games:");
+    = gtk_utils_create_left_aligned_label(_("Supported games:"));
   label			     = gtk_utils_create_left_aligned_label(NULL);
   gtp_engine_supported_games = GTK_LABEL(label);
   gtk_label_set_selectable(gtp_engine_supported_games, TRUE);
@@ -618,7 +613,7 @@ create_gtp_engines_page(void)
 					  supported_games_hbox, GTK_UTILS_FILL,
 					  NULL);
   gtk_named_vbox_set_label_text(GTK_NAMED_VBOX(gtp_engine_info),
-				"GTP Engine Information");
+				_("GTP Engine Information"));
 
   gtp_engines_tree_selection
     = gtk_tree_view_get_selection(gtp_engines_tree_view);
@@ -660,7 +655,7 @@ create_amazons_board_appearance_page(void)
   gtk_utils_set_gdk_color(&color, *quarry_color);
   color_button = gtk_color_button_new_with_color(&color);
   gtk_color_button_set_title(GTK_COLOR_BUTTON(color_button),
-			     "Pick Checkerboard Pattern Color");
+			     _("Pick Checkerboard Pattern Color"));
 
   g_signal_connect(color_button, "color-set",
 		   G_CALLBACK(update_checkerboard_pattern), NULL);
@@ -668,7 +663,7 @@ create_amazons_board_appearance_page(void)
   gtk_table_attach(table, color_button, 1, 2, 2, 3,
 		   GTK_EXPAND | GTK_FILL, 0, 0, 0);
 
-  label = gtk_utils_create_mnemonic_label("Checkerboard _pattern color:",
+  label = gtk_utils_create_mnemonic_label(_("Checkerboard _pattern color:"),
 					  color_button);
   gtk_table_attach(table, label, 0, 1, 2, 3, GTK_FILL, 0, 0, 0);
 
@@ -683,7 +678,7 @@ create_amazons_board_appearance_page(void)
   gtk_table_attach(table, scale, 1, 2, 3, 4,
 		   GTK_EXPAND | GTK_FILL, 0, 0, 0);
 
-  label = gtk_utils_create_mnemonic_label("Checkerboard pattern _opacity:",
+  label = gtk_utils_create_mnemonic_label(_("Checkerboard pattern _opacity:"),
 					  scale);
   gtk_table_attach(table, label, 0, 1, 3, 4, GTK_FILL, 0, 0, 0);
 
@@ -703,8 +698,8 @@ create_othello_board_appearance_page(void)
 static GtkWidget *
 create_background_table(GtkGameIndex game_index, gint num_table_rows)
 {
-  static const gchar *radio_button_labels[2] = { "Use _texture:",
-						 "Use _solid color:" };
+  static const gchar *radio_button_labels[2] = { N_("Use _texture:"),
+						 N_("Use _solid color:") };
   BoardAppearance *board_appearance
     = game_index_to_board_appearance_structure(game_index);
   GtkWidget *table_widget = gtk_table_new(num_table_rows, 3, FALSE);
@@ -744,7 +739,7 @@ create_background_table(GtkGameIndex game_index, gint num_table_rows)
   gtk_table_attach(table, entry, 1, 2, 0, 1, GTK_EXPAND | GTK_FILL, 0, 0, 0);
 
   button = gtk_utils_create_browse_button(FALSE, entry, FALSE,
-					  "Choose a Background Texture...",
+					  _("Choose a Background Texture..."),
 					  ((GtkUtilsBrowsingDoneCallback)
 					   update_board_background_texture),
 					  GINT_TO_POINTER(game_index));
@@ -756,7 +751,7 @@ create_background_table(GtkGameIndex game_index, gint num_table_rows)
   gtk_utils_set_gdk_color(&color, board_appearance->background_color);
   color_button = gtk_color_button_new_with_color(&color);
   gtk_color_button_set_title(GTK_COLOR_BUTTON(color_button),
-			     "Pick Background Color");
+			     _("Pick Background Color"));
   gtk_utils_set_sensitive_on_toggle(GTK_TOGGLE_BUTTON(radio_buttons[1]),
 				    color_button);
 
@@ -770,7 +765,7 @@ create_background_table(GtkGameIndex game_index, gint num_table_rows)
   gtk_utils_set_gdk_color(&color, board_appearance->grid_and_labels_color);
   color_button = gtk_color_button_new_with_color(&color);
   gtk_color_button_set_title(GTK_COLOR_BUTTON(color_button),
-			     "Pick Color for Grid and Labels");
+			     _("Pick Color for Grid and Labels"));
 
   g_signal_connect(color_button, "color-set",
 		   G_CALLBACK(update_board_grid_and_labels_color),
@@ -780,7 +775,7 @@ create_background_table(GtkGameIndex game_index, gint num_table_rows)
 		   1, 2, num_table_rows - 1, num_table_rows,
 		   GTK_EXPAND | GTK_FILL, 0, 0, 0);
 
-  label = gtk_utils_create_mnemonic_label("_Grid and labels color:",
+  label = gtk_utils_create_mnemonic_label(_("_Grid and labels color:"),
 					  color_button);
   gtk_table_attach(table, label, 0, 1, num_table_rows - 1, num_table_rows,
 		   GTK_FILL, 0, 0, 0);
@@ -799,7 +794,7 @@ create_board_appearance_notebook_page(GtkWidget *background_widget)
 				 QUARRY_SPACING);
 
   gtk_notebook_append_page(notebook, background_widget,
-			   gtk_label_new("Background"));
+			   gtk_label_new(_("Background")));
 
   return notebook_widget;
 }
@@ -1012,9 +1007,9 @@ static void
 gtk_gtp_engine_dialog_present(gpointer new_engine)
 {
   static const gchar *hint_text
-    = ("You can use `%n' and `%v' strings in <i>Screen name</i> field. "
-       "They will substituted with name and version of the engine "
-       "correspondingly. By default, `%n %v' is used.");
+    = N_("You can use `%n' and `%v' strings in <i>Screen name</i> field. "
+	 "They will substituted with name and version of the engine "
+	 "correspondingly. By default, `%n %v' is used.");
 
   GtpEngineListItem *engine_data = NULL;
   GtkEngineDialogData *data;
@@ -1056,8 +1051,8 @@ gtk_gtp_engine_dialog_present(gpointer new_engine)
   gtp_engine_dialogs = g_slist_prepend(gtp_engine_dialogs, data);
 
   dialog = gtk_dialog_new_with_buttons((engine_data
-					? "Modify GTP Engine Information"
-					: "New GTP Engine"),
+					? _("Modify GTP Engine Information")
+					: _("New GTP Engine")),
 				       NULL, 0,
 				       GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
 				       NULL);
@@ -1102,12 +1097,12 @@ gtk_gtp_engine_dialog_present(gpointer new_engine)
   gtk_utils_set_sensitive_on_input(data->command_line_entry, button);
   gtk_table_attach(table, entry, 1, 2, 0, 1, GTK_EXPAND | GTK_FILL, 0, 0, 0);
 
-  label = gtk_utils_create_mnemonic_label("Command _line:", entry);
+  label = gtk_utils_create_mnemonic_label(_("Command _line:"), entry);
   gtk_table_attach(table, label, 0, 1, 0, 1, GTK_FILL, 0, 0, 0);
 
   button = gtk_utils_create_browse_button(TRUE,
 					  GTK_WIDGET(data->command_line_entry),
-					  TRUE, "Choose GTP Engine...",
+					  TRUE, _("Choose GTP Engine..."),
 					  NULL, NULL);
   gtk_table_attach(table, button, 2, 3, 0, 1, GTK_FILL, 0, 0, 0);
 
@@ -1116,12 +1111,12 @@ gtk_gtp_engine_dialog_present(gpointer new_engine)
   data->name_entry = GTK_ENTRY(entry);
   gtk_table_attach(table, entry, 1, 2, 1, 2, GTK_EXPAND | GTK_FILL, 0, 0, 0);
 
-  label = gtk_utils_create_mnemonic_label("Screen _name:", entry);
+  label = gtk_utils_create_mnemonic_label(_("Screen _name:"), entry);
   gtk_table_attach(table, label, 0, 1, 1, 2, GTK_FILL, 0, 0, 0);
 
   label = gtk_utils_create_left_aligned_label(NULL);
   gtk_label_set_line_wrap(GTK_LABEL(label), TRUE);
-  gtk_label_set_markup(GTK_LABEL(label), hint_text);
+  gtk_label_set_markup(GTK_LABEL(label), _(hint_text));
   gtk_table_attach(table, label, 0, 2, 2, 3, GTK_EXPAND | GTK_FILL, 0, 0, 0);
 
   gtk_utils_standardize_dialog(GTK_DIALOG(dialog), table_widget);
@@ -1161,8 +1156,8 @@ gtk_gtp_engine_dialog_response(GtkWindow *window, gint response_id,
       if (data->client) {
 	data->progress_dialog
 	  = gtk_progress_dialog_new(window, "Quarry",
-				    ("Querying engine's "
-				     "name, version and known commands..."),
+				    _("Querying engine's "
+				      "name, version and known commands..."),
 				    show_progress_dialog,
 				    ((GtkProgressDialogCallback)
 				     cancel_engine_query),
@@ -1175,9 +1170,10 @@ gtk_gtp_engine_dialog_response(GtkWindow *window, gint response_id,
 	gtk_utils_create_message_dialog(window, GTK_STOCK_DIALOG_ERROR,
 					(GTK_UTILS_BUTTONS_OK
 					 | GTK_UTILS_DESTROY_ON_RESPONSE),
-					("Please make sure you typed engine's "
-					 "filename correctly and that you "
-					 "have permission to execute it."),
+					_("Please make sure you typed "
+					  "engine's filename correctly and "
+					  "that you have permission to "
+					  "execute it."),
 					error->message);
 	g_error_free(error);
 
@@ -1210,7 +1206,7 @@ client_initialized(GtpClient *client, void *user_data)
 
   gtp_client_quit(client);
   gtk_label_set_text(GTK_PROGRESS_DIALOG(progress_dialog)->label,
-		     "Waiting for the engine to quit...");
+		     _("Waiting for the engine to quit..."));
 }
 
 
@@ -1316,9 +1312,9 @@ client_deleted(GtpClient *client, GError *shutdown_reason, void *user_data)
     }
     else {
       static const gchar *hint
-	= ("The engine might have crashed, quit prematurely or disconnected. "
-	   "Please verify command line, including options, and consult "
-	   "engine's documentation if needed.");
+	= N_("The engine might have crashed, quit prematurely or "
+	     "disconnected. Please verify command line, including options, "
+	     "and consult engine's documentation if needed.");
 
       gtk_progress_dialog_recover_parent(GTK_PROGRESS_DIALOG(progress_dialog));
       data->progress_dialog = NULL;
@@ -1329,8 +1325,9 @@ client_deleted(GtpClient *client, GError *shutdown_reason, void *user_data)
 	gtk_utils_create_message_dialog(data->window, GTK_STOCK_DIALOG_ERROR,
 					(GTK_UTILS_BUTTONS_OK
 					 | GTK_UTILS_DESTROY_ON_RESPONSE),
-					hint,
-					"Lost connection to GTP Engine (%s).",
+					_(hint),
+					_("Lost connection to GTP Engine "
+					  "(%s)."),
 					shutdown_reason->message);
       }
     }
@@ -1774,10 +1771,10 @@ gtk_preferences_instantiate_selected_engine(GtkEngineChain *engine_chain,
 				      GTK_STOCK_DIALOG_ERROR,
 				      (GTK_UTILS_BUTTONS_OK
 				       | GTK_UTILS_DESTROY_ON_RESPONSE),
-				      ("Perhaps engine's binary has been "
-				       "deleted or changed. You will probably "
-				       "need to alter engine's command line "
-				       "in preferences dialog"),
+				      _("Perhaps engine's binary has been "
+					"deleted or changed. You will "
+					"probably need to alter engine's "
+					"command line in preferences dialog"),
 				      error->message);
       g_error_free(error);
 
