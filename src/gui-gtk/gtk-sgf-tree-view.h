@@ -110,6 +110,9 @@ void		gtk_sgf_tree_view_set_sgf_tree (GtkSgfTreeView *view,
 
 void		gtk_sgf_tree_view_update_view_port (GtkSgfTreeView *view);
 
+void		gtk_sgf_tree_view_center_on_current_node
+		  (GtkSgfTreeView *view);
+
 
 #endif /* QUARRY_GTK_SGF_TREE_VIEW_H */
 

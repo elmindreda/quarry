@@ -82,6 +82,9 @@ static void	 gtk_sgf_tree_view_set_scroll_adjustments
 		   (GtkSgfTreeView *view,
 		    GtkAdjustment *hadjustment, GtkAdjustment *vadjustment);
 
+static void	 gtk_sgf_tree_view_style_set (GtkWidget *widget,
+					      GtkStyle *previous_style);
+
 static gboolean	 gtk_sgf_tree_view_expose (GtkWidget *widget,
 					   GdkEventExpose *event);
 
@@ -102,6 +105,7 @@ static void	 disconnect_adjustment (GtkSgfTreeView *view,
 					GtkAdjustment *adjustment);
 static void	 scroll_adjustment_value_changed (GtkSgfTreeView *view);
 
+static void	 center_on_current_node (GtkSgfTreeView *view);
 static void	 track_current_node (GtkSgfTreeView *view);
 
 static void	 update_view_port (GtkSgfTreeView *view);
@@ -170,6 +174,7 @@ gtk_sgf_tree_view_class_init (GtkSgfTreeViewClass *class)
   widget_class->unrealize	     = gtk_sgf_tree_view_unrealize;
   widget_class->size_request	     = gtk_sgf_tree_view_size_request;
   widget_class->size_allocate	     = gtk_sgf_tree_view_size_allocate;
+  widget_class->style_set	     = gtk_sgf_tree_view_style_set;
   widget_class->expose_event	     = gtk_sgf_tree_view_expose;
   widget_class->button_press_event   = gtk_sgf_tree_view_button_press_event;
   widget_class->button_release_event = gtk_sgf_tree_view_button_release_event;
@@ -349,6 +354,22 @@ gtk_sgf_tree_view_set_scroll_adjustments (GtkSgfTreeView *view,
     g_signal_connect_swapped (vadjustment, "value-changed",
 			      G_CALLBACK (scroll_adjustment_value_changed),
 			      view);
+  }
+}
+
+
+/* We need to set style background not on `widget->window', but on the
+ * `output_window'.  Therefore the override.
+ */
+static void
+gtk_sgf_tree_view_style_set (GtkWidget *widget, GtkStyle *previous_style)
+{
+  UNUSED (previous_style);
+
+  if (GTK_WIDGET_REALIZED (widget)) {
+    gtk_style_set_background (widget->style,
+			      GTK_SGF_TREE_VIEW (widget)->output_window,
+			      GTK_STATE_NORMAL);
   }
 }
 
@@ -679,6 +700,19 @@ gtk_sgf_tree_view_update_view_port (GtkSgfTreeView *view)
 }
 
 
+void
+gtk_sgf_tree_view_center_on_current_node (GtkSgfTreeView *view)
+{
+  gint view_x = (gint) view->hadjustment->value;
+  gint view_y = (gint) view->vadjustment->value;
+
+  assert (GTK_IS_SGF_TREE_VIEW (view));
+
+  center_on_current_node (view);
+  update_view_port_and_maybe_move_or_resize_window (view, view_x, view_y);
+}
+
+
 
 static void
 configure_adjustment (GtkSgfTreeView *view, gboolean horizontal)
@@ -810,18 +844,8 @@ track_current_node (GtkSgfTreeView *view)
 	  && (current_node_y < view_y + full_cell_size
 	      || (view_y + view_height - 2 * full_cell_size
 		  < current_node_y)))) {
-    view->ignore_adjustment_changes = TRUE;
-
-    if (game_tree_view.center_on_current_node) {
-      view->hadjustment->value
-	= (((current_node_x - (2 * view_width - 3 * full_cell_size) / 4)
-	    / full_cell_size)
-	   * full_cell_size);
-      view->vadjustment->value
-	= (((current_node_y - (2 * view_height - 3 * full_cell_size) / 4)
-	    / full_cell_size)
-	   * full_cell_size);
-    }
+    if (game_tree_view.center_on_current_node)
+      center_on_current_node (view);
     else {
       if (view_width > 4 * full_cell_size) {
 	if (view_x > current_node_x - full_cell_size)
@@ -878,11 +902,38 @@ track_current_node (GtkSgfTreeView *view)
       }
     }
 
-    gtk_adjustment_value_changed (view->hadjustment);
-    gtk_adjustment_value_changed (view->vadjustment);
+    update_view_port_and_maybe_move_or_resize_window (view, view_x, view_y);
+  }
+}
 
-    /* FIXME: Suboptimal. */
-    gtk_widget_queue_draw (GTK_WIDGET (view));
+
+/* Center the view on current node.  This function only sets
+ * adjustment values, but doesn't update view port---the caller is
+ * supposed to do that.
+ */
+static void
+center_on_current_node (GtkSgfTreeView *view)
+{
+  gint current_node_x;
+  gint current_node_y;
+
+  if (sgf_game_tree_get_node_coordinates (view->current_tree,
+					  view->current_tree->current_node,
+					  &current_node_x, &current_node_y)) {
+    gint view_width     = GTK_WIDGET (view)->allocation.width;
+    gint view_height    = GTK_WIDGET (view)->allocation.height;
+    gint full_cell_size = FULL_CELL_SIZE (view);
+
+    view->hadjustment->value
+      = (((current_node_x * full_cell_size
+	   - (2 * view_width - 3 * full_cell_size) / 4)
+	  / full_cell_size)
+	 * full_cell_size);
+    view->vadjustment->value
+      = (((current_node_y * full_cell_size
+	   - (2 * view_height - 3 * full_cell_size) / 4)
+	  / full_cell_size)
+	 * full_cell_size);
   }
 }
 
@@ -1015,14 +1066,15 @@ update_view_port_and_maybe_move_or_resize_window
 			     (gint) view->hadjustment->upper,
 			     (gint) view->vadjustment->upper);
 	}
-
-	gtk_widget_queue_draw (GTK_WIDGET (view));
       }
       else {
 	gdk_window_move (view->output_window,
 			 - (gint) view->hadjustment->value,
 			 - (gint) view->vadjustment->value);
       }
+
+      /* FIXME: Improve. */
+      gtk_widget_queue_draw (GTK_WIDGET (view));
 
       gdk_window_process_updates (view->output_window, FALSE);
 
@@ -1037,15 +1089,17 @@ update_view_port_and_maybe_move_or_resize_window
 static void
 about_to_modify_map (GtkSgfTreeView *view)
 {
-  view->expect_map_modification = TRUE;
-  view->do_track_current_node	= SHOULD_TRACK_CURRENT_NODE (view);
+  if (GTK_WIDGET_REALIZED (view)) {
+    view->expect_map_modification = TRUE;
+    view->do_track_current_node	  = SHOULD_TRACK_CURRENT_NODE (view);
+  }
 }
 
 
 static void
 about_to_change_current_node (GtkSgfTreeView *view)
 {
-  if (!view->expect_map_modification)
+  if (GTK_WIDGET_REALIZED (view) && !view->expect_map_modification)
     view->do_track_current_node = SHOULD_TRACK_CURRENT_NODE (view);
 }
 
@@ -1053,26 +1107,28 @@ about_to_change_current_node (GtkSgfTreeView *view)
 static void
 current_node_changed (GtkSgfTreeView *view)
 {
-  if (view->expect_map_modification)
-    return;
+  if (GTK_WIDGET_REALIZED (view)) {
+    if (view->expect_map_modification)
+      return;
 
-  if (view->do_track_current_node) {
-    gint view_x = (gint) view->hadjustment->value;
-    gint view_y = (gint) view->vadjustment->value;
+    if (view->do_track_current_node) {
+      gint view_x = (gint) view->hadjustment->value;
+      gint view_y = (gint) view->vadjustment->value;
 
-    track_current_node (view);
+      track_current_node (view);
 
-    if (!update_view_port_and_maybe_move_or_resize_window (view,
-							   view_x, view_y)) {
+      if (!update_view_port_and_maybe_move_or_resize_window (view,
+							     view_x, view_y)) {
+	/* FIXME: Suboptimal. */
+	gtk_widget_queue_draw (GTK_WIDGET (view));
+      }
+    }
+    else {
+      update_view_port (view);
+
       /* FIXME: Suboptimal. */
       gtk_widget_queue_draw (GTK_WIDGET (view));
     }
-  }
-  else {
-    update_view_port (view);
-
-    /* FIXME: Suboptimal. */
-    gtk_widget_queue_draw (GTK_WIDGET (view));
   }
 }
 
@@ -1080,23 +1136,25 @@ current_node_changed (GtkSgfTreeView *view)
 static void
 map_modified (GtkSgfTreeView *view)
 {
-  if (view->do_track_current_node) {
-    gint view_x = (gint) view->hadjustment->value;
-    gint view_y = (gint) view->vadjustment->value;
+  if (GTK_WIDGET_REALIZED (view)) {
+    if (view->do_track_current_node) {
+      gint view_x = (gint) view->hadjustment->value;
+      gint view_y = (gint) view->vadjustment->value;
 
-    track_current_node (view);
+      track_current_node (view);
 
-    if (!update_view_port_and_maybe_move_or_resize_window (view,
-							   view_x, view_y)) {
+      if (!update_view_port_and_maybe_move_or_resize_window (view,
+							     view_x, view_y)) {
+	/* FIXME: Suboptimal. */
+	gtk_widget_queue_draw (GTK_WIDGET (view));
+      }
+    }
+    else {
+      update_view_port (view);
+
       /* FIXME: Suboptimal. */
       gtk_widget_queue_draw (GTK_WIDGET (view));
     }
-  }
-  else {
-    update_view_port (view);
-
-    /* FIXME: Suboptimal. */
-    gtk_widget_queue_draw (GTK_WIDGET (view));
   }
 
   view->expect_map_modification = FALSE;
