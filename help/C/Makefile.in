@@ -50,6 +50,11 @@
 #	Version: 0.1.2 (last updated: March 20, 2002)
 #
 
+# 2004-11-29  Paul Pogonyshev
+#
+#	Make XML installation conditional on ScrollKeeper presence.
+#	If it is not present, then only install HTML file.
+#
 # 2004-10-11  Paul Pogonyshev
 #
 #	Change path to `omf.make' from `$(top_srcdir)/' to
@@ -131,6 +136,8 @@ EGREP = @EGREP@
 EXEEXT = @EXEEXT@
 GLIB_GENMARSHAL = @GLIB_GENMARSHAL@
 GMSGFMT = @GMSGFMT@
+HAVE_SCROLLKEEPER_FALSE = @HAVE_SCROLLKEEPER_FALSE@
+HAVE_SCROLLKEEPER_TRUE = @HAVE_SCROLLKEEPER_TRUE@
 INSTALL_DATA = @INSTALL_DATA@
 INSTALL_PROGRAM = @INSTALL_PROGRAM@
 INSTALL_SCRIPT = @INSTALL_SCRIPT@
@@ -191,6 +198,7 @@ build_os = @build_os@
 build_vendor = @build_vendor@
 datadir = @datadir@
 exec_prefix = @exec_prefix@
+have_scrollkeeper = @have_scrollkeeper@
 host = @host@
 host_alias = @host_alias@
 host_cpu = @host_cpu@
@@ -228,8 +236,8 @@ xml_files = $(entities) $(docname).xml $(docname).html
 EXTRA_DIST = $(xml_files) $(omffile)
 CLEANFILES = omf_timestamp
 
-omf_dest_dir = $(datadir)/omf/@PACKAGE@
-scrollkeeper_localstate_dir = $(localstatedir)/scrollkeeper
+@HAVE_SCROLLKEEPER_TRUE@omf_dest_dir = $(datadir)/omf/@PACKAGE@
+@HAVE_SCROLLKEEPER_TRUE@scrollkeeper_localstate_dir = $(localstatedir)/scrollkeeper
 
 DISTCLEANFILES = *~
 subdir = help/C
@@ -378,37 +386,35 @@ uninstall-am: uninstall-info-am uninstall-local
 	uninstall-am uninstall-info-am uninstall-local
 
 
-omf: omf_timestamp
+@HAVE_SCROLLKEEPER_TRUE@omf: omf_timestamp
 
-omf_timestamp: $(omffile)
-	-for file in $(omffile); do \
-	  scrollkeeper-preinstall $(docdir)/$(docname).xml $(srcdir)/$$file $$file.out; \
-	done
-	touch omf_timestamp
+@HAVE_SCROLLKEEPER_TRUE@omf_timestamp: $(omffile)
+@HAVE_SCROLLKEEPER_TRUE@	-for file in $(omffile); do \
+@HAVE_SCROLLKEEPER_TRUE@	  scrollkeeper-preinstall $(docdir)/$(docname).xml $(srcdir)/$$file $$file.out; \
+@HAVE_SCROLLKEEPER_TRUE@	done
+@HAVE_SCROLLKEEPER_TRUE@	touch omf_timestamp
 
-install-data-hook-omf:
-	$(mkinstalldirs) $(DESTDIR)$(omf_dest_dir)
-	for file in $(omffile); do \
-		$(INSTALL_DATA) $$file.out $(DESTDIR)$(omf_dest_dir)/$$file; \
-	done
-	-scrollkeeper-update -p $(scrollkeeper_localstate_dir) -o $(DESTDIR)$(omf_dest_dir)
+@HAVE_SCROLLKEEPER_TRUE@install-data-hook-omf:
+@HAVE_SCROLLKEEPER_TRUE@	$(mkinstalldirs) $(DESTDIR)$(omf_dest_dir)
+@HAVE_SCROLLKEEPER_TRUE@	for file in $(omffile); do \
+@HAVE_SCROLLKEEPER_TRUE@		$(INSTALL_DATA) $$file.out $(DESTDIR)$(omf_dest_dir)/$$file; \
+@HAVE_SCROLLKEEPER_TRUE@	done
+@HAVE_SCROLLKEEPER_TRUE@	-scrollkeeper-update -p $(scrollkeeper_localstate_dir) -o $(DESTDIR)$(omf_dest_dir)
 
-uninstall-local-omf:
-	-for file in $(srcdir)/*.omf; do \
-		basefile=`basename $$file`; \
-		rm -f $(omf_dest_dir)/$$basefile; \
-	done
-	-rmdir $(omf_dest_dir)
-	-scrollkeeper-update -p $(scrollkeeper_localstate_dir)
+@HAVE_SCROLLKEEPER_TRUE@uninstall-local-omf:
+@HAVE_SCROLLKEEPER_TRUE@	-for file in $(srcdir)/*.omf; do \
+@HAVE_SCROLLKEEPER_TRUE@		basefile=`basename $$file`; \
+@HAVE_SCROLLKEEPER_TRUE@		rm -f $(omf_dest_dir)/$$basefile; \
+@HAVE_SCROLLKEEPER_TRUE@	done
+@HAVE_SCROLLKEEPER_TRUE@	-rmdir $(omf_dest_dir)
+@HAVE_SCROLLKEEPER_TRUE@	-scrollkeeper-update -p $(scrollkeeper_localstate_dir)
 
-# If the following file is in a subdir (like help/) you need to add that to the path
+@HAVE_SCROLLKEEPER_TRUE@all: omf
 
-all: omf
-
-$(docname).xml: $(entities)
-	-ourdir=`pwd`;  \
-	cd $(srcdir);   \
-	cp $(entities) $$ourdir
+@HAVE_SCROLLKEEPER_TRUE@$(docname).xml: $(entities)
+@HAVE_SCROLLKEEPER_TRUE@	-ourdir=`pwd`;  \
+@HAVE_SCROLLKEEPER_TRUE@	cd $(srcdir);   \
+@HAVE_SCROLLKEEPER_TRUE@	cp $(entities) $$ourdir
 
 app-dist-hook:
 	if test "$(figdir)"; then \
@@ -419,35 +425,61 @@ app-dist-hook:
 	  done \
 	fi
 
-install-data-local: omf
-	$(mkinstalldirs) $(DESTDIR)$(docdir)
-	for file in $(xml_files); do \
-	  cp $(srcdir)/$$file $(DESTDIR)$(docdir); \
-	done
-	if test "$(figdir)"; then \
-	  $(mkinstalldirs) $(DESTDIR)$(docdir)/$(figdir); \
-	  for file in $(srcdir)/$(figdir)/*.png; do \
-	    basefile=`echo $$file | sed -e  's,^.*/,,'`; \
-	    $(INSTALL_DATA) $$file $(DESTDIR)$(docdir)/$(figdir)/$$basefile; \
-	  done \
-	fi
+@HAVE_SCROLLKEEPER_TRUE@install-data-local: omf
+@HAVE_SCROLLKEEPER_TRUE@	$(mkinstalldirs) $(DESTDIR)$(docdir)
+@HAVE_SCROLLKEEPER_TRUE@	for file in $(xml_files); do \
+@HAVE_SCROLLKEEPER_TRUE@	  cp $(srcdir)/$$file $(DESTDIR)$(docdir); \
+@HAVE_SCROLLKEEPER_TRUE@	done
+@HAVE_SCROLLKEEPER_TRUE@	if test "$(figdir)"; then \
+@HAVE_SCROLLKEEPER_TRUE@	  $(mkinstalldirs) $(DESTDIR)$(docdir)/$(figdir); \
+@HAVE_SCROLLKEEPER_TRUE@	  for file in $(srcdir)/$(figdir)/*.png; do \
+@HAVE_SCROLLKEEPER_TRUE@	    basefile=`echo $$file | sed -e  's,^.*/,,'`; \
+@HAVE_SCROLLKEEPER_TRUE@	    $(INSTALL_DATA) $$file $(DESTDIR)$(docdir)/$(figdir)/$$basefile; \
+@HAVE_SCROLLKEEPER_TRUE@	  done \
+@HAVE_SCROLLKEEPER_TRUE@	fi
 
-install-data-hook: install-data-hook-omf
+@HAVE_SCROLLKEEPER_TRUE@install-data-hook: install-data-hook-omf
 
-uninstall-local: uninstall-local-doc uninstall-local-omf
+@HAVE_SCROLLKEEPER_TRUE@uninstall-local: uninstall-local-doc uninstall-local-omf
 
-uninstall-local-doc:
-	-if test "$(figdir)"; then \
-	  for file in $(srcdir)/$(figdir)/*.png; do \
-	    basefile=`echo $$file | sed -e  's,^.*/,,'`; \
-	    rm -f $(docdir)/$(figdir)/$$basefile; \
-	  done; \
-	  rmdir $(DESTDIR)$(docdir)/$(figdir); \
-	fi
-	-for file in $(xml_files); do \
-	  rm -f $(DESTDIR)$(docdir)/$$file; \
-	done
-	-rmdir $(DESTDIR)$(docdir)
+@HAVE_SCROLLKEEPER_TRUE@uninstall-local-doc:
+@HAVE_SCROLLKEEPER_TRUE@	-if test "$(figdir)"; then \
+@HAVE_SCROLLKEEPER_TRUE@	  for file in $(srcdir)/$(figdir)/*.png; do \
+@HAVE_SCROLLKEEPER_TRUE@	    basefile=`echo $$file | sed -e  's,^.*/,,'`; \
+@HAVE_SCROLLKEEPER_TRUE@	    rm -f $(docdir)/$(figdir)/$$basefile; \
+@HAVE_SCROLLKEEPER_TRUE@	  done; \
+@HAVE_SCROLLKEEPER_TRUE@	  rmdir $(DESTDIR)$(docdir)/$(figdir); \
+@HAVE_SCROLLKEEPER_TRUE@	fi
+@HAVE_SCROLLKEEPER_TRUE@	-for file in $(xml_files); do \
+@HAVE_SCROLLKEEPER_TRUE@	  rm -f $(DESTDIR)$(docdir)/$$file; \
+@HAVE_SCROLLKEEPER_TRUE@	done
+@HAVE_SCROLLKEEPER_TRUE@	-rmdir $(DESTDIR)$(docdir)
+
+@HAVE_SCROLLKEEPER_FALSE@install-data-local:
+@HAVE_SCROLLKEEPER_FALSE@	$(mkinstalldirs) $(DESTDIR)$(docdir)
+@HAVE_SCROLLKEEPER_FALSE@	cp $(srcdir)/$(docname).html $(DESTDIR)$(docdir);
+@HAVE_SCROLLKEEPER_FALSE@	if test "$(figdir)"; then \
+@HAVE_SCROLLKEEPER_FALSE@	  $(mkinstalldirs) $(DESTDIR)$(docdir)/$(figdir); \
+@HAVE_SCROLLKEEPER_FALSE@	  for file in $(srcdir)/$(figdir)/*.png; do \
+@HAVE_SCROLLKEEPER_FALSE@	    basefile=`echo $$file | sed -e  's,^.*/,,'`; \
+@HAVE_SCROLLKEEPER_FALSE@	    $(INSTALL_DATA) $$file $(DESTDIR)$(docdir)/$(figdir)/$$basefile; \
+@HAVE_SCROLLKEEPER_FALSE@	  done \
+@HAVE_SCROLLKEEPER_FALSE@	fi
+
+@HAVE_SCROLLKEEPER_FALSE@install-data-hook:
+
+@HAVE_SCROLLKEEPER_FALSE@uninstall-local: uninstall-local-doc
+
+@HAVE_SCROLLKEEPER_FALSE@uninstall-local-doc:
+@HAVE_SCROLLKEEPER_FALSE@	-if test "$(figdir)"; then \
+@HAVE_SCROLLKEEPER_FALSE@	  for file in $(srcdir)/$(figdir)/*.png; do \
+@HAVE_SCROLLKEEPER_FALSE@	    basefile=`echo $$file | sed -e  's,^.*/,,'`; \
+@HAVE_SCROLLKEEPER_FALSE@	    rm -f $(docdir)/$(figdir)/$$basefile; \
+@HAVE_SCROLLKEEPER_FALSE@	  done; \
+@HAVE_SCROLLKEEPER_FALSE@	  rmdir $(DESTDIR)$(docdir)/$(figdir); \
+@HAVE_SCROLLKEEPER_FALSE@	fi
+@HAVE_SCROLLKEEPER_FALSE@	-rm -f $(DESTDIR)$(docdir)/$(docname).html;
+@HAVE_SCROLLKEEPER_FALSE@	-rmdir $(DESTDIR)$(docdir)
 
 dist-hook: app-dist-hook
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
