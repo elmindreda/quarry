@@ -65,14 +65,14 @@ else
   QUARRY_GTK_DEPRECATED_FLAGS=''
 fi
 
-# Optionally disable automatic building and installation of standalone
-# SGF utils (only `sgf-diff' at the moment).  Even if disabled, the
-# utilities can still be built manually.
+# Optionally enable automatic building and installation of standalone
+# SGF utilities (only `sgf-diff' at the moment).  Even if not enabled,
+# the utilities can still be built manually.
 AC_ARG_ENABLE(sgf-utils,
-	      AC_HELP_STRING([--disable-sgf-utils],
-			     [disable automatic building and installation of standalone SGF utilities]))
+	      AC_HELP_STRING([--enable-sgf-utils],
+			     [enable automatic building and installation of standalone SGF utilities]))
 
-AM_CONDITIONAL(BUILD_SGF_UTILS, test "$enable_sgf_utils" != "no")
+AM_CONDITIONAL(BUILD_SGF_UTILS, test "$enable_sgf_utils" = "yes")
 
 # Checks for header files.
 AC_HEADER_STDC
@@ -93,7 +93,13 @@ AC_SEARCH_LIBS(floor, m)
 
 # Find iconv().  It is usually sitting in GNU C library, but may
 # sometimes be in a separate `libiconv' library.
+#
+# FIXME: Is this needed anymore given that we use gettext?  Check what
+#	 AM_ICONV() is good for.
 AC_SEARCH_LIBS(iconv, iconv)
+
+# Turn on GNU gettext support.
+AM_GNU_GETTEXT([external])
 
 
 # Require GTK+ 2.0.0 or later and librsvg 2.5.0 or later.
@@ -117,6 +123,7 @@ AC_CONFIG_FILES(Makefile
 		data/markup-themes/Makefile
 		data/markup-themes/default/Makefile
 		data/textures/Makefile
+		po/Makefile.in
 		src/Makefile
 		src/board/Makefile
 		src/gtp/Makefile
