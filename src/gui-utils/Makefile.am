@@ -13,13 +13,13 @@ noinst_LIBRARIES = libguiutils.a
 libguiutils_a_SOURCES =			\
 	configuration.c			\
 	gui-utils.c			\
-	tile-set.c			\
+	tile-renderer.c			\
 	time-control.c			\
 					\
 	configuration.h			\
 	configuration-internals.h	\
 	gui-utils.h			\
-	tile-set.h			\
+	tile-renderer.h			\
 	time-control.h
 
 
