@@ -1,5 +1,22 @@
 2004-06-12  Paul Pogonyshev  <pogonyshev@gmx.net>
 
+	* gui-gtk/gtk-goban-window.c (gtk_goban_window_init): Create
+	labels for displaying game-specific information (number of
+	captures and komi for Go, number of disks for Othello).
+	(set_current_tree): Hide the labels for Amazons (not used).
+	(update_game_specific_information): New function, fill the labels
+	with information.
+
+	* gui-gtk/gtk-utils.c (gtk_utils_set_widgets_visible): New
+	function.
+
+	* board/othello.c (othello_count_disks): New function.
+
+	* gui-utils/tile-set.c (create_go_stone_images): Create 50%
+	transparent tile of mixed colors (half black, half white).
+	* gui-gtk/gtk-goban-window.c (update_children_for_new_node): Mark
+	positions with variations of both color with new tile.
+
 	* gui-gtk/gtk-goban-window.c (gtk_goban_window_init): Create clock
 	widgets for both players.
 	(gtk_goban_window_enter_game_mode): Take care of time control.
