@@ -1,3 +1,16 @@
+2004-08-28  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* (Quarry version 0.1.7.)
+
+	* gui-gtk/gtk-goban-window.c (gtk_goban_window_init): New
+	sub-menus: "Edit" with "Preferences" item and "Help" with "About"
+	item.
+	(show_preferences_dialog, show_about_dialog)
+	(about_dialog_destroy): New functions.
+
+	* gui-gtk/gtk-preferences.c (gtk_preferences_dialog_present):
+	Change type of `page_to_select' parameter to `gpointer'.
+
 2004-08-27  Paul Pogonyshev  <pogonyshev@gmx.net>
 
 	* gui-gtk/gtk-tile-set.c (gtk_main_tile_set_create_or_reuse):

@@ -1,3 +1,7 @@
+2004-08-28  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* configure.ac: Quarry version 0.1.7.
+
 2004-08-21  Paul Pogonyshev  <pogonyshev@gmx.net>
 
 	* configure.ac: Add GNU gettext configuration macro.
