@@ -42,7 +42,8 @@ static const IconMap quarry_icon_map[] = {
 
   { QUARRY_STOCK_MOVE_UP,	    GTK_STOCK_GO_UP },
   { QUARRY_STOCK_MOVE_DOWN,	    GTK_STOCK_GO_DOWN },
-  { QUARRY_STOCK_BROWSE,	    GTK_STOCK_OPEN }
+  { QUARRY_STOCK_BROWSE,	    GTK_STOCK_OPEN },
+  { QUARRY_STOCK_OVERWRITE,	    GTK_STOCK_SAVE }
 };
 
 static const GtkStockItem quarry_stock_items[] = {
@@ -54,7 +55,8 @@ static const GtkStockItem quarry_stock_items[] = {
 
   { QUARRY_STOCK_MOVE_UP,	    "Move _Up",		  0, 0, NULL },
   { QUARRY_STOCK_MOVE_DOWN,	    "Move _Down",	  0, 0, NULL },
-  { QUARRY_STOCK_BROWSE,	    "_Browse...",	  0, 0, NULL }
+  { QUARRY_STOCK_BROWSE,	    "_Browse...",	  0, 0, NULL },
+  { QUARRY_STOCK_OVERWRITE,	    "_Overwrite",	  0, 0, NULL }
 };
 
 

@@ -41,6 +41,7 @@
 #define QUARRY_STOCK_MOVE_UP		"quarry-move-up"
 #define QUARRY_STOCK_MOVE_DOWN		"quarry-move-down"
 #define QUARRY_STOCK_BROWSE		"quarry-browse"
+#define QUARRY_STOCK_OVERWRITE		"quarry-overwrite"
 
 
 void		quarry_stock_init(void);
