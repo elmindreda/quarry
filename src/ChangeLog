@@ -1,3 +1,15 @@
+2004-12-23  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* board/amazons.c (amazons_parse_move): Also parse moves in
+	A1-B2/C3 and A1-B2xC3 formats (wish #1952,
+	emarkus@cs.ualberta.ca.)
+
+2004-12-22  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* sgf/sgf-parser.c (sgf_parse_list_of_label): When combining label
+	lists ensure that the old list's text strings are not freed as we
+	reuse them (bug reported by Arend Bayer.)
+
 2004-12-11  Paul Pogonyshev  <pogonyshev@gmx.net>
 
 	* gui-gtk/gtk-preferences.c: Add "Game Tree" category.
@@ -382,8 +394,8 @@
 	(gtk_utils_freeze_on_empty_input, freeze_on_empty_input): New
 	functions.
 
-	* gui-gtk/gtk-freezable-spin-button.c
-	* gui-gtk/gtk-freezable-spin-button.h: New files.
+	* gui-gtk/gtk-freezable-spin-button.c: New file.
+	* gui-gtk/gtk-freezable-spin-button.h: New file.
 
 2004-10-12  Paul Pogonyshev  <pogonyshev@gmx.net>
 
