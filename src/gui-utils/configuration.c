@@ -432,7 +432,7 @@ write_section(BufferedWriter *writer, const ConfigurationSection *section,
 
     if ((value->type == VALUE_TYPE_STRING && ! * (char *const *) field)
 	|| (value->type == VALUE_TYPE_STRING_LIST
-	    && string_list_is_empty(field)))
+	    && string_list_is_empty((const StringList *) field)))
       continue;
 
     buffered_writer_cat_string(writer, value->name);
