@@ -37,6 +37,20 @@ defaults  - go_board_appearance_defaults {
 
   background_color		color		#dbb665
   grid_and_labels_color		color		#000000
+
+  markup_theme			string		"Default"
+
+  markup_size			real		0.65
+  markup_size_is_relative	boolean		true
+
+  markup_colors			array		[3]
+				color
+    [0]						#186010
+    [1]						#e6d8c6
+    [2]						#606060
+  end
+
+  markup_opacity		real		0.8
 }
 
 
@@ -52,6 +66,20 @@ defaults  - amazons_board_appearance_defaults {
     background_color		color		#dbb665
     grid_and_labels_color	color		#000000
 
+    markup_theme		string		"Default"
+
+    markup_size			real		0.65
+    markup_size_is_relative	boolean		true
+
+    markup_colors		array		[3]
+				color
+      [0]					#222222
+      [1]					#e6d8c6
+      [2]					#606060
+    end
+
+    markup_opacity		real		0.8
+
   end
 
   # Force some brownish tint.
@@ -65,4 +93,18 @@ defaults  - othello_board_appearance_defaults {
   background_texture		string		NULL
   background_color		color		#087834
   grid_and_labels_color		color		#cceebb
+
+  markup_theme			string		"Default"
+
+  markup_size			real		0.65
+  markup_size_is_relative	boolean		true
+
+  markup_colors			array		[3]
+				color
+    [0]						#cceebb
+    [1]						#e6d8c6
+    [2]						#606060
+  end
+
+  markup_opacity		real		0.8
 }

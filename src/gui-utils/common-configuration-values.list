@@ -36,6 +36,17 @@ values  - board_appearance_values {
   "Background texture"		background_texture		string
   "Background color"		background_color		color
   "Grid and labels color"	grid_and_labels_color		color
+
+  "Markup theme"		markup_theme			string
+
+  "Markup size"			markup_size			real
+  "Markup size is relative"	markup_size_is_relative		boolean
+
+  "Markup color on white"	markup_colors[2]		color
+  "Markup color on black"	markup_colors[1]		color
+  "Markup color on other"	markup_colors[0]		color
+
+  "Markup opacity"		markup_opacity			real
 }
 
 
@@ -48,4 +59,13 @@ values  - amazons_board_appearance_values {
   "Checkerboard pattern opacity" checkerboard_pattern_opacity	real
 
   "Grid and labels color"	board_appearance.grid_and_labels_color		color
+
+  "Markup size"			board_appearance.markup_size			real
+  "Markup size is relative"	board_appearance.markup_size_is_relative	boolean
+
+  "Markup color on white"	board_appearance.markup_colors[1]		color
+  "Markup color on black"	board_appearance.markup_colors[2]		color
+  "Markup color on other"	board_appearance.markup_colors[0]		color
+
+  "Markup opacity"		board_appearance.markup_opacity			real
 }
