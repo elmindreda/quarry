@@ -107,7 +107,8 @@ ObjectCache	gtk_sgf_markup_tile_set_cache =
 GtkMainTileSet *
 gtk_main_tile_set_create_or_reuse(gint tile_size, Game game)
 {
-  const GtkMainTileSetKey key = { tile_size, game };
+  const GtkMainTileSetKey key
+    = { (game == GAME_GO ? (tile_size - 1) | 1 : tile_size), game };
 
   assert(tile_size > 0);
   assert(GAME_IS_SUPPORTED(game));
