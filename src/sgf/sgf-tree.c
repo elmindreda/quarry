@@ -564,18 +564,27 @@ sgf_node_duplicate_to_given_depth (const SgfNode *node, SgfGameTree *tree,
  * property of given type.
  *
  * Maybe `SgfProperty ***link' is not the easiest thing to explain,
- * but it is very easy to work with (see `sgf-parser.c').
+ * but it is very easy to work with (see `sgf-parser.c'.)
  */
 int
 sgf_node_find_property (SgfNode *node, SgfType type, SgfProperty ***link)
 {
-  assert (node);
-  assert (link);
+  SgfProperty **internal_link;
 
-  for (*link = &node->properties; **link; *link = & (**link)->next) {
-    if ((**link)->type >= type)
-      return (**link)->type == type;
+  assert (node);
+
+  for (internal_link = &node->properties; *internal_link;
+       internal_link = & (*internal_link)->next) {
+    if ((*internal_link)->type >= type) {
+      if (link)
+	*link = internal_link;
+
+      return (*internal_link)->type == type;
+    }
   }
+
+  if (link)
+    *link = internal_link;
 
   return 0;
 }
