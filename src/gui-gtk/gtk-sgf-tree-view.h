@@ -66,6 +66,8 @@ struct _GtkSgfTreeView {
   gboolean		ignore_adjustment_changes;
 
   SgfGameTree	       *current_tree;
+  gboolean		do_track_current_node;
+  gboolean		expect_map_modification;
 
   gint			map_width;
   gint			map_height;
@@ -76,10 +78,11 @@ struct _GtkSgfTreeView {
   gint			view_port_y1;
 
   SgfNode	      **view_port_nodes;
-  SgfNode	       *tree_current_node;
-
   SgfGameTreeMapLine   *view_port_lines;
   gint			num_view_port_lines;
+
+  char		       *tile_map;
+  char		       *sgf_markup_tile_map;
 
   unsigned int		button_pressed;
   gint			press_x;
