@@ -1,3 +1,11 @@
+2004-05-13  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* gui-gtk/gtk-goban-window.c (playing_mode_goban_clicked):
+	Bug-fix: use `GOBAN_TILE_DONT_CHANGE' instead of `TILE_NONE'.
+	Caused serious problems with all games when trying to play an
+	illegal move.
+	(free_handicap_mode_goban_clicked): Likewise.
+
 2004-05-12  Paul Pogonyshev  <pogonyshev@gmx.net>
 
 	* gui-gtk/gtk-goban-window.c: Add support for user scoring of Go
