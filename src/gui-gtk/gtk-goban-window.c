@@ -24,6 +24,7 @@
 
 #include "gtk-clock.h"
 #include "gtk-control-center.h"
+#include "gtk-game-info-dialog.h"
 #include "gtk-goban.h"
 #include "gtk-gtp-client-interface.h"
 #include "gtk-named-vbox.h"
@@ -105,6 +106,9 @@ static void	 save_file_as_response(GtkFileSelection *dialog,
 				       gint response_id,
 				       GtkGobanWindow *goban_window);
 static void	 save_file_as_destroy(GtkGobanWindow *goban_window);
+
+static void	 show_game_information_dialog(GtkGobanWindow *goban_window);
+static void	 game_info_dialog_destroyed(GtkGobanWindow *goban_window);
 
 static void	 show_preferences_dialog(void);
 static void	 show_about_dialog(void);
@@ -265,6 +269,9 @@ gtk_goban_window_init(GtkGobanWindow *goban_window)
       GTK_GOBAN_WINDOW_SAVE_AS,	    "<StockItem>",  GTK_STOCK_SAVE_AS },
 
     { N_("/_Edit"),		NULL,		  NULL, 0, "<Branch>" },
+    { N_("/Edit/Game _Information"),  NULL,	  show_game_information_dialog,
+      0,			    "<Item>" },
+    { N_("/Edit/"),		NULL,		  NULL, 0, "<Separator>" },
     { N_("/Edit/_Preferences"),	NULL,		  show_preferences_dialog,
       0,			    "<StockItem>",  GTK_STOCK_PREFERENCES },
 
@@ -479,6 +486,8 @@ gtk_goban_window_init(GtkGobanWindow *goban_window)
 
   goban_window->last_displayed_node = NULL;
   goban_window->last_game_info_node = NULL;
+
+  goban_window->game_info_dialog = NULL;
 }
 
 
@@ -588,6 +597,11 @@ gtk_goban_window_enter_game_mode(GtkGobanWindow *goban_window,
 static void
 gtk_goban_window_destroy(GtkObject *object)
 {
+  GtkGobanWindow *goban_window = GTK_GOBAN_WINDOW(object);
+
+  if (goban_window->game_info_dialog)
+    gtk_widget_destroy(GTK_WIDGET(goban_window->game_info_dialog));
+
   gtk_control_center_window_destroyed(GTK_WINDOW(object));
 
   GTK_OBJECT_CLASS(parent_class)->destroy(object);
@@ -667,7 +681,8 @@ gtk_goban_window_save(GtkGobanWindow *goban_window, guint callback_action)
 				    GTK_RESPONSE_OK);
     if (gtk_dialog_run(GTK_DIALOG(warning_dialog)) == GTK_RESPONSE_OK) {
       fetch_comment_if_changed(goban_window, TRUE);
-      sgf_write_file(goban_window->filename, goban_window->sgf_collection, 0);
+      sgf_write_file(goban_window->filename, goban_window->sgf_collection,
+		     sgf_configuration.force_utf8);
     }
 
     gtk_widget_destroy(warning_dialog);
@@ -705,7 +720,8 @@ save_file_as_response(GtkFileSelection *dialog, gint response_id,
 
     fetch_comment_if_changed(goban_window, TRUE);
 
-    if (sgf_write_file(filename, goban_window->sgf_collection, 0)) {
+    if (sgf_write_file(filename, goban_window->sgf_collection,
+		       sgf_configuration.force_utf8)) {
       g_free(goban_window->filename);
       goban_window->filename = g_strdup(filename);
     }
@@ -721,6 +737,33 @@ save_file_as_destroy(GtkGobanWindow *goban_window)
 {
   gtk_control_center_window_destroyed(goban_window->save_as_dialog);
   goban_window->save_as_dialog = NULL;
+}
+
+
+static void
+show_game_information_dialog(GtkGobanWindow *goban_window)
+{
+  if (!goban_window->game_info_dialog) {
+    goban_window->game_info_dialog
+      = GTK_GAME_INFO_DIALOG(gtk_game_info_dialog_new());
+
+    g_signal_connect_swapped(goban_window->game_info_dialog, "destroy",
+			     G_CALLBACK(game_info_dialog_destroyed),
+			     goban_window);
+
+    gtk_game_info_dialog_set_node(goban_window->game_info_dialog,
+				  goban_window->current_tree,
+				  goban_window->last_game_info_node);
+  }
+
+  gtk_window_present(GTK_WINDOW(goban_window->game_info_dialog));
+}
+
+
+static void
+game_info_dialog_destroyed(GtkGobanWindow *goban_window)
+{
+  goban_window->game_info_dialog = NULL;
 }
 
 
@@ -1571,7 +1614,7 @@ update_children_for_new_node(GtkGobanWindow *goban_window)
 static void
 update_game_information(GtkGobanWindow *goban_window)
 {
-  const SgfNode *game_info_node = goban_window->sgf_board_state.game_info_node;
+  SgfNode *game_info_node = goban_window->sgf_board_state.game_info_node;
   int have_any_player_information = (goban_window->board->game
 				     != GAME_AMAZONS);
 
@@ -1595,6 +1638,11 @@ update_game_information(GtkGobanWindow *goban_window)
 				NULL);
 
   goban_window->last_game_info_node = game_info_node;
+
+  if (goban_window->game_info_dialog) {
+    gtk_game_info_dialog_set_node(goban_window->game_info_dialog,
+				  goban_window->current_tree, game_info_node);
+  }
 }
 
 
