@@ -1,5 +1,13 @@
-SUFFIXES = .list
+SUFFIXES = .list .h
 
+# `LIST_FILES' must be set by the includer.  The includer can use
+# `LIST_STAMP_FILES' and `LIST_GENERATED_FILES' and assume they are
+# set just as here.
+#
+LIST_STAMP_FILES     = $(LIST_FILES:.list=.stamp)
+LIST_GENERATED_FILES = $(LIST_FILES:.list=.c) $(LIST_FILES:.list=.h)
+
+# Make everything depend on the `Makefile' and the list parser.
 $(LIST_STAMP_FILES) : Makefile $(PARSE_LIST_COMMAND)
 
 # `PARSE_LIST_COMMAND' and `PARSE_LIST_FLAGS' should be set by the
