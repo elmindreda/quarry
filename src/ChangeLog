@@ -1,3 +1,60 @@
+2004-06-19  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* gui-gtk/gtk-utils.c (time_spin_button_input): Use new function
+	utils_parse_time() (which contains the code previously resided
+	here).
+
+	* gui-gtk/gtk-utils.h (gtk_utils_set_selector_active_item_index):
+	New macro.
+
+	* gui-gtk/gtk-new-game-dialog.c (gtk_new_game_dialog_present):
+	Initialize time control parameter widgets from configuration
+	variables.
+	(begin_game): Store time control configuration at successful game
+	start.
+
+	* gui-gtk/gtk-configuration-structures.c: Remove file.
+	* gui-gtk/gtk-configuration-structures.h: Remove file.
+
+	* gui-gtk/gtk-configuration.list: Ask `parse-configuration' to
+	declare `NewGameConfiguration' structure.  Break game-specific
+	variables out to separate sections.  Add time control variables
+	for each game.
+
+	* gui-utils/common-configuration-defaults.list: Update for new
+	format of fields of structural types.
+
+	* gui-utils/parse-configuration.c: Rewrite to allow random
+	structure declarations and array fields.  Add support for
+	configuration variables of `time' type.
+	(push_subscription_stack, pop_subscription_stack)
+	(recursively_build_full_field_name)
+	(add_field_declaration_if_needed)
+	(add_field_dispose_call_if_needed)
+	(recursively_build_full_field_name): New functions.
+
+	* gui-utils/configuration.c (configuration_read_from_file)
+	(write_section): Add support for `time' configuration value type.
+	(write_section): Change indentation of variable value from 16 to
+	24 (variable names are usually long).
+
+	* utils/parse-list.c (parse_thing): Allow `FIELD_NAME' to have '['
+	as its first character.  Handle new thing type, `TIME_VALUE'.
+
+	* utils/utils.c (utils_cat_string): Allow `string' argument to be
+	NULL.
+	(utils_cat_as_string): Likewise.
+	(utils_format_double): Rename from format_double() and move here.
+	(utils_parse_time): Break out from time_spin_button_input() (a
+	function in `gui-gtk/gtk-utils.c').
+
+	* utils/format.c: Remove file.
+
+2004-06-18  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* sgf/sgf-parser.c (parse_property): Bug-fix: store return value
+	of utils_cat_as_string() back in `(*link)->value.text'.
+
 2004-06-12  Paul Pogonyshev  <pogonyshev@gmx.net>
 
 	* gui-gtk/gtk-goban-window.c (gtk_goban_window_init): Create
