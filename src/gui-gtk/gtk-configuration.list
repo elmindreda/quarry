@@ -33,6 +33,15 @@ c_include "utils.h"
 section_list  unnamed gtk_configuration_sections {
   include_list ../gui-utils/common-configuration-sections.list
 
+  SECTION_GTK_UI		"GTK+ User Interface"
+		single
+		new		GtkUIConfiguration
+				gtk_ui_configuration_dispose
+
+		gtk_ui_configuration
+		gtk_ui_section_values
+		gtk_ui_defaults
+
   SECTION_NEW_GAME_DIALOG	"New Game Parameters"
 		single
 		new		NewGameConfiguration
@@ -83,6 +92,13 @@ section_list  unnamed gtk_configuration_sections {
 
 
 include_list ../gui-utils/common-configuration-values.list
+
+
+values  - gtk_ui_section_values {
+  "Show main toolbar"		show_main_toolbar		boolean
+  "Show navigation toolbar"	show_navigation_toolbar		boolean
+  "Show game action buttons"	show_game_action_buttons	boolean
+}
 
 
 values  - new_game_section_values {
@@ -158,6 +174,13 @@ values  - find_dialog_section_values {
 
 
 include_list ../gui-utils/common-configuration-defaults.list
+
+
+defaults  - gtk_ui_defaults {
+  show_main_toolbar			boolean		true
+  show_navigation_toolbar		boolean		true
+  show_game_action_buttons		boolean		true
+}
 
 
 defaults  - new_game_defaults {
