@@ -233,14 +233,24 @@ BoardPositionList *  board_position_list_new(const int *positions,
 					     int num_positions);
 BoardPositionList *  board_position_list_new_empty(int num_positions);
 
-#define board_position_list_delete(position_list)	\
-  do {							\
-    assert(position_list);				\
-    utils_free(position_list);				\
+#define board_position_list_delete(position_list)			\
+  do {									\
+    assert(position_list);						\
+    utils_free(position_list);						\
   } while (0)
 
-int		     board_position_list_equal(const BoardPositionList *list1,
-					       const BoardPositionList *list2);
+#define board_position_list_duplicate(position_list)			\
+  ((BoardPositionList *)						\
+   utils_duplicate_buffer((position_list),				\
+			  (sizeof(BoardPositionList)			\
+			   - ((BOARD_MAX_POSITIONS -			\
+			       (position_list)->num_positions)		\
+			      * sizeof(int)))))
+
+
+int		     board_position_lists_are_equal
+		       (const BoardPositionList *list1,
+			const BoardPositionList *list2);
 
 
 void		board_fill_grid(Board *board, char grid[BOARD_GRID_SIZE],
