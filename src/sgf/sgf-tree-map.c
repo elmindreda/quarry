@@ -264,9 +264,6 @@ sgf_game_tree_fill_map_view_port (SgfGameTree *tree,
 }
 
 
-/* FIXME: Urgently releasing 0.1.12, this function is not yet used and
- *	  is completely untested.
- */
 char *
 sgf_game_tree_get_current_branch_marks (SgfGameTree *tree, 
 					int view_port_x0, int view_port_y0,
@@ -879,8 +876,8 @@ update_internal_view_port (SgfGameTree *tree,
   tree->view_port_nodes = utils_malloc0 (view_port_width * view_port_height
 					 * sizeof (SgfNode *));
 
-  /* FIXME: Too large (but not too important.) */
-  tree->view_port_lines = utils_malloc (3 * view_port_width * view_port_height
+  tree->view_port_lines = utils_malloc ((3 * view_port_width * view_port_height
+					 + 1)
 					* sizeof (SgfGameTreeMapLine));
   line_pointer		= tree->view_port_lines;
 
@@ -888,7 +885,7 @@ update_internal_view_port (SgfGameTree *tree,
     const SgfGameTreeMapData *intermediate_data	     = NULL;
     const SgfGameTreeMapData *next_intermediate_data = tree->map_data_list;
 
-    /* FIXME: There is still a lot of space for improvement here.
+    /* FIXME: There is probably still space for improvement here.
      *	      This code performs well in near-leaves parts of the
      *	      tree, but doesn't skip much around tree root.
      */
@@ -905,8 +902,24 @@ update_internal_view_port (SgfGameTree *tree,
     }
 
     while (1) {
-      line_pointer = do_update_internal_view_port (tree, intermediate_data,
-						   line_pointer);
+      /* Skip chunks that lie completely to the right of the view
+       * port.  This can sometimes give large advantage when browsing
+       * near the root of the tree.  We add 1 to `view_port_x1' here
+       * to avoid losing certain lines.
+       */
+      if (!intermediate_data
+	  || !next_intermediate_data
+	  || intermediate_data->last_valid_y_level < view_port_x1 + 1
+	  || next_intermediate_data->last_valid_y_level < view_port_x1 + 1
+	  || (intermediate_data->y_level[view_port_x1 + 1]
+	      < next_intermediate_data->y_level[view_port_x1 + 1])) {
+	line_pointer = do_update_internal_view_port (tree, intermediate_data,
+						     line_pointer);
+      }
+#if REPORT_PERFORMANCE_STATISTICS
+      else
+	num_skipped_tree_chunks++;
+#endif
 
       intermediate_data = next_intermediate_data;
       if (!intermediate_data
