@@ -110,6 +110,13 @@ enum {
 };
 
 
+enum {
+  GTK_GOBAN_WINDOW_HIDE_CHILD = FALSE,
+  GTK_GOBAN_WINDOW_SHOW_CHILD = TRUE,
+  GTK_GOBAN_WINDOW_TOGGLE_CHILD
+};
+
+
 static void	 gtk_goban_window_class_init (GtkGobanWindowClass *class);
 static void	 gtk_goban_window_init (GtkGobanWindow *goban_window);
 
@@ -153,6 +160,11 @@ static void	 show_or_hide_navigation_toolbar
 		   (GtkGobanWindow *goban_window);
 static void	 show_or_hide_game_action_buttons
 		   (GtkGobanWindow *goban_window);
+static void	 show_or_hide_sgf_tree_view (GtkGobanWindow *goban_window,
+					     guint callback_action);
+
+static void	 show_sgf_tree_view_automatically
+		   (GtkGobanWindow *goban_window, const SgfNode *sgf_node);
 
 static void	 show_about_dialog (void);
 static void	 show_help_contents (void);
@@ -227,7 +239,7 @@ static void	 update_children_for_new_node (GtkGobanWindow *goban_window);
 static void	 update_game_information (GtkGobanWindow *goban_window);
 static void	 update_window_title (GtkGobanWindow *goban_window,
 				      const SgfNode *game_info_node);
-static int	 update_player_information (const SgfNode *game_info_node,
+static void	 update_player_information (const SgfNode *game_info_node,
 					    GtkLabel *player_label,
 					    SgfType name_property,
 					    SgfType rank_property,
@@ -409,6 +421,11 @@ gtk_goban_window_init (GtkGobanWindow *goban_window)
     { N_("/View/_Game Action Buttons"),	NULL,
       show_or_hide_game_action_buttons,	0,
       "<CheckItem>" },
+    { N_("/View/"), NULL, NULL, 0, "<Separator>" },
+
+    { N_("/View/Game _Tree"),		NULL,
+      show_or_hide_sgf_tree_view,	GTK_GOBAN_WINDOW_TOGGLE_CHILD,
+      "<CheckItem>" },
 
 
     { N_("/_Play"), NULL, NULL, 0, "<Branch>" },
@@ -469,9 +486,9 @@ gtk_goban_window_init (GtkGobanWindow *goban_window)
   GtkWidget *mode_hint_label;
   GtkWidget *game_action_buttons_hbox;
   GtkWidget *hbox;
-  GtkWidget *vpaned;
   GtkWidget *text_view;
   GtkWidget *scrolled_window;
+  GtkWidget *vpaned;
   GtkWidget *sgf_tree_view;
   GtkWidget *vbox;
   GtkWidget *qhbox;
@@ -541,11 +558,10 @@ gtk_goban_window_init (GtkGobanWindow *goban_window)
   /* Pack the table together with a separator (which separates the
    * table and move information below.)
    */
-  goban_window->player_table_vbox
-    = gtk_utils_pack_in_box (GTK_TYPE_VBOX, QUARRY_SPACING_SMALL,
-			     gtk_utils_align_widget (table, 0.5, 0.5),
-			     GTK_UTILS_FILL,
-			     gtk_hseparator_new (), GTK_UTILS_FILL, NULL);
+  vbox = gtk_utils_pack_in_box (GTK_TYPE_VBOX, QUARRY_SPACING_SMALL,
+				gtk_utils_align_widget (table, 0.5, 0.5),
+				GTK_UTILS_FILL,
+				gtk_hseparator_new (), GTK_UTILS_FILL, NULL);
 
   /* Move information label. */
   move_information_label = gtk_label_new (NULL);
@@ -597,9 +613,6 @@ gtk_goban_window_init (GtkGobanWindow *goban_window)
 			     GTK_UTILS_FILL,
 			     NULL);
 
-  /* Paned control for text view and SGF tree view. */
-  vpaned = gtk_vpaned_new ();
-
   /* Multipurpose text view. */
   text_view = gtk_text_view_new ();
   goban_window->text_view = GTK_TEXT_VIEW (text_view);
@@ -616,26 +629,36 @@ gtk_goban_window_init (GtkGobanWindow *goban_window)
 						      GTK_POLICY_AUTOMATIC,
 						      GTK_POLICY_AUTOMATIC);
 
-  gtk_paned_pack1 (GTK_PANED (vpaned), scrolled_window, TRUE, FALSE);
+  /* Paned control for text view and SGF tree view. */
+  vpaned = gtk_vpaned_new ();
+  goban_window->vpaned = GTK_PANED (vpaned);
+
+  gtk_paned_pack1 (goban_window->vpaned, scrolled_window, TRUE, FALSE);
 
   /* SGF tree view. */
   sgf_tree_view = gtk_sgf_tree_view_new ();
   goban_window->sgf_tree_view = GTK_SGF_TREE_VIEW (sgf_tree_view);
+  goban_window->sgf_tree_view_visibility_locked = FALSE;
 
   g_signal_connect_swapped (sgf_tree_view, "sgf-tree-view-clicked",
 			    G_CALLBACK (switch_to_given_node), goban_window);
 
-  /* Make it scrollable. */
+  /* Make it scrollable.  Note that we don't pack it in the `vpaned'
+   * widget now, this is done only by show_or_hide_sgf_tree_view().
+   * Unlike most other containers, GtkPaned doesn't like hidden
+   * children, so to show/hide `sgf_tree_view' we need to add/remove
+   * it to the `vpaned'.
+   */
   scrolled_window = gtk_utils_make_widget_scrollable (sgf_tree_view,
 						      GTK_POLICY_AUTOMATIC,
 						      GTK_POLICY_AUTOMATIC);
 
-  gtk_paned_pack2 (GTK_PANED (vpaned), scrolled_window, TRUE, FALSE);
+  g_object_ref (scrolled_window);
+  gtk_object_sink (GTK_OBJECT (scrolled_window));
 
   /* Sidebar vertical box. */
   vbox = gtk_utils_pack_in_box (GTK_TYPE_VBOX, 0,
-				goban_window->player_table_vbox,
-				GTK_UTILS_FILL,
+				vbox, GTK_UTILS_FILL,
 				move_information_label,
 				GTK_UTILS_FILL | QUARRY_SPACING_SMALL,
 				(gtk_utils_align_widget
@@ -753,6 +776,9 @@ gtk_goban_window_init (GtkGobanWindow *goban_window)
   if (gtk_ui_configuration.show_game_action_buttons)
     show_or_hide_game_action_buttons (goban_window);
 
+  if (editing_and_viewing.show_game_tree == SHOW_GAME_TREE_ALWAYS)
+    show_or_hide_sgf_tree_view (goban_window, GTK_GOBAN_WINDOW_SHOW_CHILD);
+
   /* Look up here when the classes are certainly loaded. */
   clicked_signal_id	  = g_signal_lookup ("clicked", GTK_TYPE_BUTTON);
   pointer_moved_signal_id = g_signal_lookup ("pointer-moved", GTK_TYPE_GOBAN);
@@ -812,8 +838,6 @@ gtk_goban_window_enter_game_mode (GtkGobanWindow *goban_window,
 {
   const SgfGameTree *game_tree;
   int handicap = -1;
-  GtkWidget *black_clock_frame;
-  GtkWidget *white_clock_frame;
 
   assert (GTK_IS_GOBAN_WINDOW (goban_window));
   assert (!goban_window->in_game_mode);
@@ -875,14 +899,6 @@ gtk_goban_window_enter_game_mode (GtkGobanWindow *goban_window,
   goban_window->last_displayed_node = NULL;
   update_children_for_new_node (goban_window);
 
-  black_clock_frame
-    = gtk_widget_get_parent (GTK_WIDGET (goban_window->clocks[BLACK_INDEX]));
-  white_clock_frame
-    = gtk_widget_get_parent (GTK_WIDGET (goban_window->clocks[WHITE_INDEX]));
-
-  gtk_utils_set_widgets_visible (black_time_control && white_time_control,
-				 black_clock_frame, white_clock_frame, NULL);
-
   if (USER_IS_TO_PLAY (goban_window) && !goban_window->pending_free_handicap)
     start_clock_if_needed (goban_window);
 }
@@ -896,7 +912,10 @@ gtk_goban_window_destroy (GtkObject *object)
   if (goban_window->game_info_dialog)
     gtk_widget_destroy (GTK_WIDGET (goban_window->game_info_dialog));
 
-  gtk_control_center_window_destroyed (GTK_WINDOW (object));
+  if (gtk_control_center_window_destroyed (GTK_WINDOW (object))) {
+    g_object_unref
+      (gtk_widget_get_parent (GTK_WIDGET (goban_window->sgf_tree_view)));
+  }
 
   GTK_OBJECT_CLASS (parent_class)->destroy (object);
 }
@@ -1799,6 +1818,62 @@ show_or_hide_game_action_buttons (GtkGobanWindow *goban_window)
 
 
 static void
+show_or_hide_sgf_tree_view (GtkGobanWindow *goban_window,
+			    guint callback_action)
+{
+  GtkWidget *sgf_tree_view_parent
+    = gtk_widget_get_parent (GTK_WIDGET (goban_window->sgf_tree_view));
+  gboolean sgf_tree_view_is_visible
+    = (gtk_widget_get_parent (sgf_tree_view_parent) != NULL);
+  gboolean show_sgf_tree_view;
+
+
+  if (callback_action == GTK_GOBAN_WINDOW_TOGGLE_CHILD) {
+    show_sgf_tree_view = !sgf_tree_view_is_visible;
+    goban_window->sgf_tree_view_visibility_locked = TRUE;
+  }
+  else
+    show_sgf_tree_view = callback_action;
+
+  if (show_sgf_tree_view != sgf_tree_view_is_visible) {
+    GtkWidget *menu_item
+      = gtk_item_factory_get_widget (goban_window->item_factory,
+				     _("/View/Game Tree"));
+
+    g_signal_handlers_block_by_func (menu_item, show_or_hide_sgf_tree_view,
+				     goban_window);
+    gtk_check_menu_item_set_active (GTK_CHECK_MENU_ITEM (menu_item),
+				    show_sgf_tree_view);
+    g_signal_handlers_unblock_by_func (menu_item, show_or_hide_sgf_tree_view,
+				       goban_window);
+
+    if (show_sgf_tree_view) {
+      gtk_paned_pack2 (goban_window->vpaned, sgf_tree_view_parent,
+		       TRUE, FALSE);
+    }
+    else {
+      gtk_container_remove (GTK_CONTAINER (goban_window->vpaned),
+			    sgf_tree_view_parent);
+    }
+
+  }
+}
+
+
+static void
+show_sgf_tree_view_automatically (GtkGobanWindow *goban_window,
+				  const SgfNode *sgf_node)
+{
+  if (editing_and_viewing.show_game_tree == SHOW_GAME_TREE_AUTOMATICALLY
+      && !goban_window->sgf_tree_view_visibility_locked
+      && sgf_node
+      && (sgf_node->next
+	  || (sgf_node->parent && sgf_node->parent->child != sgf_node)))
+    show_or_hide_sgf_tree_view (goban_window, GTK_GOBAN_WINDOW_SHOW_CHILD);
+}
+
+
+static void
 show_about_dialog (void)
 {
   if (!about_dialog) {
@@ -2027,6 +2102,22 @@ set_current_tree (GtkGobanWindow *goban_window, SgfGameTree *sgf_tree)
   update_children_for_new_node (goban_window);
 
   gtk_sgf_tree_view_set_sgf_tree (goban_window->sgf_tree_view, sgf_tree);
+
+  if (editing_and_viewing.show_game_tree == SHOW_GAME_TREE_AUTOMATICALLY
+      && !goban_window->sgf_tree_view_visibility_locked) {
+    const SgfNode *sgf_node;
+
+    for (sgf_node = sgf_tree->root->child; sgf_node;
+	 sgf_node = sgf_node->child) {
+      if (sgf_node->next)
+	break;
+    }
+
+    show_or_hide_sgf_tree_view (goban_window,
+				(sgf_node
+				 ? GTK_GOBAN_WINDOW_SHOW_CHILD
+				 : GTK_GOBAN_WINDOW_HIDE_CHILD));
+  }
 }
 
 
@@ -2696,6 +2787,7 @@ update_children_for_new_node (GtkGobanWindow *goban_window)
   gtk_utils_set_text_buffer_text (goban_window->text_buffer, comment);
 
   gtk_sgf_tree_view_update_view_port (goban_window->sgf_tree_view);
+  show_sgf_tree_view_automatically (goban_window, current_node);
 
   pass_sensitive = (goban_window->board->game == GAME_GO
 		    && USER_CAN_PLAY_MOVES (goban_window)
@@ -2765,25 +2857,15 @@ static void
 update_game_information (GtkGobanWindow *goban_window)
 {
   SgfNode *game_info_node = goban_window->sgf_board_state.game_info_node;
-  int have_any_player_information = (goban_window->board->game
-				     != GAME_AMAZONS);
 
   update_window_title (goban_window, game_info_node);
 
-  if (update_player_information (game_info_node,
-				 goban_window->player_labels[BLACK_INDEX],
-				 SGF_PLAYER_BLACK, SGF_BLACK_RANK,
-				 SGF_BLACK_TEAM))
-    have_any_player_information = 1;
-
-  if (update_player_information (game_info_node,
-				 goban_window->player_labels[WHITE_INDEX],
-				 SGF_PLAYER_WHITE, SGF_WHITE_RANK,
-				 SGF_WHITE_TEAM))
-    have_any_player_information = 1;
-
-  gtk_utils_set_widgets_visible (have_any_player_information,
-				 goban_window->player_table_vbox, NULL);
+  update_player_information (game_info_node,
+			     goban_window->player_labels[BLACK_INDEX],
+			     SGF_PLAYER_BLACK, SGF_BLACK_RANK, SGF_BLACK_TEAM);
+  update_player_information (game_info_node,
+			     goban_window->player_labels[WHITE_INDEX],
+			     SGF_PLAYER_WHITE, SGF_WHITE_RANK, SGF_WHITE_TEAM);
 
   goban_window->last_game_info_node = game_info_node;
 
@@ -2820,7 +2902,7 @@ update_window_title (GtkGobanWindow *goban_window,
 }
 
 
-static int
+static void
 update_player_information (const SgfNode *game_info_node,
 			   GtkLabel *player_label,
 			   SgfType name_property, SgfType rank_property,
@@ -2853,8 +2935,6 @@ update_player_information (const SgfNode *game_info_node,
 
   gtk_label_set_text (player_label, label_text);
   utils_free (label_text);
-
-  return name || rank || team;
 }
 
 
@@ -3457,7 +3537,7 @@ cancel_scoring (GtkProgressDialog *progress_dialog,
    *       idea.  /pp
    */
   goban_window->engine_scoring_cancelled = TRUE;
-  gtk_widget_destroy ((GtkWidget*) progress_dialog);
+  gtk_widget_destroy (GTK_WIDGET (progress_dialog));
   enter_scoring_mode (goban_window);
 }
 
@@ -3522,6 +3602,8 @@ move_has_been_generated (GtpClient *client, int successful,
 			       NULL);
 
       gtk_sgf_tree_view_update_view_port (goban_window->sgf_tree_view);
+      show_sgf_tree_view_automatically (goban_window,
+					goban_window->game_position_node);
     }
 
     move_has_been_played (goban_window);

@@ -73,7 +73,6 @@ struct _GtkGobanWindow {
   GtkToolbar		  *main_toolbar;
   GtkToolbar		  *navigation_toolbar;
   GtkGoban		  *goban;
-  GtkWidget		  *player_table_vbox;
   GtkLabel		  *player_labels[NUM_COLORS];
   GtkLabel		  *game_specific_info[NUM_COLORS];
   GtkClock		  *clocks[NUM_COLORS];
@@ -86,7 +85,9 @@ struct _GtkGobanWindow {
   GtkWidget		  *cancel_button;
   GtkTextView		  *text_view;
   GtkTextBuffer		  *text_buffer;
+  GtkPaned		  *vpaned;
   GtkSgfTreeView	  *sgf_tree_view;
+  gboolean		   sgf_tree_view_visibility_locked;
 
   Board			  *board;
   SgfBoardState		   sgf_board_state;
