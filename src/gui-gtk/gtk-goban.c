@@ -547,42 +547,95 @@ gtk_goban_expose (GtkWidget *widget, GdkEventExpose *event)
 			7, 7);
   }
 
-  /* Draw grid lines. */
+  if (goban->game == GAME_GO) {
+    /* Draw grid lines. */
 
-  for (x = MAX (0, clip_left_margin - goban->left_margin) / cell_size,
-	 window_x = goban->left_margin + x * cell_size;
-       window_x <= goban->right_margin && window_x < clip_right_margin;
-       x++, window_x += cell_size)
-    draw_vertical_line_with_gaps (goban, window, gc, x, window_x, 0);
+    for (x = MAX (0, clip_left_margin - goban->left_margin) / cell_size,
+	   window_x = goban->left_margin + x * cell_size;
+	 window_x <= goban->right_margin && window_x < clip_right_margin;
+	 x++, window_x += cell_size)
+      draw_vertical_line_with_gaps (goban, window, gc, x, window_x, 0);
 
-  for (y = MAX (0, clip_top_margin - goban->top_margin) / cell_size,
-	 window_y = goban->top_margin + y * cell_size;
-       window_y <= goban->bottom_margin && window_y < clip_bottom_margin;
-       y++, window_y += cell_size)
-    draw_horizontal_line_with_gaps (goban, window, gc, y, window_y, 0);
+    for (y = MAX (0, clip_top_margin - goban->top_margin) / cell_size,
+	   window_y = goban->top_margin + y * cell_size;
+	 window_y <= goban->bottom_margin && window_y < clip_bottom_margin;
+	 y++, window_y += cell_size)
+      draw_horizontal_line_with_gaps (goban, window, gc, y, window_y, 0);
 
-  /* Make the outmost grid lines thicker. */
+    /* Make the outmost grid lines thicker. */
 
-  if (clip_left_margin <= goban->left_margin - 1) {
-    draw_vertical_line_with_gaps (goban, window, gc,
-				  0, goban->left_margin - 1, 1);
-  }
+    if (clip_left_margin <= goban->left_margin - 1) {
+      draw_vertical_line_with_gaps (goban, window, gc,
+				    0, goban->left_margin - 1, 1);
+    }
 
-  if (clip_right_margin > goban->right_margin + 1) {
-    draw_vertical_line_with_gaps (goban, window, gc,
-				  goban->width - 1,
-				  goban->right_margin + 1, 1);
-  }
+    if (clip_right_margin > goban->right_margin + 1) {
+      draw_vertical_line_with_gaps (goban, window, gc,
+				    goban->width - 1,
+				    goban->right_margin + 1, 1);
+    }
 
-  if (clip_top_margin <= goban->top_margin - 1) {
-    draw_horizontal_line_with_gaps (goban, window, gc,
-				    0, goban->top_margin - 1, 1);
-  }
+    if (clip_top_margin <= goban->top_margin - 1) {
+      draw_horizontal_line_with_gaps (goban, window, gc,
+				      0, goban->top_margin - 1, 1);
+    }
 
-  if (clip_bottom_margin > goban->bottom_margin + 1) {
-    draw_horizontal_line_with_gaps (goban, window, gc,
-				    goban->height - 1,
+    if (clip_bottom_margin > goban->bottom_margin + 1) {
+      draw_horizontal_line_with_gaps (goban, window, gc,
+				      goban->height - 1,
 				    goban->bottom_margin + 1, 1);
+    }
+  }
+  else {
+    /* Draw grid lines. */
+
+    for (window_x = (goban->left_margin
+		     + ((MAX (0, clip_left_margin - goban->left_margin)
+			 / cell_size)
+			* cell_size));
+	 window_x <= goban->right_margin && window_x < clip_right_margin;
+	 window_x += cell_size) {
+      gdk_draw_line (window, gc,
+		     window_x, goban->top_margin,
+		     window_x, goban->bottom_margin);
+    }
+
+    for (window_y = (goban->top_margin
+		     + ((MAX (0, clip_top_margin - goban->top_margin)
+			 / cell_size)
+			* cell_size));
+	 window_y <= goban->bottom_margin && window_y < clip_bottom_margin;
+	 window_y += cell_size) {
+      gdk_draw_line (window, gc,
+		     goban->left_margin, window_y,
+		     goban->right_margin, window_y);
+    }
+
+    /* Make the outmost grid lines thicker. */
+
+    if (clip_left_margin <= goban->left_margin - 1) {
+      gdk_draw_line (window, gc,
+		     goban->left_margin - 1, goban->top_margin,
+		     goban->left_margin - 1, goban->bottom_margin);
+    }
+
+    if (clip_right_margin > goban->right_margin + 1) {
+      gdk_draw_line (window, gc,
+		     goban->right_margin + 1, goban->top_margin,
+		     goban->right_margin + 1, goban->bottom_margin);
+    }
+
+    if (clip_top_margin <= goban->top_margin - 1) {
+      gdk_draw_line (window, gc,
+		     goban->left_margin - 1, goban->top_margin - 1,
+		     goban->right_margin + 1, goban->top_margin - 1);
+    }
+
+    if (clip_bottom_margin > goban->bottom_margin + 1) {
+      gdk_draw_line (window, gc,
+		     goban->left_margin - 1, goban->bottom_margin + 1,
+		     goban->right_margin + 1, goban->bottom_margin + 1);
+    }
   }
 
   /* Draw coordinate labels. */
@@ -819,7 +872,10 @@ gtk_goban_expose (GtkWidget *widget, GdkEventExpose *event)
 	    }
 
 	    pango_layout_set_text (layout, goban->sgf_labels[pos], -1);
-	    gdk_draw_layout (widget->window, gc,
+	    gdk_draw_layout (widget->window,
+			     (goban->grid[pos] != BLACK
+			      ? widget->style->black_gc
+			      : widget->style->white_gc),
 			     goban->first_cell_center_x + x * cell_size,
 			     (goban->first_cell_center_y
 			      - goban->character_height / 2
@@ -836,7 +892,9 @@ gtk_goban_expose (GtkWidget *widget, GdkEventExpose *event)
   if (layout)
     g_object_unref (layout);
 
-  if (!IS_NULL_POINT (goban->last_move_x, goban->last_move_y)) {
+  if (!IS_NULL_POINT (goban->last_move_x, goban->last_move_y)
+      && !goban->sgf_labels[POSITION (goban->last_move_x,
+				      goban->last_move_y)]) {
     if (goban->grid[POSITION (goban->last_move_x, goban->last_move_y)] == BLACK)
       gc = widget->style->white_gc;
     else
