@@ -127,6 +127,10 @@ GtkWidget *	gtk_utils_make_widget_scrollable
 		   GtkPolicyType vscrollbar_policy);
 
 GtkWidget *	gtk_utils_create_entry(const gchar *text);
+GtkWidget *	gtk_utils_create_spin_button(GtkAdjustment *adjustment,
+					     gdouble climb_rate,
+					     guint num_digits,
+					     gboolean snap_to_ticks);
 
 void		gtk_utils_create_radio_chain(GtkWidget **radio_buttons,
 					     const gchar **label_texts,

@@ -305,17 +305,13 @@ GtkWidget *
 gtk_utils_create_titled_page(GtkWidget *contents,
 			     const gchar *icon_stock_id, const gchar *title)
 {
-  GtkWidget *page;
-  GtkBox *page_box;
-  GtkWidget *image = NULL;
-  GtkWidget *label = NULL;
+  GtkWidget *image;
+  GtkWidget *label;
   GtkWidget *title_widget;
+  GtkWidget *hseparator;
 
   assert(GTK_IS_WIDGET(contents));
   assert(icon_stock_id || title);
-
-  page = gtk_vbox_new(FALSE, QUARRY_SPACING_SMALL);
-  page_box = GTK_BOX(page);
 
   if (icon_stock_id) {
     image = gtk_image_new_from_stock(icon_stock_id,
@@ -334,25 +330,27 @@ gtk_utils_create_titled_page(GtkWidget *contents,
     utils_free(marked_up_title);
   }
 
-  if (image && label) {
-    title_widget = gtk_hbox_new(FALSE, QUARRY_SPACING_SMALL);
-
-    gtk_box_pack_start(GTK_BOX(title_widget), image, FALSE, FALSE, 0);
-    gtk_box_pack_start(GTK_BOX(title_widget), label, FALSE, FALSE, 0);
+  if (icon_stock_id && title) {
+    title_widget = gtk_utils_pack_in_box(GTK_TYPE_HBOX, QUARRY_SPACING_SMALL,
+					 image, GTK_UTILS_FILL, label, 0,
+					 NULL);
   }
-  else if (label) {
+  else if (title) {
     gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
     title_widget = label;
   }
   else
     title_widget = image;
 
-  gtk_box_pack_start(page_box, title_widget, FALSE, TRUE, 0);
-  gtk_box_pack_start(page_box, gtk_hseparator_new(), FALSE, TRUE, 0);
-  gtk_box_pack_start_defaults(page_box, contents);
+  gtk_widget_show_all(title_widget);
 
-  gtk_widget_show_all(page);
-  return page;
+  hseparator = gtk_hseparator_new();
+  gtk_widget_show(hseparator);
+
+  return gtk_utils_pack_in_box(GTK_TYPE_VBOX, QUARRY_SPACING_SMALL,
+			       title_widget, GTK_UTILS_FILL,
+			       hseparator, GTK_UTILS_FILL,
+			       contents, GTK_UTILS_PACK_DEFAULT, NULL);
 }
 
 
@@ -441,6 +439,22 @@ gtk_utils_create_entry(const gchar *text)
   gtk_entry_set_activates_default(GTK_ENTRY(entry), TRUE);
 
   return entry;
+}
+
+
+GtkWidget *
+gtk_utils_create_spin_button(GtkAdjustment *adjustment, gdouble climb_rate,
+			     guint num_digits, gboolean snap_to_ticks)
+{
+  GtkWidget *spin_button = gtk_spin_button_new(adjustment, climb_rate,
+					       num_digits);
+
+  gtk_spin_button_set_snap_to_ticks(GTK_SPIN_BUTTON(spin_button),
+				    snap_to_ticks);
+  gtk_entry_set_alignment(GTK_ENTRY(spin_button), 1.0);
+  gtk_entry_set_activates_default(GTK_ENTRY(spin_button), TRUE);
+
+  return spin_button;
 }
 
 
