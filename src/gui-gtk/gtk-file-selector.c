@@ -111,7 +111,10 @@ gtk_file_selector_new (void)
 static void
 gtk_file_selector_finalize (GObject *object)
 {
-  free_glob_patterns (GTK_FILE_SELECTOR (object));
+  GtkFileSelector *selector = GTK_FILE_SELECTOR (object);
+
+  g_free (selector->last_directory);
+  free_glob_patterns (selector);
 
   G_OBJECT_CLASS (parent_class)->finalize (object);
 }
