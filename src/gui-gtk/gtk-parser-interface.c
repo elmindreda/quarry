@@ -247,6 +247,7 @@ analyze_parsed_data(void *result)
   g_object_unref(data->progress_dialog);
 
   g_free(data->filename);
+  g_free(data);
 
   gtk_control_center_lost_reason_to_live();
 }
