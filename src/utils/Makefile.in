@@ -87,8 +87,6 @@ QUARRY_GTHREAD_LIBS = @QUARRY_GTHREAD_LIBS@
 QUARRY_GTK_CFLAGS = @QUARRY_GTK_CFLAGS@
 QUARRY_GTK_DEPRECATED_FLAGS = @QUARRY_GTK_DEPRECATED_FLAGS@
 QUARRY_GTK_LIBS = @QUARRY_GTK_LIBS@
-QUARRY_RSVG_CFLAGS = @QUARRY_RSVG_CFLAGS@
-QUARRY_RSVG_LIBS = @QUARRY_RSVG_LIBS@
 QUARRY_WARNINGS = @QUARRY_WARNINGS@
 QUARRY_WARNINGS_GTK = @QUARRY_WARNINGS_GTK@
 RANLIB = @RANLIB@
@@ -139,6 +137,7 @@ libutils_a_SOURCES = \
 	getopt.c		\
 	getopt1.c		\
 	memory-pool.c		\
+	object-cache.c		\
 	string-buffer.c		\
 	string-list.c		\
 	utils.c			\
@@ -167,8 +166,8 @@ libparselist_a_OBJECTS = $(am_libparselist_a_OBJECTS)
 libutils_a_AR = $(AR) cru
 libutils_a_LIBADD =
 am_libutils_a_OBJECTS = buffered-writer.$(OBJEXT) getopt.$(OBJEXT) \
-	getopt1.$(OBJEXT) memory-pool.$(OBJEXT) string-buffer.$(OBJEXT) \
-	string-list.$(OBJEXT) utils.$(OBJEXT)
+	getopt1.$(OBJEXT) memory-pool.$(OBJEXT) object-cache.$(OBJEXT) \
+	string-buffer.$(OBJEXT) string-list.$(OBJEXT) utils.$(OBJEXT)
 libutils_a_OBJECTS = $(am_libutils_a_OBJECTS)
 
 DEFAULT_INCLUDES =  -I. -I$(srcdir) -I$(top_builddir)
@@ -177,6 +176,7 @@ am__depfiles_maybe = depfiles
 @AMDEP_TRUE@DEP_FILES = ./$(DEPDIR)/buffered-writer.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/getopt.Po ./$(DEPDIR)/getopt1.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/memory-pool.Po \
+@AMDEP_TRUE@	./$(DEPDIR)/object-cache.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/parse-list.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/string-buffer.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/string-list.Po ./$(DEPDIR)/utils.Po
@@ -221,6 +221,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/getopt.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/getopt1.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/memory-pool.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/object-cache.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/parse-list.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/string-buffer.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/string-list.Po@am__quote@

@@ -15,6 +15,7 @@ libutils_a_SOURCES =		\
 	getopt.c		\
 	getopt1.c		\
 	memory-pool.c		\
+	object-cache.c		\
 	string-buffer.c		\
 	string-list.c		\
 	utils.c			\

@@ -504,6 +504,54 @@ void		buffered_writer_vprintf(BufferedWriter *writer,
 					va_list arguments);
 
 
+
+/* `object-cache.c' declarations and global functions. */
+
+typedef int (* ObjectCacheCompareKeys) (const void *first_key,
+					const void *second_key);
+
+typedef void * (* ObjectCacheCreate) (const void *key);
+typedef void (* ObjectCacheDelete) (void *object);
+
+typedef struct _ObjectCacheEntry	ObjectCacheEntry;
+typedef struct _ObjectCache		ObjectCache;
+
+struct _ObjectCacheEntry {
+  int			   reference_counter;
+  ObjectCacheEntry	  *next;
+
+  void			  *key;
+  void			  *object;
+};
+
+struct _ObjectCache {
+  ObjectCacheEntry	  *first_stock_entry;
+
+  ObjectCacheEntry	  *first_dump_entry;
+  int			   current_dump_size;
+  int			   max_dump_size;
+
+  ObjectCacheCompareKeys   compare_keys;
+
+  ObjectCacheCreate	   duplicate_key;
+  ObjectCacheCreate	   create_object;
+
+  ObjectCacheDelete	   delete_key;
+  ObjectCacheDelete	   delete_object;
+};
+
+
+void *		object_cache_create_or_reuse_object(ObjectCache *cache,
+						    const void *key);
+void		object_cache_unreference_object(ObjectCache *cache,
+						void *object);
+
+void		object_cache_recycle_dump(ObjectCache *cache,
+					  int lazy_recycling);
+
+void		object_cache_free(ObjectCache *cache);
+
+
 #endif /* QUARRY_UTILS_H */
 
 
