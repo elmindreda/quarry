@@ -938,39 +938,87 @@ game_get_default_setup(Game game, int width, int height,
 
 
 
+#define DO_FILL_GRID(grid, width, height, value)			\
+  do {									\
+    int x;								\
+    int y;								\
+    int pos;								\
+    assert(grid);							\
+    assert(BOARD_MIN_WIDTH <= (width)\
+	   && (width) <= BOARD_MAX_WIDTH);				\
+    assert(BOARD_MIN_HEIGHT <= (height)					\
+	   && (height) <= BOARD_MAX_HEIGHT);				\
+    for (y = 0, pos = POSITION(0, 0); y < (height); y++) {		\
+      for (x = 0; x < (width); x++, pos++)				\
+	(grid) [pos] = (value);						\
+      pos += BOARD_MAX_WIDTH + 1 - (width);				\
+    }									\
+  } while (0)
+
+
 void
-board_fill_grid(Board *board, char grid[BOARD_GRID_SIZE], char value)
+grid_fill(char grid[BOARD_GRID_SIZE], int width, int height, char value)
 {
-  int x;
-  int y;
-  int pos;
-
-  assert(board);
-  assert(grid);
-
-  for (y = 0, pos = POSITION(0, 0); y < board->height; y++) {
-    for (x = 0; x < board->width; x++, pos++)
-      grid[pos] = value;
-    pos += BOARD_MAX_WIDTH + 1 - board->width;
-  }
+  DO_FILL_GRID(grid, width, height, value);
 }
 
 
 void
-board_fill_int_grid(Board *board, int grid[BOARD_GRID_SIZE], int value)
+int_grid_fill(int grid[BOARD_GRID_SIZE], int width, int height, int value)
 {
-  int x;
-  int y;
-  int pos;
+  DO_FILL_GRID(grid, width, height, value);
+}
 
-  assert(board);
-  assert(grid);
 
-  for (y = 0, pos = POSITION(0, 0); y < board->height; y++) {
-    for (x = 0; x < board->width; x++, pos++)
-      grid[pos] = value;
-    pos += BOARD_MAX_WIDTH + 1 - board->width;
-  }
+void
+pointer_grid_fill(void *grid[BOARD_GRID_SIZE], int width, int height,
+		  void *value)
+{
+  DO_FILL_GRID(grid, width, height, value);
+}
+
+
+#define DO_COPY_GRID(destination, source, type, width, height)		\
+  do {									\
+    int pos;								\
+    assert(destination);						\
+    assert(source);							\
+    assert(BOARD_MIN_WIDTH <= (width)					\
+	   && (width) <= BOARD_MAX_WIDTH);				\
+    assert(BOARD_MIN_HEIGHT <= (height)					\
+	   && (height) <= BOARD_MAX_HEIGHT);				\
+    for (pos = POSITION(0, 0); pos < POSITION(0, (height));		\
+	 pos = SOUTH(pos)) {						\
+      memcpy((destination) + pos, (source) + pos,			\
+	     (width) * sizeof(type));					\
+    }									\
+  } while (0)
+
+
+void
+grid_copy(char destination[BOARD_GRID_SIZE],
+	  const char source[BOARD_GRID_SIZE],
+	  int width, int height)
+{
+  DO_COPY_GRID((destination), (source), char, (width), (height));
+}
+
+
+void
+int_grid_copy(int destination[BOARD_GRID_SIZE],
+	      const int source[BOARD_GRID_SIZE],
+	      int width, int height)
+{
+  DO_COPY_GRID((destination), (source), int, (width), (height));
+}
+
+
+void
+pointer_grid_copy(void *destination[BOARD_GRID_SIZE],
+		  const void *source[BOARD_GRID_SIZE],
+		  int width, int height)
+{
+  DO_COPY_GRID((destination), (source), const void *, (width), (height));
 }
 
 

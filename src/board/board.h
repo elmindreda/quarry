@@ -281,12 +281,42 @@ inline int	game_get_default_setup(Game game, int width, int height,
 				       BoardPositionList **white_stones);
 
 
-void		board_fill_grid(Board *board, char grid[BOARD_GRID_SIZE],
-				char value);
-void		board_fill_int_grid(Board *board, int grid[BOARD_GRID_SIZE],
-				    int value);
-#define board_fill_uint_grid(board, grid, value)	\
-  board_fill_int_grid((board), (int *) grid, value)
+void		grid_fill(char grid[BOARD_GRID_SIZE],
+			  int width, int height, char value);
+void		int_grid_fill(int grid[BOARD_GRID_SIZE],
+			      int width, int height, int value);
+void		pointer_grid_fill(void *grid[BOARD_GRID_SIZE],
+				  int width, int height, void *value);
+
+void		grid_copy(char destination[BOARD_GRID_SIZE],
+			  const char source[BOARD_GRID_SIZE],
+			  int width, int height);
+void		int_grid_copy(int destination[BOARD_GRID_SIZE],
+			      const int source[BOARD_GRID_SIZE],
+			      int width, int height);
+void		pointer_grid_copy(void *destination[BOARD_GRID_SIZE],
+				  const void *source[BOARD_GRID_SIZE],
+				  int width, int height);
+
+#define uint_grid_fill(grid, width, height, value)			\
+  int_grid_fill((int *) (grid), (width), (height), (value))
+
+
+#define board_fill_grid(board, grid, value)				\
+  grid_fill((grid), (board)->width, (board)->height, (value))
+
+#define board_fill_int_grid(board, grid, value)				\
+  int_grid_fill((grid), (board)->width, (board)->height, (value))
+
+#define board_fill_uint_grid(board, grid, value)			\
+  board_fill_int_grid((board), (int *) (grid), (value))
+
+#define board_fill_pointer_grid(board, grid, value)			\
+  pointer_grid_fill((grid), (board)->width, (board)->height, (value))
+
+
+#define uint_grid_copy(destination, source, width, height)		\
+  int_grid_copy((int *) (destination), (int *) source, (width), (height))
 
 
 
