@@ -183,6 +183,7 @@ string_list_duplicate_items(StringList *list,
     link = &last_duplicated_item->next;
   }
 
+  *link = NULL;
   list->last = last_duplicated_item;
 }
 
