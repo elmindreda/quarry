@@ -1,7 +1,7 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *\
  * This file is part of Quarry.                                    *
  *                                                                 *
- * Copyright (C) 2003, 2004 Paul Pogonyshev.                       *
+ * Copyright (C) 2003, 2004, 2005 Paul Pogonyshev                  *
  *                                                                 *
  * This program is free software; you can redistribute it and/or   *
  * modify it under the terms of the GNU General Public License as  *
@@ -1248,7 +1248,9 @@ do_parse_number (SgfParsingData *data, int *number)
 
 
 /* Parse a number, but discard it as illegal if negative, or
- * non-positive (for `MN' property.)
+ * non-positive (for `MN' property.)  For `PM' property, give a
+ * warning if the print mode specified is not described in SGF
+ * specification.
  */
 SgfError
 sgf_parse_constrained_number (SgfParsingData *data)
@@ -1268,6 +1270,9 @@ sgf_parse_constrained_number (SgfParsingData *data)
 
   if (do_parse_number (data, &number)
       && number >= (data->property_type != SGF_MOVE_NUMBER ? 0 : 1)) {
+    if (data->property_type == SGF_PRINT_MODE && number >= NUM_SGF_PRINT_MODES)
+      add_error (data, SGF_WARNING_UNKNOWN_PRINT_MODE, number);
+
     *link = sgf_property_new (data->tree, data->property_type, *link);
     (*link)->value.number = number;
 
@@ -2018,9 +2023,10 @@ sgf_parse_list_of_point (SgfParsingData *data)
     BufferPositionStorage storage;
 
     STORE_BUFFER_POSITION (data, 0, storage);
+
     begin_parsing_value (data);
     if (data->token == ']') {
-      next_token_in_value (data);
+      end_parsing_value (data);
       if (data->token == '[') {
 	add_error (data, SGF_ERROR_VALUES_AFTER_EMPTY_LIST);
 	discard_values (data);
@@ -2060,11 +2066,94 @@ sgf_parse_list_of_point (SgfParsingData *data)
 }
 
 
-/* FIXME: write this function. */
 SgfError
 sgf_parse_list_of_vector (SgfParsingData *data)
 {
-  discard_values (data);
+  int property_found;
+  SgfProperty **link;
+  SgfVectorList *vector_list;
+
+  property_found = sgf_node_find_property (data->node, data->property_type,
+					   &link);
+  if (!property_found)
+    vector_list = sgf_vector_list_new (-1);
+  else {
+    add_error (data, SGF_WARNING_PROPERTIES_MERGED);
+    vector_list = (*link)->value.vector_list;
+  }
+
+  do {
+    int point_parsing_error;
+    BufferPositionStorage storage;
+    BoardPoint from_point;
+    BoardPoint to_point;
+
+    begin_parsing_value (data);
+    if (data->token == ']') {
+      add_error (data, SGF_WARNING_EMPTY_VALUE);
+      next_token (data);
+
+      continue;
+    }
+
+    STORE_BUFFER_POSITION (data, 0, storage);
+
+    point_parsing_error = do_parse_point (data, &from_point);
+    if (point_parsing_error == 0) {
+      if (is_composed_value (data, 0))
+	point_parsing_error = do_parse_point (data, &to_point);
+      else
+	point_parsing_error = -1;
+    }
+
+    switch (point_parsing_error) {
+    case 0:
+      if (from_point.x != to_point.x || from_point.y != to_point.y) {
+	if (!sgf_vector_list_has_vector (vector_list, from_point, to_point)) {
+	  if (end_parsing_value (data)
+	      == SGF_ERROR_ILLEGAL_TRAILING_CHARACTERS) {
+	    add_error (data, SGF_ERROR_ILLEGAL_TRAILING_CHARACTERS);
+	    next_token (data);
+	  }
+
+	  vector_list = sgf_vector_list_add_vector (vector_list,
+						    from_point, to_point);
+	  continue;
+	}
+	else {
+	  add_error (data, SGF_WARNING_DUPLICATE_VECTOR,
+		     from_point.x, from_point.y, to_point.x, to_point.y);
+	}
+      }
+      else {
+	add_error (data, SGF_ERROR_ZERO_LENGTH_VECTOR,
+		   from_point.x, from_point.y, to_point.x, to_point.y);
+      }
+
+      discard_single_value (data);
+      break;
+
+    case 1:
+      add_error (data, SGF_ERROR_POINT_OUT_OF_BOARD);
+      discard_single_value (data);
+      break;
+
+    default:
+      RESTORE_BUFFER_POSITION (data, 0, storage);
+      add_error (data, SGF_ERROR_INVALID_VALUE);
+      next_token (data);
+    }
+
+    data->non_sgf_point_error_position.line = 0;
+  } while (data->token == '[');
+
+  if (vector_list->num_vectors > 0) {
+    if (!property_found)
+      *link = sgf_property_new (data->tree, data->property_type, *link);
+
+    (*link)->value.vector_list = sgf_vector_list_shrink (vector_list);
+  }
+
   return SGF_SUCCESS;
 }
 
@@ -2116,17 +2205,17 @@ sgf_parse_list_of_label (SgfParsingData *data)
 	    }
 	    else
 	      add_error (data, SGF_WARNING_EMPTY_LABEL, point.x, point.y);
+	  }
+	  else
+	    add_error (data, SGF_WARNING_EMPTY_LABEL, point.x, point.y);
 
-	    if (end_parsing_value (data)
-		== SGF_ERROR_ILLEGAL_TRAILING_CHARACTERS) {
-	      add_error (data, SGF_ERROR_ILLEGAL_TRAILING_CHARACTERS);
-	      next_token (data);
-	    }
-
-	    continue;
+	  if (end_parsing_value (data)
+	      == SGF_ERROR_ILLEGAL_TRAILING_CHARACTERS) {
+	    add_error (data, SGF_ERROR_ILLEGAL_TRAILING_CHARACTERS);
+	    next_token (data);
 	  }
 
-	  break;
+	  continue;
 	}
 
 	add_error (data, SGF_ERROR_DUPLICATE_LABEL, point.x, point.y);
@@ -2300,12 +2389,48 @@ sgf_parse_date (SgfParsingData *data)
 }
 
 
-/* FIXME: write this function. */
 SgfError
 sgf_parse_figure (SgfParsingData *data)
 {
+  SgfProperty **link;
+  BufferPositionStorage storage;
+  int figure_flags = SGF_FIGURE_USE_DEFAULTS;
+  int flags_parsed;
+  char *diagram_name = NULL;
+
+  if (sgf_node_find_property (data->node, data->property_type, &link))
+    return SGF_FATAL_DUPLICATE_PROPERTY;
+
+  *link = sgf_property_new (data->tree, data->property_type, *link);
+
   begin_parsing_value (data);
-  while (data->token != ']') next_token (data);
+  if (data->token == ']') {
+    (*link)->value.figure = NULL;
+    return SGF_SUCCESS;
+  }
+
+  STORE_BUFFER_POSITION (data, 0, storage);
+
+  flags_parsed = do_parse_number (data, &figure_flags);
+  if (flags_parsed) {
+    if (figure_flags & ~SGF_FIGURE_FLAGS_MASK)
+      add_error (data, SGF_WARNING_UNKNOWN_FLAGS);
+
+    if (is_composed_value (data, 1))
+      diagram_name = do_parse_simple_text (data, SGF_END);
+    else
+      add_error (data, SGF_WARNING_COMPOSED_SIMPLE_TEXT_EXPECTED);
+  }
+  else {
+    add_error (data, SGF_ERROR_FIGURE_FLAGS_EXPECTED);
+
+    RESTORE_BUFFER_POSITION (data, 0, storage);
+    diagram_name = do_parse_simple_text (data, SGF_END);
+  }
+
+  (*link)->value.figure = sgf_figure_description_new (figure_flags,
+						      diagram_name);
+
   return end_parsing_value (data);
 }
 
@@ -2492,16 +2617,6 @@ sgf_parse_markup_property (SgfParsingData *data)
 }
 
 
-/* FIXME: write this function. */
-SgfError
-sgf_parse_print_mode (SgfParsingData *data)
-{
-  begin_parsing_value (data);
-  while (data->token != ']') next_token (data);
-  return end_parsing_value (data);
-}
-
-
 SgfError
 sgf_parse_result (SgfParsingData *data)
 {
@@ -2612,13 +2727,31 @@ sgf_parse_setup_property (SgfParsingData *data)
 }
 
 
-/* FIXME: write this function. */
 SgfError
 sgf_parse_style (SgfParsingData *data)
 {
+  BufferPositionStorage storage;
+
+  if (data->tree->style_is_set)
+    return SGF_FATAL_DUPLICATE_PROPERTY;
+
   begin_parsing_value (data);
-  while (data->token != ']') next_token (data);
-  return end_parsing_value (data);
+  if (data->token == ']')
+    return SGF_FATAL_EMPTY_VALUE;
+
+  STORE_BUFFER_POSITION (data, 0, storage);
+
+  if (do_parse_number (data, &data->tree->style)) {
+    data->tree->style_is_set = 1;
+
+    if (data->tree->style & ~SGF_STYLE_FLAGS_MASK)
+      add_error (data, SGF_WARNING_UNKNOWN_FLAGS);
+
+    return end_parsing_value (data);
+  }
+
+  RESTORE_BUFFER_POSITION (data, 0, storage);
+  return SGF_FATAL_INVALID_VALUE;
 }
 
 

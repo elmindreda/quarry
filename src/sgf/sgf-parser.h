@@ -163,7 +163,6 @@ DECLARE_VALUE_PARSER (sgf_parse_game_type);
 DECLARE_VALUE_PARSER (sgf_parse_handicap);
 DECLARE_VALUE_PARSER (sgf_parse_komi);
 DECLARE_VALUE_PARSER (sgf_parse_markup_property);
-DECLARE_VALUE_PARSER (sgf_parse_print_mode);
 DECLARE_VALUE_PARSER (sgf_parse_result);
 DECLARE_VALUE_PARSER (sgf_parse_setup_property);
 DECLARE_VALUE_PARSER (sgf_parse_style);
