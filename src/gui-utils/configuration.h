@@ -24,6 +24,7 @@
 #define QUARRY_CONFIGURATION_H
 
 
+#include "utils.h"
 #include "quarry.h"
 
 
@@ -76,8 +77,15 @@ int		configuration_write_to_file
 void		configuration_init_repeatable_section
 		  (const ConfigurationSection *section,
 		   void *abstract_list_item);
-void		configuration_set_section_values
-		  (const ConfigurationSection *section, ...);
+
+void		configuration_set_string_value(char **configuration_variable,
+					       const char *string);
+void		configuration_set_string_list_value
+		  (StringList *configuration_variable,
+		   const StringList *string_list);
+void		configuration_set_string_list_value_steal_strings
+		  (StringList *configuration_variable,
+		   StringList *string_list);
 
 
 #endif /* QUARRY_CONFIGURATION_H */

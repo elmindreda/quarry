@@ -530,73 +530,37 @@ configuration_init_repeatable_section(const ConfigurationSection *section,
 
 
 void
-configuration_set_section_values(const ConfigurationSection *section, ...)
+configuration_set_string_value(char **configuration_variable,
+			       const char *string)
 {
-  void *section_structure;
-  int value_index;
-  va_list arguments;
+  assert(configuration_variable);
 
-  assert(section);
+  utils_free(*configuration_variable);
+  *configuration_variable = (string ? utils_duplicate_string(string) : NULL);
+}
 
-  va_start(arguments, section);
 
-  if (section->is_repeatable)
-    section_structure = va_arg(arguments, void *);
-  else
-    section_structure = section->section_structure;
+void
+configuration_set_string_list_value(StringList *configuration_variable,
+				    const StringList *string_list)
+{
+  assert(configuration_variable);
+  assert(string_list);
 
-  while ((value_index = va_arg(arguments, int)) != -1) {
-    const ConfigurationValue *value;
-    void *field;
+  string_list_empty(configuration_variable);
+  string_list_duplicate_items(configuration_variable, string_list);
+}
 
-    assert(0 <= value_index && value_index <= section->num_values);
 
-    value = section->values + value_index;
-    field = ((char *) section_structure) + value->field_offset;
+void
+configuration_set_string_list_value_steal_strings
+		(StringList *configuration_variable, StringList *string_list)
+{
+  assert(configuration_variable);
+  assert(string_list);
 
-    switch (value->type) {
-    case VALUE_TYPE_STRING:
-      {
-	const char *string = va_arg(arguments, const char *);
-
-	utils_free(* (char **) field);
-	* (char **) field = (string ? utils_duplicate_string(string) : NULL);
-      }
-
-      break;
-
-    case VALUE_TYPE_STRING_LIST:
-      {
-	StringList *string_list = va_arg(arguments, StringList *);
-
-	string_list_empty(field);
-
-	if (va_arg(arguments, int))
-	  string_list_steal_items(field, string_list);
-	else
-	  string_list_duplicate_items(field, string_list);
-      }
-
-      break;
-
-    case VALUE_TYPE_BOOLEAN:
-    case VALUE_TYPE_INT:
-      * (int *) field = va_arg(arguments, int);
-      break;
-
-    case VALUE_TYPE_REAL:
-      * (double *) field = va_arg(arguments, double);
-      break;
-
-    case VALUE_TYPE_COLOR:
-      * (QuarryColor *) field = va_arg(arguments, QuarryColor);
-
-    default:
-      assert(0);
-    }
-  }
-
-  va_end(arguments);
+  string_list_empty(configuration_variable);
+  string_list_steal_items(configuration_variable, string_list);
 }
 
 
