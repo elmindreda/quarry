@@ -1,7 +1,7 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *\
  * This file is part of Quarry.                                    *
  *                                                                 *
- * Copyright (C) 2003, 2004 Paul Pogonyshev.                       *
+ * Copyright (C) 2003, 2004, 2005 Paul Pogonyshev.                 *
  *                                                                 *
  * This program is free software; you can redistribute it and/or   *
  * modify it under the terms of the GNU General Public License as  *
@@ -35,6 +35,7 @@
 #if THREADS_SUPPORTED
 
 
+#include "gtk-parser-interface.h"
 #include "sgf.h"
 
 #include <gtk/gtk.h>
@@ -53,23 +54,25 @@ struct _ThreadEventData {
 typedef struct _ParsingThreadData	ParsingThreadData;
 
 struct _ParsingThreadData {
-  char		 *filename;
+  char		       *filename;
 
-  SgfCollection	 *sgf_collection;
-  SgfErrorList	 *error_list;
+  SgfCollection	       *sgf_collection;
+  SgfErrorList	       *error_list;
 
-  int		  file_size;
-  int		  bytes_parsed;
-  int		  cancellation_flag;
+  int			file_size;
+  int			bytes_parsed;
+  int			cancellation_flag;
 
-  int		  result;
+  int			result;
 
-  GtkWidget	 *parent;
-  GtkWidget	 *progress_dialog;
+  GtkWidget	       *parent;
+  GtkWidget	       *progress_dialog;
+
+  GtkHandleParsedData	callback;
 };
 
 
-extern GAsyncQueue	*thread_events_queue;
+extern GAsyncQueue     *thread_events_queue;
 
 
 #endif /* THREADS_SUPPORTED */

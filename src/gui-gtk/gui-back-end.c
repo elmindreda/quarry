@@ -90,7 +90,7 @@ gui_back_end_main_open_files (int num_files, char **filenames)
   initialize_main_loop ();
 
   for (k = 0; k < num_files; k++)
-    gtk_parse_sgf_file (filenames[k], NULL);
+    gtk_parse_sgf_file (filenames[k], NULL, NULL);
 
   run_main_loop ();
 
