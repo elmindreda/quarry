@@ -147,6 +147,7 @@ GtkWidget *	gtk_utils_make_widget_scrollable
 		   GtkPolicyType hscrollbar_policy,
 		   GtkPolicyType vscrollbar_policy);
 
+GtkWidget *	gtk_utils_create_left_aligned_label(const gchar *label_text);
 GtkWidget *	gtk_utils_create_mnemonic_label(const gchar *label_text,
 						GtkWidget *mnemonic_widget);
 GtkWidget *	gtk_utils_create_entry(const gchar *text);

@@ -440,6 +440,16 @@ gtk_utils_make_widget_scrollable(GtkWidget *widget,
 
 
 GtkWidget *
+gtk_utils_create_left_aligned_label(const gchar *label_text)
+{
+  GtkWidget *label = gtk_label_new(label_text);
+
+  gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
+  return label;
+}
+
+
+GtkWidget *
 gtk_utils_create_mnemonic_label(const gchar *label_text,
 				GtkWidget *mnemonic_widget)
 {

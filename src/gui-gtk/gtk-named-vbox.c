@@ -92,9 +92,8 @@ gtk_named_vbox_class_init(GtkNamedVBoxClass *class)
 static void
 gtk_named_vbox_init(GtkNamedVBox *named_vbox)
 {
-  GtkWidget *label = gtk_label_new(NULL);
+  GtkWidget *label = gtk_utils_create_left_aligned_label(NULL);
 
-  gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
   gtk_widget_set_name(label, "quarry-sub-header");
   gtk_widget_set_parent(label, GTK_WIDGET(named_vbox));
   gtk_widget_show(label);
