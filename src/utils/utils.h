@@ -109,8 +109,11 @@ char *		utils_fgets(FILE *file, int *length);
 int		utils_compare_ints(const void *first_int,
 				   const void *second_int);
 
+
 const char *	utils_format_double(double value);
 
+int             utils_parse_double(const char *float_string, 
+                                   double *result);
 int		utils_parse_time(const char *time_string);
 
 

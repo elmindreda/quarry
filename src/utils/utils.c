@@ -1,7 +1,8 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *\
  * This file is part of Quarry.                                    *
  *                                                                 *
- * Copyright (C) 2003, 2004 Paul Pogonyshev.                       *
+ * Copyright (C) 2003 Paul Pogonyshev.                             *
+ * Copyright (C) 2004 Paul Pogonyshev and Martin Holters.          *
  *                                                                 *
  * This program is free software; you can redistribute it and/or   *
  * modify it under the terms of the GNU General Public License as  *
@@ -27,6 +28,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <math.h>
 
 #ifdef HAVE_FLOAT_H
 #include <float.h>
@@ -35,6 +37,9 @@
 #ifdef HAVE_MEMORY_H
 #include <memory.h>
 #endif
+
+
+#define FORMAT_DOUBLE_DECIMALS	6
 
 
 #if ENABLE_MEMORY_PROFILING
@@ -574,7 +579,9 @@ utils_compare_ints(const void *first_int, const void *second_int)
 /* Format a double number, so that it doesn't have trailing zeros
  * after decimal point (with the only exception of an integer number).
  * So, 1.2 would get formatted as "1.2", not "1.20", but 1 would be
- * represented as "1.0", not "1.".
+ * represented as "1.0", not "1.".  At most FORMAT_DOUBLE_DECIMALS
+ * digits after the decimal point are produced.  Locale is not
+ * considered.
  *
  * The function returns address of a static buffer, so if you need to
  * save the value, copy it away.
@@ -585,21 +592,51 @@ utils_format_double(double value)
 #ifdef DBL_MAX_10_EXP
 
   /* 20 is a safety margin. */
-  static char buffer[1 + DBL_MAX_10_EXP + 1 + 6 + 20];
-  char *buffer_pointer = buffer + sprintf(buffer, "%f", value);
+  static char buffer[1 + DBL_MAX_10_EXP + 1 + FORMAT_DOUBLE_DECIMALS + 20];
 
 #else
 
   static char buffer[0x400];
-  char *buffer_pointer = buffer + snprintf(buffer, 0x400, "%f", value);
 
 #endif
 
-  while (buffer_pointer > buffer && *(buffer_pointer - 1) == '0')
-    buffer_pointer--;
+  char *buffer_pointer = buffer;
+  int shift;
+  int leading_digit;
 
-  if (buffer_pointer > buffer && *(buffer_pointer - 1) == '.')
-    buffer_pointer++;
+  /* Start with a '-' if value is negative. */
+  if(value < 0) {
+    *buffer_pointer++ = '-';
+    value = -value;
+  }
+
+  /* Now we can limit ourselves to positive values. */
+
+  /* After this addition, proper rounding becomes simple
+   * truncation.
+   */
+  value += 0.5 * pow(10, -FORMAT_DOUBLE_DECIMALS);
+
+  if (value >= 1.0) {
+    shift  = floor(log10(value));
+    value /= pow(10, (double) shift);
+  }
+  else
+    shift = 0;
+
+  /* Now value is less than 10.0. */
+
+  do {
+    leading_digit = floor(value);
+    *buffer_pointer++ = (char) leading_digit + '0';
+
+    if (shift-- == 0)
+      *buffer_pointer++ = '.';
+
+    value = (value - leading_digit) * 10.0;
+  } while ((value * pow(10, (double) FORMAT_DOUBLE_DECIMALS + shift) >= 1.0
+	    && shift >= -FORMAT_DOUBLE_DECIMALS)
+	   || shift >= -1);
 
   *buffer_pointer = 0;
   return buffer;
@@ -607,6 +644,45 @@ utils_format_double(double value)
 
 
 
+/*
+ * Parse a double number in a locale independent way. The string may
+ * contain an optional '-', followed by digits, optionally followed by
+ * a '.', optionally followed by more digits. If the first character
+ * other then those is not '\0', a parsing error is assumed and false
+ * is returned. Otherwise, true is returned. Parsing an empty string
+ * produces 0.0 and returns true.
+ */
+int
+utils_parse_double(const char *float_string, double *result)
+{
+  const char *scan = float_string;
+  int is_negative = 0;
+
+  *result = 0.0;
+
+  if (*scan == '-') {
+    is_negative = 1;
+    scan++;
+  }
+
+  while (*scan >= '0' && *scan <= '9')
+    *result = *result * 10 + (double) (*scan++ - '0');
+
+  if (*(scan++) == '.') {
+    double factor = 0.1;
+    while (*scan >= '0' && *scan <= '9') {
+      *result += (double) (*(scan++) - '0') * factor;
+      factor /= 10.0;
+    }
+  }
+
+  if (is_negative)
+    *result = - *result;
+
+  return *scan == '\0';
+}
+
+
 int
 utils_parse_time(const char *time_string)
 {
