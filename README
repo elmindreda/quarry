@@ -1,73 +1,34 @@
-				QUARRY
+			     ABOUT QUARRY
 
 Quarry is a universal board game interface program.  At present it
 supports three games: Go, Amazons and Othello.  It is intended to be
 useful for both users and developers of game engines (i.e. programs
 that play board games).
 
-Currently, Quarry is in very early stages of development.  It is not
-really useful yet.  However, you are most welcome to have a try with
-it.  I'm sure you will like at least the way it looks.
+Currently, Quarry is in early stages of development.  It's uses are
+currently limited to playing against a computer program (e.g. GNU Go)
+and browsing SGF game records.  You are most welcome to have a try
+with it.  I'm sure you will like at least the way it looks.
+
+Latest Quarry versions can be found at the homepage:
+
+       http://home.gna.org/quarry/
 
 
 			     INSTALLATION
 
-The usual `./configure; make' should build Quarry.  The only serious
-requirement for Quarry are GTK+ 2.x and librsvg 2.5+ libraries,
-everything else must be present on a sane system.  See file INSTALL
-for details.
+The usual `./configure; make; make install' should build and install
+Quarry.  The only serious requirement for Quarry are GTK+ 2.x and
+librsvg 2.5+ libraries, everything else must be present on a sane
+system.  See file INSTALL for details.
 
 
 			    RUNNING QUARRY
 
-In the absence of proper documentation, here are a few words about
-what you can do with Quarry.
-
-Playing games should be rather straightforward.  If you want to play
-against a computer (or watch computer playing itself) you will need a
-program that supports GTP.  So far I know only about Go programs that
-are freely available and support GTP and the best of them is probably
-GNU Go.  You can get it from
-
-	http://www.gnu.org/software/gnugo/gnugo.html
-
-You will need to "register" whatever GTP engine (program) you have in
-Quarry.  Just click "Preferences" button in the Control Center.
-Alternatively, when starting a new game, you can click on "Manage
-Engine List" button.  Once you have registered the engine(s), just
-select them as white and/or black player in the new game dialog.
-
-To play a move, simply left-click your mouse on the board.  For
-Amazons a move requires 3 clicks (select a queen, point where to move
-it and point where to shoot arrow to). Note, that as you move mouse
-pointer over the board, a semi-transparent "ghost" shows up or
-disappears thus providing a hint whether a move is legal or not.
-
-So far, Quarry treats all command line parameters as names of SGF
-files to open.  You can run it either without any parameters at all,
-or supply one or more files to start with.
-
-When you open an SGF file, either with a GTK+ file selector or from
-command line, you will see a nice-looking board.  You can use cursor
-keys for navigating through the files.
-
-Right and Left go forward and backward in the game record (i.e. they
-play and undo moves--actually SGF nodes--from it on board).  Instead
-of browsing move at a time, you can use Page Down and Page Up to skip
-ten moves at once.  Home and End go to the very beginning or the very
-end of game record.
-
-Down and Up switch to next or previous variation of the current move
-(node), if any.  Variations can be thought of as alternative ways the
-game can continue.  If there are variations containing moves, you will
-see them as small semi-transparent stones (or queens, or pieces
-depending on the game) on the board.  You can right-click on such a
-"ghost" to switch to variation at its position.  It can be more
-convenient than Down/Up when there are lots of variations all over the
-board.
-
-If keyboard focus slips from board to another control, you can use the
-keys mentioned above with Alt modifier, e.g. Alt-Right or Alt-Home.
+Please refer to the Quarry Manual for help.  If, for some reason, you
+cannot open the manual from Quarry Help menu, direct your browser to
+the file `help/C/quarry.html'.  (There may also be translations of the
+manual to your language in directories other than `C'.)
 
 
 			    REPORTING BUGS
@@ -107,14 +68,21 @@ Please include the following information in your bug report:
 * Everything else you find relevant.
 
 
-			COPYRIGHTS AND LICENSE
+		       COPYRIGHTS AND LICENSES
 
-All files are copyrighted 2003, 2004 by Paul Pogonyshev except as
-noted below.
+All files are copyrighted by Paul Pogonyshev and/or other Quarry
+authors (see file AUTHORS) except as noted below.  See each specific
+file for details.
 
 All files are licensed under the GNU General Public License version 2
-or (at your option) any later version except as noted below.  GNU GPL
-version 2 may be found in the file COPYING.
+or (at your option) any later version except except as noted below.
+GNU GPL version 2 can be found in the file COPYING.
+
+All files named `quarry.xml' and `quarry.html' in `help/*' directories
+are licensed under GNU Free Documentation License, version 1.2 or any
+later version, with no Invariant Sections, no Front-Cover Texts, and
+no Back-Cover Texts.  GNU FDL version 1.2 can be found in file named
+COPYING-DOC.
 
 * Three files `src/utils/getopt.c', `src/utils/getopt1.c' and
   `src/utils/getopt.h' are copyrighted by the Free Software Foundation
@@ -131,9 +99,12 @@ version 2 may be found in the file COPYING.
 
 * File `data/textures/wood1.jpg' can be distributed freely (1).
 
-* Files in the root directory of the distribution (this directory) are
-  either licensed by different parties as free software or are in
-  public domain.
+* All SVG files in `data/markup-themes' subdirectories are placed in
+  public domain by Paul Pogonyshev.
+
+* Files in the root directory of the distribution (this directory) and
+  `aux' directory are either licensed by different parties as free
+  software or are in public domain.
 
 
 (1) This file was taken from
