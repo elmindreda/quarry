@@ -278,6 +278,59 @@ sgf_game_tree_duplicate_with_nodes(const SgfGameTree *tree)
 }
 
 
+/* Get the ``first'' node in the `tree' in traversing sense.  This
+ * always the root of the tree, but the caller should not know this.
+ *
+ * Trees are traversed forward in this order:
+ *
+ * - The first node is the root.
+ *
+ * - The next node is...
+ *     the `child', if it exists;
+ *     the `next' (in normal sense) node of the `parent', if exists;
+ *     the `next' node of second order parent (`->parent->parent') if
+ *     exists;
+ *     ...
+ *
+ * See also sgf_node_traverse_forward().
+ */
+SgfNode *
+sgf_game_tree_traverse_forward (const SgfGameTree *tree)
+{
+  assert (tree);
+
+  return tree->root;
+}
+
+
+/* Get the ``last'' node in the `tree' traversing order.  The backward
+ * traversing order is defined by reversing the forward traversing
+ * order.  Traversing backward is generally slower.
+ *
+ * See also sgf_node_traverse_backward().
+ */
+SgfNode *
+sgf_game_tree_traverse_backward (const SgfGameTree *tree)
+{
+  SgfNode *result;
+
+  assert (tree);
+
+  result = tree->root;
+  if (!result)
+    return NULL;
+
+  while (1) {
+    if (!result->child)
+      return result;
+
+    result = result->child;
+    while (result->next)
+      result = result->next;
+  }
+}
+
+
 int
 sgf_game_tree_count_nodes(const SgfGameTree *tree)
 {
@@ -991,6 +1044,60 @@ sgf_node_split(SgfNode *node, SgfGameTree *tree)
 
   *node_link = NULL;
   *child_link = NULL;
+}
+
+
+/* Get ``next'' node in tree-traversing sense.  See
+ * sgf_game_tree_traverse_forward() for details.
+ */
+SgfNode *
+sgf_node_traverse_forward (const SgfNode *node)
+{
+  assert (node);
+
+  if (node->child)
+    return node->child;
+
+  while (!node->next) {
+    node = node->parent;
+    if (!node)
+      return NULL;
+  }
+
+  return node->next;
+}
+
+
+/* Get ``previous'' node in tree-traversing sense.  See
+ * sgf_game_tree_traverse_backward() for details.
+ */
+SgfNode *
+sgf_node_traverse_backward (const SgfNode *node)
+{
+  SgfNode *parent;
+  SgfNode *result;
+
+  assert (node);
+
+  parent = node->parent;
+  if (!parent)
+    return NULL;
+
+  result = parent->child;
+  if (result == node)
+    return parent;
+
+  while (result->next != node)
+    result = result->next;
+
+  while (1) {
+    if (!result->child)
+      return result;
+
+    result = result->child;
+    while (result->next)
+      result = result->next;
+  }
 }
 
 
