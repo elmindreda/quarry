@@ -892,65 +892,78 @@ begin_game (GtkEnginesInstantiationStatus status, gpointer user_data)
   time_control_configuration->type
     = gtk_notebook_get_current_page (time_control_data->notebook);
 
-  switch (time_control_configuration->type) {
-  case 0:
-    {
-      GtkToggleButton *track_total_time_button =
-	time_control_data->track_total_time_button;
+  if (time_control_configuration->type == 0) {
+    GtkToggleButton *track_total_time_button
+      = time_control_data->track_total_time_button;
 
-      time_control_configuration->track_total_time
-	= gtk_toggle_button_get_active (track_total_time_button);
-      if (time_control_configuration->track_total_time) {
-	black_time_control = time_control_new (0, 0, 0);
-	white_time_control = time_control_new (0, 0, 0);
-      }
+    time_control_configuration->track_total_time
+      = gtk_toggle_button_get_active (track_total_time_button);
+    if (time_control_configuration->track_total_time) {
+      black_time_control = time_control_new (0, 0, 0);
+      white_time_control = time_control_new (0, 0, 0);
+    }
+  }
+  else {
+    double main_time;
+    double overtime_length;
+    int moves_per_overtime;
+    char *overtime_description;
+
+    switch (time_control_configuration->type) {
+    case 1:
+      time_control_configuration->game_time_limit
+	= gtk_adjustment_get_value (time_control_data->game_time_limit);
+
+      main_time		   = time_control_configuration->game_time_limit;
+      overtime_length	   = 0.0;
+      moves_per_overtime   = 0.0;
+      overtime_description = utils_duplicate_string ("none");
+
+      break;
+
+    case 2:
+      time_control_configuration->move_time_limit
+	= gtk_adjustment_get_value (time_control_data->move_time_limit);
+
+      main_time		   = 0.0;
+      overtime_length	   = time_control_configuration->move_time_limit;
+      moves_per_overtime   = 1;
+      overtime_description = utils_cprintf ("%.f per move", overtime_length);
+
+      break;
+
+    case 3:
+      time_control_configuration->main_time
+	= gtk_adjustment_get_value (time_control_data->main_time);
+      time_control_configuration->overtime_period_length
+	= gtk_adjustment_get_value (time_control_data->overtime_period);
+      time_control_configuration->moves_per_overtime
+	= gtk_adjustment_get_value (time_control_data->moves_per_overtime);
+
+      main_time		   = time_control_configuration->main_time;
+      overtime_length	   = (time_control_configuration
+			      ->overtime_period_length);
+      moves_per_overtime   = time_control_configuration->moves_per_overtime;
+      overtime_description = utils_cprintf ("%d/%.f Canadian",
+					    overtime_length,
+					    moves_per_overtime);
+
+      break;
+
+    default:
+      assert (0);
     }
 
-    break;
+    black_time_control = time_control_new (main_time, overtime_length,
+					   moves_per_overtime);
+    white_time_control = time_control_new (main_time, overtime_length,
+					   moves_per_overtime);
 
-  case 1:
-    time_control_configuration->game_time_limit
-      = gtk_adjustment_get_value (time_control_data->game_time_limit);
-
-    black_time_control
-      = time_control_new (time_control_configuration->game_time_limit, 0, 0);
-    white_time_control
-      = time_control_new (time_control_configuration->game_time_limit, 0, 0);
-
-    break;
-
-  case 2:
-    time_control_configuration->move_time_limit
-      = gtk_adjustment_get_value (time_control_data->move_time_limit);
-
-    black_time_control
-      = time_control_new (0, time_control_configuration->move_time_limit, 1);
-    white_time_control
-      = time_control_new (0, time_control_configuration->move_time_limit, 1);
-
-    break;
-
-  case 3:
-    time_control_configuration->main_time
-      = gtk_adjustment_get_value (time_control_data->main_time);
-    time_control_configuration->overtime_period_length
-      = gtk_adjustment_get_value (time_control_data->overtime_period);
-    time_control_configuration->moves_per_overtime
-      = gtk_adjustment_get_value (time_control_data->moves_per_overtime);
-
-    black_time_control
-      = time_control_new (time_control_configuration->main_time,
-			  time_control_configuration->overtime_period_length,
-			  time_control_configuration->moves_per_overtime);
-    white_time_control
-      = time_control_new (time_control_configuration->main_time,
-			  time_control_configuration->overtime_period_length,
-			  time_control_configuration->moves_per_overtime);
-
-    break;
-
-  default:
-    assert (0);
+    sgf_node_add_text_property (game_tree->current_node, game_tree,
+				SGF_TIME_LIMIT,
+				utils_cprintf ("%.f", main_time), 0);
+    sgf_node_add_text_property (game_tree->current_node, game_tree,
+				SGF_OVERTIME, overtime_description, 0);
   }
 
   sgf_collection = sgf_collection_new ();
