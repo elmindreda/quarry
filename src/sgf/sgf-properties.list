@@ -1,7 +1,7 @@
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 # This file is part of Quarry                                     #
 #                                                                 #
-# Copyright (C) 2003, 2004 Paul Pogonyshev.                       #
+# Copyright (C) 2003, 2004, 2005 Paul Pogonyshev                  #
 #                                                                 #
 # This program is free software; you can redistribute it and/or   #
 # modify it under the terms of the GNU General Public License as  #
@@ -41,6 +41,7 @@ value_types  SgfValueType - {
   elist_of_point	SGF_ELIST_OF_POINT	sgf_write_list_of_point
   list_of_vector	SGF_LIST_OF_VECTOR	sgf_write_list_of_vector
   list_of_label		SGF_LIST_OF_LABEL	sgf_write_list_of_label
+  figure_description	SGF_FIGURE_DESCRIPTION	sgf_write_figure_description
   unknown		SGF_TYPE_UNKNOWN	sgf_write_unknown
 			= SGF_LAST_MALLOC_TYPE
 
@@ -55,7 +56,7 @@ properties  SgfType property_info {
   FF	SGF_FILE_FORMAT		not_stored	sgf_parse_file_format
   GM	SGF_GAME_TYPE		not_stored	sgf_parse_game_type
   CA	SGF_CHAR_SET		not_stored	sgf_parse_char_set
-  ST	SGF_STYLE		number		sgf_parse_style
+  ST	SGF_STYLE		not_stored	sgf_parse_style
   AP	SGF_APPLICATION		not_stored	sgf_parse_application
   SZ	SGF_BOARD_SIZE		not_stored	sgf_parse_board_size
 	= SGF_LAST_ROOT_PROPERTY
@@ -152,8 +153,8 @@ properties  SgfType property_info {
   DD	SGF_DIMMED		elist_of_point	sgf_parse_list_of_point
 
   #> Miscellaneous properties.
-  FG	SGF_FIGURE		simple_text	sgf_parse_figure
-  PM	SGF_PRINT_MODE		number		sgf_parse_print_mode
+  FG	SGF_FIGURE		figure_description  sgf_parse_figure
+  PM	SGF_PRINT_MODE		number		sgf_parse_constrained_number
   VW	SGF_VIEW_PORT		elist_of_point	sgf_parse_list_of_point
 
   #> Custom extension properties we support.
