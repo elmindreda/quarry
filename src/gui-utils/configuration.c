@@ -267,6 +267,16 @@ configuration_read_from_file(const ConfigurationSection *sections,
 
 		break;
 
+	      case VALUE_TYPE_TIME:
+		{
+		  int seconds = utils_parse_time(actual_contents);
+
+		  if (seconds >= 0)
+		    * (int *) field = seconds;
+		}
+
+		break;
+
 	      default:
 		assert(0);
 	      }
@@ -437,10 +447,10 @@ write_section(BufferedWriter *writer, const ConfigurationSection *section,
 
     buffered_writer_cat_string(writer, value->name);
 
-    if (writer->column < 16) {
-      buffered_writer_add_character(writer, '\t');
-      if (writer->column < 16)
+    if (writer->column < 24) {
+      do
 	buffered_writer_add_character(writer, '\t');
+      while (writer->column < 24);
     }
     else
       buffered_writer_add_character(writer, ' ');
@@ -477,7 +487,8 @@ write_section(BufferedWriter *writer, const ConfigurationSection *section,
 
     case VALUE_TYPE_REAL:
       buffered_writer_cat_string(writer,
-				 format_double(* (const double *) field));
+				 utils_format_double(* ((const double *)
+							field)));
       break;
 
     case VALUE_TYPE_COLOR:
@@ -485,6 +496,21 @@ write_section(BufferedWriter *writer, const ConfigurationSection *section,
 			     ((const QuarryColor *) field)->red,
 			     ((const QuarryColor *) field)->green,
 			     ((const QuarryColor *) field)->blue);
+      break;
+
+    case VALUE_TYPE_TIME:
+      if (* (const int *) field < 60 * 60) {
+	buffered_writer_printf(writer, "%02d:%02d",
+			       (* (const int *) field) / 60,
+			       (* (const int *) field) % 60);
+      }
+      else {
+	buffered_writer_printf(writer, "%d:%02d:%02d",
+			       (* (const int *) field) / (60 * 60),
+			       ((* (const int *) field) / 60) % 60,
+			       (* (const int *) field) % 60);
+      }
+
       break;
 
     default:
