@@ -1,3 +1,8 @@
+--- New in Quarry 0.1.12 ---------------------------------------------
+
+* Bug-fixes in game tree view.  In particular, bug #1969 is fixed,
+  which crashed Quarry on many SGF files.
+
 --- New in Quarry 0.1.11 ---------------------------------------------
 
 * New Game Tree View control provides means of easily navigating game
