@@ -158,8 +158,8 @@ gtk_assistant_update_buttons(GtkAssistant *assistant)
 			== gtk_notebook_get_n_pages(assistant->notebook));
 #else
     int is_last_page = (gtk_notebook_get_nth_page(assistant->notebook,
-						  current_page_number)
-			== gtk_notebook_get_nth_page(assistant->notebook, -1));
+						  current_page_number + 1)
+			== NULL);
 #endif
 
     if (current_page_number > 0)
