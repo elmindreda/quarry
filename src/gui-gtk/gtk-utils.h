@@ -113,6 +113,21 @@ typedef enum {
 } GtkUtilsEntryActivationMode;
 
 
+typedef void (* GtkUtilsToolbarEntryCallback) (gpointer user_data,
+					       guint callback_action);
+
+typedef struct _GtkUtilsToolbarEntry	GtkUtilsToolbarEntry;
+
+struct _GtkUtilsToolbarEntry {
+  const gchar			*label_text;
+  const gchar			*tooltip_text;
+  const gchar			*icon_stock_id;
+
+  GtkUtilsToolbarEntryCallback	 callback;
+  guint				 callback_action;
+};
+
+
 /* This is the same as the prototype of the `focus-out-event' handler
  * since this callback should basically do the same job.  Note that
  * `dummy_event' will be `NULL'.
@@ -210,6 +225,12 @@ void		gtk_utils_create_radio_chain (GtkWidget **radio_buttons,
 GtkSizeGroup *	gtk_utils_create_size_group (GtkSizeGroupMode mode, ...);
 GtkSizeGroup *  gtk_utils_align_left_widgets (GtkContainer *container,
 					      GtkSizeGroup *size_group);
+
+GtkWidget *	gtk_utils_append_toolbar_button (GtkToolbar *toolbar,
+						 GtkUtilsToolbarEntry *entry,
+						 gpointer user_data);
+void		gtk_utils_set_toolbar_buttons_sensitive
+		  (GtkToolbar *toolbar, gboolean are_sensitive, ...);
 
 void		gtk_utils_set_text_buffer_text (GtkTextBuffer *text_buffer,
 						const gchar *text);

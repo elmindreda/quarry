@@ -27,6 +27,7 @@
 #include "utils.h"
 
 #include <assert.h>
+#include <stdarg.h>
 #include <string.h>
 
 
@@ -59,6 +60,15 @@ struct _GtkUtilsBrowseButtonData {
 };
 
 
+typedef struct _GtkUtilsToolbarCallbackArguments
+		GtkUtilsToolbarCallbackArguments;
+
+struct _GtkUtilsToolbarCallbackArguments {
+  gboolean	are_sensitive;
+  va_list	entries;
+};
+
+
 static void	 null_pointer_on_destroy (GtkWindow *window,
 					  GtkWindow **window_pointer);
 static void	 null_pointer_on_destroy_ask_control_center
@@ -88,6 +98,12 @@ static void	 do_align_left_widgets (GtkWidget *first_level_child,
 static void	 do_align_left_widget (GtkWidget *widget,
 				       GtkSizeGroup **size_group);
 
+static void	 invoke_toolbar_button_callback (GObject *button,
+						 gpointer user_data);
+static void	 set_toolbar_item_sensitive
+		   (GtkWidget *button,
+		    const GtkUtilsToolbarCallbackArguments *arguments);
+
 static void	 set_widget_sensitivity_on_toggle
 		   (GtkToggleButton *toggle_button, GtkWidget *widget);
 static void	 set_widget_sensitivity_on_input (GtkEntry *entry,
@@ -96,6 +112,9 @@ static void	 set_widget_sensitivity_on_input (GtkEntry *entry,
 static gint	 freeze_on_empty_input
 		   (GtkFreezableSpinButton *freezable_spin_button,
 		    gdouble *new_value);
+
+
+static GQuark	toolbar_button_entry_quark = 0;
 
 
 void
@@ -1022,6 +1041,89 @@ do_align_left_widget (GtkWidget *widget, GtkSizeGroup **size_group)
   if (*size_group) {
     gtk_size_group_add_widget (*size_group, widget);
     *size_group = NULL;
+  }
+}
+
+
+
+GtkWidget *
+gtk_utils_append_toolbar_button (GtkToolbar *toolbar,
+				 GtkUtilsToolbarEntry *entry,
+				 gpointer user_data)
+{
+  GtkWidget *button;
+
+  assert (entry);
+
+  button = (gtk_toolbar_append_item
+	    (toolbar, (entry->label_text ? _(entry->label_text) : NULL),
+	     _(entry->tooltip_text), NULL,
+	     gtk_image_new_from_stock (entry->icon_stock_id,
+				       gtk_toolbar_get_icon_size (toolbar)),
+	     (GtkSignalFunc) invoke_toolbar_button_callback, user_data));
+
+  if (!toolbar_button_entry_quark) {
+    toolbar_button_entry_quark
+      = g_quark_from_static_string ("quarry-toolbar-button-entry");
+  }
+
+  g_object_set_qdata (G_OBJECT (button), toolbar_button_entry_quark, entry);
+
+  return button;
+}
+
+
+static void
+invoke_toolbar_button_callback (GObject *button, gpointer user_data)
+{
+  const GtkUtilsToolbarEntry *entry
+    = g_object_get_qdata (button, toolbar_button_entry_quark);
+
+  entry->callback (user_data, entry->callback_action);
+}
+
+
+void
+gtk_utils_set_toolbar_buttons_sensitive (GtkToolbar *toolbar,
+					 gboolean are_sensitive, ...)
+{
+  GtkUtilsToolbarCallbackArguments callback_arguments;
+
+  assert (GTK_IS_TOOLBAR (toolbar));
+  assert (toolbar_button_entry_quark);
+
+  callback_arguments.are_sensitive = are_sensitive;
+  va_start (callback_arguments.entries, are_sensitive);
+
+  gtk_container_foreach (GTK_CONTAINER (toolbar),
+			 (GtkCallback) set_toolbar_item_sensitive,
+			 &callback_arguments);
+
+  va_end (callback_arguments.entries);
+}
+
+
+static void
+set_toolbar_item_sensitive (GtkWidget *button,
+			    const GtkUtilsToolbarCallbackArguments *arguments)
+{
+  const GtkUtilsToolbarEntry *button_entry
+    = g_object_get_qdata (G_OBJECT (button), toolbar_button_entry_quark);
+
+  if (button_entry) {
+    va_list entries_copy;
+    const GtkUtilsToolbarEntry *entry;
+
+    QUARRY_VA_COPY (entries_copy, arguments->entries);
+    while ((entry = va_arg (entries_copy, const GtkUtilsToolbarEntry *))
+	   != NULL) {
+      if (entry == button_entry) {
+	gtk_widget_set_sensitive (button, arguments->are_sensitive);
+	break;
+      }
+    }
+
+    va_end (entries_copy);
   }
 }
 
