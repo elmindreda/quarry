@@ -1,3 +1,8 @@
+2004-09-11  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* NEWS: Add all news from version 0.1.2 to 0.1.7 (change in
+	policy: add news items for development versions too).
+
 2004-08-28  Paul Pogonyshev  <pogonyshev@gmx.net>
 
 	* configure.ac: Quarry version 0.1.7.
