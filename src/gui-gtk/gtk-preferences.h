@@ -26,6 +26,7 @@
 
 #include "gtk-configuration.h"
 #include "gtk-games.h"
+#include "gui-back-end.h"
 #include "gtp-client.h"
 #include "quarry.h"
 
@@ -66,7 +67,6 @@ struct _GtkEngineChain {
 
 
 void		     gtk_preferences_init(void);
-void		     gtk_preferences_finalize(void);
 
 void		     gtk_preferences_dialog_present(gint page_to_select);
 

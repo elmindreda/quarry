@@ -20,21 +20,23 @@
 \* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 
-#include "gui-back-end.h"
-#include "gtk-thread-interface.h"
-#include "gtk-tile-set-interface.h"
+#include "gtk-configuration.h"
 #include "gtk-control-center.h"
 #include "gtk-parser-interface.h"
-#include "gtk-configuration.h"
 #include "gtk-preferences.h"
+#include "gtk-thread-interface.h"
+#include "gtk-tile-set-interface.h"
+#include "gui-back-end.h"
 #include "quarry-stock.h"
 #include "configuration.h"
+#include "tile-set.h"
+#include "time-control.h"
 #include "utils.h"
 
-#include <gtk/gtk.h>
-#include <gdk-pixbuf/gdk-pixbuf.h>
-#include <stdlib.h>
 #include <assert.h>
+#include <stdlib.h>
+#include <gdk-pixbuf/gdk-pixbuf.h>
+#include <gtk/gtk.h>
 
 
 static void	 initialize_main_loop(void);
@@ -46,6 +48,8 @@ static gboolean	 run_cleanup_tasks(gpointer data);
 const char     *user_real_name;
 
 static gchar   *configuration_file;
+
+static GSList  *objects_to_finalize = NULL;
 
 
 
@@ -94,6 +98,15 @@ gui_back_end_main_open_files(int num_files, char **filenames)
 }
 
 
+void
+gui_back_end_register_object_to_finalize(void *object)
+{
+  assert(G_IS_OBJECT(object));
+
+  objects_to_finalize = g_slist_prepend(objects_to_finalize, object);
+}
+
+
 
 void *
 gui_back_end_image_new(const unsigned char *pixel_data, int width, int height)
@@ -114,6 +127,32 @@ gui_back_end_image_delete(void *image)
 {
   assert(image);
   g_object_unref(image);
+}
+
+
+void *
+gui_back_end_timer_restart(void *timer_object)
+{
+  if (timer_object) {
+    g_timer_start((GTimer *) timer_object);
+    return timer_object;
+  }
+
+  return g_timer_new();
+}
+
+
+void
+gui_back_end_timer_delete(void *timer_object)
+{
+  g_timer_destroy((GTimer *) timer_object);
+}
+
+
+double
+gui_back_end_timer_get_seconds_elapsed(void *timer_object)
+{
+  return g_timer_elapsed((GTimer *) timer_object, NULL);
 }
 
 
@@ -234,7 +273,8 @@ run_main_loop(void)
   g_async_queue_unref(thread_events_queue);
 #endif
 
-  gtk_preferences_finalize();
+  g_slist_foreach(objects_to_finalize, (GFunc) g_object_unref, NULL);
+  g_slist_free(objects_to_finalize);
 
   configuration_write_to_file(gtk_configuration_sections,
 			      NUM_GTK_CONFIGURATION_SECTIONS,

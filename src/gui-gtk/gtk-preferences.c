@@ -258,6 +258,8 @@ gtk_preferences_init(void)
 
   g_signal_connect(GTK_TREE_MODEL(gtp_engines_list_store), "row-changed",
 		   G_CALLBACK(handle_drag_and_drop), NULL);
+
+  gui_back_end_register_object_to_finalize(gtp_engines_list_store);
 }
 
 
@@ -286,13 +288,6 @@ handle_drag_and_drop(GtkTreeModel *gtp_engines_tree_model,
   prepare_to_rebuild_menus();
   string_list_move(&gtp_engines, engine_data, notch);
   rebuild_all_menus();
-}
-
-
-void
-gtk_preferences_finalize(void)
-{
-  g_object_unref(gtp_engines_list_store);
 }
 
 
@@ -361,10 +356,8 @@ gtk_preferences_dialog_present(gint page_to_select)
 						      NULL);
     gtk_tree_view_append_column(category_tree_view, column);
 
-    notebook_widget = gtk_notebook_new();
+    notebook_widget = gtk_utils_create_invisible_notebook();
     notebook = GTK_NOTEBOOK(notebook_widget);
-    gtk_notebook_set_show_tabs(notebook, FALSE);
-    gtk_notebook_set_show_border(notebook, FALSE);
 
     g_signal_connect(gtk_tree_view_get_selection(category_tree_view),
 		     "changed", G_CALLBACK(gtk_preferences_dialog_change_page),
@@ -1434,12 +1427,7 @@ gtk_preferences_set_engine_selector_selection(GtkWidget *selector,
 GtpEngineListItem *
 gtk_preferences_get_engine_selector_selection(GtkWidget *selector)
 {
-#if GTK_2_4_OR_LATER
-  gint selected_engine = gtk_combo_box_get_active(GTK_COMBO_BOX(selector));
-#else
-  gint selected_engine
-    = gtk_option_menu_get_history(GTK_OPTION_MENU(selector));
-#endif
+  gint selected_engine = gtk_utils_get_selector_active_item_index(selector);
 
   return gtp_engine_list_get_item(&gtp_engines, selected_engine);
 }

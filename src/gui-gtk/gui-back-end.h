@@ -27,10 +27,14 @@
 #include "quarry.h"
 
 
-int		   gui_back_end_init(int *argc, char **argv[]);
-int		   gui_back_end_main_default(void);
-int		   gui_back_end_main_open_files(int num_files,
-						char **filenames);
+int		gui_back_end_init(int *argc, char **argv[]);
+int		gui_back_end_main_default(void);
+int		gui_back_end_main_open_files(int num_files, char **filenames);
+
+/* We can't use `gpointer' here, because GTK+ headers are not visible
+ * from `src/' directory.
+ */
+void		gui_back_end_register_object_to_finalize(void *object);
 
 
 extern const char  *user_real_name;
