@@ -164,9 +164,10 @@ string_list_fill_from_string(void *abstract_list, const char *super_string)
 
 
 void
-string_list_duplicate_items(StringList *list, StringList *duplicate_from_list)
+string_list_duplicate_items(StringList *list,
+			    const StringList *duplicate_from_list)
 {
-  StringListItem *item;
+  const StringListItem *item;
   StringListItem *last_duplicated_item = NULL;
   StringListItem **link = &list->first;
 

@@ -291,8 +291,8 @@ void		  string_list_fill_from_string(void *abstract_list,
  * I don't want to introduce copy constructor for list items unless
  * really needed.
  */
-void		  string_list_duplicate_items(StringList *list,
-					      StringList *duplicate_from_list);
+void		  string_list_duplicate_items
+		    (StringList *list, const StringList *duplicate_from_list);
 
 void		  string_list_steal_items(void *abstract_list,
 					  void *steal_from);
