@@ -42,7 +42,7 @@
   StringListItem *item;							\
   assert(list);								\
   item = utils_malloc(list->item_size);					\
-  item->text = (string ? utils_duplicate_string(string) : NULL)
+  item->text = utils_duplicate_string(string)
 
 #define MAKE_NEW_ITEM_FROM_BUFFER					\
   StringList *list = (StringList *) abstract_list;			\

@@ -191,17 +191,21 @@ utils_print_memory_profiling_info(void)
 
 
 /* Allocate a copy of given string on heap.  Analogous to strdup(),
- * which does not belong to most accepted standards (neither ASCI C,
+ * which does not belong to most accepted standards (neither ASCII C,
  * nor POSIX).
  */
 char *
 utils_duplicate_string(const char *string)
 {
-  int length = strlen(string);
-  char *new_string = utils_malloc(length + 1);
+  if (string) {
+    int length = strlen(string);
+    char *new_string = utils_malloc(length + 1);
 
-  memcpy(new_string, string, length + 1);
-  return new_string;
+    memcpy(new_string, string, length + 1);
+    return new_string;
+  }
+
+  return NULL;
 }
 
 
@@ -506,12 +510,8 @@ utils_special_vprintf(const char *format_string, va_list arguments)
 	  const char *substitution = va_arg(arguments_copy, const char *);
 
 	  if (format_character == (int) *string_scan) {
-	    if (substitution) {
-	      if (string)
-		string = utils_cat_string(string, substitution);
-	      else
-		string = utils_duplicate_string(substitution);
-	    }
+	    if (substitution)
+	      string = utils_cat_string(string, substitution);
 
 	    chunk_beginning++;
 

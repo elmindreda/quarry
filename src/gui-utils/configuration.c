@@ -559,7 +559,7 @@ configuration_set_string_value(char **configuration_variable,
   assert(configuration_variable);
 
   utils_free(*configuration_variable);
-  *configuration_variable = (string ? utils_duplicate_string(string) : NULL);
+  *configuration_variable = utils_duplicate_string(string);
 }
 
 
