@@ -1,3 +1,42 @@
+2004-12-30  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* board/board.c (board_position_list_union): Rewrite to avoid
+	accessing unallocated memory in some cases (bug #1929,
+	warped_dragon@hotmail.com.)
+
+	* gui-gtk/gtk-goban-window.c (move_has_been_played): Add time
+	control information to the game SGF tree.
+
+	* gui-gtk/gtk-new-game-dialog.c (begin_game): Add information
+	about game time limits to the game SGF tree.
+
+	* sgf/sgf-properties.list: Sort `TM' property before 'OT'.
+	(MN, OB, OW): Use `sgf_parse_constrained_number' as value parser.
+
+	* sgf/sgf-parser.c (parse_buffer): Reset new
+	`data->ko_property_error_position.line' field.  Delete error lists
+	when parsing failed with `SGF_INVALID_FILE'.
+	(complete_node_and_update_board): Add error if there is `KO'
+	property, but no move in the node.  Split nodes with setup
+	properties and `MN' mixed.
+	(sgf_parse_none): Store error position if parsing `KO' property.
+	(sgf_parse_constrained_number): New function.
+	(sgf_parse_move_number, sgf_parse_moves_left): Remove functions.
+	(insert_error_valist): Bug-fix: store line and column in the
+	inserted item, not in the last.
+
+	* sgf/sgf-errors.list (SGF_ERROR_KO_PROPERTY_WITHOUT_MOVE): New
+	error string.
+
+	* utils/string-list.c (string_list_insert): Return the inserted
+	item.
+	(string_list_insert_from_buffer): Likewise.
+	(string_list_insert_ready): Likewise.
+	(string_list_insert_ready_item): Likewise.
+
+	* sgf/sgf-tree.c (sgf_node_find_property): Allow `link' to be
+	NULL.
+
 2004-12-29  Paul Pogonyshev  <pogonyshev@gmx.net>
 
 	* gui-gtk/gtk-parser-interface.c (analyze_parsed_data): Cast
