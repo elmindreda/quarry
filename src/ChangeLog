@@ -1,3 +1,100 @@
+2005-01-22  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* gui-gtk/gtk-goban-window.c (gtk_goban_window_init): Add "Resume
+	Game" and "Close" items in "File" menu and "Adjourn Game" in
+	"Play" menu.  Change mnemonic for "New Game" item and use "Ctrl+N"
+	shortcut for it.
+	(gtk_goban_window_resume_game): New function.
+	(do_enter_game_mode): New function, break out of
+	gtk_goban_window_enter_game_mode().
+	(leave_game_mode): Fix copy'n'paste bug (`BLACK_INDEX' =>
+	`WHITE_INDEX'), caused segmentation faults.
+	(gtk_goban_window_save): Handle game adjourning.  Use new
+	suggest_filename() function for providing default filename in
+	dialog.
+	(suggest_filename): New function.
+	(save_file_as_response): Handle game adjourning.
+	(game_has_been_adjourned): New function.
+	(free_handicap_mode_done): Call free_handicap_has_been_placed()
+	after leave_special_mode(), the latter changes the SGF tree.
+	(go_scoring_mode_done): Call reenter_current_node() after
+	leave_special_mode() for the same reason.
+	(play_pass_move): Call update_children_for_new_node() after
+	move_has_been_played() for the same reason.
+	(resign_game): Rename from play_resign().  Call
+	update_children_for_new_node() after move_has_been_played().
+	(navigate_goban): Don't do anything if the window is in a special
+	mode.
+	(update_window_title): Remove `game_info_node' argument.
+	(update_game_specific_information): Make `goban_window' argument
+	`const'.
+	(update_move_information): Likewise.
+	(update_commands_sensitivity): New function, break out from
+	update_children_for_new_node().  Set sensitivity of "Adjourn Game"
+	menu item.  Desensitize navigation commands when in special mode.
+	(initialize_gtp_player): Don't ask GTP engine to place free
+	handicap stones when `pending_free_handicap' is zero (when
+	resuming games.)
+	(enter_scoring_mode): Call new update_commands_sensitivity()
+	function.
+	(move_has_been_generated): Call update_children_for_new_node()
+	after move_has_been_played().
+
+	* gui-gtk/gtk-resume-game-dialog.c: New file.
+	* gui-gtk/gtk-resume-game-dialog.h: New file
+.
+	* gui-gtk/gtk-preferences.c (gtk_preferences_init): Create
+	filtered models for each supported games (GTK+ 2.4+ only.)
+	(gtk_preferences_create_engine_selector): Add `only_this_game'
+	argument.
+	(gtk_preferences_set_engine_selector_game_index): Assert that the
+	selector is not one-game-only.
+	(gtk_preferences_set_engine_selector_selection): Make
+	`engine_data' argument `const'.  Handle one-game-only selectors.
+	(gtk_preferences_get_engine_selector_selection): Handle
+	one-game-only selectors.
+	(engine_is_visible_and_supports_game): New function.
+	(build_and_attach_menu): Handle one-game-only selectors.
+
+	* gui-gtk/gtk-utils.c (do_align_left_widget): Handle boxes inside
+	other boxes more intelligently.
+
+	* gui-gtk/gtk-games.c (gtk_games_get_game_index): New function.
+
+	* utils/utils.c (utils_parse_double): Allow `result' to be
+	NULL (for simple value validation.)
+
+2005-01-21  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* gui-gtk/gtk-parser-interface.c
+	(gtk_parser_interface_present_default): New function, to use in
+	place of old calls to gtk_parser_interface_present().
+	(gtk_parser_interface_present): Add `title' and `callback'
+	arguments.  Use gtk_window_present() instead of gtk_widget_show().
+	(open_file_response): Add `callback' argument.
+	(open_game_record): New function, break out of
+	analyze_parsed_data() (or gtk_parse_sgf_file() for non-threading
+	version.)  Use gtk_window_present() instead of gtk_widget_show().
+	(gtk_parse_sgf_file): Add `callback' argument. Make `filename'
+	always absolute.
+	(analyze_parsed_data): Call `callback' that should deal with
+	parsed data (default callback is open_game_record().)
+	(gtk_parse_sgf_file): (Non-threading version) Same as for
+	threading version.  Also make compilable.
+
+	* gui-gtk/gtk-control-center.c (gtk_control_center_present): Add
+	"Resume Game" button.  Reduce spacing between button groups.
+
+	* gui-gtk/gtk-goban-window.c (gtk_goban_window_save): Take care to
+	use UTF-8 for widgets/output and file system encoding for
+	everything else in filenames.
+	(update_window_title): Likewise.
+	* gui-gtk/gtk-parser-interface.c (gtk_parse_sgf_file): Likewise.
+	(analyze_parsed_data): Likewise.
+	* gui-gtk/gtk-utils.c (file_selection_response): Likewise.
+	(browse_button_clicked): Likewise.
+	(browsing_dialog_response): Likewise.
+
 2005-01-19  Paul Pogonyshev  <pogonyshev@gmx.net>
 
 	* gui-gtk/gtk-new-game-dialog.c (update_game_and_players_page):
