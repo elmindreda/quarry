@@ -31,6 +31,14 @@
 #endif
 
 
+#define DO_NOTIFY(tree, notification_code)				\
+  do {									\
+    if ((tree)->notification_callback)					\
+      (tree)->notification_callback ((tree), (notification_code),	\
+				     (tree)->user_data);		\
+  } while (0)
+
+
 static void	  do_enter_tree (SgfGameTree *tree, SgfNode *down_to,
 				 SgfBoardState *board_state);
 
@@ -141,8 +149,11 @@ sgf_utils_go_down_in_tree (SgfGameTree *tree, int num_nodes,
   assert (tree->current_node);
   assert (board_state);
 
-  if (num_nodes != 0)
+  if (num_nodes != 0 && tree->current_node->child) {
+    DO_NOTIFY (tree, SGF_ABOUT_TO_CHANGE_CURRENT_NODE);
     descend_nodes (tree, num_nodes, board_state);
+    DO_NOTIFY (tree, SGF_CURRENT_NODE_CHANGED);
+  }
 }
 
 
@@ -162,10 +173,16 @@ sgf_utils_go_up_in_tree (SgfGameTree *tree, int num_nodes,
   assert (tree->current_node);
   assert (board_state);
 
-  if (num_nodes > 0)
-    ascend_nodes (tree, num_nodes, board_state);
-  else if (num_nodes < 0)
-    do_enter_tree (tree, tree->root, board_state);
+  if (num_nodes != 0 && tree->current_node->parent) {
+    DO_NOTIFY (tree, SGF_ABOUT_TO_CHANGE_CURRENT_NODE);
+
+    if (num_nodes > 0)
+      ascend_nodes (tree, num_nodes, board_state);
+    else
+      do_enter_tree (tree, tree->root, board_state);
+
+    DO_NOTIFY (tree, SGF_CURRENT_NODE_CHANGED);
+  }
 }
 
 
@@ -300,10 +317,14 @@ sgf_utils_switch_to_variation (SgfGameTree *tree, SgfDirection direction,
       return;
   }
 
+  DO_NOTIFY (tree, SGF_ABOUT_TO_CHANGE_CURRENT_NODE);
+
   ascend_nodes (tree, 1, board_state);
 
   parent->current_variation = switch_to;
   descend_nodes (tree, 1, board_state);
+
+  DO_NOTIFY (tree, SGF_CURRENT_NODE_CHANGED);
 }
 
 
@@ -317,11 +338,15 @@ sgf_utils_switch_to_given_variation (SgfGameTree *tree, SgfNode *node,
   assert (tree->current_node->parent == node->parent);
   assert (board_state);
 
-  if (node->parent) {
+  if (tree->current_node != node) {
+    DO_NOTIFY (tree, SGF_ABOUT_TO_CHANGE_CURRENT_NODE);
+
     ascend_nodes (tree, 1, board_state);
 
     node->parent->current_variation = node;
     descend_nodes (tree, 1, board_state);
+
+    DO_NOTIFY (tree, SGF_CURRENT_NODE_CHANGED);
   }
 }
 
@@ -330,17 +355,23 @@ void
 sgf_utils_switch_to_given_node (SgfGameTree *tree, SgfNode *node,
 				SgfBoardState *board_state)
 {
-  SgfNode *path_scan;
-
   assert (tree);
   assert (tree->current_node);
   assert (node);
   assert (board_state);
 
-  for (path_scan = node; path_scan->parent; path_scan = path_scan->parent)
-    path_scan->parent->current_variation = path_scan;
+  if (tree->current_node != node) {
+    SgfNode *path_scan;
 
-  do_enter_tree (tree, node, board_state);
+    DO_NOTIFY (tree, SGF_ABOUT_TO_CHANGE_CURRENT_NODE);
+
+    for (path_scan = node; path_scan->parent; path_scan = path_scan->parent)
+      path_scan->parent->current_variation = path_scan;
+
+    do_enter_tree (tree, node, board_state);
+
+    DO_NOTIFY (tree, SGF_CURRENT_NODE_CHANGED);
+  }
 }
 
 
@@ -359,6 +390,10 @@ sgf_utils_append_variation (SgfGameTree *tree, SgfBoardState *board_state,
   assert (tree);
   assert (tree->current_node);
   assert (board_state);
+
+  DO_NOTIFY (tree, SGF_ABOUT_TO_MODIFY_MAP);
+  DO_NOTIFY (tree, SGF_ABOUT_TO_MODIFY_TREE);
+  DO_NOTIFY (tree, SGF_ABOUT_TO_CHANGE_CURRENT_NODE);
 
   node = sgf_node_append_child (tree->current_node, tree);
 
@@ -383,6 +418,10 @@ sgf_utils_append_variation (SgfGameTree *tree, SgfBoardState *board_state,
   sgf_game_tree_invalidate_map (tree, tree->current_node);
 
   descend_nodes (tree, 1, board_state);
+
+  DO_NOTIFY (tree, SGF_CURRENT_NODE_CHANGED);
+  DO_NOTIFY (tree, SGF_TREE_MODIFIED);
+  DO_NOTIFY (tree, SGF_MAP_MODIFIED);
 }
 
 
@@ -395,8 +434,12 @@ sgf_utils_set_node_is_collapsed (SgfGameTree *tree, SgfNode *node,
 
   if ((is_collapsed && !node->is_collapsed)
       || (!is_collapsed && node->is_collapsed)) {
+    DO_NOTIFY (tree, SGF_ABOUT_TO_MODIFY_MAP);
+
     node->is_collapsed = (is_collapsed ? 1 : 0);
     sgf_game_tree_invalidate_map (tree, node);
+
+    DO_NOTIFY (tree, SGF_MAP_MODIFIED);
   }
 }
 
@@ -543,9 +586,9 @@ sgf_utils_add_free_handicap_stones (SgfGameTree *tree,
 
 /* Normalize text for an SGF property.
  *
- * For simple text: convert '\t' into appropriate, replace '\n', '\v'
- * and '\f' characters with one space, remove all '\r' characters and
- * trim both leading and trailing whitespace.
+ * For simple text: convert '\t' into appropriate number of spaces,
+ * replace '\n', '\v' and '\f' characters with one space, remove all
+ * '\r' characters and trim both leading and trailing whitespace.
  *
  * For other (multiline) text: convert '\t' into appropriate number of
  * spaces,. convert '\v' and '\f' into a few linefeeds, remove all
