@@ -1,3 +1,31 @@
+2004-08-12  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* gui-gtk/gtk-preferences.c (gtk_gtp_engine_dialog_present):
+	Properly handle requests for modification of engine
+	information (don't die with assertion failure).
+	(gtk_gtp_engine_dialog_response, client_deleted): Handle "modify
+	engine information" version of dialog.
+	(update_engine_screen_name)
+	(find_gtp_tree_model_iterator_by_engines_data): New
+	functions (break out of chain_client_initialized()).
+
+	* gui-gtk/quarry-stock.c: New stock item `QUARRY_STOCK_MODIFY'.
+
+	* gui-gtk/gtk-preferences.c (create_background_table): Add button
+	for browsing for a texture.
+	(browse_for_gtp_engine, browsing_dialog_response): Remove
+	functions.
+
+	* gui-gtk/gtk-utils.c (gtk_utils_create_browse_button)
+	(browse_button_clicked, browsing_dialog_response): New
+	functions (mostly inherit code of removed functions in
+	`gtk-preferences.c').
+
+	* gui-gtk/gtk-preferences.c (gtk_preferences_dialog_present):
+	Adapt page selection to new (tree) categories model.  Don't crash
+	when invoked with preferences dialog already shown and
+	`page_to_select' equal to -1.
+
 2004-08-11  Paul Pogonyshev  <pogonyshev@gmx.net>
 
 	* gui-gtk/gtk-preferences.c: Split "Board Appearance" category
