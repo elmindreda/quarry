@@ -115,6 +115,7 @@ sgf_game_tree_new (void)
 
   tree->application_name    = NULL;
   tree->application_version = NULL;
+  tree->style_is_set	    = 0;
 
   tree->node_pool.item_size = 0;
 
@@ -273,11 +274,14 @@ sgf_game_tree_duplicate (const SgfGameTree *tree)
   assert (tree);
 
   sgf_game_tree_set_game (tree_copy, tree->game);
-  tree_copy->board_width = tree->board_width;
+  tree_copy->board_width  = tree->board_width;
   tree_copy->board_height = tree->board_height;
 
   tree_copy->char_set = utils_duplicate_string (tree->char_set);
-  tree_copy->variation_style = tree->variation_style;
+
+  tree_copy->style_is_set = tree->style_is_set;
+  if (tree->style_is_set)
+    tree_copy->style = tree->style;
 
   return tree_copy;
 }
@@ -852,6 +856,14 @@ sgf_node_get_list_of_point_property_value (const SgfNode *node, SgfType type)
 }
 
 
+const SgfVectorList *
+sgf_node_get_list_of_vector_property_value (const SgfNode *node, SgfType type)
+{
+  GET_PROPERTY_VALUE (property_info[type].value_type == SGF_LIST_OF_VECTOR,
+		      vector_list, NULL);
+}
+
+
 const SgfLabelList *
 sgf_node_get_list_of_label_property_value (const SgfNode *node, SgfType type)
 {
@@ -939,6 +951,7 @@ sgf_node_add_pointer_property (SgfNode *node, SgfGameTree *tree,
 			       SgfType type, void *pointer, int overwrite)
 {
   SgfProperty **link;
+  void *pointer_to_free;
 
   assert (node);
   assert (SGF_FIRST_MALLOC_TYPE <= property_info[type].value_type
@@ -953,10 +966,23 @@ sgf_node_add_pointer_property (SgfNode *node, SgfGameTree *tree,
     return 1;
   }
 
-  if (property_info[type].value_type != SGF_LIST_OF_LABEL)
-    utils_free (overwrite ? (*link)->value.memory_block : pointer);
-  else
-    sgf_label_list_delete (overwrite ? (*link)->value.memory_block : pointer);
+  pointer_to_free = (overwrite ? (*link)->value.memory_block : pointer);
+
+  switch (property_info[type].value_type) {
+  default:
+    utils_free (pointer_to_free);
+    break;
+
+  case  SGF_LIST_OF_LABEL:
+    sgf_label_list_delete (pointer_to_free);
+    break;
+
+  case SGF_FIGURE_DESCRIPTION:
+    if (pointer_to_free)
+      sgf_figure_description_delete (pointer_to_free);
+
+    break;
+  }
 
   if (overwrite) {
     (*link)->value.memory_block = pointer;
@@ -1260,14 +1286,18 @@ sgf_property_duplicate (const SgfProperty *property, SgfGameTree *tree,
     break;
 
   case SGF_LIST_OF_VECTOR:
-    /* FIXME: Implement.  First need to implement in the parser
-     *	      though.
-     */
-    assert (0);
+    property_copy->value.vector_list
+      = sgf_vector_list_duplicate (property->value.vector_list);
+    break;
 
   case SGF_LIST_OF_LABEL:
     property_copy->value.label_list
       = sgf_label_list_duplicate (property->value.label_list);
+    break;
+
+  case SGF_FIGURE_DESCRIPTION:
+    property_copy->value.figure
+      = sgf_figure_description_duplicate (property->value.figure);
     break;
 
   default:
@@ -1282,16 +1312,127 @@ sgf_property_duplicate (const SgfProperty *property, SgfGameTree *tree,
 inline static void
 free_property_value (SgfProperty *property)
 {
-
   if (SGF_FIRST_MALLOC_TYPE <= property_info[property->type].value_type
-      && property_info[property->type].value_type <= SGF_LAST_MALLOC_TYPE
-      && property_info[property->type].value_type != SGF_LIST_OF_LABEL
-      && property_info[property->type].value_type != SGF_TYPE_UNKNOWN)
-    utils_free (property->value.memory_block);
-  else if (property_info[property->type].value_type == SGF_LIST_OF_LABEL)
-    sgf_label_list_delete (property->value.label_list);
-  else if (property_info[property->type].value_type == SGF_TYPE_UNKNOWN)
-    string_list_delete (property->value.unknown_value_list);
+      && property_info[property->type].value_type <= SGF_LAST_MALLOC_TYPE) {
+    switch (property_info[property->type].value_type) {
+    default:
+      utils_free (property->value.memory_block);
+      break;
+
+    case SGF_LIST_OF_LABEL:
+      sgf_label_list_delete (property->value.label_list);
+      break;
+
+    case SGF_FIGURE_DESCRIPTION:
+      if (property->value.figure)
+	sgf_figure_description_delete (property->value.figure);
+
+      break;
+
+    case SGF_TYPE_UNKNOWN:
+      string_list_delete (property->value.unknown_value_list);
+      break;
+    }
+  }
+}
+
+
+
+
+#define SGF_VECTOR_LIST_DEFAULT_INITIAL_SIZE	0x20
+#define SGF_VECTOR_LIST_SIZE_INCREMENT		0x80
+
+
+SgfVectorList *
+sgf_vector_list_new (int num_vectors)
+{
+  SgfVectorList *list;
+
+  if (num_vectors < 0)
+    num_vectors = SGF_VECTOR_LIST_DEFAULT_INITIAL_SIZE;
+
+  list = utils_malloc (sizeof (SgfVectorList)
+		       + (num_vectors - 1) * sizeof (SgfVector));
+  list->allocated_num_vectors = num_vectors;
+  list->num_vectors	      = 0;
+
+  return list;
+}
+
+
+SgfVectorList *
+sgf_vector_list_shrink (SgfVectorList *list)
+{
+  assert (list);
+
+  if (list->allocated_num_vectors > list->num_vectors) {
+    list = utils_realloc (list,
+			  (sizeof (SgfVectorList)
+			   + (list->num_vectors - 1) * sizeof (SgfVector)));
+    list->allocated_num_vectors = list->num_vectors;
+  }
+
+  return list;
+}
+
+
+SgfVectorList *
+sgf_vector_list_add_vector (SgfVectorList *list,
+			    BoardPoint from_point, BoardPoint to_point)
+{
+  assert (list);
+
+  if (list->num_vectors == list->allocated_num_vectors) {
+    list->allocated_num_vectors += SGF_VECTOR_LIST_SIZE_INCREMENT;
+    list = utils_realloc (list,
+			  (sizeof (SgfVectorList)
+			   + ((list->allocated_num_vectors - 1)
+			      * sizeof (SgfVector))));
+  }
+
+  list->vectors[list->num_vectors].from_point = from_point;
+  list->vectors[list->num_vectors++].to_point = to_point;
+
+  return list;
+}
+
+
+int
+sgf_vector_list_has_vector (const SgfVectorList *list,
+			    BoardPoint from_point, BoardPoint to_point)
+{
+  int k;
+
+  assert (list);
+
+  for (k = 0; k < list->num_vectors; k++) {
+    if (list->vectors[k].from_point.x	 == from_point.x
+	&& list->vectors[k].from_point.y == from_point.y
+	&& list->vectors[k].to_point.x	 == to_point.x
+	&& list->vectors[k].to_point.y	 == to_point.y)
+      return 1;
+  }
+
+  return 0;
+}
+
+
+SgfVectorList *
+sgf_vector_list_duplicate (const SgfVectorList *list)
+{
+  SgfVectorList *list_copy;
+
+  assert (list);
+
+  list_copy = utils_malloc (sizeof (SgfVectorList)
+			    + (list->num_vectors - 1) * sizeof (SgfVector));
+  list_copy->allocated_num_vectors = list->num_vectors;
+  list_copy->num_vectors	   = list->num_vectors;
+
+  memcpy (list_copy->vectors, list->vectors,
+	  list->num_vectors * sizeof (SgfVector));
+
+  return list_copy;
 }
 
 
@@ -1360,6 +1501,44 @@ sgf_label_list_duplicate (const SgfLabelList *list)
   }
 
   return list_copy;
+}
+
+
+
+SgfFigureDescription *
+sgf_figure_description_new (int flags, char *diagram_name)
+{
+  SgfFigureDescription *figure = utils_malloc (sizeof (SgfFigureDescription));
+
+  figure->flags	       = flags;
+  figure->diagram_name = diagram_name;
+
+  return figure;
+}
+
+
+SgfFigureDescription *
+sgf_figure_description_duplicate (const SgfFigureDescription *figure)
+{
+  SgfFigureDescription *figure_copy
+    = utils_malloc (sizeof (SgfFigureDescription));
+
+  assert (figure);
+
+  figure_copy->flags	    = figure->flags;
+  figure_copy->diagram_name = utils_duplicate_string (figure->diagram_name);
+
+  return figure_copy;
+}
+
+
+void
+sgf_figure_description_delete (SgfFigureDescription *figure)
+{
+  assert (figure);
+
+  utils_free (figure->diagram_name);
+  utils_free (figure);
 }
 
 

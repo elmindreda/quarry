@@ -48,8 +48,40 @@ enum {
 };
 
 
+enum {
+  SGF_STYLE_CURRENT_NODE_VARIATIONS = 1 << 0,
+  SGF_STYLE_NO_BOARD_MARKUP	    = 1 << 1,
+
+  SGF_STYLE_FLAGS_MASK		    = 0x3
+};
+
+enum {
+  SGF_FIGURE_SHOW_COORDINATES  = 1 << 0,
+  SGF_FIGURE_SHOW_DIAGRAM_NAME = 1 << 1,
+  SGF_FIGURE_LIST_MISSED_MOVES = 1 << 2,
+  SGF_FIGURE_REMOVE_CAPTURES   = 1 << 8,
+  SGF_FIGURE_SHOW_HOSHI_POINTS = 1 << 9,
+  SGF_FIGURE_USE_DEFAULTS      = 1 << 15,
+
+  SGF_FIGURE_FLAGS_MASK	       = 0x8307
+};
+
+enum {
+  SGF_PRINT_MODE_NO_MOVE_NUMBERS,
+  SGF_PRINT_MODE_SHOW_MOVE_NUMBERS,
+  SGF_PRINT_MODE_MOVE_NUMBERS_MODULO_100,
+
+  NUM_SGF_PRINT_MODES
+};
+
+
+typedef struct _SgfVector		SgfVector;
+typedef struct _SgfVectorList		SgfVectorList;
+
 typedef struct _SgfLabel		SgfLabel;
 typedef struct _SgfLabelList		SgfLabelList;
+
+typedef struct _SgfFigureDescription	SgfFigureDescription;
 
 typedef union  _SgfValue		SgfValue;
 typedef struct _SgfProperty		SgfProperty;
@@ -70,6 +102,20 @@ typedef struct _SgfGameTree		SgfGameTree;
 typedef struct _SgfCollection		SgfCollection;
 
 
+struct _SgfVector {
+  BoardPoint		  from_point;
+  BoardPoint		  to_point;
+};
+
+struct _SgfVectorList {
+  /* This field is private to the implementation. */
+  int			  allocated_num_vectors;
+
+  int			  num_vectors;
+  SgfVector		  vectors[1];
+};
+
+
 struct _SgfLabel {
   BoardPoint		  point;
   char			 *text;
@@ -79,6 +125,13 @@ struct _SgfLabelList {
   int			  num_labels;
   SgfLabel		  labels[1];
 };
+
+
+struct _SgfFigureDescription {
+  int			  flags;
+  char			 *diagram_name;
+};
+
 
 /* Union is a very handy thing, but unfortunately, standard C doesn't
  * allow casting to them.  The main problem is size of members: while
@@ -100,7 +153,9 @@ union _SgfValue {
   void			 *memory_block;
   char			 *text;
   BoardPositionList	 *position_list;
+  SgfVectorList		 *vector_list;
   SgfLabelList		 *label_list;
+  SgfFigureDescription	 *figure;
 
   /* For unknown properties.  First string stores identifier, the
    * rest---property values.
@@ -232,7 +287,8 @@ struct _SgfGameTree {
   char			 *char_set;
   char			 *application_name;
   char			 *application_version;
-  int			  variation_style;
+  int			  style_is_set;
+  int			  style;
 
   MemoryPool		  node_pool;
   MemoryPool		  property_pool;
@@ -378,6 +434,9 @@ const char *	 sgf_node_get_text_property_value (const SgfNode *node,
 const BoardPositionList *
 		 sgf_node_get_list_of_point_property_value
 		   (const SgfNode *node, SgfType type);
+const SgfVectorList *
+		 sgf_node_get_list_of_vector_property_value
+		   (const SgfNode *node, SgfType type);
 const SgfLabelList *
 		 sgf_node_get_list_of_label_property_value
 		   (const SgfNode *node, SgfType type);
@@ -464,12 +523,44 @@ SgfProperty *	 sgf_property_duplicate (const SgfProperty *property,
 					 SgfGameTree *tree, SgfProperty *next);
 
 
+SgfVectorList *	 sgf_vector_list_new (int num_vectors);
+
+#define sgf_vector_list_delete(list)		\
+  do {						\
+    assert (list);				\
+    utils_free (list);				\
+  } while (0)
+
+
+SgfVectorList *	 sgf_vector_list_shrink (SgfVectorList *list);
+
+SgfVectorList *	 sgf_vector_list_add_vector (SgfVectorList *list,
+					     BoardPoint from_point,
+					     BoardPoint to_point);
+int		 sgf_vector_list_has_vector (const SgfVectorList *list,
+					     BoardPoint from_point,
+					     BoardPoint to_point);
+
+SgfVectorList *	 sgf_vector_list_duplicate (const SgfVectorList *list);
+
+
 SgfLabelList *	 sgf_label_list_new (int num_labels,
 				     BoardPoint *points, char **labels);
 SgfLabelList *	 sgf_label_list_new_empty (int num_labels);
 void		 sgf_label_list_delete (SgfLabelList *list);
 
 SgfLabelList *	 sgf_label_list_duplicate (const SgfLabelList *list);
+
+
+SgfFigureDescription *
+		 sgf_figure_description_new (int flags, char *diagram_name);
+
+void		 sgf_figure_description_delete (SgfFigureDescription *figure);
+
+SgfFigureDescription *
+		 sgf_figure_description_duplicate
+		   (const SgfFigureDescription *figure);
+
 
 
 
