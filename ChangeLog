@@ -1,5 +1,8 @@
 2004-08-15  Paul Pogonyshev  <pogonyshev@gmx.net>
 
+	* README: Mention new requirement for `librsvg'.
+	* INSTALL: Likewise.
+
 	* configure.ac: Quarry version 0.1.6.
 
 2004-08-13  Paul Pogonyshev  <pogonyshev@gmx.net>
