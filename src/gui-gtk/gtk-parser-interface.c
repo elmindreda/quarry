@@ -127,7 +127,7 @@ gtk_parse_sgf_file(const char *filename, GtkWindow *parent)
   data->file_size	  = 0;
   data->bytes_parsed	  = 0;
   data->cancellation_flag = 0;
-  data->parent		  = GTK_WIDGET(parent);
+  data->parent		  = (parent ? GTK_WIDGET(parent) : NULL);
 
   label_text = g_strdup_printf(_("Parsing file `%s'..."), filename);
   data->progress_dialog

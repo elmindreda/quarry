@@ -138,7 +138,7 @@ gtk_progress_dialog_new(GtkWindow *parent,
 
   assert(!parent || GTK_IS_WINDOW(parent));
 
-  progress_dialog->parent = GTK_WIDGET(parent);
+  progress_dialog->parent = (parent ? GTK_WIDGET(parent) : NULL);
   if (progress_dialog->parent) {
     g_object_ref(progress_dialog->parent);
     gtk_widget_set_sensitive(progress_dialog->parent, FALSE);
