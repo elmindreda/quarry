@@ -1,3 +1,12 @@
+2004-11-30  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* (Quarry version 0.1.10.)
+
+2004-11-29  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* gui-gtk/gtk-help.c (gtk_help_display): Don't try to launch Yelp
+	if ScrollKeeper wasn't found on configure stage.
+
 2004-11-26  Paul Pogonyshev  <pogonyshev@gmx.net>
 
 	* gui-gtk/gtk-goban-window.c (IS_IN_SPECIAL_MODE): New macro.
