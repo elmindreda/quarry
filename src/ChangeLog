@@ -1,3 +1,69 @@
+2004-12-25  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* gui-gtk/gtk-preferences.c (update_board_markup_theme): Bug-fix:
+	duplicate theme name, don't just copy the pointer.
+
+	* gui-gtk/gtk-sgf-tree-view.c (gtk_sgf_tree_view_realize): Call
+	parent class method.
+
+	* gui-gtk/gtk-goban.c (gtk_goban_set_parameters): Don't emit
+	`appearance-changed' signal.
+	(gtk_goban_realize): Call parent class method.
+	(gtk_goban_size_allocate): Don't calculate stones and SGF markup
+	margins.
+	(gtk_goban_expose): Use new compute_goban_margins() function.
+	(gtk_goban_appearance_changed): Remove function.
+	(gtk_goban_allocate_screen_resources)
+	(gtk_goban_free_screen_resources): New functions, inherit code of
+	removed gtk_goban_base_appearance_changed().
+	(gtk_goban_finalize): Don't unreference `small_tile_set'.
+	(gtk_goban_update): Use compute_goban_margins().
+	(set_overlay_data): Likewise.
+	(compute_goban_margins): New function.
+
+	* gui-gtk/gtk-goban-base.c (gtk_goban_base_class_init): Create
+	`allocate-screen-resources' and `free-screen-resources' signals;
+	don't create `appearance-changed' signal.
+	(gtk_goban_base_realize, gtk_goban_base_unrealize): New functions.
+	(gtk_goban_base_appearance_changed): Remove function.
+	(gtk_goban_base_allocate_screen_resources)
+	(gtk_goban_base_free_screen_resources): New functions, inherit
+	code of removed gtk_goban_base_appearance_changed().
+	(gtk_goban_base_finalize): Don't unreference tile sets here.
+	(gtk_goban_base_update_appearance): Emit the new signals, not
+	`appearance-changed' and only if the widget is realized.
+	(gtk_goban_base_set_cell_size): Likewise.
+
+	* gui-gtk/gtk-assistant.c (gtk_assistant_update_buttons):
+	Workaround GTK+ 2.0 problem that caused annoying warnings in some
+	cases.
+
+	* quarry.c (main): Parse command line after gui_back_end_init() is
+	called so that GTK+/GLib options are not seen by getopt_long().
+
+	* gui-gtk/gtk-goban-window.c (gtk_goban_window_init): Add "New
+	Game" and "Control Center" menu items.
+	(save_file_as_response): Call update_window_title() when saving to
+	a (different) file.
+	(show_or_hide_navigation_toolbar): Fix copy'n'paste bug: use
+	`show_navigation_toolbar' field, not `show_main_toolbar' one.
+	(update_window_title): When there is no game name, try to create
+	window title from use players' names.  Set window title even if
+	there's no base name.
+	(initialize_gtp_player): Return 1 to indicate no error to the GTP
+	client module.
+
+	* gtp/gtp-client.c (parse_final_status_list): Take care to signal
+	error only if the list is badly formatted.
+
+	* gui-gtk/gtk-gtp-client-interface.c (log_gtp_stream_error): Don't
+	assume that there is a log file, errors are reported regardless of
+	GTP client's echo status.
+
+	* gui-gtk/gtk-goban.c (gtk_goban_size_allocate): Fix bug with cell
+	size calculation that occured when the resulting font was larger
+	than requested (reported by Arend Bayer.)
+
 2004-12-24  Paul Pogonyshev  <pogonyshev@gmx.net>
 
 	* gui-gtk/gtk-gtp-client-interface.c (gtk_create_gtp_client):
