@@ -1,7 +1,7 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *\
  * This file is part of Quarry.                                    *
  *                                                                 *
- * Copyright (C) 2003, 2004 Paul Pogonyshev.                       *
+ * Copyright (C) 2003, 2004, 2005 Paul Pogonyshev.                 *
  *                                                                 *
  * This program is free software; you can redistribute it and/or   *
  * modify it under the terms of the GNU General Public License as  *
@@ -354,34 +354,50 @@ void
 sgf_utils_append_variation (SgfGameTree *tree, SgfBoardState *board_state,
 			    int color, ...)
 {
-  va_list arguments;
   SgfNode *node;
 
   assert (tree);
   assert (tree->current_node);
   assert (board_state);
 
-  va_start (arguments, color);
-
   node = sgf_node_append_child (tree->current_node, tree);
 
   node->move_color = color;
   if (color != EMPTY) {
+    va_list arguments;
+
     assert (IS_STONE (color));
+
+    va_start (arguments, color);
 
     node->move_point.x = va_arg (arguments, int);
     node->move_point.y = va_arg (arguments, int);
 
     if (tree->game == GAME_AMAZONS)
       node->data.amazons = va_arg (arguments, BoardAmazonsMoveData);
+
+    va_end (arguments);
   }
 
-  va_end (arguments);
-
   tree->current_node->current_variation = node;
-  descend_nodes (tree, 1, board_state);
+  sgf_game_tree_invalidate_map (tree, tree->current_node);
 
-  sgf_game_tree_invalidate_map (tree);
+  descend_nodes (tree, 1, board_state);
+}
+
+
+void
+sgf_utils_set_node_is_collapsed (SgfGameTree *tree, SgfNode *node,
+				 int is_collapsed)
+{
+  assert (tree);
+  assert (node);
+
+  if ((is_collapsed && !node->is_collapsed)
+      || (!is_collapsed && node->is_collapsed)) {
+    node->is_collapsed = (is_collapsed ? 1 : 0);
+    sgf_game_tree_invalidate_map (tree, node);
+  }
 }
 
 
