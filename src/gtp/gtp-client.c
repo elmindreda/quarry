@@ -986,37 +986,58 @@ static int
 parse_final_status_list (GtpClient *client, int successful,
 			 GtpClientUserCallbackData *callback_data)
 {
-  StringListItem *this_item;
-
   GtpClientFinalStatusListCallback final_status_list_callback
     = (GtpClientFinalStatusListCallback) callback_data->response_callback;
 
-  BoardPositionList *stones = board_position_list_new_empty (0);
+  if (successful) {
+    StringListItem *this_item;
+    BoardPositionList *stones = board_position_list_new_empty (0);
 
-  for (this_item = client->response.first;
-       this_item;
-       this_item = this_item->next) {
-    BoardPositionList *string = game_parse_position_list (GAME_GO,
-							  client->board_size,
-							  client->board_size,
-							  this_item->text);
+    if (!string_list_is_single_string (&client->response)
+	|| *client->response.first->text) {
+      for (this_item = client->response.first; this_item;
+	   this_item = this_item->next) {
+	BoardPositionList *string
+	  = game_parse_position_list (GAME_GO,
+				      client->board_size, client->board_size,
+				      this_item->text);
 
-    if (string) {
-      BoardPositionList *stones_new = board_position_list_union (stones,
-								 string);
+	if (string) {
+	  BoardPositionList *stones_new = board_position_list_union (stones,
+								     string);
+
+	  board_position_list_delete (stones);
+	  board_position_list_delete (string);
+	  stones = stones_new;
+	}
+	else {
+	  board_position_list_delete (stones);
+	  break;
+	}
+      }
+    }
+    else {
+      /* Empty response is valid as well. */
+      this_item = NULL;
+    }
+
+    if (!this_item) {
+      /* The list is parsed just fine. */
+      final_status_list_callback (client, successful,
+				  callback_data->user_data,
+				  callback_data->integer_data, stones);
+      utils_free (callback_data);
 
       board_position_list_delete (stones);
-      board_position_list_delete (string);
-      stones = stones_new;
+
+      return 1;
     }
   }
 
-  final_status_list_callback (client, successful,
+  final_status_list_callback (client, 0,
 			      callback_data->user_data,
-			      callback_data->integer_data, stones);
+			      callback_data->integer_data, NULL);
   utils_free (callback_data);
-
-  board_position_list_delete (stones);
 
   return !successful;
 }
