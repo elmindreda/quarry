@@ -1,5 +1,15 @@
 2004-09-13  Paul Pogonyshev  <pogonyshev@gmx.net>
 
+	* gui-gtk/gtk-goban-window.c (USER_IS_TO_PLAY): New macro.
+	(gtk_goban_window_enter_game_mode): Use USER_IS_TO_PLAY() instead
+	of USER_CAN_PLAY_MOVES().
+	(free_handicap_has_been_placed): Don't start clock if white player
+	is a GTP engine that hasn't yet initialized (fixes crashes).
+	(initialize_gtp_player): Bug-fix: only check if handicap is fixed
+	if the number of stones doesn't exceed maximal fixed handicap for
+	game's board size in the first place.  Otherwise an assertion in
+	go_get_fixed_handicap_stones() fails.
+
 	* gui-gtk/gtk-goban-window.c (gtk_goban_window_init):
 	Center-justify `move_information_label'.
 	(update_move_information): Print result when browsing the last
