@@ -511,6 +511,8 @@ void	      sgf_utils_mark_territory_on_grid(const SgfGameTree *tree,
 
 void	      sgf_utils_set_handicap(SgfGameTree *tree,
 				     int handicap, int is_fixed);
+void	      sgf_utils_add_free_handicap_stones
+		(SgfGameTree *tree, SgfPositionList *handicap_stones);
 
 
 

@@ -467,12 +467,32 @@ sgf_utils_set_handicap(SgfGameTree *tree, int handicap, int is_fixed)
     }
   }
   else
-    assert(handicap <= tree->board_width * tree->board_height);
+    assert(handicap < tree->board_width * tree->board_height);
 
   sgf_node_add_text_property(tree->current_node, tree, SGF_HANDICAP,
 			     utils_duplicate_as_string(buffer,
 						       sprintf(buffer, "%d",
 							       handicap)));
+}
+
+
+void
+sgf_utils_add_free_handicap_stones(SgfGameTree *tree,
+				   SgfPositionList *handicap_stones)
+{
+  int handicap;
+
+  assert(tree);
+  assert(tree->current_node);
+  assert(handicap_stones);
+
+  handicap = sgf_node_get_handicap(tree->current_node);
+  assert(0 < handicap_stones->num_positions
+	 && handicap_stones->num_positions <= handicap);
+
+  tree->current_node->move_color = SETUP_NODE;
+  sgf_node_add_list_of_point_property(tree->current_node, tree,
+				      SGF_ADD_BLACK, handicap_stones);
 }
 
 
@@ -676,11 +696,15 @@ find_game_info_node(SgfNode *higher_limit, SgfNode *lower_limit)
 static void
 determine_final_color_to_play(SgfGameTree *tree, SgfBoardState *board_state)
 {
-  if (board_state->sgf_color_to_play == EMPTY && tree->game == GAME_GO
-      && board_state->game_info_node) {
-    int handicap = sgf_node_get_handicap(board_state->game_info_node);
+  const SgfNode *game_info_node = board_state->game_info_node;
 
-    if (handicap > 0)
+  if (board_state->sgf_color_to_play == EMPTY && tree->game == GAME_GO
+      && game_info_node) {
+    int handicap = sgf_node_get_handicap(game_info_node);
+
+    if (handicap > 0
+	&& sgf_node_get_list_of_point_property_value(game_info_node,
+						     SGF_ADD_BLACK))
       board_state->sgf_color_to_play = WHITE;
     else if (handicap == 0)
       board_state->sgf_color_to_play = BLACK;
