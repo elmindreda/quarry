@@ -94,7 +94,6 @@ struct _GtkGobanWindow {
   SgfBoardState		   sgf_board_state;
 
   SgfGameTreeState	   game_position;
-  SgfBoardState		  *game_position_board_state;
   SgfBoardState		   game_position_board_state_holder;
 
   gboolean		   in_game_mode;
@@ -171,13 +170,10 @@ GtkWidget *	gtk_goban_window_new(SgfCollection *sgf_collection,
 void		gtk_goban_window_enter_game_mode
 		  (GtkGobanWindow *goban_window,
 		   GtpClient *black_player, GtpClient *white_player,
-		   TimeControl *black_time_control,
-		   TimeControl *white_time_control);
+		   TimeControl *time_control);
 void		gtk_goban_window_resume_game
 		  (GtkGobanWindow *goban_window,
-		   GtpClient *black_player, GtpClient *white_player,
-		   TimeControl *black_time_control,
-		   TimeControl *white_time_control);
+		   GtpClient *black_player, GtpClient *white_player);
 
 
 #endif /* QUARRY_GTK_GOBAN_WINDOW_H */

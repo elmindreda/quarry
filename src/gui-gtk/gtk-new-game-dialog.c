@@ -820,8 +820,7 @@ begin_game (GtkEnginesInstantiationStatus status, gpointer user_data)
   TimeControlData *const time_control_data = (data->time_control_data
 					      + game_index);
   TimeControlConfiguration *time_control_configuration = NULL;
-  TimeControl *black_time_control = NULL;
-  TimeControl *white_time_control = NULL;
+  TimeControl *time_control = NULL;
   SgfGameTree *game_tree;
   SgfCollection *sgf_collection;
   GtkWidget *goban_window;
@@ -900,26 +899,17 @@ begin_game (GtkEnginesInstantiationStatus status, gpointer user_data)
 
     time_control_configuration->track_total_time
       = gtk_toggle_button_get_active (track_total_time_button);
-    if (time_control_configuration->track_total_time) {
-      black_time_control = time_control_new (0, 0, 0);
-      white_time_control = time_control_new (0, 0, 0);
-    }
+    if (time_control_configuration->track_total_time)
+      time_control = time_control_new (0, 0, 0);
   }
   else {
-    double main_time;
-    double overtime_length;
-    int moves_per_overtime;
-    char *overtime_description;
-
     switch (time_control_configuration->type) {
     case 1:
       time_control_configuration->game_time_limit
 	= gtk_adjustment_get_value (time_control_data->game_time_limit);
 
-      main_time		   = time_control_configuration->game_time_limit;
-      overtime_length	   = 0.0;
-      moves_per_overtime   = 0.0;
-      overtime_description = utils_duplicate_string ("none");
+      time_control
+	= time_control_new (time_control_configuration->game_time_limit, 0, 0);
 
       break;
 
@@ -927,10 +917,8 @@ begin_game (GtkEnginesInstantiationStatus status, gpointer user_data)
       time_control_configuration->move_time_limit
 	= gtk_adjustment_get_value (time_control_data->move_time_limit);
 
-      main_time		   = 0.0;
-      overtime_length	   = time_control_configuration->move_time_limit;
-      moves_per_overtime   = 1;
-      overtime_description = utils_cprintf ("%.f per move", overtime_length);
+      time_control
+	= time_control_new (0, time_control_configuration->move_time_limit, 1);
 
       break;
 
@@ -942,30 +930,19 @@ begin_game (GtkEnginesInstantiationStatus status, gpointer user_data)
       time_control_configuration->moves_per_overtime
 	= gtk_adjustment_get_value (time_control_data->moves_per_overtime);
 
-      main_time		   = time_control_configuration->main_time;
-      overtime_length	   = (time_control_configuration
-			      ->overtime_period_length);
-      moves_per_overtime   = time_control_configuration->moves_per_overtime;
-      overtime_description = utils_cprintf ("%d/%d Canadian",
-					    moves_per_overtime,
-					    (int) overtime_length);
-
+      time_control
+	= time_control_new (time_control_configuration->main_time,
+			    time_control_configuration->overtime_period_length,
+			    time_control_configuration->moves_per_overtime);
       break;
 
     default:
       assert (0);
     }
 
-    black_time_control = time_control_new (main_time, overtime_length,
-					   moves_per_overtime);
-    white_time_control = time_control_new (main_time, overtime_length,
-					   moves_per_overtime);
-
-    sgf_node_add_text_property (game_tree->current_node, game_tree,
-				SGF_TIME_LIMIT,
-				utils_cprintf ("%.f", main_time), 0);
-    sgf_node_add_text_property (game_tree->current_node, game_tree,
-				SGF_OVERTIME, overtime_description, 0);
+    time_control_save_settings_in_sgf_node (time_control,
+					    game_tree->current_node,
+					    game_tree);
   }
 
   sgf_collection = sgf_collection_new ();
@@ -987,7 +964,7 @@ begin_game (GtkEnginesInstantiationStatus status, gpointer user_data)
   gtk_goban_window_enter_game_mode (GTK_GOBAN_WINDOW (goban_window),
 				    data->players[BLACK_INDEX],
 				    data->players[WHITE_INDEX],
-				    black_time_control, white_time_control);
+				    time_control);
   gtk_widget_show (goban_window);
 
   gtk_widget_destroy (GTK_WIDGET (data->assistant));

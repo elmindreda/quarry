@@ -182,6 +182,9 @@ maybe_open_game_record (GtkWidget *dialog, gint response_id,
 }
 
 
+/* FIXME: Show information about game time control and remaining time
+ *	  for both players.
+ */
 static void
 gtk_resume_game_dialog_present (SgfCollection *sgf_collection,
 				const gchar *filename)
@@ -467,13 +470,10 @@ gtk_resume_game_dialog_response (GtkWidget *dialog, gint response_id,
 }
 
 
-/* FIXME: Restore time limits information. */
 static void
 do_resume_game (GtkEnginesInstantiationStatus status, gpointer user_data)
 {
   ResumeGameDialogData *data = (ResumeGameDialogData *) user_data;
-  TimeControl *black_time_control = NULL;
-  TimeControl *white_time_control = NULL;
   GtkWidget *goban_window;
 
   assert (status == ENGINES_INSTANTIATED);
@@ -481,8 +481,7 @@ do_resume_game (GtkEnginesInstantiationStatus status, gpointer user_data)
   goban_window = gtk_goban_window_new (data->sgf_collection, data->filename);
   gtk_goban_window_resume_game (GTK_GOBAN_WINDOW (goban_window),
 				data->players[BLACK_INDEX],
-				data->players[WHITE_INDEX],
-				black_time_control, white_time_control);
+				data->players[WHITE_INDEX]);
 
   gtk_window_present (GTK_WINDOW (goban_window));
 

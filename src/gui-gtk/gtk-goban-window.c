@@ -68,7 +68,7 @@
 #define NAVIGATE_FAST_NUM_MOVES	10
 
 #define IS_DISPLAYING_GAME_NODE(goban_window)				\
-  ((goban_window)->game_position_board_state				\
+  ((goban_window)->game_position.board_state				\
    == &(goban_window)->sgf_board_state)
 
 #define USER_CAN_PLAY_MOVES(goban_window)				\
@@ -86,7 +86,7 @@
 #define USER_IS_TO_PLAY(goban_window)					\
   (!((goban_window)							\
      ->players[COLOR_INDEX ((goban_window)				\
-			    ->game_position_board_state			\
+			    ->game_position.board_state			\
 			    ->color_to_play)]))
 
 
@@ -217,6 +217,8 @@ static void	 do_resign_game (GtkGobanWindow *goban_window);
 
 static void	 set_current_tree (GtkGobanWindow *goban_window,
 				   SgfGameTree *sgf_tree);
+static void	 set_time_controls (GtkGobanWindow *goban_window,
+				    TimeControl *time_control);
 static void	 reenter_current_node (GtkGobanWindow *goban_window);
 static void	 about_to_change_node (GtkGobanWindow *goban_window);
 static void	 just_changed_node (GtkGobanWindow *goban_window);
@@ -846,10 +848,12 @@ gtk_goban_window_init (GtkGobanWindow *goban_window)
 
   goban_window->board = NULL;
 
-  goban_window->in_game_mode	      = FALSE;
-  goban_window->pending_free_handicap = 0;
-  goban_window->players[BLACK_INDEX]  = NULL;
-  goban_window->players[WHITE_INDEX]  = NULL;
+  goban_window->in_game_mode		   = FALSE;
+  goban_window->pending_free_handicap	   = 0;
+  goban_window->players[BLACK_INDEX]	   = NULL;
+  goban_window->players[WHITE_INDEX]	   = NULL;
+  goban_window->time_controls[BLACK_INDEX] = NULL;
+  goban_window->time_controls[WHITE_INDEX] = NULL;
 
   goban_window->filename = NULL;
   goban_window->save_as_dialog = NULL;
@@ -974,8 +978,7 @@ void
 gtk_goban_window_enter_game_mode (GtkGobanWindow *goban_window,
 				  GtpClient *black_player,
 				  GtpClient *white_player,
-				  TimeControl *black_time_control,
-				  TimeControl *white_time_control)
+				  TimeControl *time_control)
 {
   const SgfGameTree *game_tree;
   int handicap = -1;
@@ -986,10 +989,10 @@ gtk_goban_window_enter_game_mode (GtkGobanWindow *goban_window,
   goban_window->in_game_mode		   = TRUE;
   goban_window->players[BLACK_INDEX]	   = black_player;
   goban_window->players[WHITE_INDEX]	   = white_player;
-  goban_window->time_controls[BLACK_INDEX] = black_time_control;
-  goban_window->time_controls[WHITE_INDEX] = white_time_control;
 
-  goban_window->game_position_board_state = &goban_window->sgf_board_state;
+  set_time_controls (goban_window, time_control);
+
+  goban_window->game_position.board_state = &goban_window->sgf_board_state;
 
   game_tree = goban_window->current_tree;
   handicap = sgf_node_get_handicap (game_tree->current_node);
@@ -1025,24 +1028,33 @@ gtk_goban_window_enter_game_mode (GtkGobanWindow *goban_window,
  */
 void
 gtk_goban_window_resume_game (GtkGobanWindow *goban_window,
-			      GtpClient *black_player, GtpClient *white_player,
-			      TimeControl *black_time_control,
-			      TimeControl *white_time_control)
+			      GtpClient *black_player, GtpClient *white_player)
 {
+  SgfBoardState *const board_state = &goban_window->sgf_board_state;
+
   assert (GTK_IS_GOBAN_WINDOW (goban_window));
   assert (!goban_window->in_game_mode);
 
   goban_window->in_game_mode		   = TRUE;
   goban_window->players[BLACK_INDEX]	   = black_player;
   goban_window->players[WHITE_INDEX]	   = white_player;
-  goban_window->time_controls[BLACK_INDEX] = black_time_control;
-  goban_window->time_controls[WHITE_INDEX] = white_time_control;
 
-  goban_window->game_position_board_state = &goban_window->sgf_board_state;
+  goban_window->game_position.board_state = board_state;
 
   /* Resuming, skip'em played moves! */
-  sgf_utils_go_down_in_tree (goban_window->current_tree, -1,
-			     &goban_window->sgf_board_state);
+  sgf_utils_go_down_in_tree (goban_window->current_tree, -1);
+
+  if (goban_window->time_controls[BLACK_INDEX]) {
+    time_control_set_state (goban_window->time_controls[BLACK_INDEX],
+			    board_state->time_left[BLACK_INDEX],
+			    board_state->moves_left[BLACK_INDEX]);
+  }
+
+  if (goban_window->time_controls[WHITE_INDEX]) {
+    time_control_set_state (goban_window->time_controls[WHITE_INDEX],
+			    board_state->time_left[WHITE_INDEX],
+			    board_state->moves_left[WHITE_INDEX]);
+  }
 
   do_enter_game_mode (goban_window);
 }
@@ -1099,16 +1111,11 @@ leave_game_mode (GtkGobanWindow *goban_window)
   if (goban_window->time_controls[BLACK_INDEX]) {
     gtk_clock_use_time_control (goban_window->clocks[BLACK_INDEX], NULL,
 				NULL, NULL);
-
-    time_control_delete (goban_window->time_controls[BLACK_INDEX]);
-    goban_window->time_controls[BLACK_INDEX] = NULL;
   }
 
   if (goban_window->time_controls[WHITE_INDEX]) {
     gtk_clock_use_time_control (goban_window->clocks[WHITE_INDEX], NULL,
 				NULL, NULL);
-    time_control_delete (goban_window->time_controls[WHITE_INDEX]);
-    goban_window->time_controls[WHITE_INDEX] = NULL;
   }
 }
 
@@ -2328,7 +2335,7 @@ go_scoring_mode_done (GtkGobanWindow *goban_window)
 {
   SgfGameTree *current_tree = goban_window->current_tree;
   SgfNode *game_info_node
-    = goban_window->game_position_board_state->game_info_node;
+    = goban_window->game_position.board_state->game_info_node;
   double komi;
   double score;
   char *detailed_score;
@@ -2400,6 +2407,9 @@ set_current_tree (GtkGobanWindow *goban_window, SgfGameTree *sgf_tree)
   gtk_goban_set_parameters (goban_window->goban, sgf_tree->game,
 			    sgf_tree->board_width, sgf_tree->board_height);
 
+  set_time_controls (goban_window,
+		     time_control_new_from_sgf_node (sgf_tree->root));
+
   update_game_information (goban_window);
   update_children_for_new_node (goban_window);
 
@@ -2424,14 +2434,28 @@ set_current_tree (GtkGobanWindow *goban_window, SgfGameTree *sgf_tree)
 
 
 static void
+set_time_controls (GtkGobanWindow *goban_window, TimeControl *time_control)
+{
+  if (goban_window->time_controls[BLACK_INDEX])
+    time_control_delete (goban_window->time_controls[BLACK_INDEX]);
+
+  if (goban_window->time_controls[WHITE_INDEX])
+    time_control_delete (goban_window->time_controls[WHITE_INDEX]);
+
+  goban_window->time_controls[BLACK_INDEX] = time_control;
+  goban_window->time_controls[WHITE_INDEX]
+    = (time_control ? time_control_duplicate (time_control) : NULL);
+}
+
+
+static void
 reenter_current_node (GtkGobanWindow *goban_window)
 {
   SgfGameTree *current_tree = goban_window->current_tree;
 
   if (current_tree->current_node->parent) {
-    sgf_utils_go_up_in_tree (current_tree, 1, &goban_window->sgf_board_state);
-    sgf_utils_go_down_in_tree (current_tree, 1,
-			       &goban_window->sgf_board_state);
+    sgf_utils_go_up_in_tree (current_tree, 1);
+    sgf_utils_go_down_in_tree (current_tree, 1);
   }
   else {
     sgf_utils_enter_tree (current_tree, goban_window->board,
@@ -2459,7 +2483,7 @@ about_to_change_node (GtkGobanWindow *goban_window)
     goban_window->game_position.board
       = board_duplicate_without_stacks (goban_window->game_position.board);
 
-    goban_window->game_position_board_state
+    goban_window->game_position.board_state
       = &goban_window->game_position_board_state_holder;
     memcpy (&goban_window->game_position_board_state_holder,
 	    &goban_window->sgf_board_state, sizeof (SgfBoardState));
@@ -2481,7 +2505,7 @@ just_changed_node (GtkGobanWindow *goban_window)
      * position node, but has just navigated back to that node.
      */
     board_delete (goban_window->game_position.board);
-    goban_window->game_position_board_state = &goban_window->sgf_board_state;
+    goban_window->game_position.board_state = &goban_window->sgf_board_state;
   }
 }
 
@@ -2493,7 +2517,6 @@ play_pass_move (GtkGobanWindow *goban_window)
 	  && USER_CAN_PLAY_MOVES (goban_window));
 
   sgf_utils_append_variation (goban_window->current_tree,
-			      &goban_window->sgf_board_state,
 			      goban_window->sgf_board_state.color_to_play,
 			      PASS_X, PASS_Y);
   set_sgf_collection_is_modified (goban_window, TRUE);
@@ -2540,8 +2563,7 @@ do_resign_game (GtkGobanWindow *goban_window)
 			      utils_cprintf ("%c+Resign", other_color_char),
 			      1);
 
-  sgf_utils_append_variation (goban_window->current_tree,
-			      &goban_window->sgf_board_state, EMPTY);
+  sgf_utils_append_variation (goban_window->current_tree, EMPTY);
   set_sgf_collection_is_modified (goban_window, TRUE);
   update_children_for_new_node (goban_window);
 }
@@ -2686,7 +2708,6 @@ playing_mode_goban_clicked (GtkGobanWindow *goban_window,
 
       if (goban_window->board->game != GAME_AMAZONS) {
 	sgf_utils_append_variation (goban_window->current_tree,
-				    &goban_window->sgf_board_state,
 				    color_to_play, data->x, data->y);
       }
       else {
@@ -2716,7 +2737,6 @@ playing_mode_goban_clicked (GtkGobanWindow *goban_window,
 	}
 	else {
 	  sgf_utils_append_variation (goban_window->current_tree,
-				      &goban_window->sgf_board_state,
 				      color_to_play,
 				      goban_window->amazons_to_x,
 				      goban_window->amazons_to_y,
@@ -2744,8 +2764,7 @@ playing_mode_goban_clicked (GtkGobanWindow *goban_window,
 
       about_to_change_node (goban_window);
       sgf_utils_switch_to_given_variation (goban_window->current_tree,
-					   goban_window->node_to_switch_to,
-					   &goban_window->sgf_board_state);
+					   goban_window->node_to_switch_to);
       just_changed_node (goban_window);
       update_children_for_new_node (goban_window);
     }
@@ -2972,42 +2991,35 @@ navigate_goban (GtkGobanWindow *goban_window,
 
   switch (command) {
   case GOBAN_NAVIGATE_BACK:
-    sgf_utils_go_up_in_tree (current_tree, 1, &goban_window->sgf_board_state);
+    sgf_utils_go_up_in_tree (current_tree, 1);
     break;
 
   case GOBAN_NAVIGATE_BACK_FAST:
-    sgf_utils_go_up_in_tree (current_tree, NAVIGATE_FAST_NUM_MOVES,
-			     &goban_window->sgf_board_state);
+    sgf_utils_go_up_in_tree (current_tree, NAVIGATE_FAST_NUM_MOVES);
     break;
 
   case GOBAN_NAVIGATE_FORWARD:
-    sgf_utils_go_down_in_tree (current_tree, 1,
-			       &goban_window->sgf_board_state);
+    sgf_utils_go_down_in_tree (current_tree, 1);
     break;
 
   case GOBAN_NAVIGATE_FORWARD_FAST:
-    sgf_utils_go_down_in_tree (current_tree, NAVIGATE_FAST_NUM_MOVES,
-			       &goban_window->sgf_board_state);
+    sgf_utils_go_down_in_tree (current_tree, NAVIGATE_FAST_NUM_MOVES);
     break;
 
   case GOBAN_NAVIGATE_PREVIOUS_VARIATION:
-    sgf_utils_switch_to_variation (current_tree, SGF_PREVIOUS,
-				   &goban_window->sgf_board_state);
+    sgf_utils_switch_to_variation (current_tree, SGF_PREVIOUS);
     break;
 
   case GOBAN_NAVIGATE_NEXT_VARIATION:
-    sgf_utils_switch_to_variation (current_tree, SGF_NEXT,
-				   &goban_window->sgf_board_state);
+    sgf_utils_switch_to_variation (current_tree, SGF_NEXT);
     break;
 
   case GOBAN_NAVIGATE_ROOT:
-    sgf_utils_go_up_in_tree (current_tree, -1,
-			     &goban_window->sgf_board_state);
+    sgf_utils_go_up_in_tree (current_tree, -1);
     break;
 
   case GOBAN_NAVIGATE_VARIATION_END:
-    sgf_utils_go_down_in_tree (current_tree, -1,
-			       &goban_window->sgf_board_state);
+    sgf_utils_go_down_in_tree (current_tree, -1);
     break;
   }
 
@@ -3020,8 +3032,7 @@ static void
 switch_to_given_node (GtkGobanWindow *goban_window, SgfNode *sgf_node)
 {
   about_to_change_node (goban_window);
-  sgf_utils_switch_to_given_node (goban_window->current_tree, sgf_node,
-				  &goban_window->sgf_board_state);
+  sgf_utils_switch_to_given_node (goban_window->current_tree, sgf_node);
   just_changed_node (goban_window);
 
   update_children_for_new_node (goban_window);
@@ -3055,6 +3066,7 @@ find_variation_to_switch_to (GtkGobanWindow *goban_window,
 static void
 update_children_for_new_node (GtkGobanWindow *goban_window)
 {
+  const SgfBoardState *const board_state = &goban_window->sgf_board_state;
   SgfGameTree *current_tree = goban_window->current_tree;
   SgfNode *current_node = current_tree->current_node;
   char goban_markup[BOARD_GRID_SIZE];
@@ -3093,12 +3105,10 @@ update_children_for_new_node (GtkGobanWindow *goban_window)
 		    goban_markup, goban_window->sgf_markup,
 		    sgf_node_get_list_of_label_property_value (current_node,
 							       SGF_LABEL),
-		    goban_window->sgf_board_state.last_move_x,
-		    goban_window->sgf_board_state.last_move_y);
+		    board_state->last_move_x, board_state->last_move_y);
   gtk_goban_force_feedback_poll (goban_window->goban);
 
-  if (goban_window->last_game_info_node
-      != goban_window->sgf_board_state.game_info_node)
+  if (goban_window->last_game_info_node != board_state->game_info_node)
     update_game_information (goban_window);
 
   update_game_specific_information (goban_window);
@@ -3106,6 +3116,29 @@ update_children_for_new_node (GtkGobanWindow *goban_window)
 
   comment = sgf_node_get_text_property_value (current_node, SGF_COMMENT);
   gtk_utils_set_text_buffer_text (goban_window->text_buffer, comment);
+
+  if (!goban_window->in_game_mode) {
+    int k;
+
+    for (k = 0; k < NUM_COLORS; k++) {
+      if (goban_window->time_controls[k]) {
+	double time_left;
+	int moves_left;
+
+	time_control_apply_defaults_if_needed (goban_window->time_controls[k],
+					       board_state->time_left[k],
+					       board_state->moves_left[k],
+					       &time_left, &moves_left);
+
+	gtk_clock_set_time (goban_window->clocks[k], time_left, moves_left);
+      }
+      else {
+	gtk_clock_set_time (goban_window->clocks[k],
+			    board_state->time_left[k],
+			    board_state->moves_left[k]);
+      }
+    }
+  }
 
   show_sgf_tree_view_automatically (goban_window, current_node);
 
@@ -3184,7 +3217,7 @@ update_window_title (GtkGobanWindow *goban_window)
   }
 
   if (goban_window->sgf_collection_is_modified)
-    title = utils_cat_strings (title, " (", _("modified"), ")", NULL);
+    title = utils_cat_strings (title, " [", _("modified"), "]", NULL);
 
   gtk_window_set_title (GTK_WINDOW (goban_window), title);
 
@@ -3696,7 +3729,7 @@ initialize_gtp_player (GtpClient *client, int successful,
     }
 
     if (client_color
-	== goban_window->game_position_board_state->color_to_play) {
+	== goban_window->game_position.board_state->color_to_play) {
       generate_move_via_gtp (goban_window);
       start_clock_if_needed (goban_window);
     }
@@ -3720,7 +3753,7 @@ free_handicap_has_been_placed (GtkGobanWindow *goban_window,
 				      handicap_stones);
 
   reenter_current_node (goban_window);
-  assert (goban_window->game_position_board_state->color_to_play == WHITE);
+  assert (goban_window->game_position.board_state->color_to_play == WHITE);
 
   if (GTP_ENGINE_CAN_PLAY_MOVES (goban_window, WHITE)) {
     /* The engine is initialized, but since free handicap placement
@@ -3742,32 +3775,19 @@ static void
 move_has_been_played (GtkGobanWindow *goban_window)
 {
   SgfNode *move_node
-    = goban_window->game_position_board_state->last_move_node;
+    = goban_window->game_position.board_state->last_move_node;
   TimeControl *time_control
     = goban_window->time_controls[COLOR_INDEX (move_node->move_color)];
-  int color_to_play = goban_window->game_position_board_state->color_to_play;
+  int color_to_play = goban_window->game_position.board_state->color_to_play;
 
   if (time_control) {
-    gint moves_left;
-    double seconds_left = time_control_stop (time_control, &moves_left);
-
+    time_control_stop (time_control, NULL);
     gtk_clock_time_control_state_changed
       (goban_window->clocks[COLOR_INDEX (move_node->move_color)]);
 
-    sgf_node_add_real_property (move_node, goban_window->current_tree,
-				(move_node->move_color == BLACK
-				 ? SGF_TIME_LEFT_FOR_BLACK
-				 : SGF_TIME_LEFT_FOR_WHITE),
-				floor (seconds_left * 1000.0 + 0.5) / 1000.0,
-				0);
-
-    if (moves_left) {
-      sgf_node_add_number_property (move_node, goban_window->current_tree,
-				    (move_node->move_color == BLACK
-				     ? SGF_MOVES_LEFT_FOR_BLACK
-				     : SGF_MOVES_LEFT_FOR_WHITE),
-				    moves_left, 0);
-    }
+    time_control_save_state_in_sgf_node (time_control,
+					 move_node, goban_window->current_tree,
+					 move_node->move_color);
   }
 
   set_sgf_collection_is_modified (goban_window, TRUE);
@@ -3800,7 +3820,7 @@ move_has_been_played (GtkGobanWindow *goban_window)
   }
   else {
     SgfNode *game_info_node
-      = goban_window->game_position_board_state->game_info_node;
+      = goban_window->game_position.board_state->game_info_node;
 
     switch (goban_window->board->game) {
     case GAME_GO:
@@ -3998,14 +4018,10 @@ move_has_been_generated (GtpClient *client, int successful,
 
     /* FIXME: Validate move and alert if it is illegal. */
 
-    if (goban_window->current_tree->game != GAME_AMAZONS) {
-      sgf_utils_append_variation (current_tree,
-				  goban_window->game_position_board_state,
-				  color, x, y);
-    }
+    if (goban_window->current_tree->game != GAME_AMAZONS)
+      sgf_utils_append_variation (current_tree, color, x, y);
     else {
       sgf_utils_append_variation (current_tree,
-				  goban_window->game_position_board_state,
 				  color, x, y, move_data->amazons);
     }
 
@@ -4027,7 +4043,7 @@ move_has_been_generated (GtpClient *client, int successful,
 static void
 generate_move_via_gtp (GtkGobanWindow *goban_window)
 {
-  int color_to_play = goban_window->game_position_board_state->color_to_play;
+  int color_to_play = goban_window->game_position.board_state->color_to_play;
   int color_to_play_index = COLOR_INDEX (color_to_play);
   TimeControl *time_control = goban_window->time_controls[color_to_play_index];
 
@@ -4054,7 +4070,7 @@ static void
 start_clock_if_needed (GtkGobanWindow *goban_window)
 {
   int color_to_play_index
-    = COLOR_INDEX (goban_window->game_position_board_state->color_to_play);
+    = COLOR_INDEX (goban_window->game_position.board_state->color_to_play);
 
   if (goban_window->time_controls[color_to_play_index]) {
     time_control_start (goban_window->time_controls[color_to_play_index]);
@@ -4078,8 +4094,7 @@ player_is_out_of_time (GtkClock *clock, GtkGobanWindow *goban_window)
 			      SGF_RESULT,
 			      utils_cprintf ("%c+Time", winner_color_char), 1);
 
-  sgf_utils_append_variation (goban_window->current_tree,
-			      &goban_window->sgf_board_state, EMPTY);
+  sgf_utils_append_variation (goban_window->current_tree, EMPTY);
   set_sgf_collection_is_modified (goban_window, TRUE);
   update_children_for_new_node (goban_window);
 }
