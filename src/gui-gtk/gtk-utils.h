@@ -105,6 +105,13 @@ typedef enum {
 } GtkUtilsMessageDialogFlags;
 
 
+typedef enum {
+  RETURN_ACTIVATES_DEFAULT,
+  RETURN_ADVANCES_FOCUS,
+  RETURN_DEFAULT_MODE
+} GtkUtilsEntryActivationMode;
+
+
 /* This is the same as the prototype of the `focus-out-event' handler
  * since this callback basically does the same job.  Note that
  * `dummy_event' will be `NULL'.
@@ -129,8 +136,17 @@ void		gtk_utils_add_similar_bindings(GtkBindingSet *binding_set,
 					       gint num_bindings);
 
 
+#if GTK_2_2_OR_LATER
+
 void		gtk_utils_make_window_only_horizontally_resizable
 		  (GtkWindow *window);
+
+#else
+
+#define gtk_utils_make_window_only_horizontally_resizable(window)
+
+#endif
+
 
 void		gtk_utils_standardize_dialog(GtkDialog *dialog,
 					      GtkWidget *contents);
@@ -159,7 +175,8 @@ GtkWidget *	gtk_utils_make_widget_scrollable
 GtkWidget *	gtk_utils_create_left_aligned_label(const gchar *label_text);
 GtkWidget *	gtk_utils_create_mnemonic_label(const gchar *label_text,
 						GtkWidget *mnemonic_widget);
-GtkWidget *	gtk_utils_create_entry(const gchar *text);
+GtkWidget *	gtk_utils_create_entry(const gchar *text,
+				       GtkUtilsEntryActivationMode mode);
 GtkWidget *	gtk_utils_create_browse_button
 		  (gboolean with_text,
 		   GtkWidget *associated_entry, gboolean is_command_line_entry,
@@ -181,6 +198,8 @@ void		gtk_utils_create_radio_chain(GtkWidget **radio_buttons,
 					     const gchar **label_texts,
 					     gint num_radio_buttons);
 GtkSizeGroup *	gtk_utils_create_size_group(GtkSizeGroupMode mode, ...);
+GtkSizeGroup *  gtk_utils_align_left_widgets(GtkContainer *container,
+					     GtkSizeGroup *size_group);
 
 
 void		gtk_utils_set_sensitive_on_toggle

@@ -69,9 +69,16 @@ static void	 browsing_dialog_response(GtkFileSelection *file_selection,
 					  gint response_id,
 					  GtkUtilsBrowseButtonData *data);
 
+static void	 advance_focus(GtkWidget *widget);
+
 static gboolean	 time_spin_button_output(GtkSpinButton *spin_button);
 static gint	 time_spin_button_input(GtkSpinButton *spin_button,
 					gdouble *new_value);
+
+static void	 do_align_left_widgets(GtkWidget *first_level_child,
+				       GtkSizeGroup *size_group);
+static void	 do_align_left_widget(GtkWidget *widget,
+				      GtkSizeGroup **size_group);
 
 static void	 set_widget_sensitivity_on_toggle
 		   (GtkToggleButton *toggle_button, GtkWidget *widget);
@@ -101,6 +108,8 @@ gtk_utils_add_similar_bindings(GtkBindingSet *binding_set,
 }
 
 
+#if GTK_2_2_OR_LATER
+
 void
 gtk_utils_make_window_only_horizontally_resizable(GtkWindow *window)
 {
@@ -112,6 +121,8 @@ gtk_utils_make_window_only_horizontally_resizable(GtkWindow *window)
   geometry.max_height = -1;
   gtk_window_set_geometry_hints(window, NULL, &geometry, GDK_HINT_MAX_SIZE);
 }
+
+#endif
 
 
 void
@@ -483,16 +494,40 @@ gtk_utils_create_mnemonic_label(const gchar *label_text,
 
 
 GtkWidget *
-gtk_utils_create_entry(const gchar *text)
+gtk_utils_create_entry(const gchar *text, GtkUtilsEntryActivationMode mode)
 {
   GtkWidget *entry = gtk_entry_new();
 
   if (text)
     gtk_entry_set_text(GTK_ENTRY(entry), text);
 
-  gtk_entry_set_activates_default(GTK_ENTRY(entry), TRUE);
+  switch (mode) {
+  case RETURN_ACTIVATES_DEFAULT:
+    gtk_entry_set_activates_default(GTK_ENTRY(entry), TRUE);
+    break;
+
+  case RETURN_ADVANCES_FOCUS:
+    g_signal_connect(entry, "activate", G_CALLBACK(advance_focus), NULL);
+    break;
+
+  case RETURN_DEFAULT_MODE:
+    /* It's the default mode, do nothing. */
+    break;
+  }
 
   return entry;
+}
+
+
+static void
+advance_focus(GtkWidget *widget)
+{
+  do
+    widget = gtk_widget_get_parent(widget);
+  while (widget && !GTK_IS_WINDOW(widget));
+
+  if (widget)
+    g_signal_emit_by_name(widget, "move-focus", GTK_DIR_TAB_FORWARD);
 }
 
 
@@ -647,13 +682,11 @@ time_spin_button_output(GtkSpinButton *spin_button)
    * used only occasionally.
    */
   if (value >= 60 * 60) {
-    utils_ncprintf(buffer, sizeof(buffer), "%d:%02d:%02d",
-		   value / (60 * 60), (value / 60) % 60, value % 60);
+    sprintf(buffer, "%d:%02d:%02d",
+	    value / (60 * 60), (value / 60) % 60, value % 60);
   }
-  else {
-    utils_ncprintf(buffer, sizeof(buffer), "%02d:%02d",
-		   value / 60, value % 60);
-  }
+  else
+    sprintf(buffer, "%02d:%02d", value / 60, value % 60);
 
   gtk_entry_set_text(GTK_ENTRY(spin_button), buffer);
 
@@ -840,6 +873,50 @@ gtk_utils_create_size_group(GtkSizeGroupMode mode, ...)
 
   g_object_unref(size_group);
   return size_group;
+}
+
+
+GtkSizeGroup *
+gtk_utils_align_left_widgets(GtkContainer *container, GtkSizeGroup *size_group)
+{
+  assert(GTK_IS_CONTAINER(container));
+  assert(!size_group || GTK_IS_SIZE_GROUP(size_group));
+
+  if (!size_group)
+    size_group = gtk_size_group_new(GTK_SIZE_GROUP_HORIZONTAL);
+
+  gtk_container_foreach(container,
+			(GtkCallback) do_align_left_widgets, size_group);
+
+  return size_group;
+}
+
+
+static void
+do_align_left_widgets(GtkWidget *first_level_child, GtkSizeGroup *size_group)
+{
+  if (GTK_IS_HBOX(first_level_child)
+      || GTK_IS_HBUTTON_BOX(first_level_child)) {
+    GtkSizeGroup *size_group_copy = size_group;
+
+    gtk_container_foreach(GTK_CONTAINER(first_level_child),
+			  (GtkCallback) do_align_left_widget,
+			  &size_group_copy);
+  }
+  else if (GTK_IS_CONTAINER(first_level_child)) {
+    gtk_container_foreach(GTK_CONTAINER(first_level_child),
+			  (GtkCallback) do_align_left_widgets, size_group);
+  }
+}
+
+
+static void
+do_align_left_widget(GtkWidget *widget, GtkSizeGroup **size_group)
+{
+  if (*size_group) {
+    gtk_size_group_add_widget(*size_group, widget);
+    *size_group = NULL;
+  }
 }
 
 
