@@ -38,6 +38,16 @@
 #define QUARRY_SPACING_VERY_BIG		24
 
 
+/* These limits appeared only in GLib 2.4. */
+#ifndef G_MAXUINT8
+#define G_MAXUINT8	((guint8) 0xff)
+#endif
+
+#ifndef G_MAXUINT16
+#define G_MAXUINT16	((guint16) 0xffff)
+#endif
+
+
 #define GTK_2_2_OR_LATER				\
   (GTK_MAJOR_VERSION >= 2 && GTK_MINOR_VERSION >= 2)
 
@@ -62,6 +72,14 @@
 #define gtk_window_set_skip_pager_hint(window, setting)
 
 
+#endif
+
+
+#if !GTK_2_4_OR_LATER
+/* The manual doesn't say this, but apparently the function is only
+ * introduced in GTK+ 2.4.
+ */
+#define gtk_entry_set_alignment(entry, alignment)
 #endif
 
 
