@@ -1,0 +1,1001 @@
+<?xml version="1.0"?>
+<!DOCTYPE article PUBLIC "-//OASIS//DTD DocBook XML V4.1.2//EN"
+	  "http://www.oasis-open.org/docbook/xml/4.1.2/docbookx.dtd"
+	  [ <!ENTITY legal SYSTEM "legal.xml">
+	    <!ENTITY FDL   SYSTEM "fdl.xml">
+	    <!ENTITY appversion "0.2">
+	    <!ENTITY manrevision "0.2">
+	    <!ENTITY date "October 2004">
+	    <!ENTITY app "<application>Quarry</application>"> ]>
+<!--
+      (Do not remove this comment block.)
+  Maintained by the GNOME Documentation Project
+  http://developer.gnome.org/projects/gdp
+  Template version: 2.0 beta
+  Template last modified Apr 11, 2002
+-->
+
+<!-- Since Quarry is not a GNOME project, I modified this template somewhat.  /pp -->
+
+<!-- Document Header -->
+
+<!-- Please do not change the `id'; for translations, change `lang' to appropriate
+     code. -->
+<article id="index" lang="en">
+  <articleinfo>
+    <title>&app; Manual V&manrevision;</title>
+    <copyright>
+      <year>2004</year>
+      <holder>Paul Pogonyshev</holder>
+    </copyright>
+
+    <!-- Translators: uncomment this:
+
+    <copyright>
+      <year>2004</year>
+      <holder>ME-THE-TRANSLATOR (Latin translation)</holder>
+    </copyright>
+
+    -->
+
+    <!-- An address can be added to the publisher information.  If a role is not
+	 specified, the publisher/author is the same for all versions of the document.
+
+	 FIXME: Seems not particularly true for Quarry, commented out.
+      -->
+    <!--
+    <publisher>
+      <publishername> GNOME Documentation Project </publishername>
+    </publisher>
+    -->
+
+    &legal;
+
+    <authorgroup>
+      <author>
+	<firstname>Paul</firstname>
+	<surname>Pogonyshev</surname>
+	<affiliation>
+	  <address><email>pogonyshev@gmx.net</email></address>
+	</affiliation>
+      </author>
+
+<!-- This is appropriate place for other contributors: translators, maintainers,
+     etc. Commented out by default.
+
+      <othercredit role="translator">
+	<firstname>Latin</firstname>
+	<surname>Translator 1</surname>
+	<affiliation>
+	  <orgname>Latin Translation Team</orgname>
+	  <address><email>translator@gnome.org</email></address>
+	</affiliation>
+	<contrib>Latin translation</contrib>
+      </othercredit>
+-->
+    </authorgroup>
+
+    <revhistory>
+      <revision>
+	<revnumber>Quarry Manual V&manrevision;</revnumber>
+	<date>&date;</date>
+	<revdescription>
+	  <para role="author">Paul Pogonyshev
+	    <email>pogonyshev@gmx.net</email>
+	  </para>
+	</revdescription>
+      </revision>
+    </revhistory>
+
+    <releaseinfo>
+      This manual describes version &appversion; of Quarry.
+    </releaseinfo>
+    <legalnotice>
+      <title>Feedback</title>
+      <para>
+	To report a bug or make a suggestion regarding the &app; application or this
+	manual, either send a message to <email>quarry-dev@gna.org</email> or use
+	<ulink url="https://gna.org/bugs/?group=quarry">&app; bug tracker</ulink>.
+      </para>
+      <!-- Translators may also add here feedback address for translations. -->
+    </legalnotice>
+  </articleinfo>
+
+  <indexterm zone="index">
+    <primary>Quarry</primary>
+  </indexterm>
+  <indexterm zone="index">
+    <primary>quarry</primary>
+  </indexterm>
+
+  <!-- Document Body -->
+
+  <!-- Introduction -->
+  <sect1 id="introduction">
+    <title>Introduction</title>
+    <para>
+      The &app; application enables you to play the board games of Go, Amazons and
+      Othello.  You can play with computer programs or with another human, and save, view
+      and edit game records.
+    </para>
+
+    <para>
+      &app; provides the following features:
+    </para>
+
+    <itemizedlist>
+      <listitem>
+	<para>
+	  Nice resizeable board.
+	</para>
+      </listitem>
+
+      <listitem>
+	<para>
+	  Support for
+	  <ulink type="http" url="http://www.lysator.liu.se/~gunnar/gtp/">GTP</ulink>
+	  (Game Text Protocol) as an interface to game-playing programs.  In particular,
+	  you can play with
+	  <ulink type="http"
+		 url="http://www.gnu.org/software/gnugo/gnugo.html">GNU Go</ulink>.
+	</para>
+      </listitem>
+
+      <listitem>
+	<para>
+	  Game records are stored in widely supported
+	  <ulink type="http" url="http://www.red-bean.com/sgf/">SGF</ulink> FF[4] file
+	  format.  &app; has an extremely fast SGF parser, which is important if you have
+	  very large SGF files.
+	</para>
+      </listitem>
+    </itemizedlist>
+
+    <note>
+      <para>
+	&app; itself can play neither Go, nor Amazons, nor Othello.  To have a computer
+	opponent, you need to find a program (i.e. GNU Go mentioned above) that supports
+	GTP and <link linkend="register-game-playing-program">register it in &app;</link>.
+      </para>
+    </note>
+  </sect1>
+
+  <!-- Getting Started -->
+  <sect1 id="getting-started">
+    <title>Getting Started</title>
+
+    <sect2 id="start">
+      <title>To Start &app;</title>
+      <para>
+	Simply type <command>quarry</command> in command line and press
+	<keycap>Return</keycap>.
+      </para>
+
+      <para>
+	You can also have &app; open one or more game records immediatly after you start
+	it.  Just type
+      </para>
+
+      <para>
+	<command>quarry</command> <replaceable>file1.sgf file2.sgf ...</replaceable>
+      </para>
+
+      <para>
+	in command line and press <keycap>Return</keycap>.  &app; will start with
+	specified file(s) open.
+      </para>
+
+      <note>
+	<para>
+	  Filenames don't have to end in <filename>.sgf</filename>, but names of SGF files
+	  typically do have this suffix.
+	</para>
+      </note>
+    </sect2>
+
+    <sect2 id="when-start">
+      <title>When You Start &app;</title>
+      <para>
+	When you start &app;, Control Center window is displayed:
+      </para>
+
+      <figure id="control-center-screen-shot">
+	<title>&app; Control Center</title>
+	<screenshot>
+	  <mediaobject>
+	    <imageobject>
+	      <imagedata fileref="figures/control-center.png"
+			 format="PNG"/>
+	    </imageobject>
+	    <textobject>
+	      <phrase>
+		Shows &app; Control Center window.  Contains three buttons:
+		<guibutton>New Game</guibutton>, <guibutton>Open Game Record</guibutton>
+		and <guibutton>Preferences</guibutton>.
+	      </phrase>
+	    </textobject>
+	  </mediaobject>
+	</screenshot>
+      </figure>
+
+      <para>
+	The Control Center window consists of the following elements:
+      </para>
+
+      <variablelist>
+	<varlistentry>
+	  <term><guibutton>New Game</guibutton> button</term>
+	  <listitem>
+	    <para>
+	      This button allows you to start a new game.  It will pop up the
+	      <link linkend="new-game-dialog">New Game dialog</link> where you can select
+	      the game (Go, Amazons or Othello), opponents and game-specific rules.
+	    </para>
+	  </listitem>
+	</varlistentry>
+
+	<varlistentry>
+	  <term><guibutton>Open Game Record</guibutton> button</term>
+	  <listitem>
+	    <para>
+	      This button allows you to select a game record for viewing and/or editing.
+	      Opening a game record this way does the same as specifying its filename on
+	      the command line.
+	    </para>
+	  </listitem>
+	</varlistentry>
+
+	<varlistentry>
+	  <term><guibutton>Preferences</guibutton> button</term>
+	  <listitem>
+	    <para>
+	      This button opens the &app;
+	      <link linkend="preferences">Preferences dialog</link>
+	    </para>
+	  </listitem>
+	</varlistentry>
+      </variablelist>
+    </sect2>
+  </sect1>
+
+  <sect1 id="usage">
+    <title>Usage</title>
+
+    <sect2 id="new-game">
+      <title>To Start a New Game</title>
+      <para>
+	To start a new game, click <guibutton>New Game</guibutton> button in the &app;
+	<link linkend="when-start">Control Center window</link>.  The
+	<link linkend="new-game-dialog">New Game dialog</link> will appear, where you can
+	choose the kind of game you want and the opponents.
+      </para>
+
+      <para>
+	If you want to play against a computer program, you need to register it in &app;
+	first (once only, of course.)  To do this, click the
+	<guibutton>Manage Engine List</guibutton> button in the dialog.
+      </para>
+
+      <para>
+	For more information, see
+	<link linkend="new-game-dialog">detailed description of New Game dialog</link>.
+      </para>
+    </sect2>
+
+    <sect2 id="open-game-record">
+      <title>To Open a Game Record</title>
+      <para>
+	You can open a game record in one of three ways:
+      </para>
+
+      <itemizedlist>
+	<listitem>
+	  <para>
+	    Click the <guibutton>Open Game Record</guibutton> button in the
+	    <link linkend="when-start">Control Center window</link>.  &app; will display
+	    the <guilabel>Open SGF File</guilabel> dialog.  Select the file with the game
+	    record you want to open and click <guibutton>OK</guibutton>.
+	  </para>
+	</listitem>
+
+	<listitem>
+	  <para>
+	    Choose
+	    <menuchoice>
+	      <guimenu>File</guimenu>
+	      <guimenuitem>Open</guimenuitem>
+	    </menuchoice>
+	    menu item or simply press <keycap>Ctrl+O</keycap> in any opened
+	    <link linkend="board-windows">Board window</link>.  Similarly to the previous
+	    case, &app; will display the <guilabel>Open SGF File</guilabel> dialog.
+	  </para>
+	</listitem>
+
+	<listitem>
+	  <para>
+	    When starting &app;, specify the name of file (or several names at once) at
+	    the command line:
+	  </para>
+
+	  <para>
+	    <command>quarry</command> <replaceable>file1.sgf file2.sgf ...</replaceable>
+	  </para>
+
+	  <para>
+	    The specified file(s) will be opened automatically.
+	  </para>
+	</listitem>
+      </itemizedlist>
+    </sect2>
+
+    <sect2 id="save-game-record">
+      <title>To Save a Game Record</title>
+      <para>
+	To save a game record, choose
+	<menuchoice>
+	  <guimenu>File</guimenu>
+	  <guimenuitem>Save</guimenuitem>
+	</menuchoice>
+	menu item in its <link linkend="board-windows">Board window</link> (or simply
+	press <keycap>Ctrl+S</keycap>.)  If the file does not yet have a filename, &app;
+	will display the <guilabel>Save As</guilabel> dialog.  Enter the name for the
+	file, then click <guibutton>OK</guibutton>.
+      </para>
+
+      <para>
+	If you want to save a game record under a different filename, chose
+	<menuchoice>
+	  <guimenu>File</guimenu>
+	  <guimenuitem>Save As</guimenuitem>
+	</menuchoice>
+	menu item.  Enter a name for the file in the <guilabel>Save As</guilabel> dialog
+	and click <guibutton>OK</guibutton>.
+      </para>
+
+      <note>
+	<para>
+	  Currently, &app; displays a warning when overwriting a game record file.  It is
+	  temporary and will be removed when &app; is more mature.  Meahwhile, you should
+	  not overwrite files created with other SGF editors as there is a small chance
+	  that some data will be lost.
+	</para>
+      </note>
+    </sect2>
+
+    <sect2 id="register-game-playing-program">
+      <title>To Register a Game-Playing Program</title>
+      <para>
+	To register a game-playing program in &app;, first open the
+	<link linkend="preferences">Preferences dialog</link> and select
+	<guilabel>GTP Engines</guilabel> category in its left pane.  (You can also click
+	the <guibutton>Manage Engine List</guibutton> button in the
+	<link linkend="new-game-dialog">New Game dialog</link>, which immediatly displays
+	the <guilabel>GTP Engines</guilabel> category.)
+      </para>
+
+      <para>
+	Then click the <guibutton>Add</guibutton> button and, in the appeared
+	<link linkend="preferences-gtp-engine-information-dialog">dialog</link>, enter the
+	command line required to launch the program in GTP mode.  You should consult the
+	program's manual to find out how the command line should look like.  For instance,
+	command line for
+	<ulink type="http"
+	       url="http://www.gnu.org/software/gnugo/gnugo.html">GNU Go</ulink>
+	should look this way (note the double hyphens):
+      </para>
+
+      <para>
+	<command>gnugo --mode gtp --quit</command>
+      </para>
+
+      <para>
+	Other programs may require different options or no options at all.
+      </para>
+    </sect2>
+  </sect1>
+
+  <sect1 id="windows-and-menus">
+    <title>Quarry Windows and Menus</title>
+
+    <sect2 id="new-game-dialog">
+      <title>New Game Dialog</title>
+      <para>
+	The New Game dialog consists of two pages, <guilabel>Game &amp; Players</guilabel>
+	and <guilabel>Game Rules</guilabel>.  When you open the dialog, the first page
+	appears.  When you click <guibutton>Next</guibutton> button, the second page is
+	displayed, which is specific for each of three games&mdash;Go, Amazons and
+	Othello.
+      </para>
+
+      <sect3 id="new-game-dialog-game-and-players">
+	<title>Game &amp; Players Page</title>
+	<para>
+	  On this page you can select one of three available games and the opponents.  You
+	  can make selections in arbitrary order&mdash;first choose the game and then the
+	  opponents or the other way round.  At any time, all playable combinations of
+	  games and computer players are marked with <guiicon><quote>Yes</quote></guiicon>
+	  icons, while all unplayable combinations are marked with
+	  <guiicon><quote>No</quote></guiicon> icons.  The <guibutton>Next</guibutton>
+	  button is sensitive only when a playable combination of game and opponents is
+	  selected.
+	</para>
+
+	<note>
+	  <para>
+	    Before playing against a computer program (i.e.
+	    <ulink type="http"
+		   url="http://www.gnu.org/software/gnugo/gnugo.html">GNU Go</ulink>,
+	    you need to register it in &app;.  See
+	    <link linkend="preferences-gtp-engines">GTP Engines</link> section for how to
+	    do this.
+	  </para>
+	</note>
+
+	<para>
+	  <guilabel>Game &amp; Players</guilabel> page conists of the following controls:
+	</para>
+
+	<variablelist>
+	  <varlistentry>
+	    <term><guilabel>Game</guilabel> section</term>
+	    <listitem>
+	      <para>
+		Here you can select the game you want to play, either Go, Amazons or
+		Othello (also known as Reversi).  Note that most programs can play only
+		one game.
+	      </para>
+	    </listitem>
+	  </varlistentry>
+
+	  <varlistentry>
+	    <term><guilabel>White Player</guilabel> and <guilabel>Black Player</guilabel>
+	      sections</term>
+	    <listitem>
+	      <para>
+		This set of controls determines the opponents.  Each opponent can be
+		either a human or a computer program.  For a human player you can specify
+		her name (defaults to your name as reported by the system.)  Computer
+		opponent should be selected from the drop-down list.  If the list does not
+		contain the program you want to play against, click the
+		<guibutton>Manage Engine List</guibutton> at the end of the dialog to
+		register the program in &app;.
+	      </para>
+
+	      <para>
+		Which player is to move first depends on the game.  In Go and Othello
+		black moves first, while in Amazons white has the first turn.  You can
+		always change sides with the <guibutton>Swap</guibutton> button to the
+		right.
+	      </para>
+	    </listitem>
+	  </varlistentry>
+
+	  <varlistentry>
+	    <term><guibutton>Swap</guibutton> button</term>
+	    <listitem>
+	      <para>
+		This button allows you to easily swap players' sides.  It does nothing
+		else but copying settings from <guilabel>White Player</guilabel> section
+		to <guilabel>Black Player</guilabel> section and vice versa.
+	      </para>
+	    </listitem>
+	  </varlistentry>
+
+	  <varlistentry>
+	    <term><guibutton>Manage Engine List</guibutton> button</term>
+	    <listitem>
+	      <para>
+		This button opens &app; Preferences dialog at the
+		<link linkend="preferences-gtp-engines">GTP Engines</link> page.  A
+		convenient way to register new program and/or modify parameters of the
+		already registered ones just before starting a new game.
+	      </para>
+	    </listitem>
+	  </varlistentry>
+
+	  <varlistentry>
+	    <term><guibutton>Next</guibutton> button</term>
+	    <listitem>
+	      <para>
+		When you are done with this page, click the <guibutton>Next</guibutton>
+		button to tweak game specific rules on the next page.
+	      </para>
+	    </listitem>
+	  </varlistentry>
+	</variablelist>
+      </sect3>
+
+      <sect3 id="new-game-dialog-game-rules">
+	<title>Game Rules Page</title>
+	<para>
+	  On this page you can select the rules for the game.  The page has two parts.
+	  The upper part is different for each of Go, Amazons and Othello games and
+	  contains game-specific rules.  The lower part contains time limit settings
+	  controls and is the same for all three games.  It is
+	  <link linkend="new-game-dialog-time-settings">described</link> last.
+	</para>
+
+	<para>
+	  When you have selected the rules you want, click the <guibutton>Play</guibutton>
+	  button to start the game.
+	</para>
+
+	<sect4 id="new-game-dialog-go-rules">
+	  <title>Go Rules</title>
+	  <para>
+	    Go has many different rule sets that differ in scoring details, treating of
+	    some special positions etc.  Currently, &app; doesn't make any difference
+	    between them.  However, existing rule controls should be enough in most cases.
+	  </para>
+
+	  <variablelist>
+	    <varlistentry>
+	      <term><guilabel>Board Size</guilabel> spin button</term>
+	      <listitem>
+		<para>
+		  Choose the size of board for the game here.  Go is traditionally played
+		  on 19&times;19 board.  9&times;9 and 13&times;13 boards are also common.
+		  &app; doesn't limit you to these&mdash;choose any size between 5&times;5
+		  and 25&times;25 inclusive.
+		</para>
+	      </listitem>
+	    </varlistentry>
+
+	    <varlistentry>
+	      <term>Handicap controls</term>
+	      <listitem>
+		<para>
+		  When one of the players is weaker, it is common practice in Go to give
+		  him <firstterm>handicap</firstterm> stones.  This gives her better
+		  chances to win and makes the game more challenging (and thus more
+		  interesting) for the stronger player.  The weaker player is
+		  traditionally playing as black.
+		</para>
+
+		<para>
+		  &app; supports both <firstterm>fixed</firstterm> (also known as
+		  Japanese) and <firstterm>free</firstterm> (Chinese) handicaps.  In the
+		  first case, handicap stones are placed following a traditional pattern,
+		  at <firstterm>hoshi</firstterm> points.  Maximal fixed handicap is 9
+		  stones.  With free handicap, on the other hand, black player actively
+		  places the handicap stones at any intersections on the board.  Free
+		  handicap is practically not limited.
+		</para>
+
+		<note>
+		  <para>
+		    &app; treats free handicap as non-obligatory: it allows black to place
+		    fewer handicap stones than specified in game rules (but not less than
+		    two.)
+		  </para>
+		</note>
+
+		<para>
+		  If you want an <quote>even</quote> game, simply set the handicap to
+		  zero.
+		</para>
+	      </listitem>
+	    </varlistentry>
+
+	    <varlistentry>
+	      <term><guilabel>Komi</guilabel> spin button</term>
+	      <listitem>
+		<para>
+		  <firstterm>Komi</firstterm> is the compensation to the white player for
+		  playing second.  It is usually non-integer to make draws impossible.
+		  The currently suggested komi for <quote>even</quote> game on 19&times;19
+		  board is 6.5 points.  Smaller (or even negative) komi gives some
+		  advantage to black player and can be used in addition to handicap.
+		</para>
+	      </listitem>
+	    </varlistentry>
+	  </variablelist>
+
+	  <para>
+	    See also
+	    <link linkend="new-game-dialog-time-settings">time limit settings
+	      description</link>.
+	  </para>
+	</sect4>
+
+	<sect4 id="new-game-dialog-amazons-rules">
+	  <title>Amazons Rules</title>
+	  <para>
+	    At present, Amazons rules in &app; are limited to board size and common
+	    <link linkend="new-game-dialog-time-settings">time limit settings</link>.
+	    Standard board size for Amazons is 10&times;10, but you can choose anything
+	    from 5&times;5 to 25&times;25 inclusive.
+	  </para>
+	</sect4>
+
+	<sect4 id="new-game-dialog-othello-rules">
+	  <title>Othello Rules</title>
+	  <para>
+	    Othello rules in &app; are limited to board size and
+	    <link linkend="new-game-dialog-time-settings">time limit settings</link>
+	    described just below this section.  Standard board size for Othello is
+	    8&times;8; 10&times;10 board is not uncommon too.  In &app; you can select any
+	    even board size from 6&times;6 to 24&times;24 inclusive.
+	  </para>
+	</sect4>
+
+	<sect4 id="new-game-dialog-time-settings">
+	  <title>Time Limit Settings</title>
+	  <para>
+	    &app; allows to play games with limited time for both players.  This also
+	    applies to computer program players&mdash;they have to honor the alloted time
+	    or lose.  Of course the programs are properly notified about the time limit
+	    settings and the remaining time.
+	  </para>
+
+	  <note>
+	    <para>
+	      Computer opponents use CPU time to generate moves.  This means that they
+	      usually need less time on faster machines and more on slower machines.
+	      Also, if you run a computationally intensive task while playing, your
+	      computer opponents may become slower.  Finally, certain computer programs
+	      may also
+	      <quote>think</quote> on opponent's time.
+	    </para>
+	  </note>
+
+	  <note>
+	    <para>
+	      At present, player who runs out of time doesn't lose automatically.  This
+	      will be fixed before &app; 0.2 is released.
+	    </para>
+	  </note>
+
+	  <para>
+	    &app; has four types of time control:
+	  </para>
+
+	  <variablelist>
+	    <varlistentry>
+	      <term>No limit</term>
+	      <listitem>
+		<para>
+		  Both opponents can take as much time as they like on each move, there
+		  are no limits.  In this mode you can choose to select
+		  <guilabel><quote>Keep track of total time</quote></guilabel> option.
+		  Then &app; will display the total time spent on move pondering by each
+		  player.  This is purely for your information and serves no other
+		  purpose.
+		</para>
+	      </listitem>
+	    </varlistentry>
+
+	    <varlistentry>
+	      <term>Limited time for entire game</term>
+	      <listitem>
+		<para>
+		  Each player has limited time to play the whole game.  If a player fails
+		  to finish the game in the alloted time, she loses.  Note that time limit
+		  doesn't depend on the number of moves in the game.
+		</para>
+	      </listitem>
+	    </varlistentry>
+
+	    <varlistentry>
+	      <term>Limited time per move</term>
+	      <listitem>
+		<para>
+		  Each move has to be played in fixed time.  Time not used is not stored
+		  and not added to available time on next moves.  When using this mode,
+		  keep in mind that in most games there are <quote>difficult</quote>
+		  positions that require more pondering time.
+		</para>
+	      </listitem>
+	    </varlistentry>
+
+	    <varlistentry>
+	      <term>Canadian overtime (also known as Canadian byo-yomi)</term>
+	      <listitem>
+		<para>
+		  This time control is often used in Go, but has nothing Go-specific, so
+		  it can be used in any other move-based game.  Canadian overtime has the
+		  advantage of imposing certain speed of play, but, at the same time,
+		  allowing to occasionally spend more time on important moves.
+		</para>
+
+		<para>
+		  Canadian overtime has three parameters:
+		  <firstterm>main time</firstterm>,
+		  <firstterm>overtime period length</firstterm> and
+		  <firstterm>moves per overtime</firstterm>.  Both players begin game in
+		  their main time.  During main time they can play any number of moves at
+		  any speed.  When main time for a player is up, first overtime period
+		  begins.  During each overtime period a player has to play the specified
+		  number of moves (<firstterm>moves per overtime</firstterm>.)  If she
+		  fails to do so, she loses on time.  Otherwise, next overtime (of the
+		  very same length) begins and the player has to play the same number of
+		  moves this before the time is up again.  The number of overtimes is
+		  unlimited and they are completely equal to each other: time not used in
+		  one overtime period is not stored and not added to other overtime
+		  periods.
+		</para>
+	      </listitem>
+	    </varlistentry>
+	  </variablelist>
+	</sect4>
+      </sect3>
+    </sect2>
+
+    <sect2 id="board-windows">
+      <title>Board Windows</title>
+      <para>
+	Board windows are the main part of &app;.  They are used to play games and view
+	and edit game records.  To the left in a window is the game board itself.  The
+	exact appearance of the board depends on the current game (Go, Amazons or Othello)
+	and can be <link linkend="preferences-go-board-appearance">configured</link>.  On
+	the right side of the window there is information pane (to the top) and the
+	comment window.
+      </para>
+
+      <sect3 id="board">
+	<title>The Board</title>
+	<para>
+	  Sorry, not documented yet...
+	</para>
+      </sect3>
+
+      <sect3 id="board-window-information-pane">
+	<title>Board Window Information Pane</title>
+	<para>
+	  Sorry, not documented yet...
+	</para>
+      </sect3>
+
+      <sect3 id="board-window-menu">
+	<title>Board Window Menu</title>
+	<para>
+	  Sorry, not documented yet...
+	</para>
+      </sect3>
+    </sect2>
+  </sect1>
+
+  <sect1 id="preferences">
+    <title>Settings</title>
+    <para>
+      To configure &app; either click the <guibutton>Preferences</guibutton> button in the
+      <link linkend="when-start">Control Center window</link> or choose
+      <menuchoice>
+	<guimenu>Edit</guimenu>
+	<guimenuitem>Preferences</guimenuitem>
+      </menuchoice>
+      menu item.
+    </para>
+
+    <para>
+      The Preferences dialog is displayed.  It consists of the following categories:
+    </para>
+
+    <itemizedlist>
+      <listitem>
+	GTP
+
+	<itemizedlist>
+	  <listitem>
+	    <link linkend="preferences-gtp-engines">GTP Engines</link>
+	  </listitem>
+	</itemizedlist>
+      </listitem>
+
+      <listitem>
+	Game Records (SGF)
+
+	<itemizedlist>
+	  <listitem>
+	    <link linkend="preferences-saving-game-records">Saving</link>
+	  </listitem>
+	</itemizedlist>
+      </listitem>
+
+      <listitem>
+	Board Appearance
+
+	<itemizedlist>
+	  <listitem>
+	    <link linkend="preferences-go-board-appearance">Go Board Appearance</link>
+	  </listitem>
+
+	  <listitem>
+	    <link linkend="preferences-amazons-board-appearance">Amazons Board
+	      Appearance</link>
+	  </listitem>
+
+	  <listitem>
+	    <link linkend="preferences-othello-board-appearance">Othello Board
+	      Appearance</link>
+	  </listitem>
+	</itemizedlist>
+      </listitem>
+    </itemizedlist>
+
+    <sect2 id="preferences-gtp-engines">
+      <title>GTP Engines</title>
+      <para>
+	At this page, all game-playing programs registered in &app; are shown.  You can
+	register new programs and modify information in existing entries.
+      </para>
+
+      <para>
+	All registered programs are shown in the list labeled
+	<guilabel>List of GTP engines</guilabel>.  When you select one of them, some
+	information about it is shown in the lower part of the dialog.  This inlcudes
+	program <guilabel>name</guilabel>, <guilabel>version</guilabel>,
+	<guilabel>supported game(s)</guilabel> and <guilabel>command line</guilabel>.  The
+	command line is exactly what you specified while registering the program, while
+	the rest of information is reported by the program itself.  All programs listed
+	here are also shown in the <link linkend="new-game-dialog">New Game dialog</link>
+	as available computer opponents.
+      </para>
+
+      <para>
+	There are also five buttons on this page:
+      </para>
+
+      <variablelist>
+	<varlistentry>
+	  <term><guibutton>Add</guibutton> and <guibutton>Modify</guibutton>
+	    buttons</term>
+	  <listitem>
+	    <para>
+	      These two buttons allow you to register another program, or modify
+	      information about an already registered one, correspondingly.  They both pop
+	      up the
+	      <link linkend="preferences-gtp-engine-information-dialog">GTP Engine
+		Information dialog</link>.
+	    </para>
+	  </listitem>
+	</varlistentry>
+
+	<varlistentry>
+	  <term><guibutton>Remove</guibutton> button</term>
+	  <listitem>
+	    <para>
+	      This button removes a game-playing program from the list of registered
+	      programs.  The unregistered program will not appear in the
+	      <link linkend="new-game-dialog">New Game dialog</link> as an available
+	      opponent.  Of course, the program itself is not touched and you can
+	      re-register it in &app; later.
+	    </para>
+	  </listitem>
+	</varlistentry>
+
+	<varlistentry>
+	  <term><guibutton>Move Up</guibutton> and <guibutton>Move Down</guibutton>
+	    buttons</term>
+	  <listitem>
+	    <para>
+	      Using these two buttons you can rearrange registered programs.  Computer
+	      opponents in the New Game dialog are listed in exactly the same order as on
+	      this page, so you may want to place more frequently used programs on the
+	      top.  Another way to reorder GTP programs is to drag-and-drop their names in
+	      the list.
+	    </para>
+	  </listitem>
+	</varlistentry>
+      </variablelist>
+
+      <sect3 id="preferences-gtp-engine-information-dialog">
+	<title>GTP Engine Information Dialog</title>
+	<para>
+	  This dialog is shown whenever you want to register a game-playing program in
+	  &app; or modify information about an already registered one.  Depending on the
+	  situation, it can be titled either <guilabel>New GTP Engine</guilabel> or
+	  <guilabel>Modify GTP Engine Information</guilabel>.  After you fill in the
+	  dialog, press the <guibutton>Add</guibutton> or <guibutton>OK</guibutton>
+	  button.  &app; will launch the program to check if it works and ask it for some
+	  information.
+	</para>
+
+	<note id="preferences-gtp-engine-information-dialog-freeze">
+	  <para>
+	    If the message
+	    <quote>Querying engine's name, version and known commands...</quote> appears
+	    and persists for too long (more than a few seconds), this most likely
+	    indicates that the command line you specify starts the program in non-GTP mode
+	    or starts a wrong program to begin with.  If you don't expect the program to
+	    be very slow on initialization, then click the <guibutton>Cancel</guibutton>
+	    button and fix the command line.
+	  </para>
+	</note>
+
+	<para>
+	  The dialog has two text entry fields:
+	</para>
+
+	<variablelist>
+	  <varlistentry>
+	    <term><guilabel>Command line</guilabel></term>
+	    <listitem>
+	      <para>
+		The command line to start the program should be entered here.  You can use
+		the <guibutton>Browse</guibutton> button to select the program, but
+		normally just specifying program filename is enough.  (More exactly, it is
+		enough if the program is installed in a directory that is in your
+		<envar>$PATH</envar> environment variable.)  In any case, you should enter
+		program-specific options after its filename.  To find out which options
+		should be used, see the manual of the program in question.
+	      </para>
+
+	      <para>
+		For
+		<ulink type="http"
+		       url="http://www.gnu.org/software/gnugo/gnugo.html">GNU Go</ulink>,
+		the command line should look like this (note the double hyphens):
+	      </para>
+
+	      <para>
+		<command>gnugo --mode gtp --quiet</command>
+	      </para>
+
+	      <para>
+		You may also want to specify additional options.  See GNU Go documentation
+		for more information.
+	      </para>
+	    </listitem>
+	  </varlistentry>
+
+	  <varlistentry>
+	    <term><guilabel>Screen name</guilabel></term>
+	    <listitem>
+	      <para>
+		In this field you can specify the way &app; will display the name of the
+		program.  You can enter the full name or use special symbols
+		<quote>%n</quote> and <quote>%v</quote>.  They will be replaced with the
+		name and version of the program as it reports them itself.  In most cases
+		the default value of <quote>%n %v</quote> is what you want, but sometimes
+		it makes sense to alter it.  For instance, you can specify
+		<quote>%n %v level 5</quote> here if you fixed program's level in the
+		command line.  If, for some reason, you need the percent sign in the name,
+		type it in as <quote>%%</quote> (the percent sign is used as
+		<firstterm>escape symbol</firstterm> in this field.)
+	      </para>
+	    </listitem>
+	  </varlistentry>
+	</variablelist>
+      </sect3>
+    </sect2>
+
+    <sect2 id="preferences-saving-game-records">
+      <title>Saving Game Records</title>
+      <para>
+	Sorry, not documented yet...
+      </para>
+    </sect2>
+
+    <sect2 id="preferences-go-board-appearance">
+      <title>Go Board Appearance</title>
+      <para>
+	Sorry, not documented yet...
+      </para>
+    </sect2>
+
+    <sect2 id="preferences-amazons-board-appearance">
+      <title>Amazons Board Appearance</title>
+      <para>
+	Sorry, not documented yet...
+      </para>
+    </sect2>
+
+    <sect2 id="preferences-othello-board-appearance">
+      <title>Othello Board Appearance</title>
+      <para>
+	Sorry, not documented yet...
+      </para>
+    </sect2>
+  </sect1>
+
+  &FDL;
+</article>
+
+<!--
+    Local Variables:
+    tab-width: 8
+    sgml-basic-offset: 2
+    fill-column: 90
+    End:
+  -->

@@ -1,0 +1,829 @@
+<html><head><meta content="text/html; charset=ISO-8859-1" http-equiv="Content-Type"><title>Quarry Manual V0.2</title><meta name="generator" content="DocBook XSL Stylesheets V1.50.0"><meta http-equiv="Content-Style-Type" content="text/css"><link rel="stylesheet" href="../quarry-help.css" type="text/css"></head><body><table border="0" cellspacing="0" cellpadding="0" align="center"><tr><td style="width: 90ex; padding: 2ex 6ex;" class="contents"><div class="article"><div class="titlepage"><div><h1 class="title"><a name="index"></a>Quarry Manual V0.2</h1></div><div><div class="authorgroup"><div class="author"><h3 class="author">Paul Pogonyshev</h3><div class="affiliation"><div class="address"><p><tt>&lt;<a href="mailto:pogonyshev@gmx.net">pogonyshev@gmx.net</a>&gt;</tt></p></div></div></div></div></div><div><p class="releaseinfo">
+      This manual describes version 0.2 of Quarry.
+    </p></div><div><p class="copyright">Copyright © 2004 Paul Pogonyshev</p></div><div><div class="legalnotice"><p>
+    Permission is granted to copy, distribute and/or modify this document under the terms
+    of the GNU Free Documentation License, Version 1.2 or any later version published by
+    the Free Software Foundation; with no Invariant Sections, no Front-Cover Texts, and no
+    Back-Cover Texts.  A copy of the license is included in the section entitled
+    &#8220;GNU Free Documentation License&#8221; or in the file
+    <tt>COPYING-DOCS</tt> distributed with this manual.
+  </p><p>
+    DOCUMENT AND MODIFIED VERSIONS OF THE DOCUMENT ARE PROVIDED UNDER THE TERMS OF THE GNU
+    FREE DOCUMENTATION LICENSE WITH THE FURTHER UNDERSTANDING THAT:
+
+    </p><div class="orderedlist"><ol type="1"><li><p>
+	  DOCUMENT IS PROVIDED ON AN &#8220;AS IS&#8221; BASIS, WITHOUT WARRANTY OF ANY
+	  KIND, EITHER EXPRESSED OR IMPLIED, INCLUDING, WITHOUT LIMITATION, WARRANTIES
+	  THAT THE DOCUMENT OR MODIFIED VERSION OF THE DOCUMENT IS FREE OF DEFECTS
+	  MERCHANTABLE, FIT FOR A PARTICULAR PURPOSE OR NON-INFRINGING. THE ENTIRE RISK AS
+	  TO THE QUALITY, ACCURACY, AND PERFORMANCE OF THE DOCUMENT OR MODIFIED VERSION OF
+	  THE DOCUMENT IS WITH YOU. SHOULD ANY DOCUMENT OR MODIFIED VERSION PROVE
+	  DEFECTIVE IN ANY RESPECT, YOU (NOT THE INITIAL WRITER, AUTHOR OR ANY
+	  CONTRIBUTOR) ASSUME THE COST OF ANY NECESSARY SERVICING, REPAIR OR
+	  CORRECTION. THIS DISCLAIMER OF WARRANTY CONSTITUTES AN ESSENTIAL PART OF THIS
+	  LICENSE. NO USE OF ANY DOCUMENT OR MODIFIED VERSION OF THE DOCUMENT IS
+	  AUTHORIZED HEREUNDER EXCEPT UNDER THIS DISCLAIMER; AND
+	</p></li><li><p>
+	  UNDER NO CIRCUMSTANCES AND UNDER NO LEGAL THEORY, WHETHER IN TORT (INCLUDING
+	  NEGLIGENCE), CONTRACT, OR OTHERWISE, SHALL THE AUTHOR, INITIAL WRITER, ANY
+	  CONTRIBUTOR, OR ANY DISTRIBUTOR OF THE DOCUMENT OR MODIFIED VERSION OF THE
+	  DOCUMENT, OR ANY SUPPLIER OF ANY OF SUCH PARTIES, BE LIABLE TO ANY PERSON FOR
+	  ANY DIRECT, INDIRECT, SPECIAL, INCIDENTAL, OR CONSEQUENTIAL DAMAGES OF ANY
+	  CHARACTER INCLUDING, WITHOUT LIMITATION, DAMAGES FOR LOSS OF GOODWILL, WORK
+	  STOPPAGE, COMPUTER FAILURE OR MALFUNCTION, OR ANY AND ALL OTHER DAMAGES OR
+	  LOSSES ARISING OUT OF OR RELATING TO USE OF THE DOCUMENT AND MODIFIED VERSIONS
+	  OF THE DOCUMENT, EVEN IF SUCH PARTY SHALL HAVE BEEN INFORMED OF THE POSSIBILITY
+	  OF SUCH DAMAGES.
+	</p></li></ol></div><p>
+  </p></div></div><div><div class="legalnotice"><p class="legalnotice-title"><b>Feedback</b></p><p>
+	To report a bug or make a suggestion regarding the Quarry application or this
+	manual, either send a message to <tt>&lt;<a href="mailto:quarry-dev@gna.org">quarry-dev@gna.org</a>&gt;</tt> or use
+	<a href="https://gna.org/bugs/?group=quarry" target="_top">Quarry bug tracker</a>.
+      </p></div></div><div><div class="revhistory"><table border="0" cellspacing="0" cellpadding="3" width="100%" summary="Revision history"><tr><th align="left" valign="top" colspan="2"><b>Revision History</b></th></tr><tr><td align="left">Revision Quarry Manual V0.2</td><td align="left">October 2004</td></tr><tr><td align="left" colspan="2">
+	  <p>Paul Pogonyshev
+	    <tt>&lt;<a href="mailto:pogonyshev@gmx.net">pogonyshev@gmx.net</a>&gt;</tt>
+	  </p>
+	</td></tr></table></div></div><hr></div><div class="toc"><p><b>Table of Contents</b></p><dl><dt><a href="#introduction">Introduction</a></dt><dt><a href="#getting-started">Getting Started</a></dt><dd><dl><dt><a href="#start">To Start Quarry</a></dt><dt><a href="#when-start">When You Start Quarry</a></dt></dl></dd><dt><a href="#usage">Usage</a></dt><dd><dl><dt><a href="#new-game">To Start a New Game</a></dt><dt><a href="#open-game-record">To Open a Game Record</a></dt><dt><a href="#save-game-record">To Save a Game Record</a></dt><dt><a href="#register-game-playing-program">To Register a Game-Playing Program</a></dt></dl></dd><dt><a href="#windows-and-menus">Quarry Windows and Menus</a></dt><dd><dl><dt><a href="#new-game-dialog">New Game Dialog</a></dt><dt><a href="#board-windows">Board Windows</a></dt></dl></dd><dt><a href="#preferences">Settings</a></dt><dd><dl><dt><a href="#preferences-gtp-engines">GTP Engines</a></dt><dt><a href="#preferences-saving-game-records">Saving Game Records</a></dt><dt><a href="#preferences-go-board-appearance">Go Board Appearance</a></dt><dt><a href="#preferences-amazons-board-appearance">Amazons Board Appearance</a></dt><dt><a href="#preferences-othello-board-appearance">Othello Board Appearance</a></dt></dl></dd><dt>A. <a href="#fdl">GNU Free Documentation License</a></dt><dd><dl><dt><a href="#id2820103"></a></dt><dd><dl></dl></dd></dl></dd></dl></div><a class="indexterm" name="id2755720"></a><a class="indexterm" name="id2755733"></a><div class="sect1"><div class="titlepage"><div><h2 class="title" style="clear: both"><a name="introduction"></a>Introduction</h2></div></div><p>
+      The Quarry application enables you to play the board games of Go, Amazons and
+      Othello.  You can play with computer programs or with another human, and save, view
+      and edit game records.
+    </p><p>
+      Quarry provides the following features:
+    </p><div class="itemizedlist"><ul type="disc"><li><p>
+	  Nice resizeable board.
+	</p></li><li><p>
+	  Support for
+	  <a href="http://www.lysator.liu.se/~gunnar/gtp/" target="_top">GTP</a>
+	  (Game Text Protocol) as an interface to game-playing programs.  In particular,
+	  you can play with
+	  <a href="http://www.gnu.org/software/gnugo/gnugo.html" target="_top">GNU Go</a>.
+	</p></li><li><p>
+	  Game records are stored in widely supported
+	  <a href="http://www.red-bean.com/sgf/" target="_top">SGF</a> FF[4] file
+	  format.  Quarry has an extremely fast SGF parser, which is important if you have
+	  very large SGF files.
+	</p></li></ul></div><div class="note" style="margin-left: 0.5in; margin-right: 0.5in;"><h3 class="title">Note</h3><p>
+	Quarry itself can play neither Go, nor Amazons, nor Othello.  To have a computer
+	opponent, you need to find a program (i.e. GNU Go mentioned above) that supports
+	GTP and <a href="#register-game-playing-program" title="To Register a Game-Playing Program">register it in Quarry</a>.
+      </p></div></div><div class="sect1"><div class="titlepage"><div><h2 class="title" style="clear: both"><a name="getting-started"></a>Getting Started</h2></div></div><div class="sect2"><div class="titlepage"><div><h3 class="title"><a name="start"></a>To Start Quarry</h3></div></div><p>
+	Simply type <b>quarry</b> in command line and press
+	<b>Return</b>.
+      </p><p>
+	You can also have Quarry open one or more game records immediatly after you start
+	it.  Just type
+      </p><p>
+	<b>quarry</b> <i><tt>file1.sgf file2.sgf ...</tt></i>
+      </p><p>
+	in command line and press <b>Return</b>.  Quarry will start with
+	specified file(s) open.
+      </p><div class="note" style="margin-left: 0.5in; margin-right: 0.5in;"><h3 class="title">Note</h3><p>
+	  Filenames don't have to end in <tt>.sgf</tt>, but names of SGF files
+	  typically do have this suffix.
+	</p></div></div><div class="sect2"><div class="titlepage"><div><h3 class="title"><a name="when-start"></a>When You Start Quarry</h3></div></div><p>
+	When you start Quarry, Control Center window is displayed:
+      </p><div class="figure"><a name="control-center-screen-shot"></a><p class="title"><b>Figure 1. Quarry Control Center</b></p><div class="screenshot"><div class="mediaobject"><img src="figures/control-center.png" alt="
+		Shows Quarry Control Center window.  Contains three buttons:
+		New Game, Open Game Record
+		and Preferences.
+	      "></div></div></div><p>
+	The Control Center window consists of the following elements:
+      </p><div class="variablelist"><dl><dt><span class="term">New Game button</span></dt><dd><p>
+	      This button allows you to start a new game.  It will pop up the
+	      <a href="#new-game-dialog" title="New Game Dialog">New Game dialog</a> where you can select
+	      the game (Go, Amazons or Othello), opponents and game-specific rules.
+	    </p></dd><dt><span class="term">Open Game Record button</span></dt><dd><p>
+	      This button allows you to select a game record for viewing and/or editing.
+	      Opening a game record this way does the same as specifying its filename on
+	      the command line.
+	    </p></dd><dt><span class="term">Preferences button</span></dt><dd><p>
+	      This button opens the Quarry
+	      <a href="#preferences" title="Settings">Preferences dialog</a>
+	    </p></dd></dl></div></div></div><div class="sect1"><div class="titlepage"><div><h2 class="title" style="clear: both"><a name="usage"></a>Usage</h2></div></div><div class="sect2"><div class="titlepage"><div><h3 class="title"><a name="new-game"></a>To Start a New Game</h3></div></div><p>
+	To start a new game, click New Game button in the Quarry
+	<a href="#when-start" title="When You Start Quarry">Control Center window</a>.  The
+	<a href="#new-game-dialog" title="New Game Dialog">New Game dialog</a> will appear, where you can
+	choose the kind of game you want and the opponents.
+      </p><p>
+	If you want to play against a computer program, you need to register it in Quarry
+	first (once only, of course.)  To do this, click the
+	Manage Engine List button in the dialog.
+      </p><p>
+	For more information, see
+	<a href="#new-game-dialog" title="New Game Dialog">detailed description of New Game dialog</a>.
+      </p></div><div class="sect2"><div class="titlepage"><div><h3 class="title"><a name="open-game-record"></a>To Open a Game Record</h3></div></div><p>
+	You can open a game record in one of three ways:
+      </p><div class="itemizedlist"><ul type="disc"><li><p>
+	    Click the Open Game Record button in the
+	    <a href="#when-start" title="When You Start Quarry">Control Center window</a>.  Quarry will display
+	    the Open SGF File dialog.  Select the file with the game
+	    record you want to open and click OK.
+	  </p></li><li><p>
+	    Choose
+	    File-&gt;Open
+	    menu item or simply press <b>Ctrl+O</b> in any opened
+	    <a href="#board-windows" title="Board Windows">Board window</a>.  Similarly to the previous
+	    case, Quarry will display the Open SGF File dialog.
+	  </p></li><li><p>
+	    When starting Quarry, specify the name of file (or several names at once) at
+	    the command line:
+	  </p><p>
+	    <b>quarry</b> <i><tt>file1.sgf file2.sgf ...</tt></i>
+	  </p><p>
+	    The specified file(s) will be opened automatically.
+	  </p></li></ul></div></div><div class="sect2"><div class="titlepage"><div><h3 class="title"><a name="save-game-record"></a>To Save a Game Record</h3></div></div><p>
+	To save a game record, choose
+	File-&gt;Save
+	menu item in its <a href="#board-windows" title="Board Windows">Board window</a> (or simply
+	press <b>Ctrl+S</b>.)  If the file does not yet have a filename, Quarry
+	will display the Save As dialog.  Enter the name for the
+	file, then click OK.
+      </p><p>
+	If you want to save a game record under a different filename, chose
+	File-&gt;Save As
+	menu item.  Enter a name for the file in the Save As dialog
+	and click OK.
+      </p><div class="note" style="margin-left: 0.5in; margin-right: 0.5in;"><h3 class="title">Note</h3><p>
+	  Currently, Quarry displays a warning when overwriting a game record file.  It is
+	  temporary and will be removed when Quarry is more mature.  Meahwhile, you should
+	  not overwrite files created with other SGF editors as there is a small chance
+	  that some data will be lost.
+	</p></div></div><div class="sect2"><div class="titlepage"><div><h3 class="title"><a name="register-game-playing-program"></a>To Register a Game-Playing Program</h3></div></div><p>
+	To register a game-playing program in Quarry, first open the
+	<a href="#preferences" title="Settings">Preferences dialog</a> and select
+	GTP Engines category in its left pane.  (You can also click
+	the Manage Engine List button in the
+	<a href="#new-game-dialog" title="New Game Dialog">New Game dialog</a>, which immediatly displays
+	the GTP Engines category.)
+      </p><p>
+	Then click the Add button and, in the appeared
+	<a href="#preferences-gtp-engine-information-dialog" title="GTP Engine Information Dialog">dialog</a>, enter the
+	command line required to launch the program in GTP mode.  You should consult the
+	program's manual to find out how the command line should look like.  For instance,
+	command line for
+	<a href="http://www.gnu.org/software/gnugo/gnugo.html" target="_top">GNU Go</a>
+	should look this way (note the double hyphens):
+      </p><p>
+	<b>gnugo --mode gtp --quit</b>
+      </p><p>
+	Other programs may require different options or no options at all.
+      </p></div></div><div class="sect1"><div class="titlepage"><div><h2 class="title" style="clear: both"><a name="windows-and-menus"></a>Quarry Windows and Menus</h2></div></div><div class="sect2"><div class="titlepage"><div><h3 class="title"><a name="new-game-dialog"></a>New Game Dialog</h3></div></div><p>
+	The New Game dialog consists of two pages, Game &amp; Players
+	and Game Rules.  When you open the dialog, the first page
+	appears.  When you click Next button, the second page is
+	displayed, which is specific for each of three games&#8212;Go, Amazons and
+	Othello.
+      </p><div class="sect3"><div class="titlepage"><div><h4 class="title"><a name="new-game-dialog-game-and-players"></a>Game &amp; Players Page</h4></div></div><p>
+	  On this page you can select one of three available games and the opponents.  You
+	  can make selections in arbitrary order&#8212;first choose the game and then the
+	  opponents or the other way round.  At any time, all playable combinations of
+	  games and computer players are marked with &#8220;Yes&#8221;
+	  icons, while all unplayable combinations are marked with
+	  &#8220;No&#8221; icons.  The Next
+	  button is sensitive only when a playable combination of game and opponents is
+	  selected.
+	</p><div class="note" style="margin-left: 0.5in; margin-right: 0.5in;"><h3 class="title">Note</h3><p>
+	    Before playing against a computer program (i.e.
+	    <a href="http://www.gnu.org/software/gnugo/gnugo.html" target="_top">GNU Go</a>,
+	    you need to register it in Quarry.  See
+	    <a href="#preferences-gtp-engines" title="GTP Engines">GTP Engines</a> section for how to
+	    do this.
+	  </p></div><p>
+	  Game &amp; Players page conists of the following controls:
+	</p><div class="variablelist"><dl><dt><span class="term">Game section</span></dt><dd><p>
+		Here you can select the game you want to play, either Go, Amazons or
+		Othello (also known as Reversi).  Note that most programs can play only
+		one game.
+	      </p></dd><dt><span class="term">White Player and Black Player
+	      sections</span></dt><dd><p>
+		This set of controls determines the opponents.  Each opponent can be
+		either a human or a computer program.  For a human player you can specify
+		her name (defaults to your name as reported by the system.)  Computer
+		opponent should be selected from the drop-down list.  If the list does not
+		contain the program you want to play against, click the
+		Manage Engine List at the end of the dialog to
+		register the program in Quarry.
+	      </p><p>
+		Which player is to move first depends on the game.  In Go and Othello
+		black moves first, while in Amazons white has the first turn.  You can
+		always change sides with the Swap button to the
+		right.
+	      </p></dd><dt><span class="term">Swap button</span></dt><dd><p>
+		This button allows you to easily swap players' sides.  It does nothing
+		else but copying settings from White Player section
+		to Black Player section and vice versa.
+	      </p></dd><dt><span class="term">Manage Engine List button</span></dt><dd><p>
+		This button opens Quarry Preferences dialog at the
+		<a href="#preferences-gtp-engines" title="GTP Engines">GTP Engines</a> page.  A
+		convenient way to register new program and/or modify parameters of the
+		already registered ones just before starting a new game.
+	      </p></dd><dt><span class="term">Next button</span></dt><dd><p>
+		When you are done with this page, click the Next
+		button to tweak game specific rules on the next page.
+	      </p></dd></dl></div></div><div class="sect3"><div class="titlepage"><div><h4 class="title"><a name="new-game-dialog-game-rules"></a>Game Rules Page</h4></div></div><p>
+	  On this page you can select the rules for the game.  The page has two parts.
+	  The upper part is different for each of Go, Amazons and Othello games and
+	  contains game-specific rules.  The lower part contains time limit settings
+	  controls and is the same for all three games.  It is
+	  <a href="#new-game-dialog-time-settings" title="Time Limit Settings">described</a> last.
+	</p><p>
+	  When you have selected the rules you want, click the Play
+	  button to start the game.
+	</p><div class="sect4"><div class="titlepage"><div><h5 class="title"><a name="new-game-dialog-go-rules"></a>Go Rules</h5></div></div><p>
+	    Go has many different rule sets that differ in scoring details, treating of
+	    some special positions etc.  Currently, Quarry doesn't make any difference
+	    between them.  However, existing rule controls should be enough in most cases.
+	  </p><div class="variablelist"><dl><dt><span class="term">Board Size spin button</span></dt><dd><p>
+		  Choose the size of board for the game here.  Go is traditionally played
+		  on 19×19 board.  9×9 and 13×13 boards are also common.
+		  Quarry doesn't limit you to these&#8212;choose any size between 5×5
+		  and 25×25 inclusive.
+		</p></dd><dt><span class="term">Handicap controls</span></dt><dd><p>
+		  When one of the players is weaker, it is common practice in Go to give
+		  him <i>handicap</i> stones.  This gives her better
+		  chances to win and makes the game more challenging (and thus more
+		  interesting) for the stronger player.  The weaker player is
+		  traditionally playing as black.
+		</p><p>
+		  Quarry supports both <i>fixed</i> (also known as
+		  Japanese) and <i>free</i> (Chinese) handicaps.  In the
+		  first case, handicap stones are placed following a traditional pattern,
+		  at <i>hoshi</i> points.  Maximal fixed handicap is 9
+		  stones.  With free handicap, on the other hand, black player actively
+		  places the handicap stones at any intersections on the board.  Free
+		  handicap is practically not limited.
+		</p><div class="note" style="margin-left: 0.5in; margin-right: 0.5in;"><h3 class="title">Note</h3><p>
+		    Quarry treats free handicap as non-obligatory: it allows black to place
+		    fewer handicap stones than specified in game rules (but not less than
+		    two.)
+		  </p></div><p>
+		  If you want an &#8220;even&#8221; game, simply set the handicap to
+		  zero.
+		</p></dd><dt><span class="term">Komi spin button</span></dt><dd><p>
+		  <i>Komi</i> is the compensation to the white player for
+		  playing second.  It is usually non-integer to make draws impossible.
+		  The currently suggested komi for &#8220;even&#8221; game on 19×19
+		  board is 6.5 points.  Smaller (or even negative) komi gives some
+		  advantage to black player and can be used in addition to handicap.
+		</p></dd></dl></div><p>
+	    See also
+	    <a href="#new-game-dialog-time-settings" title="Time Limit Settings">time limit settings
+	      description</a>.
+	  </p></div><div class="sect4"><div class="titlepage"><div><h5 class="title"><a name="new-game-dialog-amazons-rules"></a>Amazons Rules</h5></div></div><p>
+	    At present, Amazons rules in Quarry are limited to board size and common
+	    <a href="#new-game-dialog-time-settings" title="Time Limit Settings">time limit settings</a>.
+	    Standard board size for Amazons is 10×10, but you can choose anything
+	    from 5×5 to 25×25 inclusive.
+	  </p></div><div class="sect4"><div class="titlepage"><div><h5 class="title"><a name="new-game-dialog-othello-rules"></a>Othello Rules</h5></div></div><p>
+	    Othello rules in Quarry are limited to board size and
+	    <a href="#new-game-dialog-time-settings" title="Time Limit Settings">time limit settings</a>
+	    described just below this section.  Standard board size for Othello is
+	    8×8; 10×10 board is not uncommon too.  In Quarry you can select any
+	    even board size from 6×6 to 24×24 inclusive.
+	  </p></div><div class="sect4"><div class="titlepage"><div><h5 class="title"><a name="new-game-dialog-time-settings"></a>Time Limit Settings</h5></div></div><p>
+	    Quarry allows to play games with limited time for both players.  This also
+	    applies to computer program players&#8212;they have to honor the alloted time
+	    or lose.  Of course the programs are properly notified about the time limit
+	    settings and the remaining time.
+	  </p><div class="note" style="margin-left: 0.5in; margin-right: 0.5in;"><h3 class="title">Note</h3><p>
+	      Computer opponents use CPU time to generate moves.  This means that they
+	      usually need less time on faster machines and more on slower machines.
+	      Also, if you run a computationally intensive task while playing, your
+	      computer opponents may become slower.  Finally, certain computer programs
+	      may also
+	      &#8220;think&#8221; on opponent's time.
+	    </p></div><div class="note" style="margin-left: 0.5in; margin-right: 0.5in;"><h3 class="title">Note</h3><p>
+	      At present, player who runs out of time doesn't lose automatically.  This
+	      will be fixed before Quarry 0.2 is released.
+	    </p></div><p>
+	    Quarry has four types of time control:
+	  </p><div class="variablelist"><dl><dt><span class="term">No limit</span></dt><dd><p>
+		  Both opponents can take as much time as they like on each move, there
+		  are no limits.  In this mode you can choose to select
+		  &#8220;Keep track of total time&#8221; option.
+		  Then Quarry will display the total time spent on move pondering by each
+		  player.  This is purely for your information and serves no other
+		  purpose.
+		</p></dd><dt><span class="term">Limited time for entire game</span></dt><dd><p>
+		  Each player has limited time to play the whole game.  If a player fails
+		  to finish the game in the alloted time, she loses.  Note that time limit
+		  doesn't depend on the number of moves in the game.
+		</p></dd><dt><span class="term">Limited time per move</span></dt><dd><p>
+		  Each move has to be played in fixed time.  Time not used is not stored
+		  and not added to available time on next moves.  When using this mode,
+		  keep in mind that in most games there are &#8220;difficult&#8221;
+		  positions that require more pondering time.
+		</p></dd><dt><span class="term">Canadian overtime (also known as Canadian byo-yomi)</span></dt><dd><p>
+		  This time control is often used in Go, but has nothing Go-specific, so
+		  it can be used in any other move-based game.  Canadian overtime has the
+		  advantage of imposing certain speed of play, but, at the same time,
+		  allowing to occasionally spend more time on important moves.
+		</p><p>
+		  Canadian overtime has three parameters:
+		  <i>main time</i>,
+		  <i>overtime period length</i> and
+		  <i>moves per overtime</i>.  Both players begin game in
+		  their main time.  During main time they can play any number of moves at
+		  any speed.  When main time for a player is up, first overtime period
+		  begins.  During each overtime period a player has to play the specified
+		  number of moves (<i>moves per overtime</i>.)  If she
+		  fails to do so, she loses on time.  Otherwise, next overtime (of the
+		  very same length) begins and the player has to play the same number of
+		  moves this before the time is up again.  The number of overtimes is
+		  unlimited and they are completely equal to each other: time not used in
+		  one overtime period is not stored and not added to other overtime
+		  periods.
+		</p></dd></dl></div></div></div></div><div class="sect2"><div class="titlepage"><div><h3 class="title"><a name="board-windows"></a>Board Windows</h3></div></div><p>
+	Board windows are the main part of Quarry.  They are used to play games and view
+	and edit game records.  To the left in a window is the game board itself.  The
+	exact appearance of the board depends on the current game (Go, Amazons or Othello)
+	and can be <a href="#preferences-go-board-appearance" title="Go Board Appearance">configured</a>.  On
+	the right side of the window there is information pane (to the top) and the
+	comment window.
+      </p><div class="sect3"><div class="titlepage"><div><h4 class="title"><a name="board"></a>The Board</h4></div></div><p>
+	  Sorry, not documented yet...
+	</p></div><div class="sect3"><div class="titlepage"><div><h4 class="title"><a name="board-window-information-pane"></a>Board Window Information Pane</h4></div></div><p>
+	  Sorry, not documented yet...
+	</p></div><div class="sect3"><div class="titlepage"><div><h4 class="title"><a name="board-window-menu"></a>Board Window Menu</h4></div></div><p>
+	  Sorry, not documented yet...
+	</p></div></div></div><div class="sect1"><div class="titlepage"><div><h2 class="title" style="clear: both"><a name="preferences"></a>Settings</h2></div></div><p>
+      To configure Quarry either click the Preferences button in the
+      <a href="#when-start" title="When You Start Quarry">Control Center window</a> or choose
+      Edit-&gt;Preferences
+      menu item.
+    </p><p>
+      The Preferences dialog is displayed.  It consists of the following categories:
+    </p><div class="itemizedlist"><ul type="disc"><li>
+	GTP
+
+	<div class="itemizedlist"><ul type="round"><li><a href="#preferences-gtp-engines" title="GTP Engines">GTP Engines</a></li></ul></div></li><li>
+	Game Records (SGF)
+
+	<div class="itemizedlist"><ul type="round"><li><a href="#preferences-saving-game-records" title="Saving Game Records">Saving</a></li></ul></div></li><li>
+	Board Appearance
+
+	<div class="itemizedlist"><ul type="round"><li><a href="#preferences-go-board-appearance" title="Go Board Appearance">Go Board Appearance</a></li><li><a href="#preferences-amazons-board-appearance" title="Amazons Board Appearance">Amazons Board
+	      Appearance</a></li><li><a href="#preferences-othello-board-appearance" title="Othello Board Appearance">Othello Board
+	      Appearance</a></li></ul></div></li></ul></div><div class="sect2"><div class="titlepage"><div><h3 class="title"><a name="preferences-gtp-engines"></a>GTP Engines</h3></div></div><p>
+	At this page, all game-playing programs registered in Quarry are shown.  You can
+	register new programs and modify information in existing entries.
+      </p><p>
+	All registered programs are shown in the list labeled
+	List of GTP engines.  When you select one of them, some
+	information about it is shown in the lower part of the dialog.  This inlcudes
+	program name, version,
+	supported game(s) and command line.  The
+	command line is exactly what you specified while registering the program, while
+	the rest of information is reported by the program itself.  All programs listed
+	here are also shown in the <a href="#new-game-dialog" title="New Game Dialog">New Game dialog</a>
+	as available computer opponents.
+      </p><p>
+	There are also five buttons on this page:
+      </p><div class="variablelist"><dl><dt><span class="term">Add and Modify
+	    buttons</span></dt><dd><p>
+	      These two buttons allow you to register another program, or modify
+	      information about an already registered one, correspondingly.  They both pop
+	      up the
+	      <a href="#preferences-gtp-engine-information-dialog" title="GTP Engine Information Dialog">GTP Engine
+		Information dialog</a>.
+	    </p></dd><dt><span class="term">Remove button</span></dt><dd><p>
+	      This button removes a game-playing program from the list of registered
+	      programs.  The unregistered program will not appear in the
+	      <a href="#new-game-dialog" title="New Game Dialog">New Game dialog</a> as an available
+	      opponent.  Of course, the program itself is not touched and you can
+	      re-register it in Quarry later.
+	    </p></dd><dt><span class="term">Move Up and Move Down
+	    buttons</span></dt><dd><p>
+	      Using these two buttons you can rearrange registered programs.  Computer
+	      opponents in the New Game dialog are listed in exactly the same order as on
+	      this page, so you may want to place more frequently used programs on the
+	      top.  Another way to reorder GTP programs is to drag-and-drop their names in
+	      the list.
+	    </p></dd></dl></div><div class="sect3"><div class="titlepage"><div><h4 class="title"><a name="preferences-gtp-engine-information-dialog"></a>GTP Engine Information Dialog</h4></div></div><p>
+	  This dialog is shown whenever you want to register a game-playing program in
+	  Quarry or modify information about an already registered one.  Depending on the
+	  situation, it can be titled either New GTP Engine or
+	  Modify GTP Engine Information.  After you fill in the
+	  dialog, press the Add or OK
+	  button.  Quarry will launch the program to check if it works and ask it for some
+	  information.
+	</p><div class="note" style="margin-left: 0.5in; margin-right: 0.5in;"><h3 class="title"><a name="preferences-gtp-engine-information-dialog-freeze"></a>Note</h3><p>
+	    If the message
+	    &#8220;Querying engine's name, version and known commands...&#8221; appears
+	    and persists for too long (more than a few seconds), this most likely
+	    indicates that the command line you specify starts the program in non-GTP mode
+	    or starts a wrong program to begin with.  If you don't expect the program to
+	    be very slow on initialization, then click the Cancel
+	    button and fix the command line.
+	  </p></div><p>
+	  The dialog has two text entry fields:
+	</p><div class="variablelist"><dl><dt><span class="term">Command line</span></dt><dd><p>
+		The command line to start the program should be entered here.  You can use
+		the Browse button to select the program, but
+		normally just specifying program filename is enough.  (More exactly, it is
+		enough if the program is installed in a directory that is in your
+		<tt>$PATH</tt> environment variable.)  In any case, you should enter
+		program-specific options after its filename.  To find out which options
+		should be used, see the manual of the program in question.
+	      </p><p>
+		For
+		<a href="http://www.gnu.org/software/gnugo/gnugo.html" target="_top">GNU Go</a>,
+		the command line should look like this (note the double hyphens):
+	      </p><p>
+		<b>gnugo --mode gtp --quiet</b>
+	      </p><p>
+		You may also want to specify additional options.  See GNU Go documentation
+		for more information.
+	      </p></dd><dt><span class="term">Screen name</span></dt><dd><p>
+		In this field you can specify the way Quarry will display the name of the
+		program.  You can enter the full name or use special symbols
+		&#8220;%n&#8221; and &#8220;%v&#8221;.  They will be replaced with the
+		name and version of the program as it reports them itself.  In most cases
+		the default value of &#8220;%n %v&#8221; is what you want, but sometimes
+		it makes sense to alter it.  For instance, you can specify
+		&#8220;%n %v level 5&#8221; here if you fixed program's level in the
+		command line.  If, for some reason, you need the percent sign in the name,
+		type it in as &#8220;%%&#8221; (the percent sign is used as
+		<i>escape symbol</i> in this field.)
+	      </p></dd></dl></div></div></div><div class="sect2"><div class="titlepage"><div><h3 class="title"><a name="preferences-saving-game-records"></a>Saving Game Records</h3></div></div><p>
+	Sorry, not documented yet...
+      </p></div><div class="sect2"><div class="titlepage"><div><h3 class="title"><a name="preferences-go-board-appearance"></a>Go Board Appearance</h3></div></div><p>
+	Sorry, not documented yet...
+      </p></div><div class="sect2"><div class="titlepage"><div><h3 class="title"><a name="preferences-amazons-board-appearance"></a>Amazons Board Appearance</h3></div></div><p>
+	Sorry, not documented yet...
+      </p></div><div class="sect2"><div class="titlepage"><div><h3 class="title"><a name="preferences-othello-board-appearance"></a>Othello Board Appearance</h3></div></div><p>
+	Sorry, not documented yet...
+      </p></div></div><div class="appendix"><h2 class="title" style="clear: both"><a name="fdl"></a>A. GNU Free Documentation License</h2><h4><a name="id2820077"></a>Version 1.2, November 2002</h4><blockquote class="blockquote"><p>
+      Copyright © 2000, 2001, 2002 Free Software Foundation, Inc.  59 Temple Place,
+      Suite 330, Boston, MA 02111-1307 USA
+    </p><p>
+      Everyone is permitted to copy and distribute verbatim copies of this license
+      document, but changing it is not allowed.
+    </p></blockquote><div class="sect1"><div class="titlepage"></div><h4><a name="fdl-preamble"></a>0. PREAMBLE</h4><p>
+      The purpose of this License is to make a manual, textbook, or other functional and
+      useful document &#8220;free&#8221; in the sense of freedom: to assure everyone the
+      effective freedom to copy and redistribute it, with or without modifying it, either
+      commercially or noncommercially.  Secondarily, this License preserves for the author
+      and publisher a way to get credit for their work, while not being considered
+      responsible for modifications made by others.
+    </p><p>
+      This License is a kind of &#8220;copyleft&#8221;, which means that derivative works
+      of the document must themselves be free in the same sense.  It complements the GNU
+      General Public License, which is a copyleft license designed for free software.
+    </p><p>
+      We have designed this License in order to use it for manuals for free software,
+      because free software needs free documentation: a free program should come with
+      manuals providing the same freedoms that the software does.  But this License is not
+      limited to software manuals; it can be used for any textual work, regardless of
+      subject matter or whether it is published as a printed book.  We recommend this
+      License principally for works whose purpose is instruction or reference.
+    </p><h4><a name="fdl-section1"></a>1. APPLICABILITY AND
+      DEFINITIONS</h4><p><a name="fdl-document"></a>
+      This License applies to any manual or other work, in any medium, that contains a
+      notice placed by the copyright holder saying it can be distributed under the terms
+      of this License.  Such a notice grants a world-wide, royalty-free license, unlimited
+      in duration, to use that work under the conditions stated herein.  The
+      &#8220;Document&#8221;, below, refers to any such manual or work.  Any member of
+      the public is a licensee, and is addressed as &#8220;you&#8221;.  You accept the
+      license if you copy, modify or distribute the work in a way requiring permission
+      under copyright law.
+    </p><p><a name="fdl-modified"></a>
+      A &#8220;Modified Version&#8221; of the Document means any work containing the
+      Document or a portion of it, either copied verbatim, or with modifications and/or
+      translated into another language.
+    </p><p><a name="fdl-secondary"></a>
+      A &#8220;Secondary Section&#8221; is a named appendix or a front-matter section of
+      the Document that deals exclusively with the relationship of the publishers or
+      authors of the Document to the Document's overall subject (or to related matters)
+      and contains nothing that could fall directly within that overall subject.  (Thus,
+      if the Document is in part a textbook of mathematics, a Secondary Section may not
+      explain any mathematics.)  The relationship could be a matter of historical
+      connection with the subject or with related matters, or of legal, commercial,
+      philosophical, ethical or political position regarding them.
+    </p><p><a name="fdl-invariant"></a>
+      The &#8220;Invariant Sections&#8221; are certain Secondary Sections whose titles
+      are designated, as being those of Invariant Sections, in the notice that says that
+      the Document is released under this License.  If a section does not fit the above
+      definition of Secondary then it is not allowed to be designated as Invariant.  The
+      Document may contain zero Invariant Sections.  If the Document does not identify any
+      Invariant Sections then there are none.
+    </p><p><a name="fdl-cover-texts"></a>
+      The &#8220;Cover Texts&#8221; are certain short passages of text that are listed,
+      as Front-Cover Texts or Back-Cover Texts, in the notice that says that the Document
+      is released under this License.  A Front-Cover Text may be at most 5 words, and a
+      Back-Cover Text may be at most 25 words.
+    </p><p><a name="fdl-transparent"></a>
+      A &#8220;Transparent&#8221; copy of the Document means a machine-readable copy,
+      represented in a format whose specification is available to the general public, that
+      is suitable for revising the document straightforwardly with generic text editors or
+      (for images composed of pixels) generic paint programs or (for drawings) some widely
+      available drawing editor, and that is suitable for input to text formatters or for
+      automatic translation to a variety of formats suitable for input to text formatters.
+      A copy made in an otherwise Transparent file format whose markup, or absence of
+      markup, has been arranged to thwart or discourage subsequent modification by readers
+      is not Transparent.  An image format is not Transparent if used for any substantial
+      amount of text.  A copy that is not &#8220;Transparent&#8221; is called
+      &#8220;Opaque&#8221;.
+    </p><p>
+      Examples of suitable formats for Transparent copies include plain ASCII without
+      markup, Texinfo input format, LaTeX input format, SGML or XML using a publicly
+      available DTD, and standard-conforming simple HTML, PostScript or PDF designed for
+      human modification.  Examples of transparent image formats include PNG, XCF and JPG.
+      Opaque formats include proprietary formats that can be read and edited only by
+      proprietary word processors, SGML or XML for which the DTD and/or processing tools
+      are not generally available, and the machine-generated HTML, PostScript or PDF
+      produced by some word processors for output purposes only.
+    </p><p><a name="fdl-title-page"></a>
+      The &#8220;Title Page&#8221; means, for a printed book, the title page itself, plus
+      such following pages as are needed to hold, legibly, the material this License
+      requires to appear in the title page.  For works in formats which do not have any
+      title page as such, &#8220;Title Page&#8221; means the text near the most prominent
+      appearance of the work's title, preceding the beginning of the body of the text.
+    </p><p><a name="fdl-entitled"></a>
+      A section &#8220;Entitled XYZ&#8221; means a named subunit of the Document whose
+      title either is precisely XYZ or contains XYZ in parentheses following text that
+      translates XYZ in another language.  (Here XYZ stands for a specific section name
+      mentioned below, such as &#8220;Acknowledgements&#8221;,
+      &#8220;Dedications&#8221;, &#8220;Endorsements&#8221;, or
+      &#8220;History&#8221;.)  To &#8220;Preserve the Title&#8221; of such a section
+      when you modify the Document means that it remains a section
+      &#8220;Entitled XYZ&#8221; according to this definition.
+    </p><p><a name="fdl-warranty"></a>
+      The Document may include Warranty Disclaimers next to the notice which states that
+      this License applies to the Document.  These Warranty Disclaimers are considered to
+      be included by reference in this License, but only as regards disclaiming
+      warranties: any other implication that these Warranty Disclaimers may have is void
+      and has no effect on the meaning of this License.
+    </p><h4><a name="fdl-section2"></a>2. VERBATIM COPYING</h4><p>
+      You may copy and distribute the <a href="#fdl-document">Document</a> in any
+      medium, either commercially or noncommercially, provided that this License, the
+      copyright notices, and the license notice saying this License applies to the
+      Document are reproduced in all copies, and that you add no other conditions
+      whatsoever to those of this License.  You may not use technical measures to obstruct
+      or control the reading or further copying of the copies you make or distribute.
+      However, you may accept compensation in exchange for copies.  If you distribute a
+      large enough number of copies you must also follow the conditions in
+      <a href="#fdl-section3">section 3</a>.
+    </p><p>
+      You may also lend copies, under the same conditions stated above, and you may
+      publicly display copies.
+    </p><h4><a name="fdl-section3"></a>3. COPYING IN QUANTITY</h4><p>
+      If you publish printed copies (or copies in media that commonly have printed covers)
+      of the <a href="#fdl-document">Document</a>, numbering more than 100, and
+      the Document's license notice requires
+      <a href="#fdl-cover-texts">Cover Texts</a>, you must enclose the copies in
+      covers that carry, clearly and legibly, all these Cover Texts: Front-Cover Texts on
+      the front cover, and Back-Cover Texts on the back cover.  Both covers must also
+      clearly and legibly identify you as the publisher of these copies.  The front cover
+      must present the full title with all words of the title equally prominent and
+      visible.  You may add other material on the covers in addition.  Copying with
+      changes limited to the covers, as long as they preserve the title of the Document
+      and satisfy these conditions, can be treated as verbatim copying in other respects.
+    </p><p>
+      If the required texts for either cover are too voluminous to fit legibly, you should
+      put the first ones listed (as many as fit reasonably) on the actual cover, and
+      continue the rest onto adjacent pages.
+    </p><p>
+      If you publish or distribute <a href="#fdl-transparent">Opaque</a> copies of
+      the Document numbering more than 100, you must either include a machine-readable
+      <a href="#fdl-transparent">Transparent</a> copy along with each Opaque copy,
+      or state in or with each Opaque copy a computer-network location from which the
+      general network-using public has access to download using public-standard network
+      protocols a complete Transparent copy of the Document, free of added material.  If
+      you use the latter option, you must take reasonably prudent steps, when you begin
+      distribution of Opaque copies in quantity, to ensure that this Transparent copy will
+      remain thus accessible at the stated location until at least one year after the last
+      time you distribute an Opaque copy (directly or through your agents or retailers) of
+      that edition to the public.
+    </p><p>
+      It is requested, but not required, that you contact the authors of the Document well
+      before redistributing any large number of copies, to give them a chance to provide
+      you with an updated version of the Document.
+    </p><h4><a name="fdl-section4"></a>4. MODIFICATIONS</h4><p>
+      You may copy and distribute a <a href="#fdl-modified">Modified Version</a>
+      of the <a href="#fdl-document">Document</a> under the conditions of
+      sections <a href="#fdl-section2">2</a> and
+      <a href="#fdl-section3">3</a> above, provided that you release the Modified
+      Version under precisely this License, with the Modified Version filling the role of
+      the Document, thus licensing distribution and modification of the Modified Version
+      to whoever possesses a copy of it.  In addition, you must do these things in the
+      Modified Version:
+    </p><div class="orderedlist"><ol type="A"><li><p>
+	  Use in the <a href="#fdl-title-page">Title Page</a> (and on the
+	  <a href="#fdl-cover-texts">covers</a>, if any) a title distinct from
+	  that of the Document, and from those of previous versions (which should, if
+	  there were any, be listed in the History section of the Document).  You may use
+	  the same title as a previous version if the original publisher of that version
+	  gives permission.
+	</p></li><li><p>
+	  List on the Title Page, as authors, one or more persons or entities responsible
+	  for authorship of the modifications in the Modified Version, together with at
+	  least five of the principal authors of the Document (all of its principal
+	  authors, if it has fewer than five), unless they release you from this
+	  requirement.
+	</p></li><li><p>
+	  State on the Title page the name of the publisher of the Modified Version, as
+	  the publisher.
+	</p></li><li><p>
+	  Preserve all the copyright notices of the Document.
+	</p></li><li><p>
+	  Add an appropriate copyright notice for your modifications adjacent to the other
+	  copyright notices.
+	</p></li><li><p>
+	  Include, immediately after the copyright notices, a license notice giving the
+	  public permission to use the Modified Version under the terms of this License,
+	  in the form shown in the <a href="#fdl-addendum">Addendum</a> below.
+	</p></li><li><p>
+	  Preserve in that license notice the full lists of
+	  <a href="#fdl-invariant">Invariant Sections</a> and required Cover Texts
+	  given in the Document's license notice.
+	</p></li><li><p>
+	  Include an unaltered copy of this License.
+	</p></li><li><p>
+	  Preserve the section <a href="#fdl-entitled">Entitled</a>
+	  &#8220;History&#8221;, Preserve its Title, and add to it an item stating at
+	  least the title, year, new authors, and publisher of the Modified Version as
+	  given on the Title Page.  If there is no section Entitled &#8220;History&#8221;
+	  in the Document, create one stating the title, year, authors, and publisher of
+	  the Document as given on its Title Page, then add an item describing the
+	  Modified Version as stated in the previous sentence.
+	</p></li><li><p>
+	  Preserve the network location, if any, given in the Document for public access
+	  to a <a href="#fdl-transparent">Transparent</a> copy of the Document,
+	  and likewise the network locations given in the Document for previous versions
+	  it was based on.  These may be placed in the &#8220;History&#8221; section.
+	  You may omit a network location for a work that was published at least four
+	  years before the Document itself, or if the original publisher of the version it
+	  refers to gives permission.
+	</p></li><li><p>
+	  For any section Entitled &#8220;Acknowledgements&#8221; or
+	  &#8220;Dedications&#8221;, Preserve the Title of the section, and preserve in
+	  the section all the substance and tone of each of the contributor
+	  acknowledgements and/or dedications given therein.
+	</p></li><li><p>
+	  Preserve all the Invariant Sections of the Document, unaltered in their text and
+	  in their titles.  Section numbers or the equivalent are not considered part of
+	  the section titles.
+	</p></li><li><p>
+	  Delete any section Entitled &#8220;Endorsements&#8221;.  Such a section may not
+	  be included in the Modified Version.
+	</p></li><li><p>
+	  Do not retitle any existing section to be Entitled &#8220;Endorsements&#8221;
+	  or to conflict in title with any Invariant Section.
+	</p></li><li><p>
+	  Preserve any <a href="#fdl-warranty">Warranty Disclaimers</a>.
+	</p></li></ol></div><p>
+      If the Modified Version includes new front-matter sections or appendices that
+      qualify as Secondary Sections and contain no material copied from the Document, you
+      may at your option designate some or all of these sections as invariant.  To do
+      this, add their titles to the list of Invariant Sections in the Modified Version's
+      license notice.  These titles must be distinct from any other section titles.
+    </p><p>
+      You may add a section Entitled &#8220;Endorsements&#8221;, provided it contains
+      nothing but endorsements of your Modified Version by various parties&#8212;for
+      example, statements of peer review or that the text has been approved by an
+      organization as the authoritative definition of a standard.
+    </p><p>
+      You may add a passage of up to five words as a Front-Cover Text, and a passage of up
+      to 25 words as a Back-Cover Text, to the end of the list of Cover Texts in the
+      Modified Version.  Only one passage of Front-Cover Text and one of Back-Cover Text
+      may be added by (or through arrangements made by) any one entity.  If the Document
+      already includes a cover text for the same cover, previously added by you or by
+      arrangement made by the same entity you are acting on behalf of, you may not add
+      another; but you may replace the old one, on explicit permission from the previous
+      publisher that added the old one.
+    </p><p>
+      The author(s) and publisher(s) of the Document do not by this License give
+      permission to use their names for publicity for or to assert or imply endorsement of
+      any Modified Version.
+    </p><h4><a name="fdl-section5"></a>5. COMBINING DOCUMENTS</h4><p>
+      You may combine the <a href="#fdl-document">Document</a> with other
+      documents released under this License, under the terms defined in
+      <a href="#fdl-section4">section 4</a> above for
+      <a href="#fdl-modified">modified versions</a>, provided that you include in
+      the combination all of the <a href="#fdl-invariant">Invariant Sections</a>
+      of all of the original documents, unmodified, and list them all as Invariant
+      Sections of your combined work in its license notice, and that you preserve all
+      their <a href="#fdl-warranty">Warranty Disclaimers</a>.
+    </p><p>
+      The combined work need only contain one copy of this License, and multiple identical
+      Invariant Sections may be replaced with a single copy.  If there are multiple
+      Invariant Sections with the same name but different contents, make the title of each
+      such section unique by adding at the end of it, in parentheses, the name of the
+      original author or publisher of that section if known, or else a unique number.
+      Make the same adjustment to the section titles in the list of Invariant Sections in
+      the license notice of the combined work.
+    </p><p>
+      In the combination, you must combine any sections
+      <a href="#fdl-entitled">Entitled</a> &#8220;History&#8221; in the various
+      original documents, forming one section Entitled &#8220;History&#8221;; likewise
+      combine any sections Entitled &#8220;Acknowledgements&#8221;, and any sections
+      Entitled &#8220;Dedications&#8221;.  You must delete all sections Entitled
+      &#8220;Endorsements.&#8221;
+    </p><h4><a name="fdl-section6"></a>6. COLLECTIONS OF
+      DOCUMENTS</h4><p>
+      You may make a collection consisting of the
+      <a href="#fdl-document">Document</a> and other documents released under this
+      License, and replace the individual copies of this License in the various documents
+      with a single copy that is included in the collection, provided that you follow the
+      rules of this License for verbatim copying of each of the documents in all other
+      respects.
+    </p><p>
+      You may extract a single document from such a collection, and distribute it
+      individually under this License, provided you insert a copy of this License into the
+      extracted document, and follow this License in all other respects regarding verbatim
+      copying of that document.
+    </p><h4><a name="fdl-section7"></a>7. AGGREGATION WITH INDEPENDENT
+      WORKS</h4><p>
+      A compilation of the <a href="#fdl-document">Document</a> or its derivatives
+      with other separate and independent documents or works, in or on a volume of a
+      storage or distribution medium, is called an &#8220;aggregate&#8221; if the
+      copyright resulting from the compilation is not used to limit the legal rights of
+      the compilation's users beyond what the individual works permit.  When the Document
+      is included in an aggregate, this License does not apply to the other works in the
+      aggregate which are not themselves derivative works of the Document.
+    </p><p>
+      If the <a href="#fdl-cover-texts">Cover Text</a> requirement of
+      <a href="#fdl-section3">section 3</a> is applicable to these copies of the
+      Document, then if the Document is less than one half of the entire aggregate, the
+      Document's Cover Texts may be placed on covers that bracket the Document within the
+      aggregate, or the electronic equivalent of covers if the Document is in electronic
+      form.  Otherwise they must appear on printed covers that bracket the whole
+      aggregate.
+    </p><h4><a name="fdl-section8"></a>8. TRANSLATION</h4><p>
+      Translation is considered a kind of modification, so you may distribute translations
+      of the <a href="#fdl-document">Document</a> under the terms of
+      <a href="#fdl-section4">section 4</a>.  Replacing
+      <a href="#fdl-invariant">Invariant Sections</a> with translations requires
+      special permission from their copyright holders, but you may include translations of
+      some or all Invariant Sections in addition to the original versions of these
+      Invariant Sections.  You may include a translation of this License, and all the
+      license notices in the Document, and any
+      <a href="#fdl-warranty">Warranty Disclaimers</a>, provided that you also
+      include the original English version of this License and the original versions of
+      those notices and disclaimers.  In case of a disagreement between the translation
+      and the original version of this License or a notice or disclaimer, the original
+      version will prevail.
+    </p><p>
+      If a section in the Document is <a href="#fdl-entitled">Entitled</a>
+      &#8220;Acknowledgements&#8221;, &#8220;Dedications&#8221;, or
+      &#8220;History&#8221;, the requirement
+      (<a href="#fdl-section4">section 4</a>) to Preserve its Title
+      (<a href="#fdl-section1">section 1</a>) will typically require changing the
+      actual title.
+    </p><h4><a name="fdl-section9"></a>9. TERMINATION</h4><p>
+      You may not copy, modify, sublicense, or distribute the
+      <a href="#fdl-document">Document</a> except as expressly provided for under
+      this License.  Any other attempt to copy, modify, sublicense or distribute the
+      Document is void, and will automatically terminate your rights under this License.
+      However, parties who have received copies, or rights, from you under this License
+      will not have their licenses terminated so long as such parties remain in full
+      compliance.
+    </p><h4><a name="fdl-section10"></a>10. FUTURE REVISIONS OF THIS
+      LICENSE</h4><p>
+      The
+      <a href="http://www.gnu.org/fsf/fsf.html" target="_top">Free Software Foundation</a>
+      may publish new, revised versions of the GNU Free Documentation License from time to
+      time.  Such new versions will be similar in spirit to the present version, but may
+      differ in detail to address new problems or concerns.  See
+      <a href="http://www.gnu.org/copyleft/" target="_top">http://www.gnu.org/copyleft/</a>.
+    </p><p>
+      Each version of the License is given a distinguishing version number.  If the
+      <a href="#fdl-document">Document</a> specifies that a particular numbered
+      version of this License &#8220;or any later version&#8221; applies to it, you have
+      the option of following the terms and conditions either of that specified version or
+      of any later version that has been published (not as a draft) by the Free Software
+      Foundation.  If the Document does not specify a version number of this License, you
+      may choose any version ever published (not as a draft) by the Free Software
+      Foundation.
+    </p><h4><a name="fdl-addendum"></a>ADDENDUM: How to use this License for
+      your documents</h4><p>
+      To use this License in a document you have written, include a copy of the License in
+      the document and put the following copyright and license notices just after the
+      title page:
+    </p><a name="copyright-sample"></a><blockquote class="blockquote"><p>
+	Copyright © YEAR YOUR NAME.
+      </p><p>
+	Permission is granted to copy, distribute and/or modify this document under the
+	terms of the GNU Free Documentation License, Version 1.2 or any later version
+	published by the Free Software Foundation; with no Invariant Sections, no
+	Front-Cover Texts, and no Back-Cover Texts.  A copy of the license is included in
+	the section entitled &#8220;GNU Free Documentation License&#8221;.
+      </p></blockquote><p>
+      If you have <a href="#fdl-invariant">Invariant Sections</a>,
+      <a href="#fdl-cover-texts">Front-Cover Texts and Back-Cover Texts</a>,
+      replace the &#8220;with...Texts.&#8221; line with this:
+    </p><a name="inv-cover-sample"></a><blockquote class="blockquote"><p>
+	with the Invariant Sections being LIST THEIR TITLES, with the Front-Cover Texts
+	being LIST, and with the Back-Cover Texts being LIST.
+      </p></blockquote><p>
+      If you have Invariant Sections without Cover Texts, or some other combination of the
+      three, merge those two alternatives to suit the situation.
+    </p><p>
+      If your document contains nontrivial examples of program code, we recommend
+      releasing these examples in parallel under your choice of free software license,
+      such as the
+      <a href="http://www.gnu.org/copyleft/gpl.html" target="_top">GNU General Public
+	License</a>,
+      to permit their use in free software.
+    </p></div></div></div></td></tr></table></body></html>
