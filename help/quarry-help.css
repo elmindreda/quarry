@@ -1,0 +1,104 @@
+body {
+	background:	#cccccc;
+	color:		#000000;
+}
+
+td.contents {
+	background:	#ffffff;
+	border:		1px solid #000000;
+}
+
+h1 {
+	font-size:	200%;
+	font-weight:	bold;
+}
+
+h2 {
+	font-size:	160%;
+	font-weight:	bold;
+}
+
+h3 {
+	font-size:	130%;
+	font-weight:	bold;
+}
+
+h4 {
+	font-size:	110%;
+	font-weight:	bold;
+}
+
+h5 {
+	font-size:	100%;
+	font-weight:	bold;
+}
+
+p {
+	text-align:	justify;
+}
+
+hr {
+	margin-top:	0.6em;
+	margin-bottom:	0.6em;
+}
+
+th {
+	border:		1px solid #888888;
+}
+
+td {
+	border:		1px solid #888888;
+}
+
+dd {
+	margin-left:	0.5in;
+}
+
+a {
+	color:		#0020ff;
+	text-decoration: underline;
+}
+
+a:visited {
+	color:		#403050;
+	text-decoration: underline;
+}
+
+a:hover {
+	color:		#4080ff;
+	text-decoration: underline;
+}
+
+a:focus {
+	background:	#eeeeee;
+}
+
+div.legalnotice {
+	font-size:	90%;
+}
+
+div.toc {
+	background:	#f4f4ff;
+	border:		1px solid #a0a0c0;
+	margin:		0.5em 2em;
+	padding:	0.5em 2.5em;
+}
+
+div.appendix {
+	margin-top:	4em;
+}
+
+div.figure {
+	margin-left:	0.5in;
+}
+
+span.term {
+	font-style:	italic;
+	
+}
+
+div.note h3 {
+	font-size:	100%;
+	font-weight:	bold;
+	text-decoration: underline;
+}
