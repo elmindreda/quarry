@@ -1,3 +1,9 @@
+2004-07-22  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* gui-gtk/gtk-goban-window.c (gtk_goban_window_save): Handle
+	"Save" command, but issue warning about potential loss of
+	information (bug #522).
+
 2004-07-20  Paul Pogonyshev  <pogonyshev@gmx.net>
 
 	* gui-gtk/gtk-goban-window.c: Make it safe to navigate to a
