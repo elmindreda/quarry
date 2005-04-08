@@ -1,3 +1,13 @@
+2005-04-08  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* sgf/sgf-utils.c (sgf_utils_delete_current_node): Set
+	`parent_current_variation' to a neighbor of `tree->current_node',
+	not to `tree->current_node' itself (fixes segfaults and incorrect
+	behaviour spotted by Evan Daniel.)
+
+	* sgf/sgf-tree.c (sgf_node_get_previous_node): New function.
+	(sgf_node_get_last_child): Assert that `node' is not NULL.
+
 2005-03-28  Paul Pogonyshev  <pogonyshev@gmx.net>
 
 	* gui-gtk/gtk-parser-interface.c (open_game_record): Call
