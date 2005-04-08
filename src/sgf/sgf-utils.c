@@ -443,8 +443,15 @@ sgf_utils_delete_current_node (SgfGameTree *tree)
 
   operation_data->entry.operation_index = SGF_OPERATION_DELETE_NODE;
   operation_data->node			= tree->current_node;
+
+  /* This field is used after node deletion.  So, we should set it so
+   * it is _not_ equal to `tree->current_node', which is being
+   * deleted.  Use a neighbor node instead.
+   */
   operation_data->parent_current_variation
-    = tree->current_node->parent->current_variation;
+    = (tree->current_node->next
+       ? tree->current_node->next
+       : sgf_node_get_previous_node (tree->current_node));
 
   apply_undo_history_entry (tree, (SgfUndoHistoryEntry *) operation_data);
 }
