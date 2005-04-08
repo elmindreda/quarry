@@ -456,6 +456,7 @@ void		 sgf_game_tree_set_notification_callback
 SgfNode *	 sgf_node_new (SgfGameTree *tree, SgfNode *parent);
 void		 sgf_node_delete (SgfNode *node, SgfGameTree *tree);
 
+SgfNode *	 sgf_node_get_previous_node (const SgfNode *node);
 SgfNode *	 sgf_node_get_last_child (const SgfNode *node);
 
 SgfNode *	 sgf_node_duplicate (const SgfNode *node,

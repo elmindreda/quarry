@@ -456,14 +456,38 @@ sgf_node_delete (SgfNode *node, SgfGameTree *tree)
 }
 
 
+/* Get the previous node of given node.  Return NULL if the node is
+ * the first child or has no parent at all (is tree root.)
+ */
+SgfNode *
+sgf_node_get_previous_node (const SgfNode *node)
+{
+  assert (node);
+
+  if (node->parent && node->parent->child != node) {
+    SgfNode *child;
+
+    for (child = node->parent->child; child->next != node; child = child->next)
+      assert (child);
+
+    return child;
+  }
+
+  return NULL;
+}
+
+
 /* Get the last child of given node (the first is `node->child'.)  Can
  * return NULL if the node has no children at all.
  */
 SgfNode *
 sgf_node_get_last_child (const SgfNode *node)
 {
-  SgfNode *last_child = node->child;
+  SgfNode *last_child;
 
+  assert (node);
+
+  last_child = node->child;
   if (last_child) {
     while (last_child->next)
       last_child = last_child->next;
