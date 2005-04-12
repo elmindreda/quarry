@@ -1,3 +1,7 @@
+2005-04-12  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* THANKS: Thank Jérémie Knuesel for the French translation.
+
 2005-03-18  Paul Pogonyshev  <pogonyshev@gmx.net>
 
 	* aux/list.make (SUFFIXES): Also add `.h' in suffixes to make
@@ -237,3 +241,9 @@ Changes before the project registration on Gna! (2004-04-12) were not logged.
 
   Copying and distribution of this file, with or without modification,
   are permitted provided the copyright notice and this notice are preserved.
+
+
+
+Local Variables:
+coding: iso-8859-1
+End:

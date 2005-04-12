@@ -1,3 +1,16 @@
+2005-04-12  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* quarry.pot: Force update.
+
+	* POTFILES.in: Add `src/gui-gtk/gtk-file-dialog.c' and
+	`src/gui-gtk/gtk-resume-game-dialog.c'.
+
+	* LINGUAS: Add `fr' code for French translation.
+
+2005-04-11  Jérémie Knuesel  <jeremie.knuesel@epfl.ch>
+
+	* fr.po: New file (French translation.)
+
 2005-03-14  Paul Pogonyshev  <pogonyshev@gmx.net>
 
 	* (Quarry version 0.1.14.)
@@ -57,3 +70,9 @@
 
   Copying and distribution of this file, with or without modification,
   are permitted provided the copyright notice and this notice are preserved.
+
+
+
+Local Variables:
+coding: utf-8
+End:

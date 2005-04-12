@@ -1,3 +1,44 @@
+2005-04-12  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* gui-gtk/gtk-goban-window.c (gtk_goban_window_init): Register
+	gettext() with gtk_item_factory_set_translate_func() to allow
+	proper translation of menu items.  Prevent collapse of main menu
+	on GTK+ 2.4 and up with gtk_toolbar_set_show_arrow().  Mark some
+	items as important with new `flags' argument of
+	gtk_utils_append_toolbar_button().  Don't translate argument
+	string to gtk_utils_set_menu_items_sensitive() with _()
+	call (unneeded after registering the translation function.)
+	(gtk_goban_window_new): Don't translate argument string to
+	gtk_utils_set_menu_items_sensitive().
+	(set_sgf_collection_is_modified): Likewise.
+	(show_or_hide_main_toolbar): Likewise for
+	gtk_item_factory_get_widget() argument.
+	(show_or_hide_navigation_toolbar): Likewise.
+	(show_or_hide_game_action_buttons): Likewise.
+	(show_or_hide_sgf_tree_view): Likewise.
+	(update_commands_sensitivity): Likewise.
+
+	* gui-gtk/gtk-preferences.c (create_gtk_ui_page): Use ``beside'',
+	not ``besides''.  The latter carries different meaning.  Assert
+	toolbar style constants and style name strings consistency.  Don't
+	allow text beside icons for pre-2.4 GTK+.
+	(change_toolbar_style): Adjust toolbar style for older GTK+
+	because of the above change.
+	(set_toolbar_style): Don't allow text beside icons for pre-2.4
+	versions of GTK+.
+
+	* gui-gtk/gtk-configuration.list (gtk_ui_section_values): Use
+	``beside'', not ``besides''.
+
+	* gui-gtk/gtk-utils.c (gtk_utils_append_toolbar_button): Add
+	`flags' argument.  Use GtkToolButton and new argument for GTK+ 2.4
+	and up.
+
+	* gui-gtk/gtk-utils.h (gtk_utils_append_toolbar_space): New
+	macro (behaviour depends on GTK+ version.)
+	(gtk_toolbar_set_show_arrow): Define to nothing for pre-2.4
+	versions of GTK+.
+
 2005-04-08  Paul Pogonyshev  <pogonyshev@gmx.net>
 
 	* sgf/sgf-utils.c (sgf_utils_delete_current_node): Set
@@ -334,7 +375,7 @@
 
 	* gui-gtk/gtk-utils.h (GTK_2_6_OR_LATER): New macro.
 	(gtk_dialog_set_default_response): Define this to
-	gtk_utils_workaround_focus_bug() for GTK+ 2.0.
+	gtk_utils_workaround_set_default_response() for GTK+ 2.0.
 	* gui-gtk/gtk-utils.c (gtk_utils_workaround_set_default_response):
 	New function, for GTK+ 2.0 only.
 
