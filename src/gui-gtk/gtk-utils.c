@@ -983,11 +983,43 @@ do_align_left_widget (GtkWidget *widget, GtkSizeGroup **size_group)
 GtkWidget *
 gtk_utils_append_toolbar_button (GtkToolbar *toolbar,
 				 GtkUtilsToolbarEntry *entry,
+				 GtkUtilsToolbarButtonFlags flags,
 				 gpointer user_data)
 {
+#if GTK_2_4_OR_LATER
+
+  GtkToolItem *button;
+
+  assert (entry);
+
+  button = gtk_tool_button_new ((gtk_image_new_from_stock
+				 (entry->icon_stock_id,
+				  gtk_toolbar_get_icon_size (toolbar))),
+				(entry->label_text
+				 ? _(entry->label_text) : NULL));
+
+  if (entry->tooltip_text) {
+    gtk_tool_item_set_tooltip (button, toolbar->tooltips,
+			       _(entry->tooltip_text), NULL);
+  }
+
+  gtk_tool_item_set_homogeneous (button, ((flags & GTK_UTILS_HOMOGENEOUS)
+					  ? TRUE : FALSE));
+  gtk_tool_item_set_is_important (button, ((flags & GTK_UTILS_IS_IMPORTANT)
+					   ? TRUE : FALSE));
+
+  g_signal_connect (button, "clicked",
+		    G_CALLBACK (invoke_toolbar_button_callback), user_data);
+
+  gtk_toolbar_insert (toolbar, button, -1);
+
+#else
+
   GtkWidget *button;
 
   assert (entry);
+
+  UNUSED (flags);
 
   button = (gtk_toolbar_append_item
 	    (toolbar, (entry->label_text ? _(entry->label_text) : NULL),
@@ -996,6 +1028,8 @@ gtk_utils_append_toolbar_button (GtkToolbar *toolbar,
 				       gtk_toolbar_get_icon_size (toolbar)),
 	     (GtkSignalFunc) invoke_toolbar_button_callback, user_data));
 
+#endif
+
   if (!toolbar_button_entry_quark) {
     toolbar_button_entry_quark
       = g_quark_from_static_string ("quarry-toolbar-button-entry");
@@ -1003,7 +1037,8 @@ gtk_utils_append_toolbar_button (GtkToolbar *toolbar,
 
   g_object_set_qdata (G_OBJECT (button), toolbar_button_entry_quark, entry);
 
-  return button;
+  /* For GTK+ 2.4 and up.  It is certainly a widget. */
+  return (GtkWidget *) button;
 }
 
 
