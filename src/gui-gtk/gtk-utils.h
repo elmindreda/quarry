@@ -135,6 +135,12 @@ typedef enum {
 } GtkUtilsEntryActivationMode;
 
 
+typedef enum {
+  GTK_UTILS_HOMOGENEOUS	 = 1 << 0,
+  GTK_UTILS_IS_IMPORTANT = 1 << 1,
+} GtkUtilsToolbarButtonFlags;
+
+
 typedef void (* GtkUtilsToolbarEntryCallback) (gpointer user_data,
 					       guint callback_action);
 
@@ -247,11 +253,32 @@ GtkSizeGroup *	gtk_utils_create_size_group (GtkSizeGroupMode mode, ...);
 GtkSizeGroup *  gtk_utils_align_left_widgets (GtkContainer *container,
 					      GtkSizeGroup *size_group);
 
-GtkWidget *	gtk_utils_append_toolbar_button (GtkToolbar *toolbar,
-						 GtkUtilsToolbarEntry *entry,
-						 gpointer user_data);
+GtkWidget *	gtk_utils_append_toolbar_button
+		  (GtkToolbar *toolbar, GtkUtilsToolbarEntry *entry,
+		   GtkUtilsToolbarButtonFlags flags, gpointer user_data);
 void		gtk_utils_set_toolbar_buttons_sensitive
 		  (GtkToolbar *toolbar, gboolean are_sensitive, ...);
+
+
+#if GTK_2_4_OR_LATER
+
+
+#define gtk_utils_append_toolbar_space(toolbar)				\
+  gtk_toolbar_insert ((toolbar), gtk_separator_tool_item_new (), -1)
+
+
+#else /* not GTK_2_4_OR_LATER */
+
+
+#define gtk_utils_append_toolbar_space(toolbar)				\
+  gtk_toolbar_append_space (toolbar)
+
+/* Not defined in older GTK+ versions. */
+#define gtk_toolbar_set_show_arrow(toolbar, show_arrow)
+
+
+#endif /* not GTK_2_4_OR_LATER */
+
 
 void		gtk_utils_set_text_buffer_text (GtkTextBuffer *text_buffer,
 						const gchar *text);
