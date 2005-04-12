@@ -761,6 +761,8 @@ gtk_goban_window_init (GtkGobanWindow *goban_window)
   goban_window->item_factory = gtk_item_factory_new (GTK_TYPE_MENU_BAR,
 						     "<QuarryGobanWindowMenu>",
 						     accel_group);
+  gtk_item_factory_set_translate_func (goban_window->item_factory,
+				       (GtkTranslateFunc) gettext, NULL, NULL);
   gtk_item_factory_create_items (goban_window->item_factory,
 				 (sizeof menu_entries
 				  / sizeof (GtkItemFactoryEntry)),
@@ -776,18 +778,24 @@ gtk_goban_window_init (GtkGobanWindow *goban_window)
   goban_window->main_toolbar = GTK_TOOLBAR (main_toolbar);
   gtk_preferences_register_main_toolbar (goban_window->main_toolbar);
 
-  gtk_utils_append_toolbar_button (goban_window->main_toolbar,
-				   &toolbar_open, goban_window);
-  gtk_utils_append_toolbar_button (goban_window->main_toolbar,
-				   &toolbar_save, goban_window);
-  gtk_toolbar_append_space (goban_window->main_toolbar);
+  /* Otherwise the toolbar collapse to the arrow alone on GTK+
+   * 2.4+.
+   */
+  gtk_toolbar_set_show_arrow (goban_window->main_toolbar, FALSE);
 
   gtk_utils_append_toolbar_button (goban_window->main_toolbar,
-				   &toolbar_find, goban_window);
-  gtk_toolbar_append_space (goban_window->main_toolbar);
+				   &toolbar_open, GTK_UTILS_IS_IMPORTANT,
+				   goban_window);
+  gtk_utils_append_toolbar_button (goban_window->main_toolbar,
+				   &toolbar_save, 0, goban_window);
+  gtk_utils_append_toolbar_space (goban_window->main_toolbar);
 
   gtk_utils_append_toolbar_button (goban_window->main_toolbar,
-				   &toolbar_game_information, goban_window);
+				   &toolbar_find, 0, goban_window);
+  gtk_utils_append_toolbar_space (goban_window->main_toolbar);
+
+  gtk_utils_append_toolbar_button (goban_window->main_toolbar,
+				   &toolbar_game_information, 0, goban_window);
 
   main_handle_box = gtk_handle_box_new ();
   gtk_container_add (GTK_CONTAINER (main_handle_box), main_toolbar);
@@ -798,24 +806,29 @@ gtk_goban_window_init (GtkGobanWindow *goban_window)
   gtk_preferences_register_navigation_toolbar
     (goban_window->navigation_toolbar);
 
-  gtk_utils_append_toolbar_button (goban_window->navigation_toolbar,
-				   &navigation_toolbar_root, goban_window);
-  gtk_utils_append_toolbar_button (goban_window->navigation_toolbar,
-				   &navigation_toolbar_back, goban_window);
-  gtk_toolbar_append_space (goban_window->navigation_toolbar);
+  gtk_toolbar_set_show_arrow (goban_window->navigation_toolbar, TRUE);
 
   gtk_utils_append_toolbar_button (goban_window->navigation_toolbar,
-				   &navigation_toolbar_forward, goban_window);
+				   &navigation_toolbar_root,
+				   GTK_UTILS_IS_IMPORTANT, goban_window);
   gtk_utils_append_toolbar_button (goban_window->navigation_toolbar,
-				   &navigation_toolbar_variation_end,
+				   &navigation_toolbar_back, 0,
 				   goban_window);
-  gtk_toolbar_append_space (goban_window->navigation_toolbar);
+  gtk_utils_append_toolbar_space (goban_window->navigation_toolbar);
 
   gtk_utils_append_toolbar_button (goban_window->navigation_toolbar,
-				   &navigation_toolbar_previous_variation,
+				   &navigation_toolbar_forward,
+				   GTK_UTILS_IS_IMPORTANT, goban_window);
+  gtk_utils_append_toolbar_button (goban_window->navigation_toolbar,
+				   &navigation_toolbar_variation_end, 0,
+				   goban_window);
+  gtk_utils_append_toolbar_space (goban_window->navigation_toolbar);
+
+  gtk_utils_append_toolbar_button (goban_window->navigation_toolbar,
+				   &navigation_toolbar_previous_variation, 0,
 				   goban_window);
   gtk_utils_append_toolbar_button (goban_window->navigation_toolbar,
-				   &navigation_toolbar_next_variation,
+				   &navigation_toolbar_next_variation, 0,
 				   goban_window);
 
   navigation_handle_box = gtk_handle_box_new ();
@@ -863,7 +876,7 @@ gtk_goban_window_init (GtkGobanWindow *goban_window)
     show_or_hide_sgf_tree_view (goban_window, GTK_GOBAN_WINDOW_SHOW_CHILD);
   else {
     gtk_utils_set_menu_items_sensitive (goban_window->item_factory, FALSE,
-					_("/View/Recenter on Current Node"),
+					"/View/Recenter on Current Node",
 					NULL);
   }
 
@@ -923,7 +936,7 @@ gtk_goban_window_new (SgfCollection *sgf_collection, const char *filename)
     goban_window->sgf_collection_is_modified = FALSE;
 
     gtk_utils_set_menu_items_sensitive (goban_window->item_factory, FALSE,
-					_("/File/Save"), NULL);
+					"/File/Save", NULL);
     gtk_utils_set_toolbar_buttons_sensitive (goban_window->main_toolbar, FALSE,
 					     &toolbar_save, NULL);
   }
@@ -1174,8 +1187,7 @@ set_sgf_collection_is_modified (GtkGobanWindow *goban_window,
     goban_window->sgf_collection_is_modified = is_modified;
 
     gtk_utils_set_menu_items_sensitive (goban_window->item_factory,
-					is_modified,
-					_("/File/Save"), NULL);
+					is_modified, "/File/Save", NULL);
     gtk_utils_set_toolbar_buttons_sensitive (goban_window->main_toolbar,
 					     is_modified,
 					     &toolbar_save, NULL);
@@ -2074,7 +2086,7 @@ show_or_hide_main_toolbar (GtkGobanWindow *goban_window)
     = gtk_widget_get_parent (GTK_WIDGET (goban_window->main_toolbar));
   GtkWidget *menu_item
     = gtk_item_factory_get_widget (goban_window->item_factory,
-				   _("/View/Main Toolbar"));
+				   "/View/Main Toolbar");
 
   gtk_ui_configuration.show_main_toolbar
     = !GTK_WIDGET_VISIBLE (toolbar_handle_box);
@@ -2092,7 +2104,7 @@ show_or_hide_navigation_toolbar (GtkGobanWindow *goban_window)
     = gtk_widget_get_parent (GTK_WIDGET (goban_window->navigation_toolbar));
   GtkWidget *menu_item
     = gtk_item_factory_get_widget (goban_window->item_factory,
-				   _("/View/Navigation Toolbar"));
+				   "/View/Navigation Toolbar");
 
   gtk_ui_configuration.show_navigation_toolbar
     = !GTK_WIDGET_VISIBLE (toolbar_handle_box);
@@ -2111,7 +2123,7 @@ show_or_hide_game_action_buttons (GtkGobanWindow *goban_window)
     = gtk_widget_get_parent (goban_window->pass_button);
   GtkWidget *menu_item
     = gtk_item_factory_get_widget (goban_window->item_factory,
-				   _("/View/Game Action Buttons"));
+				   "/View/Game Action Buttons");
 
   gtk_ui_configuration.show_game_action_buttons
     = !GTK_WIDGET_VISIBLE (game_action_buttons_box);
@@ -2144,7 +2156,7 @@ show_or_hide_sgf_tree_view (GtkGobanWindow *goban_window,
   if (show_sgf_tree_view != sgf_tree_view_is_visible) {
     GtkWidget *menu_item
       = gtk_item_factory_get_widget (goban_window->item_factory,
-				     _("/View/Game Tree"));
+				     "/View/Game Tree");
 
     g_signal_handlers_block_by_func (menu_item, show_or_hide_sgf_tree_view,
 				     goban_window);
@@ -2155,7 +2167,7 @@ show_or_hide_sgf_tree_view (GtkGobanWindow *goban_window,
 
     gtk_utils_set_menu_items_sensitive (goban_window->item_factory,
 					show_sgf_tree_view,
-					_("/View/Recenter on Current Node"),
+					"/View/Recenter on Current Node",
 					NULL);
 
     if (show_sgf_tree_view) {
@@ -3508,42 +3520,40 @@ update_commands_sensitivity (const GtkGobanWindow *goban_window)
   /* "Edit" submenu. */
   gtk_utils_set_menu_items_sensitive (goban_window->item_factory,
 				      sgf_utils_can_undo (current_tree),
-				      _("/Edit/Undo"), NULL);
+				      "/Edit/Undo", NULL);
   gtk_utils_set_menu_items_sensitive (goban_window->item_factory,
 				      sgf_utils_can_redo (current_tree),
-				      _("/Edit/Redo"), NULL);
+				      "/Edit/Redo", NULL);
 
   gtk_utils_set_menu_items_sensitive (goban_window->item_factory,
 				      (!goban_window->in_game_mode
 				       && current_node->parent != NULL),
-				      _("/Edit/Delete Node"), NULL);
+				      "/Edit/Delete Node", NULL);
   gtk_utils_set_menu_items_sensitive (goban_window->item_factory,
 				      (!goban_window->in_game_mode
 				       && current_node->child != NULL),
-				      _("/Edit/Delete Node's Children"), NULL);
+				      "/Edit/Delete Node's Children", NULL);
 
   /* "Play" submenu. */
   gtk_utils_set_menu_items_sensitive (goban_window->item_factory,
-				      pass_sensitive,
-				      _("/Play/Pass"), NULL);
+				      pass_sensitive, "/Play/Pass", NULL);
   gtk_widget_set_sensitive (goban_window->pass_button, pass_sensitive);
 
   gtk_utils_set_menu_items_sensitive (goban_window->item_factory,
-				      resign_sensitive,
-				      _("/Play/Resign"), NULL);
+				      resign_sensitive, "/Play/Resign", NULL);
   gtk_widget_set_sensitive (goban_window->resign_button, resign_sensitive);
 
   gtk_utils_set_menu_items_sensitive (goban_window->item_factory,
 				      (goban_window->in_game_mode
 				       && !IS_IN_SPECIAL_MODE (goban_window)),
-				      _("/Play/Adjourn Game"), NULL);
+				      "/Play/Adjourn Game", NULL);
 
   /* "Go" submenu. */
   gtk_utils_set_menu_items_sensitive (goban_window->item_factory,
 				      previous_node_sensitive,
-				      _("/Go/Previous Node"),
-				      _("/Go/Ten Nodes Backward"),
-				      _("/Go/Root Node"), NULL);
+				      "/Go/Previous Node",
+				      "/Go/Ten Nodes Backward",
+				      "/Go/Root Node", NULL);
   gtk_utils_set_toolbar_buttons_sensitive (goban_window->navigation_toolbar,
 					   previous_node_sensitive,
 					   &navigation_toolbar_back,
@@ -3551,9 +3561,9 @@ update_commands_sensitivity (const GtkGobanWindow *goban_window)
 
   gtk_utils_set_menu_items_sensitive (goban_window->item_factory,
 				      next_node_sensitive,
-				      _("/Go/Next Node"),
-				      _("/Go/Ten Nodes Forward"),
-				      _("/Go/Variation Last Node"), NULL);
+				      "/Go/Next Node",
+				      "/Go/Ten Nodes Forward",
+				      "/Go/Variation Last Node", NULL);
   gtk_utils_set_toolbar_buttons_sensitive (goban_window->navigation_toolbar,
 					   next_node_sensitive,
 					   &navigation_toolbar_forward,
@@ -3562,7 +3572,7 @@ update_commands_sensitivity (const GtkGobanWindow *goban_window)
 
   gtk_utils_set_menu_items_sensitive (goban_window->item_factory,
 				      previous_variation_sensitive,
-				      _("/Go/Previous Variation"), NULL);
+				      "/Go/Previous Variation", NULL);
   gtk_utils_set_toolbar_buttons_sensitive
     (goban_window->navigation_toolbar,
      previous_variation_sensitive,
@@ -3570,7 +3580,7 @@ update_commands_sensitivity (const GtkGobanWindow *goban_window)
 
   gtk_utils_set_menu_items_sensitive (goban_window->item_factory,
 				      next_variation_sensitive,
-				      _("/Go/Next Variation"), NULL);
+				      "/Go/Next Variation", NULL);
   gtk_utils_set_toolbar_buttons_sensitive (goban_window->navigation_toolbar,
 					   next_variation_sensitive,
 					   &navigation_toolbar_next_variation,
