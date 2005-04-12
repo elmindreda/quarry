@@ -619,16 +619,26 @@ create_gtk_ui_page (void)
 #endif
 
   /* NOTE: Keep in sync with values in `gtk-configuration.list'. */
-  static const gchar *toolbar_styles[5]
+  static const gchar *toolbar_styles[]
     = { N_("Desktop default"),
-	N_("Text below icons"), N_("Text besides important icons"),
-	N_("Icons only"), N_("Text only") };
+	N_("Text below icons"),
+
+#if GTK_2_4_OR_LATER
+	/* I don't know of a simple way of making this work on earlier
+	 * GTK+ versions.
+	 */
+	N_("Text beside important icons"),
+#endif
+
+	N_("Icons only"),
+	N_("Text only") };
 
   GtkWidget *selector;
   GtkWidget *label;
   GtkWidget *hbox1;
   GtkWidget *hbox2;
   GtkWidget *toolbars_named_vbox;
+  gint item_to_select;
 
 #if GTK_2_4_OR_LATER
 
@@ -652,33 +662,57 @@ create_gtk_ui_page (void)
 
 #endif /* GTK_2_4_OR_LATER */
 
-  /* FIXME: Need to use GConf for default toolbar style tracking.  And
-   *	    hide ``Desktop default'' item when compiled without GConf.
+  /* Let's be over-secure (a compile-time error would have been
+   * better...)
    */
+  assert (TOOLBAR_STYLE_DEFAULT		     == 0
+	  && TOOLBAR_STYLE_BOTH		     == 1
+	  && TOOLBAR_STYLE_BOTH_HORIZONTALLY == 2
+	  && TOOLBAR_STYLE_ICONS_ONLY	     == 3
+	  && TOOLBAR_STYLE_TEXT_ONLY	     == 4);
 
-  selector = (gtk_utils_create_selector
-	      (toolbar_styles, 5, gtk_ui_configuration.main_toolbar_style));
+  item_to_select = gtk_ui_configuration.main_toolbar_style;
+
+#if !GTK_2_4_OR_LATER
+  /* See above for explanation. */
+  if (item_to_select >= TOOLBAR_STYLE_BOTH_HORIZONTALLY)
+    item_to_select--;
+#endif
+
+  selector = gtk_utils_create_selector (toolbar_styles,
+					(sizeof toolbar_styles
+					 / sizeof (const gchar *)),
+					item_to_select);
 
   g_signal_connect (selector, "changed",
 		    G_CALLBACK (change_toolbar_style), &main_toolbar_list);
 
-  label	   = gtk_utils_create_mnemonic_label (_("_Main toolbar style:"),
-					      selector);
+  label = gtk_utils_create_mnemonic_label (_("_Main toolbar style:"),
+					   selector);
 
   hbox1 = gtk_utils_pack_in_box (GTK_TYPE_HBOX, QUARRY_SPACING,
 				 label, GTK_UTILS_FILL,
 				 selector, GTK_UTILS_FILL, NULL);
 
-  selector = (gtk_utils_create_selector
-	      (toolbar_styles, 5,
-	       gtk_ui_configuration.navigation_toolbar_style));
+  item_to_select = gtk_ui_configuration.navigation_toolbar_style;
+
+#if !GTK_2_4_OR_LATER
+  /* See above for explanation. */
+  if (item_to_select >= TOOLBAR_STYLE_BOTH_HORIZONTALLY)
+    item_to_select--;
+#endif
+
+  selector = gtk_utils_create_selector (toolbar_styles,
+					(sizeof toolbar_styles
+					 / sizeof (const gchar *)),
+					item_to_select);
 
   g_signal_connect (selector, "changed",
 		    G_CALLBACK (change_toolbar_style),
 		    &navigation_toolbar_list);
 
-  label	   = gtk_utils_create_mnemonic_label (_("N_avigation toolbar style:"),
-					      selector);
+  label = gtk_utils_create_mnemonic_label (_("N_avigation toolbar style:"),
+					   selector);
 
   hbox2 = gtk_utils_pack_in_box (GTK_TYPE_HBOX, QUARRY_SPACING,
 				 label, GTK_UTILS_FILL,
@@ -1481,6 +1515,12 @@ change_toolbar_style (GtkWidget *selector, GtkToolbarList *toolbar_list)
 
   *toolbar_list->toolbar_style
     = gtk_utils_get_selector_active_item_index (selector);
+
+#if !GTK_2_4_OR_LATER
+  /* See create_gtk_ui_page() for explanation. */
+  if (*toolbar_list->toolbar_style >= TOOLBAR_STYLE_BOTH_HORIZONTALLY)
+    (*toolbar_list->toolbar_style)++;
+#endif
 
   for (item = toolbar_list->toolbars; item; item = item->next)
     set_toolbar_style (GTK_TOOLBAR (item->data), *toolbar_list->toolbar_style);
@@ -2368,16 +2408,20 @@ set_toolbar_style (GtkToolbar *toolbar, int style)
 {
   switch (style) {
   case TOOLBAR_STYLE_DEFAULT:
-    /* FIXME: Not what we want actually.  Need GConf. */
     gtk_toolbar_unset_style (toolbar);
     break;
 
+  case TOOLBAR_STYLE_BOTH_HORIZONTALLY:
+    /* Safety check.  Shouldn't happen unless someone edits his
+     * configuration file by hands.
+     */
+#if GTK_2_4_OR_LATER
+    gtk_toolbar_set_style (toolbar, GTK_TOOLBAR_BOTH_HORIZ);
+    break;
+#endif
+
   case TOOLBAR_STYLE_BOTH:
     gtk_toolbar_set_style (toolbar, GTK_TOOLBAR_BOTH);
-    break;
-
-  case TOOLBAR_STYLE_BOTH_HORIZONTALLY:
-    gtk_toolbar_set_style (toolbar, GTK_TOOLBAR_BOTH_HORIZ);
     break;
 
   case TOOLBAR_STYLE_ICONS_ONLY:
