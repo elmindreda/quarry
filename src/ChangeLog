@@ -1,3 +1,35 @@
+2005-04-23  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* gui-gtk/gtk-configuration.list: Add "Search in" configuration
+	parameter.
+
+	* gui-gtk/gtk-goban-window.c (gtk_goban_window_class_init): Create
+	text tags for highlighting of node names in the commentary text
+	buffer.
+	(gtk_goban_window_init): Add "Edit Node Name" item in the menu.
+	Create text buffer ourself, with custom tag table.
+	(show_find_dialog): Create a set of radio buttons for selecting
+	between comments and/or node name search.  Some minor redesign.
+	Use gtk_utils_make_window_only_horizontally_resizable().
+	(find_dialog_response): Retrieve property search scope settings.
+	(do_find_text): Search in comments and/or node names, as
+	requested.  When mapping normalized text to original, only work
+	with one line (matches cannot cross line boundaries.)  Use
+	gtk_text_view_scroll_to_mark() instead of
+	gtk_text_view_scroll_to_iter() as suggested by the API reference.
+	(get_top_buffer_part, get_bottom_buffer_part): New functions.
+	(update_children_for_new_node): Call new insert_node_name() if the
+	new node has a name.
+	(insert_node_name, select_node_name, text_buffer_insert_text)
+	(text_buffer_after_insert_text, text_buffer_mark_set): New
+	functions.
+	(fetch_comment_and_node_name): Rename from
+	fetch_comment_if_changed().  Also fetch node name if needed.
+
+	* gui-gtk/gtk-utils.c (gtk_text_buffer_select_range): New
+	function: trivial implementation for pre-2.4 GTK+ so that other
+	code can avoid version checks.
+
 2005-04-12  Paul Pogonyshev  <pogonyshev@gmx.net>
 
 	* gui-gtk/gtk-goban-window.c (gtk_goban_window_init): Register
