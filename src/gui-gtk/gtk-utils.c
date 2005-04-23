@@ -288,24 +288,24 @@ null_pointer_on_destroy_ask_control_center (GtkWindow *window,
 #if !GTK_2_2_OR_LATER
 
 
+#undef gtk_dialog_set_default_response
+
 /* Workaround GTK+ 2.0 focus slipping problem. */
 void
 gtk_utils_workaround_set_default_response (GtkDialog *dialog, gint response_id)
 {
   GtkWidget *focused_widget = gtk_window_get_focus (GTK_WINDOW (dialog));
 
-#undef gtk_dialog_set_default_response
-
   gtk_dialog_set_default_response (dialog, response_id);
-
-#define gtk_dialog_set_default_response(dialog, response_id)		\
-  gtk_utils_workaround_set_default_response (dialog, response_id)
 
   /* Can't use gtk_widget_grab_focus() since `focused_widget' can be
    * NULL.
    */
   gtk_window_set_focus (GTK_WINDOW (dialog), focused_widget);
 }
+
+#define gtk_dialog_set_default_response(dialog, response_id)		\
+  gtk_utils_workaround_set_default_response (dialog, response_id)
 
 
 #endif /* not GTK_2_2_OR_LATER */
@@ -1127,6 +1127,29 @@ gtk_utils_set_text_buffer_text (GtkTextBuffer *text_buffer, const gchar *text)
   else
     gtk_text_buffer_set_text (text_buffer, "", 0);
 }
+
+
+#if !GTK_2_4_OR_LATER
+
+
+/* It is recommended to use this function with 2.4 and up.  For
+ * earlier versions, we define it ourselves.
+ */
+void
+gtk_text_buffer_select_range (GtkTextBuffer *text_buffer,
+			      GtkTextIter *insertion_iterator,
+			      GtkTextIter *bound_iterator)
+{
+  gtk_text_buffer_move_mark (text_buffer,
+			     gtk_text_buffer_get_insert (text_buffer),
+			     insertion_iterator);
+  gtk_text_buffer_move_mark (text_buffer,
+			     gtk_text_buffer_get_selection_bound (text_buffer),
+			     bound_iterator);
+}
+
+
+#endif /* not GTK_2_4_OR_LATER */
 
 
 

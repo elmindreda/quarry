@@ -81,14 +81,16 @@
   gtk_utils_workaround_set_default_response (dialog, response_id)
 
 
-#endif
+#endif /* not GTK_2_2_OR_LATER */
 
 
 #if !GTK_2_4_OR_LATER
+
 /* The manual doesn't say this, but apparently the function is only
  * introduced in GTK+ 2.4.
  */
 #define gtk_entry_set_alignment(entry, alignment)
+
 #endif
 
 
@@ -282,6 +284,17 @@ void		gtk_utils_set_toolbar_buttons_sensitive
 
 void		gtk_utils_set_text_buffer_text (GtkTextBuffer *text_buffer,
 						const gchar *text);
+
+#if !GTK_2_4_OR_LATER
+
+/* It is recommended to use this function with 2.4 and up.  For
+ * earlier versions, we define it ourselves.
+ */
+void		gtk_text_buffer_select_range (GtkTextBuffer *text_buffer,
+					      GtkTextIter *insertion_iterator,
+					      GtkTextIter *bound_iterator);
+
+#endif
 
 
 void		gtk_utils_set_sensitive_on_toggle
