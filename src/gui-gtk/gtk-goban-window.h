@@ -86,6 +86,7 @@ struct _GtkGobanWindow {
   GtkWidget		  *cancel_button;
   GtkTextView		  *text_view;
   GtkTextBuffer		  *text_buffer;
+  gboolean		   node_name_inserted;
   GtkPaned		  *vpaned;
   GtkSgfTreeView	  *sgf_tree_view;
   gboolean		   sgf_tree_view_visibility_locked;
@@ -144,14 +145,17 @@ struct _GtkGobanWindow {
   GtkToggleButton	  *case_sensitive_toggle_button;
   GtkToggleButton	  *wrap_around_toggle_button;
   GtkToggleButton	  *whole_words_only_toggle_button;
-  GtkToggleButton	  *search_whole_game_tree_toggle_button;
   GtkToggleButton	  *close_automatically_toggle_button;
+  GtkToggleButton	  *search_current_node_only_toggle_button;
+  GtkToggleButton	  *search_everywhere_toggle_button;
+  GtkToggleButton	  *search_comments_only_toggle_button;
 
   gchar			  *text_to_find;
   gboolean		   case_sensitive;
   gboolean		   whole_words_only;
   gboolean		   wrap_around;
   gboolean		   search_whole_game_tree;
+  gint			   search_in;
 
   GtkGameInfoDialog	  *game_info_dialog;
   GtkProgressDialog	  *scoring_progress_dialog;
