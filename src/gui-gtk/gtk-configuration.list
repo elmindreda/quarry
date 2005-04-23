@@ -198,9 +198,16 @@ values  - find_dialog_section_values {
   "Case sensitive"		case_sensitive			boolean
   "Whole words only"		whole_words_only		boolean
   "Wrap around"			wrap_around			boolean
-  "Search whole game tree"	search_whole_game_tree		boolean
 
-  "Close dialog automatically"	close_automatically		boolean
+  "Search whole game tree"	search_whole_game_tree		boolean
+  "Search in"			search_in			enumeration
+								new
+    SEARCH_EVERYWHERE		"Nodes and comments" "Everywhere" "Both"
+    SEARCH_IN_COMMENTS		"Comments" "Comments only"
+    SEARCH_IN_NODE_NAMES	"Node names" "Node names only"
+  end
+
+  "Auto-close search dialog"	close_automatically		boolean
 }
 
 
@@ -308,7 +315,9 @@ defaults  - find_dialog_defaults {
   case_sensitive			boolean		false
   whole_words_only			boolean		false
   wrap_around				boolean		true
+
   search_whole_game_tree		boolean		true
+  search_in				enumeration	SEARCH_EVERYWHERE
 
   close_automatically			boolean		false
 }
