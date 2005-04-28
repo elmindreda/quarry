@@ -44,7 +44,10 @@ enum {
   SGF_MARKUP_SELECTED,
   NUM_SGF_MARKUPS,
 
-  SGF_MARKUP_NONE = NUM_SGF_MARKUPS
+  /* Defined to -1 so that higher level code can easily add more
+   * non-empty (pseudo) markups above `SGF_MARKUP_SELECTED'.
+   */
+  SGF_MARKUP_NONE = -1
 };
 
 
