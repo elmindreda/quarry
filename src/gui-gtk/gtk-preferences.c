@@ -2454,18 +2454,44 @@ gtk_preferences_have_non_hidden_gtp_engine (void)
 }
 
 
+/* FIXME: Can be substantially improved. */
+GtpEngineListItem *
+gtk_preferences_guess_engine_by_name (const gchar *name,
+				      GtkGameIndex game_index)
+{
+  if (name) {
+    GtpEngineListItem *engine_data;
+
+    for (engine_data = gtp_engines.first; engine_data;
+	 engine_data = engine_data->next) {
+      if (!engine_data->is_hidden
+	  && (game_index == GTK_GAME_ANY
+	      || gtk_games_engine_supports_game (engine_data, game_index))) {
+	if (strcmp (engine_data->screen_name, name) == 0) {
+	  /* Exact match. */
+	  return engine_data;
+	}
+
+	if (strstr (name, engine_data->name)) {
+	  /* Engine base name is a substring of player name. */
+	  return engine_data;
+	}
+      }
+    }
+  }
+
+  return NULL;
+}
+
+
 GtkWidget *
 gtk_preferences_create_engine_selector (GtkGameIndex game_index,
 					gboolean only_this_game,
-					const gchar *engine_name,
+					const GtpEngineListItem *engine_data,
 					GtkEngineChanged callback,
 					gpointer user_data)
 {
   GtkEngineSelectorData *data = g_malloc (sizeof (GtkEngineSelectorData));
-  GtpEngineListItem *engine_data = (engine_name
-				    ? gtp_engine_list_find (&gtp_engines,
-							    engine_name)
-				    : NULL);
 
 #if GTK_2_4_OR_LATER
 
@@ -2554,10 +2580,15 @@ gtk_preferences_set_engine_selector_game_index (GtkWidget *selector,
       assert (!data->only_this_game);
 
       if (game_index != data->selector_game_index) {
+	GtpEngineListItem *current_selection
+	  = gtk_preferences_get_engine_selector_selection (data->selector);
+
 	gtk_utils_block_signal_handlers (data->selector,
 					 engine_selector_changed);
 
 	build_and_attach_menu (data->selector, game_index, FALSE);
+	gtk_preferences_set_engine_selector_selection (data->selector,
+						       current_selection);
 
 	gtk_utils_unblock_signal_handlers (data->selector,
 					   engine_selector_changed);
@@ -2881,29 +2912,39 @@ gtk_preferences_instantiate_selected_engine (GtkEngineChain *engine_chain,
 				       _("Perhaps engine's binary has been "
 					 "deleted or changed. You will "
 					 "probably need to alter engine's "
-					 "command line in preferences dialog"),
+					 "command line in preferences "
+					 "dialog."),
 				       error->message);
       g_error_free (error);
 
       engine_chain->have_error = TRUE;
     }
   }
+  else
+    *gtp_client = NULL;
 }
 
 
 void
 gtk_preferences_do_instantiate_engines (GtkEngineChain *engine_chain)
 {
-  if (engine_chain->chain_engine_datum != NULL) {
-  }
-  else {
-    if (engine_chain->instantiation_callback) {
-      engine_chain->instantiation_callback (ENGINES_INSTANTIATED,
-					    engine_chain->user_data);
-    }
+  GtkEnginesInstantiationStatus status;
 
-    g_free (engine_chain);
+  if (!engine_chain->have_error) {
+    if (engine_chain->chain_engine_datum != NULL) {
+      /* FIXME: What should be here? */
+      return;
+    }
+    else
+      status = ENGINES_INSTANTIATED;
   }
+  else
+    status = INSTANTIATION_FAILED;
+
+  if (engine_chain->instantiation_callback)
+    engine_chain->instantiation_callback (status, engine_chain->user_data);
+
+  g_free (engine_chain);
 }
 
 

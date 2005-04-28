@@ -83,10 +83,12 @@ void		     gtk_preferences_register_navigation_toolbar
 BoardAppearance *    game_to_board_appearance_structure (Game game);
 
 gboolean	     gtk_preferences_have_non_hidden_gtp_engine (void);
+GtpEngineListItem *  gtk_preferences_guess_engine_by_name
+		       (const gchar *name, GtkGameIndex game_index);
 
 GtkWidget *	     gtk_preferences_create_engine_selector
 		       (GtkGameIndex game_index, gboolean only_this_game,
-			const gchar *engine_name,
+			const GtpEngineListItem *engine_data,
 			GtkEngineChanged callback, gpointer user_data);
 void		     gtk_preferences_set_engine_selector_game_index
 		       (GtkWidget *selector, GtkGameIndex game_index);
