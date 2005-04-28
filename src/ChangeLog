@@ -1,3 +1,87 @@
+2005-04-28  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* gui-utils/common-configuration-defaults.list: Make default
+	markup color on white stones a little darker for all games.
+
+	* gui-gtk/gtk-goban.c (gtk_goban_init): Initalize `last_move_pos'
+	field that replaced `last_move_x' and `last_move_y'.
+	(gtk_goban_set_parameters): Fille `sgf_markup' grid with
+	`SGF_MARKUP_NONE', not `TILE_NONE' value.
+	(gtk_goban_expose): Remove special code for marking last move
+	position.  Do that based on `last_move_pos' field with SGF markup
+	instead.
+	(gtk_goban_update): Remove special code for invalidation last move
+	position area.  Properly update `last_move_pos' instead.
+
+	* gui-gtk/gtk-tile-set.c (gtk_sgf_markup_tile_set_create): Create
+	an additional pseudo-SGF markup for last move from file named
+	`last-move.svg'.
+	(gtk_sgf_markup_tile_set_delete): Delete it.
+
+	* sgf/sgf.h (SGF_MARKUP_NONE): Set to -1 to make way for
+	`SGF_PSEUDO_MARKUP_LAST_MOVE' in `gui-gtk/gtk-tile-set.h'.
+
+	* gui-gtk/gtk-goban-window.c (gtk_goban_window_init): Add "Quit"
+	menu item.
+
+	* gui-gtk/gtk-control-center.c (gtk_control_center_present): Add
+	"Quit" button (part of #2290.)
+	(gtk_control_center_quit): New function.
+
+	* gui-gtk/gtk-resume-game-dialog.c (gtk_resume_game): Use static
+	variable to store pointer to file dialog used for resuming games.
+
+	* gui-gtk/gtk-parser-interface.c (gtk_parser_interface_present):
+	Add `dialog_window' parameter and only create new file dialog if
+	there is no dialog of requested type already present.  Use static
+	variable to store default opening dialog.
+
+2005-04-27  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* gui-gtk/gtk-resume-game-dialog.c (do_resume_game): Don't assert
+	that instantiation was successful, just do nothing if it was not.
+
+	* gui-gtk/gtk-new-game-dialog.c (gtk_new_game_dialog_present): Use
+	gtk_preferences_guess_engine_by_name().
+	(begin_game): Don't assert that instantiation was successful, just
+	do nothing if it was not.
+
+	* gui-gtk/gtk-preferences.c
+	(gtk_preferences_guess_engine_by_name): Rename from
+	guess_engine_by_player_name() and move from
+	`gui-gtk/gtk-resume-game-dialog.c' here.
+	(gtk_preferences_create_engine_selector): Replace `engine_name'
+	argument with `engine_data' and so don't resolve engines names.
+	(gtk_preferences_set_engine_selector_game_index): Bug-fix for
+	pre-2.4 GTK+: preserve the selection; it gets lost since the menu
+	is rebuilt from scratch.
+	(gtk_preferences_instantiate_selected_engine): When `have_error'
+	is set and we don't try to instantiate engine, at least reset the
+	`gtp_client' pointer to NULL.  Add missing dot to error message.
+	(gtk_preferences_do_instantiate_engines): If `have_error' is set,
+	call `instantiation_callback' with `INSTANTIATION_FAILED' status.
+
+	* gui-gtk/gtk-games.h (GtkGameIndex): Add `GTK_GAME_ANY'.
+
+2005-04-24  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* board/go.c (go_score_game): Plug a memory leak.
+
+	* gui-gtk/gtk-goban-window.c (move_has_been_generated): Use
+	gtk_sgf_tree_signal_proxy_push_tree_state() and
+	gtk_sgf_tree_signal_proxy_pop_tree_state().
+
+	* gui-gtk/gtk-sgf-tree-signal-proxy.c
+	(gtk_sgf_tree_signal_proxy_finalize): New function.
+	(gtk_sgf_tree_signal_proxy_attach): Initialize new `state_stack'
+	field with NULL.
+	(gtk_sgf_tree_signal_proxy_push_tree_state)
+	(gtk_sgf_tree_signal_proxy_pop_tree_state): New functions.
+	(receive_notification): Block current node-related signals when
+	`state_stack' is not empty.  For other signals, temporary restore
+	original board state.  (Indirect fix for SGF tree view behaviour
+	when browsing a game in progress.)
+
 2005-04-23  Paul Pogonyshev  <pogonyshev@gmx.net>
 
 	* gui-gtk/gtk-configuration.list: Add "Search in" configuration
