@@ -1282,6 +1282,8 @@ go_score_game (Board *board, const char *dead_stones, double komi,
 		      (double) black_score);
 
     if ((double) black_score != white_score) {
+      char *string_to_free = *detailed_score;
+
       *detailed_score
 	= utils_printf ("%s%s wins by %.*f", *detailed_score,
 			((double) black_score > white_score
@@ -1290,6 +1292,7 @@ go_score_game (Board *board, const char *dead_stones, double komi,
 				      + 0.5)
 			 % 10 == 0 ? 1 : 2),
 			fabs (black_score - white_score));
+      utils_free (string_to_free);
     }
     else
       *detailed_score = utils_cat_string (*detailed_score, "The game is draw");
