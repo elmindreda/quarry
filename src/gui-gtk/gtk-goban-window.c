@@ -484,6 +484,9 @@ gtk_goban_window_init (GtkGobanWindow *goban_window)
     { N_("/File/_Close"),		"<ctrl>W",
       gtk_widget_destroy,		0,
       "<StockItem>",			GTK_STOCK_CLOSE },
+    { N_("/File/_Quit"),		"<ctrl>Q",
+      gtk_control_center_quit,		0,
+      "<StockItem>",			GTK_STOCK_QUIT },
 
 
     { N_("/_Edit"), NULL, NULL, 0, "<Branch>" },
@@ -4537,7 +4540,6 @@ move_has_been_generated (GtpClient *client, int successful,
    */
   if (goban_window->in_game_mode && successful) {
     SgfGameTree *current_tree = goban_window->current_tree;
-    SgfGameTreeState tree_state;
 
     if (x == RESIGNATION_X && y == RESIGNATION_Y) {
       do_resign_game (goban_window);
@@ -4545,8 +4547,8 @@ move_has_been_generated (GtpClient *client, int successful,
     }
 
     if (!IS_DISPLAYING_GAME_NODE (goban_window)) {
-      sgf_game_tree_get_state (current_tree, &tree_state);
-      sgf_game_tree_set_state (current_tree, &goban_window->game_position);
+      gtk_sgf_tree_signal_proxy_push_tree_state (current_tree,
+						 &goban_window->game_position);
     }
 
     /* FIXME: Validate move and alert if it is illegal. */
@@ -4563,9 +4565,8 @@ move_has_been_generated (GtpClient *client, int successful,
     if (IS_DISPLAYING_GAME_NODE (goban_window))
       update_children_for_new_node (goban_window);
     else {
-      goban_window->game_position.current_node = current_tree->current_node;
-      sgf_game_tree_set_state (current_tree, &tree_state);
-
+      gtk_sgf_tree_signal_proxy_pop_tree_state (current_tree,
+						&goban_window->game_position);
       show_sgf_tree_view_automatically
 	(goban_window, goban_window->game_position.current_node);
     }
