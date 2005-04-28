@@ -1,7 +1,7 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *\
  * This file is part of Quarry.                                    *
  *                                                                 *
- * Copyright (C) 2003, 2004 Paul Pogonyshev.                       *
+ * Copyright (C) 2003, 2004, 2005 Paul Pogonyshev.                 *
  *                                                                 *
  * This program is free software; you can redistribute it and/or   *
  * modify it under the terms of the GNU General Public License as  *
@@ -182,7 +182,9 @@ gtk_new_game_dialog_present (void)
 	  { N_("H_uman"), N_("Com_puter") } };
 
     GtkWidget *entry;
-    const char *engine_name = new_game_configuration.engine_names[k];
+    const GtpEngineListItem *engine_data
+      = (gtk_preferences_guess_engine_by_name
+	 (new_game_configuration.engine_names[k], GTK_GAME_ANY));
 
     /* Two radio buttons for selecting who is controlling this
      * player--human or computer.
@@ -207,7 +209,7 @@ gtk_new_game_dialog_present (void)
     /* Selector (combo box/option menu) for computer player. */
     data->engine_selectors[k]
       = gtk_preferences_create_engine_selector (GTK_GAME_GO, FALSE,
-						engine_name,
+						engine_data,
 						update_game_and_players_page,
 						data);
     gtk_utils_set_sensitive_on_toggle (data->player_radio_buttons[k][1],
@@ -810,23 +812,32 @@ instantiate_players (NewGameDialogData *data)
 static void
 begin_game (GtkEnginesInstantiationStatus status, gpointer user_data)
 {
-  NewGameDialogData *data = (NewGameDialogData *) user_data;
-  GtkGameIndex game_index = get_selected_game (data);
-  Game game = index_to_game[game_index];
-  int board_size = gtk_adjustment_get_value (data->board_sizes[game_index]);
+  NewGameDialogData *data;
+  GtkGameIndex game_index;
+  Game game;
+  int board_size;
   gboolean player_is_computer[NUM_COLORS];
   const char *human_names[NUM_COLORS];
   const char *engine_screen_names[NUM_COLORS];
-  TimeControlData *const time_control_data = (data->time_control_data
-					      + game_index);
-  TimeControlConfiguration *time_control_configuration = NULL;
-  TimeControl *time_control = NULL;
+  TimeControlData * time_control_data;
+  TimeControlConfiguration *time_control_configuration;
+  TimeControl *time_control;
   SgfGameTree *game_tree;
   SgfCollection *sgf_collection;
   GtkWidget *goban_window;
   int k;
 
-  assert (status == ENGINES_INSTANTIATED);
+  if (status != ENGINES_INSTANTIATED)
+    return;
+
+  data	     = (NewGameDialogData *) user_data;
+  game_index = get_selected_game (data);
+  game	     = index_to_game[game_index];
+  board_size = gtk_adjustment_get_value (data->board_sizes[game_index]);
+
+  time_control_data	     = data->time_control_data + game_index;
+  time_control_configuration = NULL;
+  time_control		     = NULL;
 
   game_tree = sgf_game_tree_new_with_root (game, board_size, board_size, 1);
   game_tree->char_set = utils_duplicate_string ("UTF-8");
