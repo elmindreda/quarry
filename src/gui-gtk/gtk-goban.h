@@ -166,8 +166,7 @@ struct _GtkGoban {
   BoardPositionList	*overlay_positon_lists[NUM_OVERLAYS];
   char			*overlay_contents[NUM_OVERLAYS];
 
-  int			 last_move_x;
-  int			 last_move_y;
+  int			 last_move_pos;
 
   gint			 font_size;
   gint			 character_height;
