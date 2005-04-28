@@ -59,6 +59,8 @@ struct _GtkSgfTreeSignalProxy {
 
   SgfGameTree	*sgf_tree;
   SgfNode	*old_current_node;
+
+  GSList	*state_stack;
 };
 
 struct _GtkSgfTreeSignalProxyClass {
@@ -84,6 +86,11 @@ struct _GtkSgfTreeSignalProxyClass {
 GType	 	gtk_sgf_tree_signal_proxy_get_type (void);
 
 GObject *	gtk_sgf_tree_signal_proxy_attach (SgfGameTree *sgf_tree);
+
+void		gtk_sgf_tree_signal_proxy_push_tree_state
+		  (SgfGameTree *sgf_tree, const SgfGameTreeState *new_state);
+void		gtk_sgf_tree_signal_proxy_pop_tree_state
+		  (SgfGameTree *sgf_tree, SgfGameTreeState *old_state);
 
 
 #define GET_SIGNAL_PROXY(sgf_tree)					\
