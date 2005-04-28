@@ -29,13 +29,15 @@
 #include <gtk/gtk.h>
 
 
-void		gtk_control_center_present(void);
+void		gtk_control_center_present (void);
 
-inline void	gtk_control_center_window_created(GtkWindow *window);
-gint		gtk_control_center_window_destroyed(const GtkWindow *window);
+inline void	gtk_control_center_window_created (GtkWindow *window);
+gint		gtk_control_center_window_destroyed (const GtkWindow *window);
 
-inline void	gtk_control_center_new_reason_to_live(void);
-inline void	gtk_control_center_lost_reason_to_live(void);
+inline void	gtk_control_center_new_reason_to_live (void);
+inline void	gtk_control_center_lost_reason_to_live (void);
+
+void		gtk_control_center_quit (void);
 
 
 #endif /* QUARRY_GTK_CONTROL_CENTER_H */

@@ -48,6 +48,7 @@ gtk_control_center_present (void)
     GtkWidget *open_game_record_button;
     GtkWidget *resume_game_button;
     GtkWidget *preferences_button;
+    GtkWidget *quit_button;
 
     control_center = (GtkWindow *) gtk_window_new (GTK_WINDOW_TOPLEVEL);
     gtk_control_center_window_created (control_center);
@@ -76,6 +77,10 @@ gtk_control_center_present (void)
 			      G_CALLBACK (gtk_preferences_dialog_present),
 			      GINT_TO_POINTER (-1));
 
+    quit_button = gtk_button_new_from_stock (GTK_STOCK_QUIT);
+    g_signal_connect_swapped (quit_button, "clicked",
+			      G_CALLBACK (gtk_control_center_quit), NULL);
+
     vbox = gtk_utils_pack_in_box (GTK_TYPE_VBOX, QUARRY_SPACING_SMALL,
 				  new_game_button, GTK_UTILS_FILL,
 				  gtk_hseparator_new (),
@@ -84,7 +89,10 @@ gtk_control_center_present (void)
 				  resume_game_button, GTK_UTILS_FILL,
 				  gtk_hseparator_new (),
 				  GTK_UTILS_FILL | QUARRY_SPACING_VERY_SMALL,
-				  preferences_button, GTK_UTILS_FILL, NULL);
+				  preferences_button, GTK_UTILS_FILL,
+				  gtk_hseparator_new (),
+				  GTK_UTILS_FILL | QUARRY_SPACING_VERY_SMALL,
+				  quit_button, GTK_UTILS_FILL, NULL);
     gtk_container_add (GTK_CONTAINER (control_center), vbox);
     gtk_widget_show_all (vbox);
   }
@@ -135,6 +143,17 @@ gtk_control_center_lost_reason_to_live (void)
 {
   if (--num_other_reasons_to_live == 0 && windows == NULL)
     gtk_main_quit ();
+}
+
+
+void
+gtk_control_center_quit (void)
+{
+  if (control_center)
+    gtk_widget_destroy (GTK_WIDGET (control_center));
+
+  while (windows)
+    gtk_widget_destroy (GTK_WIDGET (windows->data));
 }
 
 
