@@ -3,6 +3,7 @@
 nobase_dist_theme_DATA =	\
 	default/circle.svg	\
 	default/cross.svg	\
+	default/last-move.svg	\
 	default/selected.svg	\
 	default/square.svg	\
 	default/triangle.svg	\
@@ -11,6 +12,7 @@ nobase_dist_theme_DATA =	\
 				\
 	bold/circle.svg		\
 	bold/cross.svg		\
+	bold/last-move.svg	\
 	bold/selected.svg	\
 	bold/square.svg		\
 	bold/triangle.svg	\
@@ -19,6 +21,7 @@ nobase_dist_theme_DATA =	\
 				\
 	filled/circle.svg	\
 	filled/cross.svg	\
+	filled/last-move.svg	\
 	filled/selected.svg	\
 	filled/square.svg	\
 	filled/triangle.svg	\
