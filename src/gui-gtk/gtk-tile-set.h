@@ -1,7 +1,7 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *\
  * This file is part of Quarry.                                    *
  *                                                                 *
- * Copyright (C) 2003, 2004 Paul Pogonyshev.                       *
+ * Copyright (C) 2003, 2004, 2005 Paul Pogonyshev.                 *
  *                                                                 *
  * This program is free software; you can redistribute it and/or   *
  * modify it under the terms of the GNU General Public License as  *
@@ -32,7 +32,13 @@
 #include <gdk-pixbuf/gdk-pixbuf.h>
 
 
-#define NUM_SGF_MARKUP_BACKGROUNDS	(MAX(BLACK, WHITE) + 1)
+#define NUM_SGF_MARKUP_BACKGROUNDS	(MAX (BLACK, WHITE) + 1)
+
+/* We consider ``last move markup'' a pseudo-SGF markup in the GTK+
+ * GUI.  So, we need to tweak things a little here.
+ */
+#define SGF_PSEUDO_MARKUP_LAST_MOVE	NUM_SGF_MARKUPS
+#define NUM_ALL_SGF_MARKUPS		(SGF_PSEUDO_MARKUP_LAST_MOVE + 1)
 
 
 enum {
@@ -69,14 +75,14 @@ struct _GtkMainTileSet {
 struct _GtkSgfMarkupTileSet {
   gint		tile_size;
 
-  GdkPixbuf    *tiles[NUM_SGF_MARKUPS][NUM_SGF_MARKUP_BACKGROUNDS];
+  GdkPixbuf    *tiles[NUM_ALL_SGF_MARKUPS][NUM_SGF_MARKUP_BACKGROUNDS];
 };
 
 
-GtkMainTileSet *       gtk_main_tile_set_create_or_reuse(gint tile_size,
-							 Game game);
-GtkSgfMarkupTileSet *  gtk_sgf_markup_tile_set_create_or_reuse(gint tile_size,
-							       Game game);
+GtkMainTileSet *       gtk_main_tile_set_create_or_reuse (gint tile_size,
+							  Game game);
+GtkSgfMarkupTileSet *  gtk_sgf_markup_tile_set_create_or_reuse (gint tile_size,
+								Game game);
 
 
 extern ObjectCache	gtk_main_tile_set_cache;

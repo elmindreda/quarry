@@ -341,15 +341,16 @@ gtk_sgf_markup_tile_set_duplicate_key (const GtkSgfMarkupTileSetKey *key)
 static void *
 gtk_sgf_markup_tile_set_create (const GtkSgfMarkupTileSetKey *key)
 {
-  static const gchar *svg_file_base_names[NUM_SGF_MARKUPS]
-    = { "cross", "circle", "square", "triangle", "selected" };
+  /* NOTE: Keep in the order defined in `sgf.h'! */
+  static const gchar *svg_file_base_names[NUM_ALL_SGF_MARKUPS]
+    = { "cross", "circle", "square", "triangle", "selected", "last-move" };
 
   GtkSgfMarkupTileSet *tile_set = g_malloc (sizeof (GtkSgfMarkupTileSet));
   int k;
 
   tile_set->tile_size = key->tile_size;
 
-  for (k = 0; k < NUM_SGF_MARKUPS; k++) {
+  for (k = 0; k < NUM_ALL_SGF_MARKUPS; k++) {
     gchar *filename = g_strdup_printf ((PACKAGE_DATA_DIR
 					"/markup-themes/%s/%s.svg"),
 				       key->theme_directory,
@@ -408,7 +409,7 @@ gtk_sgf_markup_tile_set_delete (GtkSgfMarkupTileSet *tile_set)
   int k;
   int i;
 
-  for (k = 0; k < NUM_SGF_MARKUPS; k++) {
+  for (k = 0; k < NUM_ALL_SGF_MARKUPS; k++) {
     for (i = 0; i < NUM_SGF_MARKUP_BACKGROUNDS; i++)
       g_object_unref (tile_set->tiles[k][i]);
   }
