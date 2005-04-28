@@ -82,24 +82,31 @@ static void	 open_game_record (SgfCollection *sgf_collection,
 void
 gtk_parser_interface_present_default (void)
 {
-  gtk_parser_interface_present (NULL, NULL);
+  gtk_parser_interface_present (NULL, NULL, NULL);
 }
 
 
 void
-gtk_parser_interface_present (const gchar *title, GtkHandleParsedData callback)
+gtk_parser_interface_present (GtkWindow **dialog_window, const gchar *title,
+			      GtkHandleParsedData callback)
 {
-  GtkWidget *file_dialog
-    = gtk_file_dialog_new (title ? title : _("Open SGF File..."),
-			   NULL, TRUE, GTK_STOCK_OPEN,
-			   G_CALLBACK (open_file_response), callback);
+  static GtkWindow *open_sgf_file_dialog = NULL;
 
-  gtk_control_center_window_created (GTK_WINDOW (file_dialog));
+  if (dialog_window == NULL)
+    dialog_window = &open_sgf_file_dialog;
 
-  g_signal_connect (file_dialog, "destroy",
-		    G_CALLBACK (gtk_control_center_window_destroyed), NULL);
+  if (*dialog_window == NULL) {
+    GtkWidget *file_dialog
+      = gtk_file_dialog_new (title ? title : _("Open SGF File..."),
+			     NULL, TRUE, GTK_STOCK_OPEN,
+			     G_CALLBACK (open_file_response), callback);
 
-  gtk_window_present (GTK_WINDOW (file_dialog));
+    *dialog_window = GTK_WINDOW (file_dialog);
+    gtk_control_center_window_created (*dialog_window);
+    gtk_utils_null_pointer_on_destroy (dialog_window, TRUE);
+  }
+
+  gtk_window_present (*dialog_window);
 }
 
 

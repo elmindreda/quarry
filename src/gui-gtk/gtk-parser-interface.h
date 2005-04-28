@@ -36,7 +36,8 @@ typedef void (* GtkHandleParsedData) (SgfCollection *sgf_collection,
 
 
 void		gtk_parser_interface_present_default (void);
-void		gtk_parser_interface_present (const gchar *title,
+void		gtk_parser_interface_present (GtkWindow **dialog_window,
+					      const gchar *title,
 					      GtkHandleParsedData callback);
 
 void		gtk_parse_sgf_file (const char *filename, GtkWindow *parent,
