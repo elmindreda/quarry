@@ -72,9 +72,6 @@ static void	maybe_open_game_record (GtkWidget *dialog, gint response_id,
 
 static void	gtk_resume_game_dialog_present (SgfCollection *sgf_collection,
 						const gchar *filename);
-static const GtpEngineListItem *
-		guess_engine_by_player_name (const gchar *player_name,
-					     GtkGameIndex game_index);
 
 static void	set_computer_opponent_sensitivity (GtkWidget *selector,
 						   ResumeGameDialogData *data);
@@ -89,7 +86,9 @@ static void	do_resume_game (GtkEnginesInstantiationStatus status,
 void
 gtk_resume_game (void)
 {
-  gtk_parser_interface_present (_("Resume Game..."),
+  static GtkWindow *resume_game_dialog = NULL;
+
+  gtk_parser_interface_present (&resume_game_dialog, _("Resume Game..."),
 				analyze_game_to_be_resumed);
 }
 
@@ -314,7 +313,7 @@ gtk_resume_game_dialog_present (SgfCollection *sgf_collection,
 					   ? SGF_PLAYER_WHITE
 					   : SGF_PLAYER_BLACK));
     const GtpEngineListItem *engine_data
-      = guess_engine_by_player_name (player_name, game_index);
+      = gtk_preferences_guess_engine_by_name (player_name, game_index);
 
     entry = gtk_utils_create_entry (player_name, RETURN_ACTIVATES_DEFAULT);
     data->name_entries[k] = GTK_ENTRY (entry);
@@ -335,15 +334,11 @@ gtk_resume_game_dialog_present (SgfCollection *sgf_collection,
 
     data->engine_selectors[k]
       = (gtk_preferences_create_engine_selector
-	 (game_index, TRUE, NULL,
+	 (game_index, TRUE, engine_data,
 	  (GtkEngineChanged) set_computer_opponent_sensitivity, data));
 
-    if (engine_data) {
-      gtk_preferences_set_engine_selector_selection
-	(data->engine_selectors[k], engine_data);
-
+    if (engine_data)
       gtk_toggle_button_set_active (data->player_radio_buttons[k][1], TRUE);
-    }
 
     gtk_utils_set_sensitive_on_toggle (data->player_radio_buttons[k][1],
 				       data->engine_selectors[k], FALSE);
@@ -378,34 +373,6 @@ gtk_resume_game_dialog_present (SgfCollection *sgf_collection,
   gtk_utils_standardize_dialog (GTK_DIALOG (dialog), vbox);
 
   gtk_window_present (GTK_WINDOW (dialog));
-}
-
-
-/* FIXME: Can be substantially improved. */
-static const GtpEngineListItem *
-guess_engine_by_player_name (const gchar *player_name, GtkGameIndex game_index)
-{
-  GtpEngineListItem *engine_data;
-
-  if (player_name) {
-    for (engine_data = gtp_engines.first; engine_data;
-	 engine_data = engine_data->next) {
-      if (!engine_data->is_hidden
-	  && gtk_games_engine_supports_game (engine_data, game_index)) {
-	if (strcmp (engine_data->screen_name, player_name) == 0) {
-	  /* Exact match. */
-	  return engine_data;
-	}
-
-	if (strstr (player_name, engine_data->name)) {
-	  /* Engine base name is a substring of player name. */
-	  return engine_data;
-	}
-      }
-    }
-  }
-
-  return NULL;
 }
 
 
@@ -473,10 +440,13 @@ gtk_resume_game_dialog_response (GtkWidget *dialog, gint response_id,
 static void
 do_resume_game (GtkEnginesInstantiationStatus status, gpointer user_data)
 {
-  ResumeGameDialogData *data = (ResumeGameDialogData *) user_data;
+  ResumeGameDialogData *data;
   GtkWidget *goban_window;
 
-  assert (status == ENGINES_INSTANTIATED);
+  if (status != ENGINES_INSTANTIATED)
+    return;
+
+  data = (ResumeGameDialogData *) user_data;
 
   goban_window = gtk_goban_window_new (data->sgf_collection, data->filename);
   gtk_goban_window_resume_game (GTK_GOBAN_WINDOW (goban_window),
