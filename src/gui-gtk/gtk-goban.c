@@ -15,8 +15,8 @@
  *                                                                 *
  * You should have received a copy of the GNU General Public       *
  * License along with this program; if not, write to the Free      *
- * Software Foundation, Inc., 59 Temple Place - Suite 330,         *
- * Boston, MA 02111-1307, USA.                                     *
+ * Software Foundation, Inc., 51 Franklin Street, Fifth Floor,     *
+ * Boston, MA 02110-1301, USA.                                     *
 \* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 
@@ -402,7 +402,8 @@ gtk_goban_size_allocate (GtkWidget *widget, GtkAllocation *allocation)
 				     font_size * PANGO_SCALE);
     pango_layout_set_font_description (layout, goban->base.font_description);
     pango_layout_get_pixel_size (layout,
-				 &goban->digit_width, &goban->character_height);
+				 &goban->digit_width,
+				 &goban->character_height);
     goban->digit_width += 2;
 
     g_object_unref (layout);
@@ -539,7 +540,7 @@ gtk_goban_expose (GtkWidget *widget, GdkEventExpose *event)
     if (clip_bottom_margin > goban->bottom_margin + 1) {
       draw_horizontal_line_with_gaps (goban, window, gc,
 				      goban->height - 1,
-				    goban->bottom_margin + 1, 1);
+				      goban->bottom_margin + 1, 1);
     }
   }
   else {
@@ -751,7 +752,8 @@ gtk_goban_expose (GtkWidget *widget, GdkEventExpose *event)
 	    if (checkerboard_pattern_mode
 		== CHECKERBOARD_PATTERN_WITH_PIXBUF) {
 	      gdk_draw_pixbuf (window, gc,
-			       (GdkPixbuf *) goban->checkerboard_pattern_object,
+			       ((GdkPixbuf *)
+				goban->checkerboard_pattern_object),
 			       0, 0,
 			       goban->left_margin + 1 + x * cell_size,
 			       goban->top_margin + 1 + y * cell_size,
@@ -974,7 +976,8 @@ gtk_goban_button_release_event (GtkWidget *widget, GdkEventButton *event)
 	data.feedback_tile = goban->feedback_tile;
 	data.button	   = event->button;
 	data.modifiers	   = modifiers & ~button_mask;
-	g_signal_emit (G_OBJECT (goban), goban_signals[GOBAN_CLICKED], 0, &data);
+	g_signal_emit (G_OBJECT (goban), goban_signals[GOBAN_CLICKED], 0,
+		       &data);
       }
     }
     else {
@@ -1365,7 +1368,8 @@ gtk_goban_update (GtkGoban *goban,
 				+ x * cell_size);
 	  rectangle_markup.y = (margins.small_stones_top_margin
 				+ y * cell_size);
-	  gdk_window_invalidate_rect (widget->window, &rectangle_markup, FALSE);
+	  gdk_window_invalidate_rect (widget->window, &rectangle_markup,
+				      FALSE);
 
 	  goban->goban_markup[pos] = goban_markup[pos];
 	}
@@ -1446,7 +1450,8 @@ gtk_goban_set_overlay_data (GtkGoban *goban, int overlay_index,
     = goban->overlay_positon_lists[FEEDBACK_OVERLAY];
   int need_feedback_poll
     = (position_list && feedback_position_list
-       && board_position_lists_overlap (feedback_position_list, position_list));
+       && board_position_lists_overlap (feedback_position_list,
+					position_list));
 
   assert (goban);
   assert (0 <= overlay_index && overlay_index < NUM_OVERLAYS
@@ -1724,8 +1729,8 @@ set_feedback_data (GtkGoban *goban,
 
   if (feedback_tile != GOBAN_TILE_DONT_CHANGE
       || goban_markup_feedback_tile != GOBAN_TILE_DONT_CHANGE) {
-    set_overlay_data (goban, FEEDBACK_OVERLAY,
-		      position_list, feedback_tile, goban_markup_feedback_tile);
+    set_overlay_data (goban, FEEDBACK_OVERLAY, position_list,
+		      feedback_tile, goban_markup_feedback_tile);
   }
   else {
     if (position_list)
@@ -1819,7 +1824,8 @@ set_overlay_data (GtkGoban *goban, int overlay_index,
 	j++;
       }
 
-      if (new_tile != grid[pos] || new_goban_markup_tile != goban_markup[pos]) {
+      if (new_tile != grid[pos]
+	  || new_goban_markup_tile != goban_markup[pos]) {
 	int x = POSITION_X (pos);
 	int y = POSITION_Y (pos);
 
@@ -1831,9 +1837,12 @@ set_overlay_data (GtkGoban *goban, int overlay_index,
 	  gdk_window_invalidate_rect (widget->window, &rectangle_stone, FALSE);
 	}
 	else {
-	  rectangle_markup.x = margins.small_stones_left_margin + x * cell_size;
-	  rectangle_markup.y = margins.small_stones_top_margin + y * cell_size;
-	  gdk_window_invalidate_rect (widget->window, &rectangle_markup, FALSE);
+	  rectangle_markup.x = (margins.small_stones_left_margin
+				+ x * cell_size);
+	  rectangle_markup.y = (margins.small_stones_top_margin
+				+ y * cell_size);
+	  gdk_window_invalidate_rect (widget->window, &rectangle_markup,
+				      FALSE);
 	}
       }
     }

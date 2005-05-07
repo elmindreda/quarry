@@ -15,8 +15,8 @@
  *                                                                 *
  * You should have received a copy of the GNU General Public       *
  * License along with this program; if not, write to the Free      *
- * Software Foundation, Inc., 59 Temple Place - Suite 330,         *
- * Boston, MA 02111-1307, USA.                                     *
+ * Software Foundation, Inc., 51 Franklin Street, Fifth Floor,     *
+ * Boston, MA 02110-1301, USA.                                     *
 \* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 
@@ -29,20 +29,20 @@
 #include <gtk/gtk.h>
 
 
-#define GTK_TYPE_ASSISTANT	(gtk_assistant_get_type())
+#define GTK_TYPE_ASSISTANT	(gtk_assistant_get_type ())
 #define GTK_ASSISTANT(obj)						\
-  (GTK_CHECK_CAST((obj), GTK_TYPE_ASSISTANT, GtkAssistant))
+  GTK_CHECK_CAST ((obj), GTK_TYPE_ASSISTANT, GtkAssistant)
 #define GTK_ASSISTANT_CLASS(klass)					\
-  (GTK_CHECK_CLASS_CAST((klass), GTK_TYPE_ASSISTANT,			\
-			GtkAssistantClass))
+  GTK_CHECK_CLASS_CAST ((klass), GTK_TYPE_ASSISTANT,			\
+			GtkAssistantClass)
 
 #define GTK_IS_ASSISTANT(obj)						\
-  (GTK_CHECK_TYPE((obj), GTK_TYPE_ASSISTANT))
+  GTK_CHECK_TYPE ((obj), GTK_TYPE_ASSISTANT)
 #define GTK_IS_ASSISTANT_CLASS(klass)					\
-  (GTK_CHECK_CLASS_TYPE((klass), GTK_TYPE_ASSISTANT))
+  GTK_CHECK_CLASS_TYPE ((klass), GTK_TYPE_ASSISTANT)
 
 #define GTK_ASSISTANT_GET_CLASS(obj)					\
-  (GTK_CHECK_GET_CLASS((obj), GTK_TYPE_ASSISTANT, GtkAssistantClass))
+  GTK_CHECK_GET_CLASS ((obj), GTK_TYPE_ASSISTANT, GtkAssistantClass)
 
 
 typedef struct _GtkAssistant		GtkAssistant;
@@ -71,9 +71,9 @@ typedef const gchar * (* GtkAssistantPageHelpLinkIDCallback)
   (gpointer user_data);
 
 
-GtkType		gtk_assistant_get_type(void);
+GType		gtk_assistant_get_type (void);
 
-GtkWidget *	gtk_assistant_new(const gchar *title, gpointer user_data);
+GtkWidget *	gtk_assistant_new (const gchar *title, gpointer user_data);
 
 void		gtk_assistant_add_page
 		  (GtkAssistant *assistant, GtkWidget *widget,
@@ -81,15 +81,15 @@ void		gtk_assistant_add_page
 		   GtkAssistantPageShownCallback shown_callback,
 		   GtkAssistantPageAcceptableCallback acceptable_callback);
 
-void		gtk_assistant_set_page_help_link_id(GtkAssistant *assistant,
-						    GtkWidget *page,
-						    const gchar *help_link_id);
+void		gtk_assistant_set_page_help_link_id
+		  (GtkAssistant *assistant, GtkWidget *page,
+		   const gchar *help_link_id);
 void		gtk_assistant_set_page_help_link_id_callback
 		  (GtkAssistant *assistant, GtkWidget *page,
 		   GtkAssistantPageHelpLinkIDCallback callback);
 
-void		gtk_assistant_set_finish_button(GtkAssistant *assistant,
-						const gchar *stock_id);
+void		gtk_assistant_set_finish_button (GtkAssistant *assistant,
+						 const gchar *stock_id);
 
 
 #endif /* QUARRY_GTK_ASSISTANT_H */

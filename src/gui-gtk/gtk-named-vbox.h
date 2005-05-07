@@ -15,8 +15,8 @@
  *                                                                 *
  * You should have received a copy of the GNU General Public       *
  * License along with this program; if not, write to the Free      *
- * Software Foundation, Inc., 59 Temple Place - Suite 330,         *
- * Boston, MA 02111-1307, USA.                                     *
+ * Software Foundation, Inc., 51 Franklin Street, Fifth Floor,     *
+ * Boston, MA 02110-1301, USA.                                     *
 \* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 
@@ -29,20 +29,20 @@
 #include <gtk/gtk.h>
 
 
-#define GTK_TYPE_NAMED_VBOX	(gtk_named_vbox_get_type())
+#define GTK_TYPE_NAMED_VBOX	(gtk_named_vbox_get_type ())
 #define GTK_NAMED_VBOX(obj)						\
-  (GTK_CHECK_CAST((obj), GTK_TYPE_NAMED_VBOX, GtkNamedVBox))
+  GTK_CHECK_CAST ((obj), GTK_TYPE_NAMED_VBOX, GtkNamedVBox)
 #define GTK_NAMED_VBOX_CLASS(klass)					\
-  (GTK_CHECK_CLASS_CAST((klass), GTK_TYPE_NAMED_VBOX,			\
-			GtkNamedVBoxClass))
+  GTK_CHECK_CLASS_CAST ((klass), GTK_TYPE_NAMED_VBOX,			\
+			GtkNamedVBoxClass)
 
 #define GTK_IS_NAMED_VBOX(obj)						\
-  (GTK_CHECK_TYPE((obj), GTK_TYPE_NAMED_VBOX))
+  GTK_CHECK_TYPE ((obj), GTK_TYPE_NAMED_VBOX)
 #define GTK_IS_NAMED_VBOX_CLASS(klass)					\
-  (GTK_CHECK_CLASS_TYPE((klass), GTK_TYPE_NAMED_VBOX))
+  GTK_CHECK_CLASS_TYPE ((klass), GTK_TYPE_NAMED_VBOX)
 
 #define GTK_NAMED_VBOX_GET_CLASS(obj)					\
-  (GTK_CHECK_GET_CLASS((obj), GTK_TYPE_NAMED_VBOX, GtkNamedVBoxClass))
+  GTK_CHECK_GET_CLASS ((obj), GTK_TYPE_NAMED_VBOX, GtkNamedVBoxClass)
 
 
 typedef struct _GtkNamedVBox		GtkNamedVBox;
@@ -62,13 +62,13 @@ struct _GtkNamedVBoxClass {
 };
 
 
-GtkType		gtk_named_vbox_get_type(void);
+GType		gtk_named_vbox_get_type (void);
 
-GtkWidget *	gtk_named_vbox_new(const gchar *label_text,
-				   gboolean homogeneous, gint spacing);
+GtkWidget *	gtk_named_vbox_new (const gchar *label_text,
+				    gboolean homogeneous, gint spacing);
 
-void		gtk_named_vbox_set_label_text(GtkNamedVBox *named_vbox,
-					      const gchar *label_text);
+void		gtk_named_vbox_set_label_text (GtkNamedVBox *named_vbox,
+					       const gchar *label_text);
 
 
 #endif /* QUARRY_GTK_NAMED_VBOX_H */

@@ -15,8 +15,8 @@
  *                                                                 *
  * You should have received a copy of the GNU General Public       *
  * License along with this program; if not, write to the Free      *
- * Software Foundation, Inc., 59 Temple Place - Suite 330,         *
- * Boston, MA 02111-1307, USA.                                     *
+ * Software Foundation, Inc., 51 Franklin Street, Fifth Floor,     *
+ * Boston, MA 02110-1301, USA.                                     *
 \* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 /* Memory pools are used for storing large numbers of small items of
@@ -70,7 +70,7 @@
 #endif
 
 
-static MemoryChunk *  memory_chunk_new(int item_size);
+static MemoryChunk *  memory_chunk_new (int item_size);
 
 
 #if ENABLE_MEMORY_PROFILING
@@ -88,16 +88,16 @@ int		num_pools_flushed = 0;
 
 /* Initialize a MemoryPool structure to store items of given size. */
 void
-memory_pool_init(MemoryPool *pool, int item_size)
+memory_pool_init (MemoryPool *pool, int item_size)
 {
   MemoryChunk *chunk;
 
-  assert(pool);
-  assert(item_size > 0);
+  assert (pool);
+  assert (item_size > 0);
 
   pool->item_size = item_size;
 
-  chunk = memory_chunk_new(item_size);
+  chunk = memory_chunk_new (item_size);
   chunk->next = NULL;
   chunk->previous = NULL;
 
@@ -107,11 +107,12 @@ memory_pool_init(MemoryPool *pool, int item_size)
 #if ENABLE_MEMORY_PROFILING
 
   pool->number = ++num_pools_initialized;
-  fprintf(stderr, ("Memory pool number %d initialized:\n"
-		   "  size of item:  %6d bytes\n"
-		   "  size of chunk: %6d bytes\n\n"),
-	  pool->number, item_size,
-	  sizeof(MemoryChunk) - sizeof(int) + NUM_ITEMS_IN_CHUNK * item_size);
+  fprintf (stderr, ("Memory pool number %d initialized:\n"
+		    "  size of item:  %6d bytes\n"
+		    "  size of chunk: %6d bytes\n\n"),
+	   pool->number, item_size,
+	   (sizeof (MemoryChunk) - sizeof (int)
+	    + NUM_ITEMS_IN_CHUNK * item_size));
 
   pool->num_chunks_allocated = 1;
   pool->num_chunks_freed = 0;
@@ -125,13 +126,13 @@ memory_pool_init(MemoryPool *pool, int item_size)
 
 /* Allocate an item from given memory pool. */
 void *
-memory_pool_alloc(MemoryPool *pool)
+memory_pool_alloc (MemoryPool *pool)
 {
   MemoryChunk *chunk = pool->first_chunk;
   int item_index;
   void *item;
 
-  assert(pool->item_size > 0);
+  assert (pool->item_size > 0);
 
   item_index = chunk->first_free_item;
   item = (char *) chunk->memory + item_index * pool->item_size;
@@ -155,7 +156,7 @@ memory_pool_alloc(MemoryPool *pool)
     }
     else {
       /* We need at least one non-full chunk. */
-      chunk = memory_chunk_new(pool->item_size);
+      chunk = memory_chunk_new (pool->item_size);
       chunk->next = pool->first_chunk;
       chunk->previous = NULL;
 
@@ -183,15 +184,15 @@ memory_pool_alloc(MemoryPool *pool)
  * to free all memory allocated by the pool.
  */
 void
-memory_pool_free(MemoryPool *pool, void *item)
+memory_pool_free (MemoryPool *pool, void *item)
 {
   MemoryChunk *chunk;
   ItemIndex item_index = * (ItemIndex *) item;
 
-  assert(pool->item_size > 0);
+  assert (pool->item_size > 0);
 
   chunk = (MemoryChunk *) ((char *) item - item_index * pool->item_size
-			   - (sizeof(MemoryChunk) - sizeof(int)));
+			   - (sizeof (MemoryChunk) - sizeof (int)));
 
   if (chunk->num_free_items < NUM_ITEMS_IN_CHUNK - 1) {
     if (chunk->num_free_items == 0 && chunk->previous->num_free_items == 0) {
@@ -227,7 +228,7 @@ memory_pool_free(MemoryPool *pool, void *item)
       else
 	pool->first_chunk = chunk->next;
 
-      utils_free(chunk);
+      utils_free (chunk);
 
 #if ENABLE_MEMORY_PROFILING
       pool->num_items_freed++;
@@ -257,12 +258,12 @@ memory_pool_free(MemoryPool *pool, void *item)
 
 
 int
-memory_pool_count_items(const MemoryPool *pool)
+memory_pool_count_items (const MemoryPool *pool)
 {
   int num_items = 0;
   MemoryChunk *chunk;
 
-  assert(pool);
+  assert (pool);
 
   if (pool->item_size > 0) {
     /* Traverse chunks in "backward" direction, because it would mean
@@ -278,14 +279,14 @@ memory_pool_count_items(const MemoryPool *pool)
 
 
 void
-memory_pool_traverse(const MemoryPool *pool, MemoryPoolCallback callback)
+memory_pool_traverse (const MemoryPool *pool, MemoryPoolCallback callback)
 {
   MemoryChunk *chunk;
   int item_size = pool->item_size;
   char *memory;
   int k;
 
-  assert(item_size > 0);
+  assert (item_size > 0);
 
   /* Traverse full chunks.  We do this in "backward" direction,
    * because it would mean traversing chunks in order of allocation in
@@ -295,7 +296,7 @@ memory_pool_traverse(const MemoryPool *pool, MemoryPoolCallback callback)
        chunk = chunk->previous) {
     for (memory = (char *) chunk->memory, k = 0; k < NUM_ITEMS_IN_CHUNK;
 	 memory += pool->item_size, k++)
-      callback(memory);
+      callback (memory);
   }
 
   /* Traverse non-full chunks.  In this case we need to test if an
@@ -305,7 +306,7 @@ memory_pool_traverse(const MemoryPool *pool, MemoryPoolCallback callback)
     for (memory = (char *) chunk->memory, k = 0; k < NUM_ITEMS_IN_CHUNK;
 	 memory += pool->item_size, k++) {
       if (* (ItemIndex *) memory == k)
-	callback(memory);
+	callback (memory);
     }
 
     chunk = chunk->previous;
@@ -314,15 +315,15 @@ memory_pool_traverse(const MemoryPool *pool, MemoryPoolCallback callback)
 
 
 void
-memory_pool_traverse_data(const MemoryPool *pool,
-			  MemoryPoolDataCallback callback, void *data)
+memory_pool_traverse_data (const MemoryPool *pool,
+			   MemoryPoolDataCallback callback, void *data)
 {
   MemoryChunk *chunk = pool->first_chunk;
   int item_size = pool->item_size;
   char *memory;
   int k;
 
-  assert(item_size > 0);
+  assert (item_size > 0);
 
   /* Traverse full chunks.  We do this in "backward" direction,
    * because it would mean traversing chunks in order of allocation in
@@ -332,7 +333,7 @@ memory_pool_traverse_data(const MemoryPool *pool,
        chunk = chunk->previous) {
     for (memory = (char *) chunk->memory, k = 0; k < NUM_ITEMS_IN_CHUNK;
 	 memory += pool->item_size, k++)
-      callback(memory, data);
+      callback (memory, data);
   }
 
   /* Traverse non-full chunks.  In this case we need to test if an
@@ -342,7 +343,7 @@ memory_pool_traverse_data(const MemoryPool *pool,
     for (memory = (char *) chunk->memory, k = 0; k < NUM_ITEMS_IN_CHUNK;
 	 memory += pool->item_size, k++) {
       if (* (ItemIndex *) memory == k)
-	callback(memory, data);
+	callback (memory, data);
     }
 
     chunk = chunk->previous;
@@ -358,16 +359,16 @@ memory_pool_traverse_data(const MemoryPool *pool,
  * calling this function.
  */
 void
-memory_pool_flush(MemoryPool *pool)
+memory_pool_flush (MemoryPool *pool)
 {
   MemoryChunk *chunk;
 
-  assert(pool->item_size > 0);
+  assert (pool->item_size > 0);
 
   for (chunk = pool->first_chunk; chunk;) {
     MemoryChunk *next = chunk->next;
 
-    utils_free(chunk);
+    utils_free (chunk);
     chunk = next;
   }
 
@@ -379,14 +380,14 @@ memory_pool_flush(MemoryPool *pool)
 #if ENABLE_MEMORY_PROFILING
 
   num_pools_flushed++;
-  fprintf(stderr, ("Memory pool %d flushed; detailed information:\n"
-		   "  number of chunks allocated: %10u\n"
-		   "  number of chunks freed:     %10u\n"
-		   "  number of items allocated:  %10u\n"
-		   "  number of items freed:      %10u\n\n"),
-	  pool->number,
-	  pool->num_chunks_allocated, pool->num_chunks_freed,
-	  pool->num_items_allocated, pool->num_items_freed);
+  fprintf (stderr, ("Memory pool %d flushed; detailed information:\n"
+		    "  number of chunks allocated: %10u\n"
+		    "  number of chunks freed:     %10u\n"
+		    "  number of items allocated:  %10u\n"
+		    "  number of items freed:      %10u\n\n"),
+	   pool->number,
+	   pool->num_chunks_allocated, pool->num_chunks_freed,
+	   pool->num_items_allocated, pool->num_items_freed);
 
 #endif
 }
@@ -394,10 +395,10 @@ memory_pool_flush(MemoryPool *pool)
 
 /* Allocate a new MemoryChunk structure with all items being free. */
 static MemoryChunk *
-memory_chunk_new(int item_size)
+memory_chunk_new (int item_size)
 {
-  MemoryChunk *chunk = utils_malloc(sizeof(MemoryChunk) - sizeof(int)
-				    + NUM_ITEMS_IN_CHUNK * item_size);
+  MemoryChunk *chunk = utils_malloc (sizeof (MemoryChunk) - sizeof (int)
+				     + NUM_ITEMS_IN_CHUNK * item_size);
   char *memory;
   int k;
 

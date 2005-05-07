@@ -15,8 +15,8 @@
  *                                                                 *
  * You should have received a copy of the GNU General Public       *
  * License along with this program; if not, write to the Free      *
- * Software Foundation, Inc., 59 Temple Place - Suite 330,         *
- * Boston, MA 02111-1307, USA.                                     *
+ * Software Foundation, Inc., 51 Franklin Street, Fifth Floor,     *
+ * Boston, MA 02110-1301, USA.                                     *
 \* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 
@@ -29,7 +29,7 @@
 
 
 void
-gtk_help_display(const gchar *link_id)
+gtk_help_display (const gchar *link_id)
 {
 #if HAVE_SCROLLKEEPER
   static gboolean yelp_works = TRUE;
@@ -40,16 +40,16 @@ gtk_help_display(const gchar *link_id)
 
   if (! *locale_directory) {
     /* Get the current locale and find help directory for it. */
-    const char *current_locale = setlocale(LC_MESSAGES, NULL);
-    const char *current_locale_end = current_locale + strlen(current_locale);
+    const char *current_locale = setlocale (LC_MESSAGES, NULL);
+    const char *current_locale_end = current_locale + strlen (current_locale);
     char *pointer;
 
     /* First remove anything after a dot or at-sign. */
-    pointer = strchr(current_locale, '@');
+    pointer = strchr (current_locale, '@');
     if (pointer)
       current_locale_end = pointer;
 
-    pointer = strchr(current_locale, '.');
+    pointer = strchr (current_locale, '.');
     if (pointer && pointer < current_locale_end)
       current_locale_end = pointer;
 
@@ -57,32 +57,32 @@ gtk_help_display(const gchar *link_id)
       gchar *full_path;
       struct stat dummy_info;
 
-      memcpy(locale_directory, current_locale,
-	     current_locale_end - current_locale);
+      memcpy (locale_directory, current_locale,
+	      current_locale_end - current_locale);
       locale_directory[current_locale_end - current_locale] = 0;
 
-      full_path = g_strconcat(PACKAGE_DATA_DIR "/help/", locale_directory,
-			      "/quarry.xml", NULL);
-      if (stat(full_path, &dummy_info)) {
-	pointer = strchr(locale_directory, '_');
+      full_path = g_strconcat (PACKAGE_DATA_DIR "/help/", locale_directory,
+			       "/quarry.xml", NULL);
+      if (stat (full_path, &dummy_info)) {
+	pointer = strchr (locale_directory, '_');
 	if (pointer) {
 	  /* Try removing part of locale name after '_'. */
 	  *pointer = 0;
 
-	  full_path = g_strconcat(PACKAGE_DATA_DIR "/help/", locale_directory,
-				  "/quarry.xml", NULL);
-	  if (stat(full_path, &dummy_info))
-	    strcpy(locale_directory, "C");
+	  full_path = g_strconcat (PACKAGE_DATA_DIR "/help/", locale_directory,
+				   "/quarry.xml", NULL);
+	  if (stat (full_path, &dummy_info))
+	    strcpy (locale_directory, "C");
 	}
 	else
-	  strcpy(locale_directory, "C");
+	  strcpy (locale_directory, "C");
       }
 
-      g_free(full_path);
+      g_free (full_path);
     }
     else {
       /* A very weird long locale, if this can happen at all. */
-      strcpy(locale_directory, "C");
+      strcpy (locale_directory, "C");
     }
   }
 
@@ -91,20 +91,20 @@ gtk_help_display(const gchar *link_id)
     child_argv[0] = "yelp";
 
     if (link_id) {
-      child_argv[1] = g_strconcat(("ghelp://" PACKAGE_DATA_DIR
-				   "/help/C/quarry.xml?"),
-				  link_id, NULL);
+      child_argv[1] = g_strconcat (("ghelp://" PACKAGE_DATA_DIR
+				    "/help/C/quarry.xml?"),
+				   link_id, NULL);
     }
     else
       child_argv[1] = "ghelp://" PACKAGE_DATA_DIR "/help/C/quarry.xml";
 
     child_argv[2] = NULL;
-    if (!g_spawn_async(NULL, child_argv, NULL, G_SPAWN_SEARCH_PATH,
-		       NULL, NULL, NULL, NULL))
+    if (!g_spawn_async (NULL, child_argv, NULL, G_SPAWN_SEARCH_PATH,
+			NULL, NULL, NULL, NULL))
       yelp_works = FALSE;
 
     if (link_id)
-      g_free(child_argv[1]);
+      g_free (child_argv[1]);
   }
 
   if (!yelp_works) {
@@ -114,8 +114,8 @@ gtk_help_display(const gchar *link_id)
     child_argv[0] = "mozilla";
 
     if (link_id) {
-      child_argv[1] = g_strconcat(PACKAGE_DATA_DIR "/help/C/quarry.html#",
-				  link_id, NULL);
+      child_argv[1] = g_strconcat (PACKAGE_DATA_DIR "/help/C/quarry.html#",
+				   link_id, NULL);
     }
     else
       child_argv[1] = PACKAGE_DATA_DIR "/help/C/quarry.html";
@@ -123,11 +123,11 @@ gtk_help_display(const gchar *link_id)
     child_argv[2] = NULL;
 
     /* FIXME: If not works, pop up configuration dialog. */
-    g_spawn_async(NULL, child_argv, NULL, G_SPAWN_SEARCH_PATH,
-		  NULL, NULL, NULL, NULL);
+    g_spawn_async (NULL, child_argv, NULL, G_SPAWN_SEARCH_PATH,
+		   NULL, NULL, NULL, NULL);
 
     if (link_id)
-      g_free(child_argv[1]);
+      g_free (child_argv[1]);
 
 #if HAVE_SCROLLKEEPER
   }

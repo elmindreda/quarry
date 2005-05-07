@@ -15,8 +15,8 @@
  *                                                                 *
  * You should have received a copy of the GNU General Public       *
  * License along with this program; if not, write to the Free      *
- * Software Foundation, Inc., 59 Temple Place - Suite 330,         *
- * Boston, MA 02111-1307, USA.                                     *
+ * Software Foundation, Inc., 51 Franklin Street, Fifth Floor,     *
+ * Boston, MA 02110-1301, USA.                                     *
 \* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 
@@ -32,19 +32,19 @@
 
 #define GTK_TYPE_PROGRESS_DIALOG	(gtk_progress_dialog_get_type ())
 #define GTK_PROGRESS_DIALOG(obj)					\
-  (GTK_CHECK_CAST ((obj), GTK_TYPE_PROGRESS_DIALOG, GtkProgressDialog))
+  GTK_CHECK_CAST ((obj), GTK_TYPE_PROGRESS_DIALOG, GtkProgressDialog)
 #define GTK_PROGRESS_DIALOG_CLASS(klass)				\
-  (GTK_CHECK_CLASS_CAST ((klass), GTK_TYPE_PROGRESS_DIALOG,		\
-			 GtkProgressDialogClass))
+  GTK_CHECK_CLASS_CAST ((klass), GTK_TYPE_PROGRESS_DIALOG,		\
+			GtkProgressDialogClass)
 
 #define GTK_IS_PROGRESS_DIALOG(obj)					\
-  (GTK_CHECK_TYPE ((obj), GTK_TYPE_PROGRESS_DIALOG))
+  GTK_CHECK_TYPE ((obj), GTK_TYPE_PROGRESS_DIALOG)
 #define GTK_IS_PROGRESS_DIALOG_CLASS(klass)				\
-  (GTK_CHECK_CLASS_TYPE ((klass), GTK_TYPE_PROGRESS_DIALOG))
+  GTK_CHECK_CLASS_TYPE ((klass), GTK_TYPE_PROGRESS_DIALOG)
 
 #define GTK_PROGRESS_DIALOG_GET_CLASS(obj)				\
-  (GTK_CHECK_GET_CLASS ((obj), GTK_TYPE_PROGRESS_DIALOG,		\
-			GtkProgressDialogClass))
+  GTK_CHECK_GET_CLASS ((obj), GTK_TYPE_PROGRESS_DIALOG,			\
+		       GtkProgressDialogClass)
 
 
 typedef struct _GtkProgressDialog	GtkProgressDialog;

@@ -15,8 +15,8 @@
  *                                                                 *
  * You should have received a copy of the GNU General Public       *
  * License along with this program; if not, write to the Free      *
- * Software Foundation, Inc., 59 Temple Place - Suite 330,         *
- * Boston, MA 02111-1307, USA.                                     *
+ * Software Foundation, Inc., 51 Franklin Street, Fifth Floor,     *
+ * Boston, MA 02110-1301, USA.                                     *
 \* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 /* Generate flat ``maps'' of SGF trees.  The used layout is the same
@@ -265,7 +265,7 @@ sgf_game_tree_fill_map_view_port (SgfGameTree *tree,
 
 
 char *
-sgf_game_tree_get_current_branch_marks (SgfGameTree *tree, 
+sgf_game_tree_get_current_branch_marks (SgfGameTree *tree,
 					int view_port_x0, int view_port_y0,
 					int view_port_x1, int view_port_y1)
 {

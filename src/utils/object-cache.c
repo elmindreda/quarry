@@ -15,8 +15,8 @@
  *                                                                 *
  * You should have received a copy of the GNU General Public       *
  * License along with this program; if not, write to the Free      *
- * Software Foundation, Inc., 59 Temple Place - Suite 330,         *
- * Boston, MA 02111-1307, USA.                                     *
+ * Software Foundation, Inc., 51 Franklin Street, Fifth Floor,     *
+ * Boston, MA 02110-1301, USA.                                     *
 \* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 
@@ -29,18 +29,18 @@
  * is not present in the cache yet, it is created.
  */
 void *
-object_cache_create_or_reuse_object(ObjectCache *cache, const void *key)
+object_cache_create_or_reuse_object (ObjectCache *cache, const void *key)
 {
   ObjectCacheEntry *stock_entry;
   ObjectCacheEntry **link;
 
-  assert(cache);
-  assert(key);
+  assert (cache);
+  assert (key);
 
   /* Check if we have required object in stock. */
   for (stock_entry = cache->first_stock_entry;
        stock_entry; stock_entry = stock_entry->next) {
-    if (cache->compare_keys(key, stock_entry->key)) {
+    if (cache->compare_keys (key, stock_entry->key)) {
       stock_entry->reference_counter++;
       return stock_entry->object;
     }
@@ -53,7 +53,7 @@ object_cache_create_or_reuse_object(ObjectCache *cache, const void *key)
   while (*link) {
     ObjectCacheEntry *dump_entry = *link;
 
-    if (cache->compare_keys(key, dump_entry->key)) {
+    if (cache->compare_keys (key, dump_entry->key)) {
       *link = dump_entry->next;
 
       dump_entry->next = cache->first_stock_entry;
@@ -68,13 +68,13 @@ object_cache_create_or_reuse_object(ObjectCache *cache, const void *key)
     link = &dump_entry->next;
   }
 
-  stock_entry = utils_malloc(sizeof(ObjectCacheEntry));
+  stock_entry = utils_malloc (sizeof (ObjectCacheEntry));
 
   stock_entry->reference_counter = 1;
   stock_entry->next = cache->first_stock_entry;
 
-  stock_entry->key = cache->duplicate_key(key);
-  stock_entry->object = cache->create_object(key);
+  stock_entry->key = cache->duplicate_key (key);
+  stock_entry->object = cache->create_object (key);
 
   cache->first_stock_entry = stock_entry;
 
@@ -87,11 +87,11 @@ object_cache_create_or_reuse_object(ObjectCache *cache, const void *key)
  * whether the dump exists at all).
  */
 void
-object_cache_unreference_object(ObjectCache *cache, void *object)
+object_cache_unreference_object (ObjectCache *cache, void *object)
 {
   ObjectCacheEntry **link;
 
-  assert(cache);
+  assert (cache);
 
   for (link = &cache->first_stock_entry; *link; ) {
     ObjectCacheEntry *stock_entry = *link;
@@ -105,12 +105,12 @@ object_cache_unreference_object(ObjectCache *cache, void *object)
 	  cache->first_dump_entry = stock_entry;
 
 	  if (++cache->current_dump_size > cache->max_dump_size)
-	    object_cache_recycle_dump(cache, 1);
+	    object_cache_recycle_dump (cache, 1);
 	}
 	else {
-	  cache->delete_key(stock_entry->key);
-	  cache->delete_object(stock_entry->object);
-	  utils_free(stock_entry);
+	  cache->delete_key (stock_entry->key);
+	  cache->delete_object (stock_entry->object);
+	  utils_free (stock_entry);
 	}
       }
 
@@ -120,7 +120,7 @@ object_cache_unreference_object(ObjectCache *cache, void *object)
     link = &stock_entry->next;
   }
 
-  assert(0);
+  assert (0);
 }
 
 
@@ -133,11 +133,11 @@ object_cache_unreference_object(ObjectCache *cache, void *object)
  * set.  This feature is probably not useful outside this module.
  */
 void
-object_cache_recycle_dump(ObjectCache *cache, int lazy_recycling)
+object_cache_recycle_dump (ObjectCache *cache, int lazy_recycling)
 {
   ObjectCacheEntry **link;
 
-  assert(cache);
+  assert (cache);
 
   for (link = &cache->first_dump_entry; *link; ) {
     ObjectCacheEntry *dump_entry = *link;
@@ -148,9 +148,9 @@ object_cache_recycle_dump(ObjectCache *cache, int lazy_recycling)
 	     || (lazy_recycling && !dump_entry->next)) {
       *link = dump_entry->next;
 
-      cache->delete_key(dump_entry->key);
-      cache->delete_object(dump_entry->object);
-      utils_free(dump_entry);
+      cache->delete_key (dump_entry->key);
+      cache->delete_object (dump_entry->object);
+      utils_free (dump_entry);
 
       cache->current_dump_size--;
 
@@ -170,18 +170,18 @@ object_cache_recycle_dump(ObjectCache *cache, int lazy_recycling)
  * too.  After a call to this function the cache becomes unusable.
  */
 void
-object_cache_free(ObjectCache *cache)
+object_cache_free (ObjectCache *cache)
 {
   ObjectCacheEntry *entry;
 
-  assert(cache);
+  assert (cache);
 
   for (entry = cache->first_stock_entry; entry; ) {
     ObjectCacheEntry *next_entry = entry->next;
 
-    cache->delete_key(entry->key);
-    cache->delete_object(entry->object);
-    utils_free(entry);
+    cache->delete_key (entry->key);
+    cache->delete_object (entry->object);
+    utils_free (entry);
 
     entry = next_entry;
   }
@@ -189,9 +189,9 @@ object_cache_free(ObjectCache *cache)
   for (entry = cache->first_dump_entry; entry; ) {
     ObjectCacheEntry *next_entry = entry->next;
 
-    cache->delete_key(entry->key);
-    cache->delete_object(entry->object);
-    utils_free(entry);
+    cache->delete_key (entry->key);
+    cache->delete_object (entry->object);
+    utils_free (entry);
 
     entry = next_entry;
   }

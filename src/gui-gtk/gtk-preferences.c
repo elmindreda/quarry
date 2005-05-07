@@ -15,8 +15,8 @@
  *                                                                 *
  * You should have received a copy of the GNU General Public       *
  * License along with this program; if not, write to the Free      *
- * Software Foundation, Inc., 59 Temple Place - Suite 330,         *
- * Boston, MA 02111-1307, USA.                                     *
+ * Software Foundation, Inc., 51 Franklin Street, Fifth Floor,     *
+ * Boston, MA 02110-1301, USA.                                     *
 \* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 
@@ -1582,7 +1582,7 @@ show_or_hide_gtp_engine (GtkCellRendererToggle *cell_renderer,
   GtkTreePath *tree_path = gtk_tree_path_new_from_string (path_string);
   GtkTreeIter iterator;
   GtpEngineListItem *engine_data;
-  
+
 #if !GTK_2_4_OR_LATER
   gboolean had_non_hidden_engine
     = gtk_preferences_have_non_hidden_gtp_engine ();
@@ -1754,7 +1754,7 @@ do_move_gtp_engine (gpointer move_upwards)
 		      ENGINES_NAME, second_engine_data->screen_name, -1);
   gtk_list_store_set (gtp_engines_list_store, &second_iterator,
 		      ENGINES_DATA, first_engine_data,
-		      ENGINES_IS_VISIBLE, !first_engine_data->is_hidden, 
+		      ENGINES_IS_VISIBLE, !first_engine_data->is_hidden,
 		      ENGINES_NAME, first_engine_data->screen_name, -1);
 
   gtk_utils_unblock_signal_handlers (gtp_engines_list_store,
@@ -2288,10 +2288,10 @@ update_markup_theme_defaults_usage (GtkToggleButton *toggle_button,
   gdouble markup_opacity;
 
   if (toggle_button) {
-     use_theme_defaults = gtk_toggle_button_get_active (toggle_button);
-     board_appearance->use_theme_defaults = use_theme_defaults;
+    use_theme_defaults = gtk_toggle_button_get_active (toggle_button);
+    board_appearance->use_theme_defaults = use_theme_defaults;
 
-     gtk_widget_set_sensitive (data->vbox, !use_theme_defaults);
+    gtk_widget_set_sensitive (data->vbox, !use_theme_defaults);
   }
   else
     use_theme_defaults = board_appearance->use_theme_defaults;

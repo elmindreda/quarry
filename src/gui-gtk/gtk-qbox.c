@@ -15,8 +15,8 @@
  *                                                                 *
  * You should have received a copy of the GNU General Public       *
  * License along with this program; if not, write to the Free      *
- * Software Foundation, Inc., 59 Temple Place - Suite 330,         *
- * Boston, MA 02111-1307, USA.                                     *
+ * Software Foundation, Inc., 51 Franklin Street, Fifth Floor,     *
+ * Boston, MA 02110-1301, USA.                                     *
 \* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 /* This file contains implementation of QBox GTK+ class. It is the base for
@@ -35,36 +35,36 @@
 #include <assert.h>
 
 
-static void	gtk_qbox_class_init(GtkQBoxClass *klass);
-static void	gtk_qbox_init(GtkQBox *qbox);
+static void	gtk_qbox_class_init (GtkQBoxClass *klass);
+static void	gtk_qbox_init (GtkQBox *qbox);
 
-static void	gtk_qbox_remove(GtkContainer *container, GtkWidget *widget);
+static void	gtk_qbox_remove (GtkContainer *container, GtkWidget *widget);
 
 
 static GtkContainerClass *parent_class;
 
 
-GtkType
-gtk_qbox_get_type(void)
+GType
+gtk_qbox_get_type (void)
 {
   static GtkType qbox_type = 0;
 
   if (!qbox_type) {
     static GTypeInfo qbox_info = {
-      sizeof(GtkQBoxClass),
+      sizeof (GtkQBoxClass),
       NULL,
       NULL,
       (GClassInitFunc) gtk_qbox_class_init,
       NULL,
       NULL,
-      sizeof(GtkQBox),
+      sizeof (GtkQBox),
       0,
       (GInstanceInitFunc) gtk_qbox_init,
       NULL
     };
 
-    qbox_type = g_type_register_static(GTK_TYPE_BOX, "GtkQBox",
-				       &qbox_info, 0);
+    qbox_type = g_type_register_static (GTK_TYPE_BOX, "GtkQBox",
+					&qbox_info, 0);
   }
 
   return qbox_type;
@@ -72,17 +72,17 @@ gtk_qbox_get_type(void)
 
 
 static void
-gtk_qbox_class_init(GtkQBoxClass *klass)
+gtk_qbox_class_init (GtkQBoxClass *class)
 {
-  GtkContainerClass *container_class = GTK_CONTAINER_CLASS(klass);
+  GtkContainerClass *container_class = GTK_CONTAINER_CLASS (class);
 
-  parent_class = g_type_class_peek_parent(klass);
+  parent_class = g_type_class_peek_parent (class);
   container_class->remove = gtk_qbox_remove;
 }
 
 
 static void
-gtk_qbox_init(GtkQBox *qbox)
+gtk_qbox_init (GtkQBox *qbox)
 {
   qbox->ruling_widget = NULL;
   qbox->widget_callback = NULL;
@@ -93,28 +93,28 @@ gtk_qbox_init(GtkQBox *qbox)
  * removed from the box.
  */
 static void
-gtk_qbox_remove(GtkContainer *container, GtkWidget *widget)
+gtk_qbox_remove (GtkContainer *container, GtkWidget *widget)
 {
-  GtkQBox *qbox = GTK_QBOX(container);
+  GtkQBox *qbox = GTK_QBOX (container);
 
   if (widget == qbox->ruling_widget) {
     qbox->ruling_widget = NULL;
     qbox->widget_callback = NULL;
   }
 
-  parent_class->remove(container, widget);
+  parent_class->remove (container, widget);
 }
 
 
 void
-gtk_qbox_set_ruling_widget(GtkQBox *qbox,
-			   GtkWidget *widget, GtkQBoxCallback widget_callback)
+gtk_qbox_set_ruling_widget (GtkQBox *qbox,
+			    GtkWidget *widget, GtkQBoxCallback widget_callback)
 {
-  assert(GTK_IS_QBOX(qbox));
+  assert (GTK_IS_QBOX (qbox));
 
   if (widget != NULL) {
-    assert(gtk_widget_get_parent(widget) == GTK_WIDGET(qbox));
-    assert(widget_callback);
+    assert (gtk_widget_get_parent (widget) == GTK_WIDGET (qbox));
+    assert (widget_callback);
   }
   else
     widget_callback = NULL;
@@ -125,18 +125,18 @@ gtk_qbox_set_ruling_widget(GtkQBox *qbox,
 
 
 GtkWidget *
-gtk_qbox_get_ruling_widget(GtkQBox *qbox)
+gtk_qbox_get_ruling_widget (GtkQBox *qbox)
 {
-  assert(GTK_IS_QBOX(qbox));
+  assert (GTK_IS_QBOX (qbox));
 
   return qbox->ruling_widget;
 }
 
 
 GtkQBoxCallback
-gtk_qbox_get_ruling_widget_callback(GtkQBox *qbox)
+gtk_qbox_get_ruling_widget_callback (GtkQBox *qbox)
 {
-  assert(GTK_IS_QBOX(qbox));
+  assert (GTK_IS_QBOX (qbox));
 
   return qbox->widget_callback;
 }

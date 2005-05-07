@@ -15,8 +15,8 @@
  *                                                                 *
  * You should have received a copy of the GNU General Public       *
  * License along with this program; if not, write to the Free      *
- * Software Foundation, Inc., 59 Temple Place - Suite 330,         *
- * Boston, MA 02111-1307, USA.                                     *
+ * Software Foundation, Inc., 51 Franklin Street, Fifth Floor,     *
+ * Boston, MA 02110-1301, USA.                                     *
 \* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 
@@ -29,18 +29,18 @@
 #include <gtk/gtk.h>
 
 
-#define GTK_TYPE_QBOX		(gtk_qbox_get_type())
-#define GTK_QBOX(obj)		(GTK_CHECK_CAST((obj), GTK_TYPE_QBOX,	\
-						GtkQBox))
+#define GTK_TYPE_QBOX		(gtk_qbox_get_type ())
+#define GTK_QBOX(obj)		GTK_CHECK_CAST ((obj), GTK_TYPE_QBOX,	\
+						GtkQBox)
 #define GTK_QBOX_CLASS(klass)						\
-  (GTK_CHECK_CLASS_CAST((klass), GTK_TYPE_QBOX, GtkQBoxClass))
+  GTK_CHECK_CLASS_CAST ((klass), GTK_TYPE_QBOX, GtkQBoxClass)
 
-#define GTK_IS_QBOX(obj)	(GTK_CHECK_TYPE((obj), GTK_TYPE_QBOX))
+#define GTK_IS_QBOX(obj)	GTK_CHECK_TYPE ((obj), GTK_TYPE_QBOX))
 #define GTK_IS_QBOX_CLASS(klass)					\
-  (GTK_CHECK_CLASS_TYPE((klass), GTK_TYPE_QBOX))
+  GTK_CHECK_CLASS_TYPE ((klass), GTK_TYPE_QBOX)
 
 #define GTK_QBOX_GET_CLASS(obj)						\
-  (GTK_CHECK_GET_CLASS((obj), GTK_TYPE_QBOX, GtkQBoxClass))
+  GTK_CHECK_GET_CLASS ((obj), GTK_TYPE_QBOX, GtkQBoxClass)
 
 
 typedef gint (* GtkQBoxCallback) (GtkWidget *widget, gint dimension);
@@ -60,16 +60,16 @@ struct _GtkQBoxClass {
 };
 
 
-GtkType		 gtk_qbox_get_type(void);
+GtkType		 gtk_qbox_get_type (void);
 
-void		 gtk_qbox_set_ruling_widget(GtkQBox *qbox, GtkWidget *widget,
-					    GtkQBoxCallback widget_callback);
+void		 gtk_qbox_set_ruling_widget (GtkQBox *qbox, GtkWidget *widget,
+					     GtkQBoxCallback widget_callback);
 
 #define gtk_qbox_unset_ruling_widget(qbox)		\
-  gtk_qbox_set_ruling_widget((qbox), NULL, NULL)
+  gtk_qbox_set_ruling_widget ((qbox), NULL, NULL)
 
-GtkWidget *	 gtk_qbox_get_ruling_widget(GtkQBox *qbox);
-GtkQBoxCallback  gtk_qbox_get_ruling_widget_callback(GtkQBox *qbox);
+GtkWidget *	 gtk_qbox_get_ruling_widget (GtkQBox *qbox);
+GtkQBoxCallback  gtk_qbox_get_ruling_widget_callback (GtkQBox *qbox);
 
 
 #endif /* QUARRY_GTK_QBOX_H */

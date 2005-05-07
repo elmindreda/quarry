@@ -15,8 +15,8 @@
  *                                                                 *
  * You should have received a copy of the GNU General Public       *
  * License along with this program; if not, write to the Free      *
- * Software Foundation, Inc., 59 Temple Place - Suite 330,         *
- * Boston, MA 02111-1307, USA.                                     *
+ * Software Foundation, Inc., 51 Franklin Street, Fifth Floor,     *
+ * Boston, MA 02110-1301, USA.                                     *
 \* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 
@@ -30,7 +30,7 @@
 
 
 #define GTK_TYPE_SGF_TREE_SIGNAL_PROXY					\
-  gtk_sgf_tree_signal_proxy_get_type ()
+  (gtk_sgf_tree_signal_proxy_get_type ())
 
 #define GTK_SGF_TREE_SIGNAL_PROXY(object)				\
   GTK_CHECK_CAST ((object), GTK_TYPE_SGF_TREE_SIGNAL_PROXY,		\
@@ -47,8 +47,8 @@
   GTK_CHECK_CLASS_TYPE ((class), GTK_TYPE_SGF_TREE_SIGNAL_PROXY)
 
 #define GTK_SGF_TREE_SIGNAL_PROXY_GET_CLASS(object)			\
-  (GTK_CHECK_GET_CLASS ((object), GTK_TYPE_SGF_TREE_SIGNAL_PROXY,	\
-			GtkSgfTreeSignalProxyClass)
+  GTK_CHECK_GET_CLASS ((object), GTK_TYPE_SGF_TREE_SIGNAL_PROXY,	\
+		       GtkSgfTreeSignalProxyClass)
 
 
 typedef struct _GtkSgfTreeSignalProxy		GtkSgfTreeSignalProxy;
@@ -83,7 +83,7 @@ struct _GtkSgfTreeSignalProxyClass {
 };
 
 
-GType	 	gtk_sgf_tree_signal_proxy_get_type (void);
+GType		gtk_sgf_tree_signal_proxy_get_type (void);
 
 GObject *	gtk_sgf_tree_signal_proxy_attach (SgfGameTree *sgf_tree);
 

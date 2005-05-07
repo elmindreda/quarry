@@ -15,8 +15,8 @@
  *                                                                 *
  * You should have received a copy of the GNU General Public       *
  * License along with this program; if not, write to the Free      *
- * Software Foundation, Inc., 59 Temple Place - Suite 330,         *
- * Boston, MA 02111-1307, USA.                                     *
+ * Software Foundation, Inc., 51 Franklin Street, Fifth Floor,     *
+ * Boston, MA 02110-1301, USA.                                     *
 \* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 
@@ -27,14 +27,14 @@
 #include "quarry.h"
 
 
-int		gui_back_end_init(int *argc, char **argv[]);
-int		gui_back_end_main_default(void);
-int		gui_back_end_main_open_files(int num_files, char **filenames);
+int		gui_back_end_init (int *argc, char **argv[]);
+int		gui_back_end_main_default (void);
+int		gui_back_end_main_open_files (int num_files, char **filenames);
 
 /* We can't use `gpointer' here, because GTK+ headers are not visible
  * from `src/' directory.
  */
-void		gui_back_end_register_object_to_finalize(void *object);
+void		gui_back_end_register_object_to_finalize (void *object);
 
 
 extern const char  *user_real_name;

@@ -15,8 +15,8 @@
  *                                                                 *
  * You should have received a copy of the GNU General Public       *
  * License along with this program; if not, write to the Free      *
- * Software Foundation, Inc., 59 Temple Place - Suite 330,         *
- * Boston, MA 02111-1307, USA.                                     *
+ * Software Foundation, Inc., 51 Franklin Street, Fifth Floor,     *
+ * Boston, MA 02110-1301, USA.                                     *
 \* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 
@@ -33,7 +33,7 @@
 
 
 #define GTK_TYPE_GAME_INFO_DIALOG					\
-  gtk_game_info_dialog_get_type ()
+  (gtk_game_info_dialog_get_type ())
 
 #define GTK_GAME_INFO_DIALOG(object)					\
   GTK_CHECK_CAST ((object), GTK_TYPE_GAME_INFO_DIALOG,			\
@@ -103,7 +103,7 @@ struct _GtkGameInfoDialogClass {
 };
 
 
-GtkType		gtk_game_info_dialog_get_type (void);
+GType		gtk_game_info_dialog_get_type (void);
 
 GtkWidget *	gtk_game_info_dialog_new (void);
 

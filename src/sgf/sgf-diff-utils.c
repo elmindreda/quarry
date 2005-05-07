@@ -15,8 +15,8 @@
  *                                                                 *
  * You should have received a copy of the GNU General Public       *
  * License along with this program; if not, write to the Free      *
- * Software Foundation, Inc., 59 Temple Place - Suite 330,         *
- * Boston, MA 02111-1307, USA.                                     *
+ * Software Foundation, Inc., 51 Franklin Street, Fifth Floor,     *
+ * Boston, MA 02110-1301, USA.                                     *
 \* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 
@@ -91,20 +91,20 @@ typedef int (* ComparisonFunction) (const void *first_element,
 typedef const void * (* GetNextElementFunction) (const void *element);
 
 
-static void	   build_abstract_edit_graph(EditGraph *edit_graph,
-					     const void *from_sequence,
-					     const void *to_sequence,
-					     int num_skipped_elements,
-					     ComparisonFunction are_equal,
-					     GetNextElementFunction get_next);
+static void	   build_abstract_edit_graph (EditGraph *edit_graph,
+					      const void *from_sequence,
+					      const void *to_sequence,
+					      int num_skipped_elements,
+					      ComparisonFunction are_equal,
+					      GetNextElementFunction get_next);
 static const EditGraphLayer *
-		   reconstruct_minimal_path(const EditGraph *edit_graph);
-static void	   edit_graph_dispose(EditGraph *edit_graph);
+		   reconstruct_minimal_path (const EditGraph *edit_graph);
+static void	   edit_graph_dispose (EditGraph *edit_graph);
 
-static int	   game_trees_are_equal(const SgfGameTree *first_tree,
-					const SgfGameTree *second_tree);
+static int	   game_trees_are_equal (const SgfGameTree *first_tree,
+					 const SgfGameTree *second_tree);
 static const SgfGameTree *
-		   get_next_game_tree(const SgfGameTree *tree);
+		   get_next_game_tree (const SgfGameTree *tree);
 
 static void	   generate_sgf_collection_diff
 		     (const EditGraph *edit_graph,
@@ -115,19 +115,19 @@ static void	   add_context_game_trees
 		     (const SgfGameTree *context_subsequence, int num_trees,
 		      SgfCollection *difference);
 
-static void	   build_node_layer_diff(const SgfNode *from_node_layer,
-					 const SgfNode *to_node_layer,
-					 SgfGameTree *tree, SgfNode *parent);
+static void	   build_node_layer_diff (const SgfNode *from_node_layer,
+					  const SgfNode *to_node_layer,
+					  SgfGameTree *tree, SgfNode *parent);
 
-static int	   generic_nodes_are_equal(const SgfNode *first_node,
-					   const SgfNode *second_node);
-static int	   amazons_nodes_are_equal(const SgfNode *first_node,
-					   const SgfNode *second_node);
-static int	   node_position_lists_are_equal(const SgfNode *first_node,
-						 const SgfNode *second_node,
-						 SgfType type);
+static int	   generic_nodes_are_equal (const SgfNode *first_node,
+					    const SgfNode *second_node);
+static int	   amazons_nodes_are_equal (const SgfNode *first_node,
+					    const SgfNode *second_node);
+static int	   node_position_lists_are_equal (const SgfNode *first_node,
+						  const SgfNode *second_node,
+						  SgfType type);
 static const SgfNode *
-		   get_next_node(const SgfNode *node);
+		   get_next_node (const SgfNode *node);
 
 static void	   generate_sgf_node_layer_diff
 		     (const EditGraph *edit_graph,
@@ -137,81 +137,81 @@ static void	   generate_sgf_node_layer_diff
 
 #if 0
 
-static TextLine *  chop_text_into_lines(const char *text);
-static int	   text_lines_are_equal(const TextLine *first_text_line,
-					const TextLine *second_text_line);
+static TextLine *  chop_text_into_lines (const char *text);
+static int	   text_lines_are_equal (const TextLine *first_text_line,
+					 const TextLine *second_text_line);
 static const TextLine *
-		   get_next_text_line(const TextLine *text_line);
+		   get_next_text_line (const TextLine *text_line);
 
-static char *	   do_generate_text_diff(const EditGraphLayer *layer,
-					 int layer_distance,
-					 int layer_diagonal,
-					 int is_last_layer,
-					 const TextLine *from_lines_sequence,
-					 const TextLine *to_lines_sequence,
-					 TextDiffData *data);
-static char *	   generate_text_diff(const EditGraph *edit_graph,
-				      const TextLine *from_lines_sequence,
-				      const TextLine *to_lines_sequence);
+static char *	   do_generate_text_diff (const EditGraphLayer *layer,
+					  int layer_distance,
+					  int layer_diagonal,
+					  int is_last_layer,
+					  const TextLine *from_lines_sequence,
+					  const TextLine *to_lines_sequence,
+					  TextDiffData *data);
+static char *	   generate_text_diff (const EditGraph *edit_graph,
+				       const TextLine *from_lines_sequence,
+				       const TextLine *to_lines_sequence);
 
 #endif
 
 
 SgfCollection *
-sgf_diff(const SgfCollection *from_collection,
-	 const SgfCollection *to_collection)
+sgf_diff (const SgfCollection *from_collection,
+	  const SgfCollection *to_collection)
 {
   EditGraph edit_graph;
-  SgfCollection *difference = sgf_collection_new();
+  SgfCollection *difference = sgf_collection_new ();
   const SgfGameTree *from_tree_subsequence;
   const SgfGameTree *to_tree_subsequence;
   int num_skipped_trees;
 
-  assert(from_collection);
-  assert(to_collection);
+  assert (from_collection);
+  assert (to_collection);
 
   from_tree_subsequence = from_collection->first_tree;
   to_tree_subsequence = to_collection->first_tree;
 
   for (num_skipped_trees = 0;
        (from_tree_subsequence && to_tree_subsequence
-	&& game_trees_are_equal(from_tree_subsequence, to_tree_subsequence));
+	&& game_trees_are_equal (from_tree_subsequence, to_tree_subsequence));
        num_skipped_trees++) {
     from_tree_subsequence = from_tree_subsequence->next;
     to_tree_subsequence = to_tree_subsequence->next;
   }
 
-  build_abstract_edit_graph(&edit_graph,
-			    from_tree_subsequence, to_tree_subsequence,
-			    num_skipped_trees,
-			    (ComparisonFunction) game_trees_are_equal,
-			    (GetNextElementFunction) get_next_game_tree);
+  build_abstract_edit_graph (&edit_graph,
+			     from_tree_subsequence, to_tree_subsequence,
+			     num_skipped_trees,
+			     (ComparisonFunction) game_trees_are_equal,
+			     (GetNextElementFunction) get_next_game_tree);
 
-  generate_sgf_collection_diff(&edit_graph, from_collection, to_collection,
-			       difference);
+  generate_sgf_collection_diff (&edit_graph, from_collection, to_collection,
+				difference);
 
-  edit_graph_dispose(&edit_graph);
+  edit_graph_dispose (&edit_graph);
 
   if (difference->num_trees > 0)
     return difference;
 
-  sgf_collection_delete(difference);
+  sgf_collection_delete (difference);
   return NULL;
 }
 
 
 
 static void
-build_abstract_edit_graph(EditGraph *edit_graph,
-			  const void *from_sequence, const void *to_sequence,
-			  int num_skipped_elements,
-			  ComparisonFunction are_equal,
-			  GetNextElementFunction get_next)
+build_abstract_edit_graph (EditGraph *edit_graph,
+			   const void *from_sequence, const void *to_sequence,
+			   int num_skipped_elements,
+			   ComparisonFunction are_equal,
+			   GetNextElementFunction get_next)
 {
   EditGraphLayer *current_layer;
   int current_distance = 0;
 
-  current_layer = utils_malloc(sizeof(EditGraphLayer));
+  current_layer = utils_malloc (sizeof (EditGraphLayer));
   current_layer->previous			 = NULL;
   current_layer->diagonals[0].from_trace_element = from_sequence;
   current_layer->diagonals[0].to_trace_element	 = to_sequence;
@@ -232,9 +232,9 @@ build_abstract_edit_graph(EditGraph *edit_graph,
     EditGraphLayer *previous_layer = current_layer;
 
     current_distance++;
-    current_layer = utils_malloc(sizeof(EditGraphLayer)
-				 + (current_distance
-				    * sizeof(EditGraphDiagonal)));
+    current_layer = utils_malloc (sizeof (EditGraphLayer)
+				  + (current_distance
+				     * sizeof (EditGraphDiagonal)));
     current_layer->previous = previous_layer;
 
     previous_layer->next = current_layer;
@@ -257,7 +257,7 @@ build_abstract_edit_graph(EditGraph *edit_graph,
 	}
 
 	from_element = previous_layer->diagonals[k].from_trace_element;
-	to_element = get_next(previous_layer->diagonals[k].to_trace_element);
+	to_element = get_next (previous_layer->diagonals[k].to_trace_element);
 
 	x = previous_layer->diagonals[k].trace_x;
       }
@@ -271,16 +271,16 @@ build_abstract_edit_graph(EditGraph *edit_graph,
 	}
 
 	from_element
-	  = get_next(previous_layer->diagonals[k - 1].from_trace_element);
+	  = get_next (previous_layer->diagonals[k - 1].from_trace_element);
 	to_element = previous_layer->diagonals[k - 1].to_trace_element;
 
 	x = previous_layer->diagonals[k - 1].trace_x + 1;
       }
 
       while (from_element && to_element) {
-	if (are_equal(from_element, to_element)) {
-	  from_element = get_next(from_element);
-	  to_element = get_next(to_element);
+	if (are_equal (from_element, to_element)) {
+	  from_element = get_next (from_element);
+	  to_element = get_next (to_element);
 	  x++;
 	}
 	else
@@ -306,7 +306,7 @@ build_abstract_edit_graph(EditGraph *edit_graph,
 
 
 static const EditGraphLayer *
-reconstruct_minimal_path(const EditGraph *edit_graph)
+reconstruct_minimal_path (const EditGraph *edit_graph)
 {
   const EditGraphLayer *layer = edit_graph->last_layer;
   int layer_distance = edit_graph->full_distance;
@@ -332,7 +332,7 @@ reconstruct_minimal_path(const EditGraph *edit_graph)
 
 
 static void
-edit_graph_dispose(EditGraph *edit_graph)
+edit_graph_dispose (EditGraph *edit_graph)
 {
   EditGraphLayer *this_layer;
   EditGraphLayer *previous_layer;
@@ -341,7 +341,7 @@ edit_graph_dispose(EditGraph *edit_graph)
        this_layer = previous_layer) {
     previous_layer = this_layer->previous;
 
-    utils_free(this_layer);
+    utils_free (this_layer);
   }
 }
 
@@ -349,8 +349,8 @@ edit_graph_dispose(EditGraph *edit_graph)
 
 /* FIXME: This function is way too forgiving.  Make it stricter. */
 static int
-game_trees_are_equal(const SgfGameTree *first_tree,
-		     const SgfGameTree *second_tree)
+game_trees_are_equal (const SgfGameTree *first_tree,
+		      const SgfGameTree *second_tree)
 {
   if (first_tree->game != second_tree->game
       || first_tree->board_width != second_tree->board_width
@@ -358,13 +358,13 @@ game_trees_are_equal(const SgfGameTree *first_tree,
     return 0;
 
   return (first_tree->game != GAME_AMAZONS
-	  ? generic_nodes_are_equal(first_tree->root, second_tree->root)
-	  : amazons_nodes_are_equal(first_tree->root, second_tree->root));
+	  ? generic_nodes_are_equal (first_tree->root, second_tree->root)
+	  : amazons_nodes_are_equal (first_tree->root, second_tree->root));
 }
 
 
 static const SgfGameTree *
-get_next_game_tree(const SgfGameTree *tree)
+get_next_game_tree (const SgfGameTree *tree)
 {
   return tree->next;
 }
@@ -372,15 +372,15 @@ get_next_game_tree(const SgfGameTree *tree)
 
 /* FIXME: Add hunk "headers" generation (needs standardization?). */
 static void
-generate_sgf_collection_diff(const EditGraph *edit_graph,
-			     const SgfCollection *from_collection,
-			     const SgfCollection *to_collection,
-			     SgfCollection *difference)
+generate_sgf_collection_diff (const EditGraph *edit_graph,
+			      const SgfCollection *from_collection,
+			      const SgfCollection *to_collection,
+			      SgfCollection *difference)
 {
   const SgfGameTree *from_tree_subsequence = from_collection->first_tree;
   const SgfGameTree *to_tree_subsequence = to_collection->first_tree;
   const SgfGameTree *leading_context_subsequence = NULL;
-  const EditGraphLayer *zero_layer = reconstruct_minimal_path(edit_graph);
+  const EditGraphLayer *zero_layer = reconstruct_minimal_path (edit_graph);
   const EditGraphLayer *layer;
   int layer_distance;
   int x = 0;
@@ -392,31 +392,31 @@ generate_sgf_collection_diff(const EditGraph *edit_graph,
     int trace_x = layer->diagonals[layer->path_diagonal].trace_x;
 
     if (layer_distance > 0) {
-      add_context_game_trees(leading_context_subsequence,
-			     num_leading_context_trees,
-			     difference);
+      add_context_game_trees (leading_context_subsequence,
+			      num_leading_context_trees,
+			      difference);
 
       if (layer->path_diagonal == layer->previous->path_diagonal) {
 	/* A game tree got added. */
 	SgfGameTree *added_tree
-	  = sgf_game_tree_duplicate_with_nodes(to_tree_subsequence);
+	  = sgf_game_tree_duplicate_with_nodes (to_tree_subsequence);
 
 	/* FIXME: Add SGF property that shows that the game tree got
 	 *	  added (needs standardization?).
 	 */
-	sgf_collection_add_game_tree(difference, added_tree);
+	sgf_collection_add_game_tree (difference, added_tree);
 
 	to_tree_subsequence = to_tree_subsequence->next;
       }
       else {
 	/* A game tree got deleted. */
 	SgfGameTree *deleted_tree
-	  = sgf_game_tree_duplicate_with_nodes(from_tree_subsequence);
+	  = sgf_game_tree_duplicate_with_nodes (from_tree_subsequence);
 
 	/* FIXME: Add SGF property that shows that the game tree got
 	 *	  deleted (needs standardization?).
 	 */
-	sgf_collection_add_game_tree(difference, deleted_tree);
+	sgf_collection_add_game_tree (difference, deleted_tree);
 
 	from_tree_subsequence = from_tree_subsequence->next;
 	x++;
@@ -431,26 +431,26 @@ generate_sgf_collection_diff(const EditGraph *edit_graph,
 
     while (x < trace_x) {
       SgfGameTree *tree_difference
-	= sgf_game_tree_duplicate(from_tree_subsequence);
+	= sgf_game_tree_duplicate (from_tree_subsequence);
 
-      build_node_layer_diff(from_tree_subsequence->root,
-			    to_tree_subsequence->root,
-			    tree_difference, NULL);
+      build_node_layer_diff (from_tree_subsequence->root,
+			     to_tree_subsequence->root,
+			     tree_difference, NULL);
 
       if (tree_difference->root) {
-	add_context_game_trees(leading_context_subsequence,
-			       num_leading_context_trees,
-			       difference);
-	sgf_collection_add_game_tree(difference, tree_difference);
+	add_context_game_trees (leading_context_subsequence,
+				num_leading_context_trees,
+				difference);
+	sgf_collection_add_game_tree (difference, tree_difference);
 
 	num_leading_context_trees = 0;
 	num_traling_context_trees = 0;
       }
       else {
-	sgf_game_tree_delete(tree_difference);
+	sgf_game_tree_delete (tree_difference);
 
 	if (num_traling_context_trees < NUM_CONTEXT_TREES) {
-	  add_context_game_trees(from_tree_subsequence, 1, difference);
+	  add_context_game_trees (from_tree_subsequence, 1, difference);
 	  num_traling_context_trees++;
 	}
 	else {
@@ -472,29 +472,29 @@ generate_sgf_collection_diff(const EditGraph *edit_graph,
 
 
 static void
-add_context_game_trees(const SgfGameTree *context_subsequence, int num_trees,
-		       SgfCollection *difference)
+add_context_game_trees (const SgfGameTree *context_subsequence, int num_trees,
+			SgfCollection *difference)
 {
   int k;
 
   for (k = 0; k < num_trees;
        k++, context_subsequence = context_subsequence->next) {
-    SgfGameTree *context_tree = sgf_game_tree_duplicate(context_subsequence);
+    SgfGameTree *context_tree = sgf_game_tree_duplicate (context_subsequence);
 
     context_tree->root
-      = sgf_node_duplicate_to_given_depth(context_subsequence->root,
-					  context_tree, NULL,
-					  CONTEXT_TREE_ROOT_DEPTH);
-    sgf_collection_add_game_tree(difference, context_tree);
+      = sgf_node_duplicate_to_given_depth (context_subsequence->root,
+					   context_tree, NULL,
+					   CONTEXT_TREE_ROOT_DEPTH);
+    sgf_collection_add_game_tree (difference, context_tree);
   }
 }
 
 
 
 static void
-build_node_layer_diff(const SgfNode *from_node_layer,
-		      const SgfNode *to_node_layer,
-		      SgfGameTree *tree, SgfNode *parent)
+build_node_layer_diff (const SgfNode *from_node_layer,
+		       const SgfNode *to_node_layer,
+		       SgfGameTree *tree, SgfNode *parent)
 {
   EditGraph edit_graph;
   const ComparisonFunction nodes_are_equal
@@ -507,40 +507,40 @@ build_node_layer_diff(const SgfNode *from_node_layer,
 
   for (num_skipped_nodes = 0;
        (from_node_subsequence && to_node_subsequence
-	&& nodes_are_equal(from_node_subsequence, to_node_subsequence));
+	&& nodes_are_equal (from_node_subsequence, to_node_subsequence));
        num_skipped_nodes++) {
     from_node_subsequence = from_node_subsequence->next;
     to_node_subsequence = to_node_subsequence->next;
   }
 
-  build_abstract_edit_graph(&edit_graph,
-			    from_node_subsequence, to_node_subsequence,
-			    num_skipped_nodes,
-			    nodes_are_equal,
-			    (GetNextElementFunction) get_next_node);
+  build_abstract_edit_graph (&edit_graph,
+			     from_node_subsequence, to_node_subsequence,
+			     num_skipped_nodes,
+			     nodes_are_equal,
+			     (GetNextElementFunction) get_next_node);
 
-  generate_sgf_node_layer_diff(&edit_graph, from_node_layer, to_node_layer,
-			       tree, parent);
+  generate_sgf_node_layer_diff (&edit_graph, from_node_layer, to_node_layer,
+				tree, parent);
 
-  edit_graph_dispose(&edit_graph);
+  edit_graph_dispose (&edit_graph);
 }
 
 
 static int
-generic_nodes_are_equal(const SgfNode *first_node, const SgfNode *second_node)
+generic_nodes_are_equal (const SgfNode *first_node, const SgfNode *second_node)
 {
   if (first_node->move_color != second_node->move_color)
     return 0;
 
-  if (IS_STONE(first_node->move_color))
-    return POINTS_ARE_EQUAL(first_node->move_point, second_node->move_point);
+  if (IS_STONE (first_node->move_color))
+    return POINTS_ARE_EQUAL (first_node->move_point, second_node->move_point);
   else if (first_node->move_color == SETUP_NODE) {
-    return (node_position_lists_are_equal(first_node, second_node,
-					  SGF_ADD_BLACK)
-	    && node_position_lists_are_equal(first_node, second_node,
-					     SGF_ADD_WHITE)
-	    && node_position_lists_are_equal(first_node, second_node,
-					     SGF_ADD_EMPTY));
+    return (node_position_lists_are_equal (first_node, second_node,
+					   SGF_ADD_BLACK)
+	    && node_position_lists_are_equal (first_node, second_node,
+					      SGF_ADD_WHITE)
+	    && node_position_lists_are_equal (first_node, second_node,
+					      SGF_ADD_EMPTY));
   }
   else {
     /* FIXME: What to do in this case? */
@@ -550,28 +550,28 @@ generic_nodes_are_equal(const SgfNode *first_node, const SgfNode *second_node)
 
 
 static int
-amazons_nodes_are_equal(const SgfNode *first_node, const SgfNode *second_node)
+amazons_nodes_are_equal (const SgfNode *first_node, const SgfNode *second_node)
 {
   if (first_node->move_color != second_node->move_color)
     return 0;
 
-  if (IS_STONE(first_node->move_color)) {
-    return (POINTS_ARE_EQUAL(first_node->data.amazons.from,
-			     second_node->data.amazons.from)
-	    && POINTS_ARE_EQUAL(first_node->move_point,
-				second_node->move_point)
-	    && POINTS_ARE_EQUAL(first_node->data.amazons.shoot_arrow_to,
-				second_node->data.amazons.shoot_arrow_to));
+  if (IS_STONE (first_node->move_color)) {
+    return (POINTS_ARE_EQUAL (first_node->data.amazons.from,
+			      second_node->data.amazons.from)
+	    && POINTS_ARE_EQUAL (first_node->move_point,
+				 second_node->move_point)
+	    && POINTS_ARE_EQUAL (first_node->data.amazons.shoot_arrow_to,
+				 second_node->data.amazons.shoot_arrow_to));
   }
   else if (first_node->move_color == SETUP_NODE) {
-    return (node_position_lists_are_equal(first_node, second_node,
-					  SGF_ADD_BLACK)
-	    && node_position_lists_are_equal(first_node, second_node,
-					     SGF_ADD_WHITE)
-	    && node_position_lists_are_equal(first_node, second_node,
-					     SGF_ADD_EMPTY)
-	    && node_position_lists_are_equal(first_node, second_node,
-					     SGF_ADD_ARROWS));
+    return (node_position_lists_are_equal (first_node, second_node,
+					   SGF_ADD_BLACK)
+	    && node_position_lists_are_equal (first_node, second_node,
+					      SGF_ADD_WHITE)
+	    && node_position_lists_are_equal (first_node, second_node,
+					      SGF_ADD_EMPTY)
+	    && node_position_lists_are_equal (first_node, second_node,
+					      SGF_ADD_ARROWS));
   }
   else {
     /* FIXME: What to do in this case? */
@@ -581,18 +581,18 @@ amazons_nodes_are_equal(const SgfNode *first_node, const SgfNode *second_node)
 
 
 static int
-node_position_lists_are_equal(const SgfNode *first_node,
-			      const SgfNode *second_node,
-			      SgfType type)
+node_position_lists_are_equal (const SgfNode *first_node,
+			       const SgfNode *second_node,
+			       SgfType type)
 {
   const BoardPositionList *first_position_list
-    = sgf_node_get_list_of_point_property_value(first_node, type);
+    = sgf_node_get_list_of_point_property_value (first_node, type);
   const BoardPositionList *second_position_list
-    = sgf_node_get_list_of_point_property_value(second_node, type);
+    = sgf_node_get_list_of_point_property_value (second_node, type);
 
   if (first_position_list && second_position_list) {
-    return board_position_lists_are_equal(first_position_list,
-					  second_position_list);
+    return board_position_lists_are_equal (first_position_list,
+					   second_position_list);
   }
 
   return first_position_list == NULL && second_position_list == NULL;
@@ -600,21 +600,21 @@ node_position_lists_are_equal(const SgfNode *first_node,
 
 
 static const SgfNode *
-get_next_node(const SgfNode *node)
+get_next_node (const SgfNode *node)
 {
   return node->next;
 }
 
 
 static void
-generate_sgf_node_layer_diff(const EditGraph *edit_graph,
-			     const SgfNode *from_node_layer,
-			     const SgfNode *to_node_layer,
-			     SgfGameTree *tree, SgfNode *parent)
+generate_sgf_node_layer_diff (const EditGraph *edit_graph,
+			      const SgfNode *from_node_layer,
+			      const SgfNode *to_node_layer,
+			      SgfGameTree *tree, SgfNode *parent)
 {
   SgfNode **link = (parent ? &parent->child : &tree->root);
   const SgfNode *leading_context_subsequence = NULL;
-  const EditGraphLayer *zero_layer = reconstruct_minimal_path(edit_graph);
+  const EditGraphLayer *zero_layer = reconstruct_minimal_path (edit_graph);
   const EditGraphLayer *layer;
   int layer_distance;
   int x = 0;
@@ -628,9 +628,9 @@ generate_sgf_node_layer_diff(const EditGraph *edit_graph,
 
     if (layer_distance > 0) {
       for (k = 0; k < num_leading_context_nodes; k++) {
-	*link = sgf_node_duplicate_to_given_depth(leading_context_subsequence,
-						  tree, parent,
-						  CONTEXT_NODE_DEPTH);
+	*link = sgf_node_duplicate_to_given_depth (leading_context_subsequence,
+						   tree, parent,
+						   CONTEXT_NODE_DEPTH);
 	link = & (*link)->next;
 
 	leading_context_subsequence = leading_context_subsequence->next;
@@ -642,7 +642,7 @@ generate_sgf_node_layer_diff(const EditGraph *edit_graph,
 	 * FIXME: Add SGF property that shows that the node got added
 	 *	  (needs standardization?).
 	 */
-	*link = sgf_node_duplicate_recursively(to_node_layer, tree, parent);
+	*link = sgf_node_duplicate_recursively (to_node_layer, tree, parent);
 
 	to_node_layer = to_node_layer->next;
       }
@@ -652,7 +652,7 @@ generate_sgf_node_layer_diff(const EditGraph *edit_graph,
 	 * FIXME: Add SGF property that shows that the node got deleted
 	 *	  (needs standardization?).
 	 */
-	*link = sgf_node_duplicate_recursively(from_node_layer, tree, parent);
+	*link = sgf_node_duplicate_recursively (from_node_layer, tree, parent);
 
 	from_node_layer = from_node_layer->next;
 	x++;
@@ -669,18 +669,18 @@ generate_sgf_node_layer_diff(const EditGraph *edit_graph,
       int is_context_node = 1;
 
       if (from_node_layer->child || to_node_layer->child) {
-	SgfNode *node_difference = sgf_node_duplicate(from_node_layer,
-						      tree, parent);
+	SgfNode *node_difference = sgf_node_duplicate (from_node_layer,
+						       tree, parent);
 
-	build_node_layer_diff(from_node_layer->child, to_node_layer->child,
-			      tree, node_difference);
+	build_node_layer_diff (from_node_layer->child, to_node_layer->child,
+			       tree, node_difference);
 
 	if (node_difference->child) {
 	  for (k = 0; k < num_leading_context_nodes; k++) {
 	    *link
-	      = sgf_node_duplicate_to_given_depth(leading_context_subsequence,
-						  tree, parent,
-						  CONTEXT_NODE_DEPTH);
+	      = sgf_node_duplicate_to_given_depth (leading_context_subsequence,
+						   tree, parent,
+						   CONTEXT_NODE_DEPTH);
 	    link = & (*link)->next;
 
 	    leading_context_subsequence = leading_context_subsequence->next;
@@ -695,14 +695,14 @@ generate_sgf_node_layer_diff(const EditGraph *edit_graph,
 	  is_context_node = 0;
 	}
 	else
-	  sgf_node_delete(node_difference, tree);
+	  sgf_node_delete (node_difference, tree);
       }
 
       if (is_context_node) {
 	if (num_traling_context_nodes < NUM_CONTEXT_NODES) {
-	  *link = sgf_node_duplicate_to_given_depth(from_node_layer,
-						    tree, parent,
-						    CONTEXT_NODE_DEPTH);
+	  *link = sgf_node_duplicate_to_given_depth (from_node_layer,
+						     tree, parent,
+						     CONTEXT_NODE_DEPTH);
 	  link = & (*link)->next;
 
 	  num_traling_context_nodes++;
@@ -730,18 +730,18 @@ generate_sgf_node_layer_diff(const EditGraph *edit_graph,
 
 
 static TextLine *
-chop_text_into_lines(const char *text)
+chop_text_into_lines (const char *text)
 {
   TextLine *lines = NULL;
   int num_allocated_lines = 0;
   int num_lines = 0;
 
   while (1) {
-    const char *line_end = strchr(text, '\n');
+    const char *line_end = strchr (text, '\n');
 
     if (num_lines + 2 > num_allocated_lines) {
       num_allocated_lines += 20;
-      lines = utils_realloc(lines, num_allocated_lines * sizeof(TextLine));
+      lines = utils_realloc (lines, num_allocated_lines * sizeof (TextLine));
     }
 
     lines[num_lines].string = text;
@@ -751,7 +751,7 @@ chop_text_into_lines(const char *text)
       text = line_end + 1;
     }
     else {
-      lines[num_lines++].length = strlen(text);
+      lines[num_lines++].length = strlen (text);
       break;
     }
   }
@@ -762,18 +762,18 @@ chop_text_into_lines(const char *text)
 
 
 static int
-text_lines_are_equal(const TextLine *first_text_line,
-		     const TextLine *second_text_line)
+text_lines_are_equal (const TextLine *first_text_line,
+		      const TextLine *second_text_line)
 {
   return (first_text_line->length == second_text_line->length
-	  && (strncmp(first_text_line->string, second_text_line->string,
-		      first_text_line->length)
+	  && (strncmp (first_text_line->string, second_text_line->string,
+		       first_text_line->length)
 	      == 0));
 }
 
 
 static const TextLine *
-get_next_text_line(const TextLine *text_line)
+get_next_text_line (const TextLine *text_line)
 {
   if ((text_line + 1)->string != NULL)
     return text_line + 1;
@@ -783,17 +783,17 @@ get_next_text_line(const TextLine *text_line)
 
 
 static char *
-generate_text_diff(const EditGraph *edit_graph,
-		   const TextLine *from_lines_sequence,
-		   const TextLine *to_lines_sequence)
+generate_text_diff (const EditGraph *edit_graph,
+		    const TextLine *from_lines_sequence,
+		    const TextLine *to_lines_sequence)
 {
   TextDiffData data;
 
-  return do_generate_text_diff(edit_graph->last_layer,
-			       edit_graph->full_distance,
-			       /* edit_graph->last_layer_diagonal */ 0, 1,
-			       from_lines_sequence, to_lines_sequence,
-			       &data);
+  return do_generate_text_diff (edit_graph->last_layer,
+				edit_graph->full_distance,
+				/* edit_graph->last_layer_diagonal */ 0, 1,
+				from_lines_sequence, to_lines_sequence,
+				&data);
 }
 
 
@@ -807,11 +807,11 @@ generate_text_diff(const EditGraph *edit_graph,
  *	  and only then copying strings.
  */
 static char *
-do_generate_text_diff(const EditGraphLayer *layer,
-		      int layer_distance, int layer_diagonal, int last_layer,
-		      const TextLine *from_lines_sequence,
-		      const TextLine *to_lines_sequence,
-		      TextDiffData *data)
+do_generate_text_diff (const EditGraphLayer *layer,
+		       int layer_distance, int layer_diagonal, int last_layer,
+		       const TextLine *from_lines_sequence,
+		       const TextLine *to_lines_sequence,
+		       TextDiffData *data)
 {
   int k;
   int first_line_index;
@@ -830,16 +830,16 @@ do_generate_text_diff(const EditGraphLayer *layer,
 			      - (2 * layer_diagonal - layer_distance) - 1);
 
       difference
-	= do_generate_text_diff(previous_layer,
-				layer_distance - 1, layer_diagonal, 0,
-				from_lines_sequence, to_lines_sequence, data);
+	= do_generate_text_diff (previous_layer,
+				 layer_distance - 1, layer_diagonal, 0,
+				 from_lines_sequence, to_lines_sequence, data);
 
       data->current_hunk
-	= utils_cat_as_strings(data->current_hunk,
-			       "+", 1,
-			       to_lines_sequence[added_line_index].string,
-			       to_lines_sequence[added_line_index].length,
-			       "\n", 1, NULL);
+	= utils_cat_as_strings (data->current_hunk,
+				"+", 1,
+				to_lines_sequence[added_line_index].string,
+				to_lines_sequence[added_line_index].length,
+				"\n", 1, NULL);
       first_snake_line_index
 	= previous_layer->diagonals[layer_diagonal].trace_x;
     }
@@ -848,16 +848,16 @@ do_generate_text_diff(const EditGraphLayer *layer,
 	= previous_layer->diagonals[layer_diagonal - 1].trace_x;
 
       difference
-	= do_generate_text_diff(previous_layer,
-				layer_distance - 1, layer_diagonal - 1, 0,
-				from_lines_sequence, to_lines_sequence, data);
+	= do_generate_text_diff (previous_layer,
+				 layer_distance - 1, layer_diagonal - 1, 0,
+				 from_lines_sequence, to_lines_sequence, data);
 
       data->current_hunk
-	= utils_cat_as_strings(data->current_hunk,
-			       "-", 1,
-			       from_lines_sequence[deleted_line_index].string,
-			       from_lines_sequence[deleted_line_index].length,
-			       "\n", 1, NULL);
+	= utils_cat_as_strings (data->current_hunk,
+				"-", 1,
+				from_lines_sequence[deleted_line_index].string,
+				from_lines_sequence[deleted_line_index].length,
+				"\n", 1, NULL);
       first_snake_line_index = deleted_line_index + 1;
     }
 
@@ -873,29 +873,29 @@ do_generate_text_diff(const EditGraphLayer *layer,
       if (last_hunk_line_index > last_snake_line_index)
 	last_hunk_line_index = last_snake_line_index;
 
-      length = utils_ncprintf(buffer, sizeof(buffer), "@@ -%d,%d +%d,%d @@\n",
-			      data->hunk_first_line_in_original + 1,
-			      (last_hunk_line_index
-			       - data->hunk_first_line_in_original),
-			      data->hunk_first_line_in_modified + 1,
-			      ((last_hunk_line_index - trace_y_adjustment)
-			       - data->hunk_first_line_in_modified));
+      length = utils_ncprintf (buffer, sizeof buffer, "@@ -%d,%d +%d,%d @@\n",
+			       data->hunk_first_line_in_original + 1,
+			       (last_hunk_line_index
+				- data->hunk_first_line_in_original),
+			       data->hunk_first_line_in_modified + 1,
+			       ((last_hunk_line_index - trace_y_adjustment)
+				- data->hunk_first_line_in_modified));
 
       if (difference)
-	difference = utils_cat_as_string(difference, buffer, length);
+	difference = utils_cat_as_string (difference, buffer, length);
       else
-	difference = utils_duplicate_as_string(buffer, length);
+	difference = utils_duplicate_as_string (buffer, length);
 
-      difference = utils_cat_string(difference, data->current_hunk);
-      utils_free(data->current_hunk);
+      difference = utils_cat_string (difference, data->current_hunk);
+      utils_free (data->current_hunk);
 
       for (k = first_snake_line_index; k < last_hunk_line_index; k++) {
 	difference
-	  = utils_cat_as_strings(difference,
-				 " ", 1,
-				 from_lines_sequence[k].string,
-				 from_lines_sequence[k].length,
-				 "\n", 1, NULL);
+	  = utils_cat_as_strings (difference,
+				  " ", 1,
+				  from_lines_sequence[k].string,
+				  from_lines_sequence[k].length,
+				  "\n", 1, NULL);
       }
 
       if (last_layer)
@@ -926,11 +926,11 @@ do_generate_text_diff(const EditGraphLayer *layer,
 
   for (k = first_line_index; k < last_snake_line_index; k++) {
     data->current_hunk
-      = utils_cat_as_strings(data->current_hunk,
-			     " ", 1,
-			     from_lines_sequence[k].string,
-			     from_lines_sequence[k].length,
-			     "\n", 1, NULL);
+      = utils_cat_as_strings (data->current_hunk,
+			      " ", 1,
+			      from_lines_sequence[k].string,
+			      from_lines_sequence[k].length,
+			      "\n", 1, NULL);
   }
 
   return difference;

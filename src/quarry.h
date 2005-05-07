@@ -15,8 +15,8 @@
  *                                                                 *
  * You should have received a copy of the GNU General Public       *
  * License along with this program; if not, write to the Free      *
- * Software Foundation, Inc., 59 Temple Place - Suite 330,         *
- * Boston, MA 02111-1307, USA.                                     *
+ * Software Foundation, Inc., 51 Franklin Street, Fifth Floor,     *
+ * Boston, MA 02110-1301, USA.                                     *
 \* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 /* The main purpose of this file is to use stuff in `config.h' in a
@@ -46,11 +46,11 @@
 /* More portable va_copy(). */
 #if defined va_copy
 
-#define QUARRY_VA_COPY(dest, src)	va_copy((dest), (src))
+#define QUARRY_VA_COPY(dest, src)	va_copy ((dest), (src))
 
 #elif defined __va_copy
 
-#define QUARRY_VA_COPY(dest, src)	__va_copy((dest), (src))
+#define QUARRY_VA_COPY(dest, src)	__va_copy ((dest), (src))
 
 #else
 
@@ -62,7 +62,7 @@
 
 /* This is recommended by Autoconf manual. */
 #define QUARRY_VA_COPY(dest, src)		\
-  memcpy(&(dest), &(src), sizeof(va_list))
+  memcpy (&(dest), &(src), sizeof (va_list))
 
 
 #endif
@@ -90,14 +90,14 @@
  */
 #include "gettext.h"
 
-#define _(string)		gettext(string)
-#define N_(string)		gettext_noop(string)
+#define _(string)		gettext (string)
+#define N_(string)		gettext_noop (string)
 
 
 /* Determine if given byte (`character') starts an UTF-8 character,
  * probably a multi-byte one.
  */
-#define IS_UTF8_STARTER(character)		\
+#define IS_UTF8_STARTER(character)			\
   ((signed char) (character) >= (signed char) 0xc0)
 
 

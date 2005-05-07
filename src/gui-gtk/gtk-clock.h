@@ -15,8 +15,8 @@
  *                                                                 *
  * You should have received a copy of the GNU General Public       *
  * License along with this program; if not, write to the Free      *
- * Software Foundation, Inc., 59 Temple Place - Suite 330,         *
- * Boston, MA 02111-1307, USA.                                     *
+ * Software Foundation, Inc., 51 Franklin Street, Fifth Floor,     *
+ * Boston, MA 02110-1301, USA.                                     *
 \* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 
@@ -31,17 +31,17 @@
 
 
 #define GTK_TYPE_CLOCK		(gtk_clock_get_type ())
-#define GTK_CLOCK(obj)		(GTK_CHECK_CAST ((obj), GTK_TYPE_CLOCK,	\
-						 GtkClock))
+#define GTK_CLOCK(obj)		GTK_CHECK_CAST ((obj), GTK_TYPE_CLOCK,	\
+						GtkClock)
 #define GTK_CLOCK_CLASS(klass)						\
-  (GTK_CHECK_CLASS_CAST ((klass), GTK_TYPE_CLOCK, GtkClockClass))
+  GTK_CHECK_CLASS_CAST ((klass), GTK_TYPE_CLOCK, GtkClockClass)
 
-#define GTK_IS_CLOCK(obj)	(GTK_CHECK_TYPE ((obj), GTK_TYPE_CLOCK))
+#define GTK_IS_CLOCK(obj)	GTK_CHECK_TYPE ((obj), GTK_TYPE_CLOCK)
 #define GTK_IS_CLOCK_CLASS(klass)					\
-  (GTK_CHECK_CLASS_TYPE ((klass), GTK_TYPE_CLOCK))
+  GTK_CHECK_CLASS_TYPE ((klass), GTK_TYPE_CLOCK)
 
 #define GTK_CLOCK_GET_CLASS(obj)					\
-  (GTK_CHECK_GET_CLASS ((obj), GTK_TYPE_CLOCK, GtkClockClass))
+  GTK_CHECK_GET_CLASS ((obj), GTK_TYPE_CLOCK, GtkClockClass)
 
 
 typedef struct _GtkClockSymbolParameters	GtkClockSymbolParameters;

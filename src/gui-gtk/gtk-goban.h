@@ -15,8 +15,8 @@
  *                                                                 *
  * You should have received a copy of the GNU General Public       *
  * License along with this program; if not, write to the Free      *
- * Software Foundation, Inc., 59 Temple Place - Suite 330,         *
- * Boston, MA 02111-1307, USA.                                     *
+ * Software Foundation, Inc., 51 Franklin Street, Fifth Floor,     *
+ * Boston, MA 02110-1301, USA.                                     *
 \* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 
@@ -33,7 +33,7 @@
 #include <gtk/gtk.h>
 
 
-#define GTK_TYPE_GOBAN		gtk_goban_get_type ()
+#define GTK_TYPE_GOBAN		(gtk_goban_get_type ())
 
 #define GTK_GOBAN(object)						\
   GTK_CHECK_CAST ((object), GTK_TYPE_GOBAN, GtkGoban)
@@ -217,7 +217,7 @@ struct _GtkGobanClass {
 #define KEEP_SGF_LABELS		((const SgfLabelList *) -1)
 
 
-GType	 	gtk_goban_get_type (void);
+GType		gtk_goban_get_type (void);
 
 GtkWidget *	gtk_goban_new (void);
 

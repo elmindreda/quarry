@@ -14,9 +14,9 @@
  * Library General Public License for more details.
  *
  * You should have received a copy of the GNU Library General Public
- * License along with the Gnome Library; see the file COPYING.LIB.  If not,
- * write to the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
- * Boston, MA 02111-1307, USA.
+ * License along with the Gnome Library; see the file COPYING.LIB.  If
+ * not, write to the Free Software Foundation, Inc., 51 Franklin
+ * Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
 /* Color picker button for GNOME
  *
@@ -28,7 +28,11 @@
  * GTK+ at ftp://ftp.gtk.org/pub/gtk/. 
  */
 
-/* 2004-04-27  Paul Pogonyshev
+/* 2005-05-07  Paul Pogonyshev
+ *
+ *	Update FSF address in the legal notice above.
+ *
+ * 2004-04-27  Paul Pogonyshev
  *
  *	Move `GtkColorButtonPrivate' into `GtkColorButton' (apparently
  *	pre-2.4 GLib doesn't have support for privates).

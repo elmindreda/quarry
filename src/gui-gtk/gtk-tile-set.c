@@ -15,8 +15,8 @@
  *                                                                 *
  * You should have received a copy of the GNU General Public       *
  * License along with this program; if not, write to the Free      *
- * Software Foundation, Inc., 59 Temple Place - Suite 330,         *
- * Boston, MA 02111-1307, USA.                                     *
+ * Software Foundation, Inc., 51 Franklin Street, Fifth Floor,     *
+ * Boston, MA 02110-1301, USA.                                     *
 \* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 
@@ -220,7 +220,7 @@ gtk_main_tile_set_create (const GtkMainTileSetKey *key)
   tile_set->tiles[MIXED_50_TRANSPARENT]
     = gdk_pixbuf_new_from_data (pixel_data, GDK_COLORSPACE_RGB, TRUE, 8,
 				tile_size, tile_size, row_stride,
-			       (GdkPixbufDestroyNotify) utils_free, NULL);
+				(GdkPixbufDestroyNotify) utils_free, NULL);
 
   return tile_set;
 }
@@ -293,7 +293,7 @@ gtk_sgf_markup_tile_set_create_or_reuse (gint tile_size, Game game)
 
   return ((GtkSgfMarkupTileSet *)
 	  object_cache_create_or_reuse_object (&gtk_sgf_markup_tile_set_cache,
-					      &key));
+					       &key));
 }
 
 
@@ -438,7 +438,7 @@ scale_and_paint_svg_image (char *buffer, const char *buffer_end,
 
   for (scan = buffer, written_up_to = buffer;
        (scan < buffer_end
-	  && (scan = memchr (scan, '<', buffer_end - scan)) != NULL); ) {
+	&& (scan = memchr (scan, '<', buffer_end - scan)) != NULL); ) {
     scan++;
     if (scan < buffer_end - 12 && memcmp (scan, "!-- [Quarry]", 12) == 0) {
       int scale_this_tag = 0;

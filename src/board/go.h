@@ -15,8 +15,8 @@
  *                                                                 *
  * You should have received a copy of the GNU General Public       *
  * License along with this program; if not, write to the Free      *
- * Software Foundation, Inc., 59 Temple Place - Suite 330,         *
- * Boston, MA 02111-1307, USA.                                     *
+ * Software Foundation, Inc., 51 Franklin Street, Fifth Floor,     *
+ * Boston, MA 02110-1301, USA.                                     *
 \* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 
@@ -31,10 +31,10 @@
 
 
 #define ALLOCATE_GO_MOVE_STACK_ENTRY(board)		\
-  ALLOCATE_MOVE_STACK_ENTRY((board), GoMoveStackEntry)
+  ALLOCATE_MOVE_STACK_ENTRY ((board), GoMoveStackEntry)
 
 #define POP_GO_MOVE_STACK_ENTRY(board)			\
-  POP_MOVE_STACK_ENTRY((board), GoMoveStackEntry)
+  POP_MOVE_STACK_ENTRY ((board), GoMoveStackEntry)
 
 
 typedef struct _GoMoveStackEntry	GoMoveStackEntry;
@@ -66,29 +66,29 @@ struct _GoMoveStackEntry {
 };
 
 
-void		go_reset_game_data(Board *board, int forced_reset);
+void		go_reset_game_data (Board *board, int forced_reset);
 
-int		go_is_game_over(const Board *board, BoardRuleSet rule_set,
-				int color_to_play);
+int		go_is_game_over (const Board *board, BoardRuleSet rule_set,
+				 int color_to_play);
 
-int		go_is_legal_move(const Board *board, BoardRuleSet rule_set,
-				 int color, va_list move);
+int		go_is_legal_move (const Board *board, BoardRuleSet rule_set,
+				  int color, va_list move);
 
-void		go_play_move(Board *board, int color, va_list move);
-void		go_undo(Board *board);
+void		go_play_move (Board *board, int color, va_list move);
+void		go_undo (Board *board);
 
-void		go_apply_changes(Board *board, int num_changes);
-void		go_add_dummy_move_entry(Board *board);
+void		go_apply_changes (Board *board, int num_changes);
+void		go_add_dummy_move_entry (Board *board);
 
-int		go_format_move(int board_width, int board_height,
-			       char *buffer, va_list move);
-int		go_parse_move(int board_width, int board_height,
-			      const char *move_string,
-			      int *x, int *y,
-			      BoardAbstractMoveData *move_data);
+int		go_format_move (int board_width, int board_height,
+				char *buffer, va_list move);
+int		go_parse_move (int board_width, int board_height,
+			       const char *move_string,
+			       int *x, int *y,
+			       BoardAbstractMoveData *move_data);
 
-void		go_validate_board(const Board *board);
-void		go_dump_board(const Board *board);
+void		go_validate_board (const Board *board);
+void		go_dump_board (const Board *board);
 
 
 #endif /* QUARRY_GO_H */

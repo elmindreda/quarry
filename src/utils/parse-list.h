@@ -15,8 +15,8 @@
  *                                                                 *
  * You should have received a copy of the GNU General Public       *
  * License along with this program; if not, write to the Free      *
- * Software Foundation, Inc., 59 Temple Place - Suite 330,         *
- * Boston, MA 02111-1307, USA.                                     *
+ * Software Foundation, Inc., 51 Franklin Street, Fifth Floor,     *
+ * Boston, MA 02110-1301, USA.                                     *
 \* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 
@@ -40,7 +40,7 @@ typedef enum {
   SORT_NORMAL,
   SORT_LAST,
 
-  NUM_LIST_SORT_ORDERS  
+  NUM_LIST_SORT_ORDERS
 } ListSortOrder;
 
 
@@ -108,7 +108,7 @@ int		parse_color (char **line, QuarryColor *color,
       return 1;							\
   } while (0)
 
-#define PARSE_IDENTIFIER(store_in, line, type)	\
+#define PARSE_IDENTIFIER(store_in, line, type)			\
   PARSE_THING ((store_in), IDENTIFIER, (line), (type))
 
 

@@ -15,8 +15,8 @@
  *                                                                 *
  * You should have received a copy of the GNU General Public       *
  * License along with this program; if not, write to the Free      *
- * Software Foundation, Inc., 59 Temple Place - Suite 330,         *
- * Boston, MA 02111-1307, USA.                                     *
+ * Software Foundation, Inc., 51 Franklin Street, Fifth Floor,     *
+ * Boston, MA 02110-1301, USA.                                     *
 \* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 
@@ -34,7 +34,7 @@
 
 #define POSITION(x, y)		((1 + (y)) * (1 + BOARD_MAX_WIDTH) + (1 + (x)))
 #define POINT_TO_POSITION(point)		\
-  POSITION((point).x, (point).y)
+  POSITION ((point).x, (point).y)
 
 #define POSITION_X(pos)		(((pos) % (1 + BOARD_MAX_WIDTH)) - 1)
 #define POSITION_Y(pos)		(((pos) / (1 + BOARD_MAX_WIDTH)) - 1)
@@ -45,20 +45,20 @@
 #define EAST(pos)		((pos) + 1)
 
 #define BOARD_MAX_POSITIONS	(BOARD_MAX_WIDTH * BOARD_MAX_HEIGHT)
-#define BOARD_GRID_SIZE		(POSITION(BOARD_MAX_WIDTH - 1,		\
-					  BOARD_MAX_HEIGHT - 1) + 1)
-#define BOARD_FULL_GRID_SIZE	(POSITION(BOARD_MAX_WIDTH,		\
-					  BOARD_MAX_HEIGHT) + 1)
+#define BOARD_GRID_SIZE		(POSITION (BOARD_MAX_WIDTH - 1,		\
+					   BOARD_MAX_HEIGHT - 1) + 1)
+#define BOARD_FULL_GRID_SIZE	(POSITION (BOARD_MAX_WIDTH,		\
+					   BOARD_MAX_HEIGHT) + 1)
 
-#define ON_SIZED_GRID(width, height, x, y)		\
-  ((unsigned int) (x) < (unsigned int) (width)		\
+#define ON_SIZED_GRID(width, height, x, y)				\
+  ((unsigned int) (x) < (unsigned int) (width)				\
    && (unsigned int) (y) < (unsigned int) (height))
-#define ON_BOARD(board, x, y)					\
-  ON_SIZED_GRID((board)->width, (board)->height, (x), (y))
+#define ON_BOARD(board, x, y)						\
+  ON_SIZED_GRID ((board)->width, (board)->height, (x), (y))
 
 #define NULL_X			(-1)
 #define NULL_Y			(-1)
-#define NULL_POSITION		POSITION(NULL_X, NULL_Y)
+#define NULL_POSITION		POSITION (NULL_X, NULL_Y)
 #define IS_NULL_POINT(x, y)	((x) == NULL_X && (y) == NULL_Y)
 
 /* These values has no meaning for the board code, but they cannot be
@@ -67,7 +67,7 @@
  */
 #define SPECIAL_X		(-2)
 #define SPECIAL_Y		(-2)
-#define SPECIAL_POSITION	POSITION(SPECIAL_X, SPECIAL_Y)
+#define SPECIAL_POSITION	POSITION (SPECIAL_X, SPECIAL_Y)
 
 
 #endif /* QUARRY_BOARD_TOPOLOGY_H */

@@ -15,8 +15,8 @@
  *                                                                 *
  * You should have received a copy of the GNU General Public       *
  * License along with this program; if not, write to the Free      *
- * Software Foundation, Inc., 59 Temple Place - Suite 330,         *
- * Boston, MA 02111-1307, USA.                                     *
+ * Software Foundation, Inc., 51 Franklin Street, Fifth Floor,     *
+ * Boston, MA 02110-1301, USA.                                     *
 \* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 
@@ -78,32 +78,33 @@ extern const GoStonesParameters	     go_stones_defaults;
 extern const OthelloDisksParameters  othello_disks_defaults;
 
 
-void		 render_go_stones(int cell_size,
-				  const GoStonesParameters *parameters,
-				  unsigned char *black_pixel_data,
-				  int black_row_stride,
-				  unsigned char *white_pixel_data,
-				  int white_row_stride,
-				  int *stones_x_offset, int *stones_y_offset);
-void		 render_othello_disks(int cell_size,
-				      const OthelloDisksParameters *parameters,
-				      unsigned char *black_pixel_data,
-				      int black_row_stride,
-				      unsigned char *white_pixel_data,
-				      int white_row_stride,
-				      int *disks_x_offset,
-				      int *disks_y_offset);
+void		 render_go_stones (int cell_size,
+				   const GoStonesParameters *parameters,
+				   unsigned char *black_pixel_data,
+				   int black_row_stride,
+				   unsigned char *white_pixel_data,
+				   int white_row_stride,
+				   int *stones_x_offset, int *stones_y_offset);
+void		 render_othello_disks (int cell_size,
+				       const OthelloDisksParameters
+					 *parameters,
+				       unsigned char *black_pixel_data,
+				       int black_row_stride,
+				       unsigned char *white_pixel_data,
+				       int white_row_stride,
+				       int *disks_x_offset,
+				       int *disks_y_offset);
 
 
-unsigned char *	 duplicate_and_adjust_alpha(int alpha_up, int alpha_down,
-					    int image_size,
-					    unsigned char *pixel_data,
+unsigned char *	 duplicate_and_adjust_alpha (int alpha_up, int alpha_down,
+					     int image_size,
+					     unsigned char *pixel_data,
+					     int row_stride);
+
+unsigned char *	 combine_pixels_diagonally (int image_size,
+					    unsigned char *first_pixel_data,
+					    unsigned char *second_pixel_data,
 					    int row_stride);
-
-unsigned char *	 combine_pixels_diagonally(int image_size,
-					   unsigned char *first_pixel_data,
-					   unsigned char *second_pixel_data,
-					   int row_stride);
 
 
 #endif /* QUARRY_TILE_RENDERER_H */

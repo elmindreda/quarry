@@ -15,8 +15,8 @@
  *                                                                 *
  * You should have received a copy of the GNU General Public       *
  * License along with this program; if not, write to the Free      *
- * Software Foundation, Inc., 59 Temple Place - Suite 330,         *
- * Boston, MA 02111-1307, USA.                                     *
+ * Software Foundation, Inc., 51 Franklin Street, Fifth Floor,     *
+ * Boston, MA 02110-1301, USA.                                     *
 \* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 
@@ -138,7 +138,8 @@ game_list_parse_game2 (StringBuffer *c_file_arrays,
 
   PARSE_IDENTIFIER (get_default_setup_function, line,
 		    "get_default_setup function");
-  PARSE_IDENTIFIER (reset_game_data_function, line, "reset_game_data function");
+  PARSE_IDENTIFIER (reset_game_data_function, line,
+		    "reset_game_data function");
   PARSE_IDENTIFIER (is_legal_move_function, line, "is_legal_move function");
   PARSE_IDENTIFIER (play_move_function, line, "play_move function");
   PARSE_IDENTIFIER (undo_function, line, "undo function");

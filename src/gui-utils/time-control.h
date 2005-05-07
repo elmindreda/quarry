@@ -15,8 +15,8 @@
  *                                                                 *
  * You should have received a copy of the GNU General Public       *
  * License along with this program; if not, write to the Free      *
- * Software Foundation, Inc., 59 Temple Place - Suite 330,         *
- * Boston, MA 02111-1307, USA.                                     *
+ * Software Foundation, Inc., 51 Franklin Street, Fifth Floor,     *
+ * Boston, MA 02110-1301, USA.                                     *
 \* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 
@@ -78,11 +78,13 @@ void		time_control_apply_defaults_if_needed
 		   double *new_seconds_left, int *new_moves_to_play);
 
 void		time_control_set_state (TimeControl *time_control,
-					double seconds_left, int moves_to_play);
+					double seconds_left,
+					int moves_to_play);
 
 double		time_control_start (TimeControl *time_control);
-double		time_control_get_clock_seconds (const TimeControl *time_control,
-						int *moves_to_play);
+double		time_control_get_clock_seconds
+		  (const TimeControl *time_control,
+		   int *moves_to_play);
 double		time_control_stop (TimeControl *time_control,
 				   int *moves_to_play);
 
@@ -92,7 +94,8 @@ double		time_control_get_time_left (const TimeControl *time_control,
 double		time_control_get_time_till_seconds_update
 		  (const TimeControl *time_control);
 
-int		time_control_is_short_on_time (const TimeControl *time_control);
+int		time_control_is_short_on_time
+		  (const TimeControl *time_control);
 
 
 /* GUI back-end specific functions (don't belong to GUI utils.) */

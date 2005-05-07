@@ -15,8 +15,8 @@
  *                                                                 *
  * You should have received a copy of the GNU General Public       *
  * License along with this program; if not, write to the Free      *
- * Software Foundation, Inc., 59 Temple Place - Suite 330,         *
- * Boston, MA 02111-1307, USA.                                     *
+ * Software Foundation, Inc., 51 Franklin Street, Fifth Floor,     *
+ * Boston, MA 02110-1301, USA.                                     *
 \* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 
@@ -29,18 +29,18 @@
 #include "gtk-qbox.h"
 
 
-#define GTK_TYPE_QVBOX		(gtk_qvbox_get_type())
-#define GTK_QVBOX(obj)		(GTK_CHECK_CAST((obj), GTK_TYPE_QVBOX,	\
-						GtkQVBox))
+#define GTK_TYPE_QVBOX		(gtk_qvbox_get_type ())
+#define GTK_QVBOX(obj)		GTK_CHECK_CAST ((obj), GTK_TYPE_QVBOX,	\
+						GtkQVBox)
 #define GTK_QVBOX_CLASS(klass)						\
-  (GTK_CHECK_CLASS_CAST((klass), GTK_TYPE_QVBOX, GtkQVBoxClass))
+  GTK_CHECK_CLASS_CAST ((klass), GTK_TYPE_QVBOX, GtkQVBoxClass)
 
-#define GTK_IS_QVBOX(obj)	(GTK_CHECK_TYPE((obj), GTK_TYPE_QVBOX))
+#define GTK_IS_QVBOX(obj)	GTK_CHECK_TYPE ((obj), GTK_TYPE_QVBOX)
 #define GTK_IS_QVBOX_CLASS(klass)					\
-  (GTK_CHECK_CLASS_TYPE((klass), GTK_TYPE_QVBOX))
+  GTK_CHECK_CLASS_TYPE ((klass), GTK_TYPE_QVBOX)
 
 #define GTK_QVBOX_GET_CLASS(obj)					\
-  (GTK_CHECK_GET_CLASS((obj), GTK_TYPE_QVBOX, GtkQVBoxClass))
+  GTK_CHECK_GET_CLASS ((obj), GTK_TYPE_QVBOX, GtkQVBoxClass)
 
 
 typedef struct _GtkQVBox	GtkQVBox;
@@ -55,10 +55,10 @@ struct _GtkQVBoxClass {
 };
 
 
-GtkType		gtk_qvbox_get_type(void);
-GtkWidget *	gtk_qvbox_new(gint spacing);
+GtkType		gtk_qvbox_get_type (void);
+GtkWidget *	gtk_qvbox_new (gint spacing);
 
-gint		gtk_qvbox_negotiate_width(GtkWidget *widget, gint height);
+gint		gtk_qvbox_negotiate_width (GtkWidget *widget, gint height);
 
 
 #endif /* QUARRY_GTK_QVBOX_H */

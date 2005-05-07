@@ -17,8 +17,8 @@
  *                                                                 *
  * You should have received a copy of the GNU General Public       *
  * License along with this program; if not, write to the Free      *
- * Software Foundation, Inc., 59 Temple Place - Suite 330,         *
- * Boston, MA 02111-1307, USA.                                     *
+ * Software Foundation, Inc., 51 Franklin Street, Fifth Floor,     *
+ * Boston, MA 02110-1301, USA.                                     *
 \* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 /* This file includes modified code from gtkhbox.c which is
@@ -40,35 +40,35 @@
 #include "gtk-qhbox.h"
 
 
-static void	gtk_qhbox_class_init(GtkQHBoxClass *class);
+static void	gtk_qhbox_class_init (GtkQHBoxClass *class);
 
-static void	gtk_qhbox_size_request(GtkWidget *widget,
-				       GtkRequisition *requisition);
-static void	gtk_qhbox_size_allocate(GtkWidget *widget,
-					GtkAllocation *allocation);
+static void	gtk_qhbox_size_request (GtkWidget *widget,
+					GtkRequisition *requisition);
+static void	gtk_qhbox_size_allocate (GtkWidget *widget,
+					 GtkAllocation *allocation);
 
 
-GtkType
-gtk_qhbox_get_type(void)
+GType
+gtk_qhbox_get_type (void)
 {
-  static GtkType qhbox_type = 0;
+  static GType qhbox_type = 0;
 
   if (!qhbox_type) {
     static GTypeInfo qhbox_info = {
-      sizeof(GtkQHBoxClass),
+      sizeof (GtkQHBoxClass),
       NULL,
       NULL,
       (GClassInitFunc) gtk_qhbox_class_init,
       NULL,
       NULL,
-      sizeof(GtkQHBox),
+      sizeof (GtkQHBox),
       0,
       NULL,
       NULL
     };
 
-    qhbox_type = g_type_register_static(GTK_TYPE_QBOX, "GtkQHBox",
-					&qhbox_info, 0);
+    qhbox_type = g_type_register_static (GTK_TYPE_QBOX, "GtkQHBox",
+					 &qhbox_info, 0);
   }
 
   return qhbox_type;
@@ -76,7 +76,7 @@ gtk_qhbox_get_type(void)
 
 
 static void
-gtk_qhbox_class_init(GtkQHBoxClass *class)
+gtk_qhbox_class_init (GtkQHBoxClass *class)
 {
   GtkWidgetClass *widget_class = (GtkWidgetClass *) class;
 
@@ -86,10 +86,10 @@ gtk_qhbox_class_init(GtkQHBoxClass *class)
 
 
 GtkWidget *
-gtk_qhbox_new(gint spacing)
+gtk_qhbox_new (gint spacing)
 {
-  GtkWidget *widget = GTK_WIDGET(g_object_new(GTK_TYPE_QHBOX, NULL));
-  GtkBox *box = GTK_BOX(widget);
+  GtkWidget *widget = GTK_WIDGET (g_object_new (GTK_TYPE_QHBOX, NULL));
+  GtkBox *box = GTK_BOX (widget);
 
   box->homogeneous = FALSE;
   box->spacing = spacing;
@@ -99,28 +99,29 @@ gtk_qhbox_new(gint spacing)
 
 
 static void
-gtk_qhbox_size_request(GtkWidget *widget, GtkRequisition *requisition)
+gtk_qhbox_size_request (GtkWidget *widget, GtkRequisition *requisition)
 {
-  GtkBox *box = GTK_BOX(widget);
+  GtkBox *box = GTK_BOX (widget);
   GList *children;
   gint visible_children = 0;
   gint double_border_width;
 
-  double_border_width = GTK_CONTAINER(widget)->border_width * 2;
+  double_border_width = GTK_CONTAINER (widget)->border_width * 2;
   requisition->width  = double_border_width;
   requisition->height = double_border_width;
 
   for (children = box->children; children; children = children->next) {
     GtkBoxChild *child = children->data;
 
-    if (GTK_WIDGET_VISIBLE(child->widget)) {
+    if (GTK_WIDGET_VISIBLE (child->widget)) {
       GtkRequisition child_requisition;
 
       visible_children++;
 
-      gtk_widget_size_request(child->widget, &child_requisition);
+      gtk_widget_size_request (child->widget, &child_requisition);
       requisition->width += child_requisition.width + child->padding * 2;
-      requisition->height = MAX(requisition->height, child_requisition.height);
+      requisition->height = MAX (requisition->height,
+				 child_requisition.height);
     }
   }
 
@@ -130,9 +131,9 @@ gtk_qhbox_size_request(GtkWidget *widget, GtkRequisition *requisition)
 
 
 static void
-gtk_qhbox_size_allocate(GtkWidget *widget, GtkAllocation *allocation)
+gtk_qhbox_size_allocate (GtkWidget *widget, GtkAllocation *allocation)
 {
-  GtkBox *box = GTK_BOX(widget);
+  GtkBox *box = GTK_BOX (widget);
   GList *children;
   gint visible_children = 0;
   gint expandable_children = 0;
@@ -142,7 +143,7 @@ gtk_qhbox_size_allocate(GtkWidget *widget, GtkAllocation *allocation)
   for (children = box->children; children; children = children->next) {
     GtkBoxChild *child = children->data;
 
-    if (GTK_WIDGET_VISIBLE(child->widget)) {
+    if (GTK_WIDGET_VISIBLE (child->widget)) {
       visible_children++;
       if (child->expand)
 	expandable_children++;
@@ -150,28 +151,28 @@ gtk_qhbox_size_allocate(GtkWidget *widget, GtkAllocation *allocation)
   }
 
   if (visible_children > 0) {
-    GtkQBox *qbox = GTK_QBOX(widget);
+    GtkQBox *qbox = GTK_QBOX (widget);
     GtkRequisition child_requisition;
     GtkAllocation child_allocation;
-    gint border_width = GTK_CONTAINER(widget)->border_width;
+    gint border_width = GTK_CONTAINER (widget)->border_width;
     gint extra_width = allocation->width - widget->requisition.width;
     gint extra_width_share = 0;
     gint ruling_widget_width = 0;
-    GtkTextDirection direction = gtk_widget_get_direction(widget);
+    GtkTextDirection direction = gtk_widget_get_direction (widget);
     gint pack_start_x;
     gint pack_end_x;
 
     child_allocation.y = allocation->y + border_width;
-    child_allocation.height = MAX(1, allocation->height - border_width * 2);
+    child_allocation.height = MAX (1, allocation->height - border_width * 2);
 
-    if (qbox->ruling_widget && GTK_WIDGET_VISIBLE(qbox->ruling_widget)) {
-      gtk_widget_get_child_requisition(qbox->ruling_widget,
-				       &child_requisition);
+    if (qbox->ruling_widget && GTK_WIDGET_VISIBLE (qbox->ruling_widget)) {
+      gtk_widget_get_child_requisition (qbox->ruling_widget,
+					&child_requisition);
       ruling_widget_width = child_requisition.width;
 
       if (extra_width > 0) {
-	gint requested_width = qbox->widget_callback(qbox->ruling_widget,
-						     child_allocation.height);
+	gint requested_width = qbox->widget_callback (qbox->ruling_widget,
+						      child_allocation.height);
 
 	if (requested_width >= child_requisition.width + extra_width) {
 	  ruling_widget_width = child_requisition.width + extra_width;
@@ -196,11 +197,11 @@ gtk_qhbox_size_allocate(GtkWidget *widget, GtkAllocation *allocation)
     for (children = box->children; children; children = children->next) {
       GtkBoxChild *child = children->data;
 
-      if (GTK_WIDGET_VISIBLE(child->widget)) {
+      if (GTK_WIDGET_VISIBLE (child->widget)) {
 	gint child_extra_width = 0;
 	gint full_child_width;
 
-	gtk_widget_get_child_requisition(child->widget, &child_requisition);
+	gtk_widget_get_child_requisition (child->widget, &child_requisition);
 
 	if (child->widget == qbox->ruling_widget)
 	  child_allocation.width = ruling_widget_width;
@@ -241,7 +242,7 @@ gtk_qhbox_size_allocate(GtkWidget *widget, GtkAllocation *allocation)
 				- child_allocation.width);
 	}
 
-	gtk_widget_size_allocate(child->widget, &child_allocation);
+	gtk_widget_size_allocate (child->widget, &child_allocation);
       }
     }
   }
@@ -249,18 +250,18 @@ gtk_qhbox_size_allocate(GtkWidget *widget, GtkAllocation *allocation)
 
 
 gint
-gtk_qhbox_negotiate_height(GtkWidget *widget, gint width)
+gtk_qhbox_negotiate_height (GtkWidget *widget, gint width)
 {
-  GtkQBox *qbox = GTK_QBOX(widget);
+  GtkQBox *qbox = GTK_QBOX (widget);
   GtkRequisition child_requisition;
 
-  if (qbox->ruling_widget == NULL || !GTK_WIDGET_VISIBLE(qbox->ruling_widget))
+  if (qbox->ruling_widget == NULL || !GTK_WIDGET_VISIBLE (qbox->ruling_widget))
     return 0;
 
-  gtk_widget_get_child_requisition(qbox->ruling_widget, &child_requisition);
-  return qbox->widget_callback(qbox->ruling_widget,
-			       (child_requisition.width
-				+ width - widget->requisition.width));
+  gtk_widget_get_child_requisition (qbox->ruling_widget, &child_requisition);
+  return qbox->widget_callback (qbox->ruling_widget,
+				(child_requisition.width
+				 + width - widget->requisition.width));
 }
 
 

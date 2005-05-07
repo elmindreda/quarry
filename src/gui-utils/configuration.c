@@ -15,8 +15,8 @@
  *                                                                 *
  * You should have received a copy of the GNU General Public       *
  * License along with this program; if not, write to the Free      *
- * Software Foundation, Inc., 59 Temple Place - Suite 330,         *
- * Boston, MA 02111-1307, USA.                                     *
+ * Software Foundation, Inc., 51 Franklin Street, Fifth Floor,     *
+ * Boston, MA 02110-1301, USA.                                     *
 \* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 /* This file contains run-time code that deals with configuration.  It
@@ -428,9 +428,9 @@ parse_string (char **line_scan, char fuzzy_terminator)
 
       while (buffer_pointer > buffer
 	     && (*(buffer_pointer - 1) == ' '
-		  || *(buffer_pointer - 1) == '\t'
-		  || *(buffer_pointer - 1) == '\n'
-		  || *(buffer_pointer - 1) == '\r'))
+		 || *(buffer_pointer - 1) == '\t'
+		 || *(buffer_pointer - 1) == '\n'
+		 || *(buffer_pointer - 1) == '\r'))
 	buffer_pointer--;
     }
     else
@@ -736,7 +736,7 @@ configuration_set_string_list_value (StringList *configuration_variable,
 
 void
 configuration_set_string_list_value_steal_strings
-		(StringList *configuration_variable, StringList *string_list)
+  (StringList *configuration_variable, StringList *string_list)
 {
   assert (configuration_variable);
   assert (string_list);

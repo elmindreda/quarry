@@ -15,8 +15,8 @@
  *                                                                 *
  * You should have received a copy of the GNU General Public       *
  * License along with this program; if not, write to the Free      *
- * Software Foundation, Inc., 59 Temple Place - Suite 330,         *
- * Boston, MA 02111-1307, USA.                                     *
+ * Software Foundation, Inc., 51 Franklin Street, Fifth Floor,     *
+ * Boston, MA 02110-1301, USA.                                     *
 \* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 
@@ -38,12 +38,12 @@
  * there is no chance to conflict with any of the modules.
  */
 #define GTK_MIN_BOARD_SIZE				\
-  MAX(MAX(BOARD_MIN_WIDTH, BOARD_MIN_HEIGHT),		\
-      MAX(SGF_MIN_BOARD_SIZE, GTP_MIN_BOARD_SIZE))
+  MAX (MAX (BOARD_MIN_WIDTH, BOARD_MIN_HEIGHT),		\
+       MAX (SGF_MIN_BOARD_SIZE, GTP_MIN_BOARD_SIZE))
 
 #define GTK_MAX_BOARD_SIZE				\
-  MIN(MIN(BOARD_MAX_WIDTH, BOARD_MAX_HEIGHT),		\
-      MIN(SGF_MAX_BOARD_SIZE, GTP_MAX_BOARD_SIZE))
+  MIN (MIN (BOARD_MAX_WIDTH, BOARD_MAX_HEIGHT),		\
+       MIN (SGF_MAX_BOARD_SIZE, GTP_MAX_BOARD_SIZE))
 
 
 typedef enum {

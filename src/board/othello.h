@@ -15,8 +15,8 @@
  *                                                                 *
  * You should have received a copy of the GNU General Public       *
  * License along with this program; if not, write to the Free      *
- * Software Foundation, Inc., 59 Temple Place - Suite 330,         *
- * Boston, MA 02111-1307, USA.                                     *
+ * Software Foundation, Inc., 51 Franklin Street, Fifth Floor,     *
+ * Boston, MA 02110-1301, USA.                                     *
 \* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 
@@ -31,10 +31,10 @@
 
 
 #define ALLOCATE_OTHELLO_MOVE_STACK_ENTRY(board)		\
-  ALLOCATE_MOVE_STACK_ENTRY((board), OthelloMoveStackEntry)
+  ALLOCATE_MOVE_STACK_ENTRY ((board), OthelloMoveStackEntry)
 
-#define POP_OTHELLO_MOVE_STACK_ENTRY(board)		\
-  POP_MOVE_STACK_ENTRY((board), OthelloMoveStackEntry)
+#define POP_OTHELLO_MOVE_STACK_ENTRY(board)			\
+  POP_MOVE_STACK_ENTRY ((board), OthelloMoveStackEntry)
 
 
 typedef struct _OthelloMoveStackEntry	OthelloMoveStackEntry;
@@ -59,34 +59,36 @@ struct _OthelloMoveStackEntry {
 };
 
 
-int		othello_adjust_color_to_play(const Board *board,
-					     BoardRuleSet rule_set, int color);
-int		othello_is_game_over(const Board *board, BoardRuleSet rule_set,
-				     int color_to_play);
-
-int		othello_get_default_setup(int width, int height,
-					  BoardPositionList **black_stones,
-					  BoardPositionList **white_stones);
-
-int		othello_is_legal_move(const Board *board,
+int		othello_adjust_color_to_play (const Board *board,
+					      BoardRuleSet rule_set,
+					      int color);
+int		othello_is_game_over (const Board *board,
 				      BoardRuleSet rule_set,
-				      int color, va_list move);
+				      int color_to_play);
 
-void		othello_play_move(Board *board, int color, va_list move);
-void		othello_undo(Board *board);
+int		othello_get_default_setup (int width, int height,
+					   BoardPositionList **black_stones,
+					   BoardPositionList **white_stones);
 
-void		othello_apply_changes(Board *board, int num_changes);
-void		othello_add_dummy_move_entry(Board *board);
+int		othello_is_legal_move (const Board *board,
+				       BoardRuleSet rule_set,
+				       int color, va_list move);
 
-int		othello_format_move(int board_width, int board_height,
-				    char *buffer, va_list move);
-int		othello_parse_move(int board_width, int board_height,
-				   const char *move_string,
-				   int *x, int *y,
-				   BoardAbstractMoveData *move_data);
+void		othello_play_move (Board *board, int color, va_list move);
+void		othello_undo (Board *board);
 
-void		othello_validate_board(const Board *board);
-void		othello_dump_board(const Board *board);
+void		othello_apply_changes (Board *board, int num_changes);
+void		othello_add_dummy_move_entry (Board *board);
+
+int		othello_format_move (int board_width, int board_height,
+				     char *buffer, va_list move);
+int		othello_parse_move (int board_width, int board_height,
+				    const char *move_string,
+				    int *x, int *y,
+				    BoardAbstractMoveData *move_data);
+
+void		othello_validate_board (const Board *board);
+void		othello_dump_board (const Board *board);
 
 
 #endif /* QUARRY_OTHELLO_H */

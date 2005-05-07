@@ -15,8 +15,8 @@
  *                                                                 *
  * You should have received a copy of the GNU General Public       *
  * License along with this program; if not, write to the Free      *
- * Software Foundation, Inc., 59 Temple Place - Suite 330,         *
- * Boston, MA 02111-1307, USA.                                     *
+ * Software Foundation, Inc., 51 Franklin Street, Fifth Floor,     *
+ * Boston, MA 02110-1301, USA.                                     *
 \* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 
@@ -72,10 +72,10 @@ enum {
 static guint	game_info_dialog_signals[NUM_SIGNALS];
 
 
-GtkType
+GType
 gtk_game_info_dialog_get_type (void)
 {
-  static GtkType game_info_dialog_type = 0;
+  static GType game_info_dialog_type = 0;
 
   if (!game_info_dialog_type) {
     static GTypeInfo game_info_dialog_info = {

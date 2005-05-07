@@ -17,8 +17,8 @@
  *                                                                 *
  * You should have received a copy of the GNU General Public       *
  * License along with this program; if not, write to the Free      *
- * Software Foundation, Inc., 59 Temple Place - Suite 330,         *
- * Boston, MA 02111-1307, USA.                                     *
+ * Software Foundation, Inc., 51 Franklin Street, Fifth Floor,     *
+ * Boston, MA 02110-1301, USA.                                     *
 \* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 
@@ -390,10 +390,10 @@ static GtkTextTag	*separator_tag;
 static GtkTextTagTable	*node_name_tag_table;
 
 
-GtkType
+GType
 gtk_goban_window_get_type (void)
 {
-  static GtkType goban_window_type = 0;
+  static GType goban_window_type = 0;
 
   if (!goban_window_type) {
     static GTypeInfo goban_window_info = {
@@ -1884,8 +1884,10 @@ do_find_text (GtkGobanWindow *goban_window, guint callback_action)
     /* The `selection_iterator' is already set. */
     if (callback_action == GTK_GOBAN_WINDOW_FIND_NEXT)
       text_to_free = get_top_buffer_part (goban_window, &selection_iterator);
-    else
-      text_to_free = get_bottom_buffer_part (goban_window, &selection_iterator);
+    else {
+      text_to_free = get_bottom_buffer_part (goban_window,
+					     &selection_iterator);
+    }
 
     if (text_to_free) {
       text_to_search_in_normalized = get_normalized_text (text_to_free, -1,

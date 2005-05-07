@@ -15,8 +15,8 @@
  *                                                                 *
  * You should have received a copy of the GNU General Public       *
  * License along with this program; if not, write to the Free      *
- * Software Foundation, Inc., 59 Temple Place - Suite 330,         *
- * Boston, MA 02111-1307, USA.                                     *
+ * Software Foundation, Inc., 51 Franklin Street, Fifth Floor,     *
+ * Boston, MA 02110-1301, USA.                                     *
 \* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 
@@ -33,7 +33,7 @@
 #include <gtk/gtk.h>
 
 
-#define GTK_TYPE_SGF_TREE_VIEW	gtk_sgf_tree_view_get_type ()
+#define GTK_TYPE_SGF_TREE_VIEW	(gtk_sgf_tree_view_get_type ())
 
 #define GTK_SGF_TREE_VIEW(object)					\
   GTK_CHECK_CAST ((object), GTK_TYPE_SGF_TREE_VIEW, GtkSgfTreeView)
@@ -49,8 +49,8 @@
   GTK_CHECK_CLASS_TYPE ((class), GTK_TYPE_SGF_TREE_VIEW)
 
 #define GTK_SGF_TREE_VIEW_GET_CLASS(object)				\
-  (GTK_CHECK_GET_CLASS ((object), GTK_TYPE_SGF_TREE_VIEW,		\
-			GtkSgfTreeViewClass)
+  GTK_CHECK_GET_CLASS ((object), GTK_TYPE_SGF_TREE_VIEW,		\
+		       GtkSgfTreeViewClass)
 
 
 typedef struct _GtkSgfTreeView		GtkSgfTreeView;
@@ -101,7 +101,7 @@ struct _GtkSgfTreeViewClass {
 };
 
 
-GType	 	gtk_sgf_tree_view_get_type (void);
+GType		gtk_sgf_tree_view_get_type (void);
 
 GtkWidget *	gtk_sgf_tree_view_new (void);
 

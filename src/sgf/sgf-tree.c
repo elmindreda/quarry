@@ -15,8 +15,8 @@
  *                                                                 *
  * You should have received a copy of the GNU General Public       *
  * License along with this program; if not, write to the Free      *
- * Software Foundation, Inc., 59 Temple Place - Suite 330,         *
- * Boston, MA 02111-1307, USA.                                     *
+ * Software Foundation, Inc., 51 Franklin Street, Fifth Floor,     *
+ * Boston, MA 02110-1301, USA.                                     *
 \* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 
@@ -698,7 +698,7 @@ sgf_node_is_game_info_node (const SgfNode *node)
     }									\
     return fail_value;							\
   } while (0)
-    
+
 
 /* Get the value of property of specified type with `number' value
  * type.  If such a property has not been found, return value is zero
@@ -953,7 +953,7 @@ sgf_node_add_real_property (SgfNode *node, SgfGameTree *tree,
 {
   SgfProperty **link;
 
-  assert (node); 
+  assert (node);
   assert (property_info[type].value_type == SGF_REAL);
 
   if (!sgf_node_find_property (node, type, &link)) {

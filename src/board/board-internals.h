@@ -15,8 +15,8 @@
  *                                                                 *
  * You should have received a copy of the GNU General Public       *
  * License along with this program; if not, write to the Free      *
- * Software Foundation, Inc., 59 Temple Place - Suite 330,         *
- * Boston, MA 02111-1307, USA.                                     *
+ * Software Foundation, Inc., 51 Franklin Street, Fifth Floor,     *
+ * Boston, MA 02110-1301, USA.                                     *
 \* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 
@@ -57,7 +57,7 @@
 
 #define ALLOCATE_MOVE_STACK_ENTRY(board, MoveStackEntryType)		\
   (((board)->move_stack_pointer == (board)->move_stack_end		\
-    ? board_increase_move_stack_size(board)				\
+    ? board_increase_move_stack_size (board)				\
     : (void) 0),							\
    (board)->move_stack_pointer						\
      = (MoveStackEntryType *) (board)->move_stack_pointer + 1,		\
@@ -75,11 +75,11 @@ struct _BoardChangeStackEntry {
 };
 
 
-inline void	board_undo_changes(Board *board, int num_undos);
+inline void	board_undo_changes (Board *board, int num_undos);
 
-int		determine_position_delta(int delta_x, int delta_y);
+int		determine_position_delta (int delta_x, int delta_y);
 
-void		board_increase_move_stack_size(Board *board);
+void		board_increase_move_stack_size (Board *board);
 
 
 extern const int	delta[8];

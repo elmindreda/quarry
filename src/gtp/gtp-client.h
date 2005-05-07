@@ -15,8 +15,8 @@
  *                                                                 *
  * You should have received a copy of the GNU General Public       *
  * License along with this program; if not, write to the Free      *
- * Software Foundation, Inc., 59 Temple Place - Suite 330,         *
- * Boston, MA 02111-1307, USA.                                     *
+ * Software Foundation, Inc., 51 Franklin Street, Fifth Floor,     *
+ * Boston, MA 02110-1301, USA.                                     *
 \* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 
@@ -108,24 +108,24 @@ struct _GtpCommandList {
 
 #define gtp_command_list_new()						\
   ((GtpCommandList *)							\
-   string_list_new_derived(sizeof(GtpCommandListItem), NULL)	
+   string_list_new_derived (sizeof (GtpCommandListItem), NULL)
 
 #define gtp_command_list_init(list)					\
-  string_list_init_derived((list), sizeof(GtpCommandListItem),	NULL)
+  string_list_init_derived ((list), sizeof (GtpCommandListItem), NULL)
 
 #define STATIC_GTP_COMMAND_LIST						\
-  STATIC_STRING_LIST_DERIVED(GtpCommandListItem, NULL)
+  STATIC_STRING_LIST_DERIVED (GtpCommandListItem, NULL)
 
 
 #define gtp_command_list_get_item(list, item_index)			\
-  ((GtpCommandListItem *) string_list_get_item((list), (item_index)))
+  ((GtpCommandListItem *) string_list_get_item ((list), (item_index)))
 
 #define gtp_command_list_find(list, command)				\
-  ((GtpCommandListItem *) string_list_find((list), (command)))
+  ((GtpCommandListItem *) string_list_find ((list), (command)))
 
 #define gtp_command_list_find_after_notch(list, command, notch)		\
   ((GtpCommandListItem *)						\
-   string_list_find_after_notch((list), (command), (notch)))
+   string_list_find_after_notch ((list), (command), (notch)))
 
 
 struct _GtpClient {
@@ -181,23 +181,23 @@ GtpClient *	gtp_client_new
 		   GtpClientInitializedCallback initialized_callback,
 		   GtpClientDeletedCallback deletied_callback,
 		   void *user_data);
-void		gtp_client_setup_connection(GtpClient *client);
+void		gtp_client_setup_connection (GtpClient *client);
 
-void		gtp_client_delete(GtpClient *client);
-void		gtp_client_quit(GtpClient *client);
-
-
-void		gtp_client_grab_response(GtpClient *client,
-					 char *response, int length);
-
-int		gtp_client_set_echo_mode(GtpClient *client, int echo_mode);
-
-#define gtp_client_echo_on(client)	gtp_client_set_echo_mode((client), 1)
-#define gtp_client_echo_off(client)	gtp_client_set_echo_mode((client), 0)
+void		gtp_client_delete (GtpClient *client);
+void		gtp_client_quit (GtpClient *client);
 
 
-int		gtp_client_is_known_command(const GtpClient *client,
-					    const char *command);
+void		gtp_client_grab_response (GtpClient *client,
+					  char *response, int length);
+
+int		gtp_client_set_echo_mode (GtpClient *client, int echo_mode);
+
+#define gtp_client_echo_on(client)	gtp_client_set_echo_mode ((client), 1)
+#define gtp_client_echo_off(client)	gtp_client_set_echo_mode ((client), 0)
+
+
+int		gtp_client_is_known_command (const GtpClient *client,
+					     const char *command);
 
 void		gtp_client_set_game
 		  (GtpClient *client,

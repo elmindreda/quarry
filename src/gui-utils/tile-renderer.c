@@ -15,8 +15,8 @@
  *                                                                 *
  * You should have received a copy of the GNU General Public       *
  * License along with this program; if not, write to the Free      *
- * Software Foundation, Inc., 59 Temple Place - Suite 330,         *
- * Boston, MA 02111-1307, USA.                                     *
+ * Software Foundation, Inc., 51 Franklin Street, Fifth Floor,     *
+ * Boston, MA 02110-1301, USA.                                     *
 \* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 
@@ -51,7 +51,7 @@ const OthelloDisksParameters	othello_disks_defaults = {
       { 120, 120, 120 } },
     { 0.2, 0.6, 0.2, 10.0,
       { 255, 250, 235 } } }
-};  
+};
 
 
 /* FIXME: replace with better antialising. */
@@ -60,27 +60,27 @@ const OthelloDisksParameters	othello_disks_defaults = {
 
 
 void
-render_go_stones(int cell_size, const GoStonesParameters *parameters,
-		 unsigned char *black_pixel_data, int black_row_stride,
-		 unsigned char *white_pixel_data, int white_row_stride,
-		 int *stones_x_offset, int *stones_y_offset)
+render_go_stones (int cell_size, const GoStonesParameters *parameters,
+		  unsigned char *black_pixel_data, int black_row_stride,
+		  unsigned char *white_pixel_data, int white_row_stride,
+		  int *stones_x_offset, int *stones_y_offset)
 {
   double stone_radius = 0.5 * parameters->relative_stone_size * cell_size;
   double stone_radius_in_pixels = (cell_size % 2 == 1
-				   ? ceil(stone_radius - 0.5) + 0.5
-				   : ceil(stone_radius));
+				   ? ceil (stone_radius - 0.5) + 0.5
+				   : ceil (stone_radius));
   double center_x = (parameters->light.dx < 0.0 ? stone_radius_in_pixels
 		     : cell_size - stone_radius_in_pixels);
   double center_y = (parameters->light.dy < 0.0 ? stone_radius_in_pixels
 		     : cell_size - stone_radius_in_pixels);
 
-  double squared_lense_radius = SQR(parameters->lense_radius);
+  double squared_lense_radius = SQR (parameters->lense_radius);
   double stone_half_height = (parameters->lense_radius
-			      - sqrt(squared_lense_radius - 1.0)
+			      - sqrt (squared_lense_radius - 1.0)
 			      + 1.0 / parameters->ellipsoid_radius);
 
-  double light_vector_length = sqrt(SQR(parameters->light.dx)
-				    + SQR(parameters->light.dy) + 1.0);
+  double light_vector_length = sqrt (SQR (parameters->light.dx)
+				     + SQR (parameters->light.dy) + 1.0);
   double light_dx = parameters->light.dx / light_vector_length;
   double light_dy = parameters->light.dy / light_vector_length;
   double light_dz = 1.0 / light_vector_length;
@@ -124,19 +124,20 @@ render_go_stones(int cell_size, const GoStonesParameters *parameters,
 	  double dx = (((x - center_x)
 			+ x_subpixel / (double) (2 * SUPERSAMPLING_FACTOR))
 		       / stone_radius);
-	  double squared_r = SQR(dx) + SQR(dy);
+	  double squared_r = SQR (dx) + SQR (dy);
 
 	  if (squared_r >= 1.0) {
-	    if (SQR(dx + shadow_center_dx) + SQR(dy + shadow_center_dy) <= 1.0)
+	    if (SQR (dx + shadow_center_dx) + SQR (dy + shadow_center_dy)
+		<= 1.0)
 	      opacity += parameters->light.shadow_level;
 
 	    continue;
 	  }
 	  else {
-	    double A = sqrt(squared_lense_radius - squared_r);
-	    double B = parameters->ellipsoid_radius * sqrt(1.0 - squared_r);
+	    double A = sqrt (squared_lense_radius - squared_r);
+	    double B = parameters->ellipsoid_radius * sqrt (1.0 - squared_r);
 	    double dz = (A * B) / (A + B);
-	    double normal_length = sqrt(squared_r + SQR(dz));
+	    double normal_length = sqrt (squared_r + SQR (dz));
 	    double cos_alpha = ((dx * light_dx + dy * light_dy + dz * light_dz)
 				/ normal_length);
 
@@ -147,14 +148,14 @@ render_go_stones(int cell_size, const GoStonesParameters *parameters,
 	      if (cos_beta > 0.0) {
 		black_intensity
 		  += (black_highlight_level
-		      * pow(cos_beta,
-			    (parameters
-			     ->stones[BLACK_INDEX].highlight_sharpness)));
+		      * pow (cos_beta,
+			     (parameters
+			      ->stones[BLACK_INDEX].highlight_sharpness)));
 		white_intensity
 		  += (white_highlight_level
-		      * pow(cos_beta,
-			    (parameters
-			     ->stones[WHITE_INDEX].highlight_sharpness)));
+		      * pow (cos_beta,
+			     (parameters
+			      ->stones[WHITE_INDEX].highlight_sharpness)));
 	      }
 
 	      black_intensity += (black_ambiance_level
@@ -171,28 +172,28 @@ render_go_stones(int cell_size, const GoStonesParameters *parameters,
       if (opacity) {
 	black_intensity /= opacity;
 	white_intensity /= opacity;
-	opacity /= SQR(SUPERSAMPLING_FACTOR);
+	opacity /= SQR (SUPERSAMPLING_FACTOR);
 
-	*black_pixel_data++ = MIN((parameters->stones[BLACK_INDEX].color.red
-				   * black_intensity),
-				  255);
-	*black_pixel_data++ = MIN((parameters->stones[BLACK_INDEX].color.green
-				   * black_intensity),
-				  255);
-	*black_pixel_data++ = MIN((parameters->stones[BLACK_INDEX].color.blue
-				   * black_intensity),
-				  255);
+	*black_pixel_data++ = MIN ((parameters->stones[BLACK_INDEX].color.red
+				    * black_intensity),
+				   255);
+	*black_pixel_data++ = MIN ((parameters->stones[BLACK_INDEX].color.green
+				    * black_intensity),
+				   255);
+	*black_pixel_data++ = MIN ((parameters->stones[BLACK_INDEX].color.blue
+				    * black_intensity),
+				   255);
 	*black_pixel_data++ = opacity;
 
-	*white_pixel_data++ = MIN((parameters->stones[WHITE_INDEX].color.red
-				   * white_intensity),
-				  255);
-	*white_pixel_data++ = MIN((parameters->stones[WHITE_INDEX].color.green
-				   * white_intensity),
-				  255);
-	*white_pixel_data++ = MIN((parameters->stones[WHITE_INDEX].color.blue
-				   * white_intensity),
-				  255);
+	*white_pixel_data++ = MIN ((parameters->stones[WHITE_INDEX].color.red
+				    * white_intensity),
+				   255);
+	*white_pixel_data++ = MIN ((parameters->stones[WHITE_INDEX].color.green
+				    * white_intensity),
+				   255);
+	*white_pixel_data++ = MIN ((parameters->stones[WHITE_INDEX].color.blue
+				    * white_intensity),
+				   255);
 	*white_pixel_data++ = opacity;
       }
       else {
@@ -218,23 +219,23 @@ render_go_stones(int cell_size, const GoStonesParameters *parameters,
 
 
 void
-render_othello_disks(int cell_size, const OthelloDisksParameters *parameters,
-		     unsigned char *black_pixel_data, int black_row_stride,
-		     unsigned char *white_pixel_data, int white_row_stride,
-		     int *disks_x_offset, int *disks_y_offset)
+render_othello_disks (int cell_size, const OthelloDisksParameters *parameters,
+		      unsigned char *black_pixel_data, int black_row_stride,
+		      unsigned char *white_pixel_data, int white_row_stride,
+		      int *disks_x_offset, int *disks_y_offset)
 {
   double disk_radius = 0.5 * parameters->relative_disk_size * cell_size;
   double disk_radius_in_pixels = (cell_size % 2 == 1
-				  ? ceil(disk_radius - 0.5) + 0.5
-				  : ceil(disk_radius));
+				  ? ceil (disk_radius - 0.5) + 0.5
+				  : ceil (disk_radius));
   double disk_flat_part_radius = 1.0 - parameters->border_curve_size;
   double center_x = (parameters->light.dx < 0.0 ? disk_radius_in_pixels
 		     : cell_size - disk_radius_in_pixels);
   double center_y = (parameters->light.dy < 0.0 ? disk_radius_in_pixels
 		     : cell_size - disk_radius_in_pixels);
 
-  double light_vector_length = sqrt(SQR(parameters->light.dx)
-				    + SQR(parameters->light.dy) + 1.0);
+  double light_vector_length = sqrt (SQR (parameters->light.dx)
+				     + SQR (parameters->light.dy) + 1.0);
   double light_dx = parameters->light.dx / light_vector_length;
   double light_dy = parameters->light.dy / light_vector_length;
   double light_dz = 1.0 / light_vector_length;
@@ -253,8 +254,8 @@ render_othello_disks(int cell_size, const OthelloDisksParameters *parameters,
   double black_flat_part_intensity
     = (black_ambiance_level + (black_diffusion_level * light_dz)
        + (black_highlight_level
-	  * pow(light_dz,
-		parameters->disks[BLACK_INDEX].highlight_sharpness)));
+	  * pow (light_dz,
+		 parameters->disks[BLACK_INDEX].highlight_sharpness)));
 
   double white_ambiance_level
     = 255 * parameters->disks[WHITE_INDEX].ambiance_level;
@@ -265,8 +266,8 @@ render_othello_disks(int cell_size, const OthelloDisksParameters *parameters,
   double white_flat_part_intensity
     = (white_ambiance_level + (white_diffusion_level * light_dz)
        + (white_highlight_level
-	  * pow(light_dz,
-		parameters->disks[WHITE_INDEX].highlight_sharpness)));
+	  * pow (light_dz,
+		 parameters->disks[WHITE_INDEX].highlight_sharpness)));
 
   int x;
   int y;
@@ -290,16 +291,17 @@ render_othello_disks(int cell_size, const OthelloDisksParameters *parameters,
 	  double dx = (((x - center_x)
 			+ x_subpixel / (double) (2 * SUPERSAMPLING_FACTOR))
 		       / disk_radius);
-	  double squared_r = SQR(dx) + SQR(dy);
+	  double squared_r = SQR (dx) + SQR (dy);
 
 	  if (squared_r >= 1.0) {
-	    if (SQR(dx + shadow_center_dx) + SQR(dy + shadow_center_dy) <= 1.0)
+	    if (SQR (dx + shadow_center_dx) + SQR (dy + shadow_center_dy)
+		<= 1.0)
 	      opacity += parameters->light.shadow_level;
 
 	    continue;
 	  }
 	  else {
-	    double r = sqrt(squared_r);
+	    double r = sqrt (squared_r);
 
 	    if (r <= disk_flat_part_radius) {
 	      black_intensity += black_flat_part_intensity;
@@ -309,10 +311,10 @@ render_othello_disks(int cell_size, const OthelloDisksParameters *parameters,
 	      double dr = r - disk_flat_part_radius;
 	      double dx_scaled = dx * dr / r;
 	      double dy_scaled = dy * dr / r;
-	      double dz = (parameters->height_to_diameter_ratio
-			   * sqrt(1.0
-				  - SQR(dr / parameters->border_curve_size)));
-	      double normal_length = sqrt(SQR(dr) + SQR(dz));
+	      double dz
+		= (parameters->height_to_diameter_ratio
+		   * sqrt (1.0 - SQR (dr / parameters->border_curve_size)));
+	      double normal_length = sqrt (SQR (dr) + SQR (dz));
 	      double cos_alpha = ((dx_scaled * light_dx + dy_scaled * light_dy
 				   + dz * light_dz)
 				  / normal_length);
@@ -324,14 +326,14 @@ render_othello_disks(int cell_size, const OthelloDisksParameters *parameters,
 		if (cos_beta > 0.0) {
 		  black_intensity
 		    += (black_highlight_level
-			* pow(cos_beta,
-			      (parameters
-			       ->disks[BLACK_INDEX].highlight_sharpness)));
+			* pow (cos_beta,
+			       (parameters
+				->disks[BLACK_INDEX].highlight_sharpness)));
 		  white_intensity
 		    += (white_highlight_level
-			* pow(cos_beta,
-			      (parameters
-			       ->disks[WHITE_INDEX].highlight_sharpness)));
+			* pow (cos_beta,
+			       (parameters
+				->disks[WHITE_INDEX].highlight_sharpness)));
 		}
 
 		black_intensity += (black_ambiance_level
@@ -349,28 +351,28 @@ render_othello_disks(int cell_size, const OthelloDisksParameters *parameters,
       if (opacity) {
 	black_intensity /= opacity;
 	white_intensity /= opacity;
-	opacity /= SQR(SUPERSAMPLING_FACTOR);
+	opacity /= SQR (SUPERSAMPLING_FACTOR);
 
-	*black_pixel_data++ = MIN((parameters->disks[BLACK_INDEX].color.red
-				   * black_intensity),
-				  255);
-	*black_pixel_data++ = MIN((parameters->disks[BLACK_INDEX].color.green
-				   * black_intensity),
-				  255);
-	*black_pixel_data++ = MIN((parameters->disks[BLACK_INDEX].color.blue
-				   * black_intensity),
-				  255);
+	*black_pixel_data++ = MIN ((parameters->disks[BLACK_INDEX].color.red
+				    * black_intensity),
+				   255);
+	*black_pixel_data++ = MIN ((parameters->disks[BLACK_INDEX].color.green
+				    * black_intensity),
+				   255);
+	*black_pixel_data++ = MIN ((parameters->disks[BLACK_INDEX].color.blue
+				    * black_intensity),
+				   255);
 	*black_pixel_data++ = opacity;
 
-	*white_pixel_data++ = MIN((parameters->disks[WHITE_INDEX].color.red
-				   * white_intensity),
-				  255);
-	*white_pixel_data++ = MIN((parameters->disks[WHITE_INDEX].color.green
-				   * white_intensity),
-				  255);
-	*white_pixel_data++ = MIN((parameters->disks[WHITE_INDEX].color.blue
-				   * white_intensity),
-				  255);
+	*white_pixel_data++ = MIN ((parameters->disks[WHITE_INDEX].color.red
+				    * white_intensity),
+				   255);
+	*white_pixel_data++ = MIN ((parameters->disks[WHITE_INDEX].color.green
+				    * white_intensity),
+				   255);
+	*white_pixel_data++ = MIN ((parameters->disks[WHITE_INDEX].color.blue
+				    * white_intensity),
+				   255);
 	*white_pixel_data++ = opacity;
       }
       else {
@@ -401,18 +403,18 @@ render_othello_disks(int cell_size, const OthelloDisksParameters *parameters,
  * can only be used to make a more transparent copy of the pixels.
  */
 unsigned char *
-duplicate_and_adjust_alpha(int alpha_up, int alpha_down, int image_size,
-				  unsigned char *pixel_data, int row_stride)
+duplicate_and_adjust_alpha (int alpha_up, int alpha_down, int image_size,
+			    unsigned char *pixel_data, int row_stride)
 {
-  char *new_pixel_data = utils_malloc(image_size * row_stride);
+  char *new_pixel_data = utils_malloc (image_size * row_stride);
   char *scan;
   int x;
   int y;
 
-  assert(0 < alpha_up && alpha_up < alpha_down);
-  assert(image_size > 0);
-  assert(pixel_data);
-  assert(row_stride >= 4 * image_size);
+  assert (0 < alpha_up && alpha_up < alpha_down);
+  assert (image_size > 0);
+  assert (pixel_data);
+  assert (row_stride >= 4 * image_size);
 
   for (scan = new_pixel_data, y = 0; y < image_size; y++) {
     for (x = 0; x < image_size; x++) {
@@ -437,27 +439,27 @@ duplicate_and_adjust_alpha(int alpha_up, int alpha_down, int image_size,
  * lower-right corner, the second---in the upper-left.
  */
 unsigned char *
-combine_pixels_diagonally(int image_size,
-			  unsigned char *first_pixel_data,
-			  unsigned char *second_pixel_data,
-			  int row_stride)
+combine_pixels_diagonally (int image_size,
+			   unsigned char *first_pixel_data,
+			   unsigned char *second_pixel_data,
+			   int row_stride)
 {
-  char *new_pixel_data = utils_malloc(image_size * row_stride);
+  char *new_pixel_data = utils_malloc (image_size * row_stride);
   char *scan;
   int y;
 
-  assert(image_size > 0);
-  assert(first_pixel_data);
-  assert(second_pixel_data);
-  assert(row_stride >= 4 * image_size);
+  assert (image_size > 0);
+  assert (first_pixel_data);
+  assert (second_pixel_data);
+  assert (row_stride >= 4 * image_size);
 
   for (scan = new_pixel_data, y = 0; y < image_size; y++) {
     int left_sub_line_size = 4 * (image_size - y - 1);
 
     /* FIXME: blend at the diagonal. */
-    memcpy(scan, second_pixel_data, 4 * left_sub_line_size);
-    memcpy(scan + left_sub_line_size, first_pixel_data + left_sub_line_size,
-	   4 * (y + 1));
+    memcpy (scan, second_pixel_data, 4 * left_sub_line_size);
+    memcpy (scan + left_sub_line_size, first_pixel_data + left_sub_line_size,
+	    4 * (y + 1));
 
     first_pixel_data += row_stride;
     second_pixel_data += row_stride;

@@ -15,8 +15,8 @@
  *                                                                 *
  * You should have received a copy of the GNU General Public       *
  * License along with this program; if not, write to the Free      *
- * Software Foundation, Inc., 59 Temple Place - Suite 330,         *
- * Boston, MA 02111-1307, USA.                                     *
+ * Software Foundation, Inc., 51 Franklin Street, Fifth Floor,     *
+ * Boston, MA 02110-1301, USA.                                     *
 \* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 
@@ -29,7 +29,7 @@
 #include <gtk/gtk.h>
 
 
-void		gtk_new_game_dialog_present(void);
+void		gtk_new_game_dialog_present (void);
 
 
 #endif /* QUARRY_GTK_NEW_GAME_DIALOG_H */

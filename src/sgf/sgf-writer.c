@@ -15,8 +15,8 @@
  *                                                                 *
  * You should have received a copy of the GNU General Public       *
  * License along with this program; if not, write to the Free      *
- * Software Foundation, Inc., 59 Temple Place - Suite 330,         *
- * Boston, MA 02111-1307, USA.                                     *
+ * Software Foundation, Inc., 51 Franklin Street, Fifth Floor,     *
+ * Boston, MA 02110-1301, USA.                                     *
 \* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 
@@ -691,7 +691,7 @@ sgf_write_unknown (SgfWritingData *data, SgfValue value)
   const StringListItem *list_item = value.unknown_value_list->first;
   int need_newline;
 
-  buffered_writer_cat_string(&data->writer, list_item->text);
+  buffered_writer_cat_string (&data->writer, list_item->text);
 
   list_item = list_item->next;
 
@@ -713,13 +713,13 @@ sgf_write_unknown (SgfWritingData *data, SgfValue value)
     need_newline = 1;
 
   do {
-    buffered_writer_add_character(&data->writer, '[');
+    buffered_writer_add_character (&data->writer, '[');
 
-    buffered_writer_set_iconv_handle(&data->writer,
-				     data->utf8_to_tree_encoding);
-    buffered_writer_cat_string(&data->writer, list_item->text);
-    buffered_writer_add_character(&data->writer, ']');
-    buffered_writer_set_iconv_handle(&data->writer, NULL);
+    buffered_writer_set_iconv_handle (&data->writer,
+				      data->utf8_to_tree_encoding);
+    buffered_writer_cat_string (&data->writer, list_item->text);
+    buffered_writer_add_character (&data->writer, ']');
+    buffered_writer_set_iconv_handle (&data->writer, NULL);
 
     list_item = list_item->next;
     if (list_item) {
@@ -728,14 +728,14 @@ sgf_write_unknown (SgfWritingData *data, SgfValue value)
 
       for (lookahead = list_item->text; *lookahead && *lookahead != '\n';
 	   lookahead++) {
-	if (IS_UTF8_STARTER(*lookahead)) {
+	if (IS_UTF8_STARTER (*lookahead)) {
 	  if (*lookahead == '\\') {
 	    if (--columns_left >= 0 && *++lookahead == '\n')
 	      break;
 	  }
 
 	  if (--columns_left < 0) {
-	    buffered_writer_add_newline(&data->writer);
+	    buffered_writer_add_newline (&data->writer);
 	    break;
 	  }
 	}
@@ -744,7 +744,7 @@ sgf_write_unknown (SgfWritingData *data, SgfValue value)
   } while (list_item);
 
   if (need_newline && data->writer.column > 0)
-    buffered_writer_add_newline(&data->writer);
+    buffered_writer_add_newline (&data->writer);
 }
 
 

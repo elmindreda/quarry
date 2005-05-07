@@ -15,8 +15,8 @@
  *                                                                 *
  * You should have received a copy of the GNU General Public       *
  * License along with this program; if not, write to the Free      *
- * Software Foundation, Inc., 59 Temple Place - Suite 330,         *
- * Boston, MA 02111-1307, USA.                                     *
+ * Software Foundation, Inc., 51 Franklin Street, Fifth Floor,     *
+ * Boston, MA 02110-1301, USA.                                     *
 \* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 
@@ -31,13 +31,13 @@
 #endif
 
 
-static inline int  is_legal_move(const char grid[BOARD_FULL_GRID_SIZE],
-				 BoardRuleSet rule_set, int color, int pos);
+static inline int  is_legal_move (const char grid[BOARD_FULL_GRID_SIZE],
+				  BoardRuleSet rule_set, int color, int pos);
 
 
 int
-othello_adjust_color_to_play(const Board *board, BoardRuleSet rule_set,
-			     int color)
+othello_adjust_color_to_play (const Board *board, BoardRuleSet rule_set,
+			      int color)
 {
   int pos;
   int check_color = color;
@@ -45,19 +45,19 @@ othello_adjust_color_to_play(const Board *board, BoardRuleSet rule_set,
   if (rule_set == OTHELLO_RULE_SET_SGF)
     return color;
 
-  assert(rule_set < NUM_OTHELLO_RULE_SETS);
+  assert (rule_set < NUM_OTHELLO_RULE_SETS);
 
   do {
-    for (pos = POSITION(0, 0); ON_GRID(board->grid, pos);
+    for (pos = POSITION (0, 0); ON_GRID (board->grid, pos);
 	 pos += (BOARD_MAX_WIDTH + 1) - board->width) {
-      for (; ON_GRID(board->grid, pos); pos++) {
+      for (; ON_GRID (board->grid, pos); pos++) {
 	if (board->grid[pos] == EMPTY
-	    && is_legal_move(board->grid, rule_set, check_color, pos))
+	    && is_legal_move (board->grid, rule_set, check_color, pos))
 	  return check_color;
       }
     }
 
-    check_color = OTHER_COLOR(check_color);
+    check_color = OTHER_COLOR (check_color);
   } while (check_color != color);
 
   return EMPTY;
@@ -73,20 +73,20 @@ othello_adjust_color_to_play(const Board *board, BoardRuleSet rule_set,
  *	....
  */
 int
-othello_get_default_setup(int width, int height,
-			  BoardPositionList **black_stones,
-			  BoardPositionList **white_stones)
+othello_get_default_setup (int width, int height,
+			   BoardPositionList **black_stones,
+			   BoardPositionList **white_stones)
 {
   if (width % 2 != 0 || height % 2 != 0)
     return 0;
 
-  *black_stones = board_position_list_new_empty(2);
-  (*black_stones)->positions[0] = POSITION(width / 2, height / 2 - 1);
-  (*black_stones)->positions[1] = POSITION(width / 2 - 1, height / 2);
+  *black_stones = board_position_list_new_empty (2);
+  (*black_stones)->positions[0] = POSITION (width / 2, height / 2 - 1);
+  (*black_stones)->positions[1] = POSITION (width / 2 - 1, height / 2);
 
-  *white_stones = board_position_list_new_empty(2);
-  (*white_stones)->positions[0] = POSITION(width / 2 - 1, height / 2 - 1);
-  (*white_stones)->positions[1] = POSITION(width / 2, height / 2);
+  *white_stones = board_position_list_new_empty (2);
+  (*white_stones)->positions[0] = POSITION (width / 2 - 1, height / 2 - 1);
+  (*white_stones)->positions[1] = POSITION (width / 2, height / 2);
 
   return 1;
 }
@@ -94,19 +94,19 @@ othello_get_default_setup(int width, int height,
 
 /* Determine if a move is legal according to specified rule set. */
 int
-othello_is_legal_move(const Board *board, BoardRuleSet rule_set,
-		      int color, va_list move)
+othello_is_legal_move (const Board *board, BoardRuleSet rule_set,
+		       int color, va_list move)
 {
-  int x = va_arg(move, int);
-  int y = va_arg(move, int);
-  int pos = POSITION(x, y);
+  int x = va_arg (move, int);
+  int y = va_arg (move, int);
+  int pos = POSITION (x, y);
 
-  assert(rule_set < NUM_OTHELLO_RULE_SETS);
-  assert(ON_BOARD(board, x, y));
+  assert (rule_set < NUM_OTHELLO_RULE_SETS);
+  assert (ON_BOARD (board, x, y));
 
   if (rule_set != OTHELLO_RULE_SET_SGF) {
     if (board->grid[pos] == EMPTY)
-      return is_legal_move(board->grid, rule_set, color, pos);
+      return is_legal_move (board->grid, rule_set, color, pos);
 
     return 0;
   }
@@ -116,13 +116,13 @@ othello_is_legal_move(const Board *board, BoardRuleSet rule_set,
 
 
 static inline int
-is_legal_move(const char grid[BOARD_FULL_GRID_SIZE], BoardRuleSet rule_set,
-	      int color, int pos)
+is_legal_move (const char grid[BOARD_FULL_GRID_SIZE], BoardRuleSet rule_set,
+	       int color, int pos)
 {
   int k;
-  int other = OTHER_COLOR(color);
+  int other = OTHER_COLOR (color);
 
-  UNUSED(rule_set);
+  UNUSED (rule_set);
 
   for (k = 0; k < 8; k++) {
     int beam = pos + delta[k];
@@ -142,19 +142,20 @@ is_legal_move(const char grid[BOARD_FULL_GRID_SIZE], BoardRuleSet rule_set,
 
 
 void
-othello_play_move(Board *board, int color, va_list move)
+othello_play_move (Board *board, int color, va_list move)
 {
   char *grid = board->grid;
   int k;
-  int other = OTHER_COLOR(color);
-  int x = va_arg(move, int);
-  int y = va_arg(move, int);
-  int pos = POSITION(x, y);
-  OthelloMoveStackEntry *stack_entry = ALLOCATE_OTHELLO_MOVE_STACK_ENTRY(board);
+  int other = OTHER_COLOR (color);
+  int x = va_arg (move, int);
+  int y = va_arg (move, int);
+  int pos = POSITION (x, y);
+  OthelloMoveStackEntry *stack_entry
+    = ALLOCATE_OTHELLO_MOVE_STACK_ENTRY (board);
 
-  assert(ON_BOARD(board, x, y));
+  assert (ON_BOARD (board, x, y));
 
-  memset(stack_entry->num.flips, 0, sizeof(stack_entry->num.flips));
+  memset (stack_entry->num.flips, 0, sizeof stack_entry->num.flips);
 
   for (k = 0; k < 8; k++) {
     int beam = pos + delta[k];
@@ -185,14 +186,14 @@ othello_play_move(Board *board, int color, va_list move)
 
 
 void
-othello_undo(Board *board)
+othello_undo (Board *board)
 {
-  OthelloMoveStackEntry *stack_entry = POP_OTHELLO_MOVE_STACK_ENTRY(board);
+  OthelloMoveStackEntry *stack_entry = POP_OTHELLO_MOVE_STACK_ENTRY (board);
 
   if (stack_entry->position != NULL_POSITION) {
     int k;
     int pos = stack_entry->position;
-    int other = OTHER_COLOR(board->grid[pos]);
+    int other = OTHER_COLOR (board->grid[pos]);
 
     for (k = 0; k < 8; k++) {
       if (stack_entry->num.flips[k]) {
@@ -209,17 +210,17 @@ othello_undo(Board *board)
     board->grid[pos] = stack_entry->contents;
   }
   else if (stack_entry->num.changes > 0)
-    board_undo_changes(board, stack_entry->num.changes);
+    board_undo_changes (board, stack_entry->num.changes);
 
   board->move_number = stack_entry->move_number;
 }
 
 
 void
-othello_apply_changes(Board *board, int num_changes)
+othello_apply_changes (Board *board, int num_changes)
 {
   OthelloMoveStackEntry *stack_entry
-    = ALLOCATE_OTHELLO_MOVE_STACK_ENTRY(board);
+    = ALLOCATE_OTHELLO_MOVE_STACK_ENTRY (board);
 
   stack_entry->position	   = NULL_POSITION;
   stack_entry->num.changes = num_changes;
@@ -228,44 +229,44 @@ othello_apply_changes(Board *board, int num_changes)
 
 
 void
-othello_add_dummy_move_entry(Board *board)
+othello_add_dummy_move_entry (Board *board)
 {
-  othello_apply_changes(board, 0);
+  othello_apply_changes (board, 0);
 }
 
 
 int
-othello_format_move(int board_width, int board_height,
-		    char *buffer, va_list move)
+othello_format_move (int board_width, int board_height,
+		     char *buffer, va_list move)
 {
-  int x = va_arg(move, int);
-  int y = va_arg(move, int);
+  int x = va_arg (move, int);
+  int y = va_arg (move, int);
 
-  return game_format_point(GAME_OTHELLO, board_width, board_height,
-			   buffer, x, y);
+  return game_format_point (GAME_OTHELLO, board_width, board_height,
+			    buffer, x, y);
 }
 
 
 int
-othello_parse_move(int board_width, int board_height, const char *move_string,
-		   int *x, int *y, BoardAbstractMoveData *move_data)
+othello_parse_move (int board_width, int board_height, const char *move_string,
+		    int *x, int *y, BoardAbstractMoveData *move_data)
 {
-  UNUSED(move_data);
+  UNUSED (move_data);
 
-  return game_parse_point(GAME_OTHELLO, board_width, board_height,
-			  move_string, x, y);
+  return game_parse_point (GAME_OTHELLO, board_width, board_height,
+			   move_string, x, y);
 }
 
 
 void
-othello_validate_board(const Board *board)
+othello_validate_board (const Board *board)
 {
-  UNUSED(board);
+  UNUSED (board);
 }
 
 
 void
-othello_dump_board(const Board *board)
+othello_dump_board (const Board *board)
 {
   static const char contents[] = {'.', '@', 'O', '?'};
   static const char coordinates[] =
@@ -274,18 +275,18 @@ othello_dump_board(const Board *board)
   int x;
   int y;
 
-  fprintf(stderr, "   %.*s\n", board->width * 2, coordinates);
+  fprintf (stderr, "   %.*s\n", board->width * 2, coordinates);
 
   for (y = 0; y < board->height; y++) {
-    fprintf(stderr, "%3d", board->height - y);
+    fprintf (stderr, "%3d", board->height - y);
 
     for (x = 0; x < board->width; x++)
-      fprintf(stderr, " %c", contents[(int) board->grid[POSITION(x, y)]]);
+      fprintf (stderr, " %c", contents[(int) board->grid[POSITION (x, y)]]);
 
-    fprintf(stderr, "%3d\n", board->height - y);
+    fprintf (stderr, "%3d\n", board->height - y);
   }
 
-  fprintf(stderr, "   %.*s\n", board->width * 2, coordinates);
+  fprintf (stderr, "   %.*s\n", board->width * 2, coordinates);
 }
 
 
@@ -293,21 +294,21 @@ othello_dump_board(const Board *board)
 /* Othello-specific function. */
 
 void
-othello_count_disks(const Board *board,
-		    int *num_black_disks, int *num_white_disks)
+othello_count_disks (const Board *board,
+		     int *num_black_disks, int *num_white_disks)
 {
   int pos;
 
-  assert(board);
-  assert(board->game == GAME_OTHELLO);
-  assert(num_black_disks && num_white_disks);
+  assert (board);
+  assert (board->game == GAME_OTHELLO);
+  assert (num_black_disks && num_white_disks);
 
   *num_black_disks = 0;
   *num_white_disks = 0;
 
-  for (pos = POSITION(0, 0); ON_GRID(board->grid, pos);
+  for (pos = POSITION (0, 0); ON_GRID (board->grid, pos);
        pos += (BOARD_MAX_WIDTH + 1) - board->width) {
-    for (; ON_GRID(board->grid, pos); pos++) {
+    for (; ON_GRID (board->grid, pos); pos++) {
       if (board->grid[pos] == BLACK)
 	(*num_black_disks)++;
       else if (board->grid[pos] == WHITE)

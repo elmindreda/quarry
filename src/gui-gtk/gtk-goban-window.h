@@ -17,8 +17,8 @@
  *                                                                 *
  * You should have received a copy of the GNU General Public       *
  * License along with this program; if not, write to the Free      *
- * Software Foundation, Inc., 59 Temple Place - Suite 330,         *
- * Boston, MA 02111-1307, USA.                                     *
+ * Software Foundation, Inc., 51 Franklin Street, Fifth Floor,     *
+ * Boston, MA 02110-1301, USA.                                     *
 \* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 
@@ -40,21 +40,21 @@
 #include <gtk/gtk.h>
 
 
-#define GTK_TYPE_GOBAN_WINDOW	(gtk_goban_window_get_type())
+#define GTK_TYPE_GOBAN_WINDOW	(gtk_goban_window_get_type ())
 #define GTK_GOBAN_WINDOW(obj)						\
-  (GTK_CHECK_CAST((obj),  GTK_TYPE_GOBAN_WINDOW, GtkGobanWindow))
+  GTK_CHECK_CAST ((obj),  GTK_TYPE_GOBAN_WINDOW, GtkGobanWindow)
 #define GTK_GOBAN_WINDOW_CLASS(klass)					\
-  (GTK_CHECK_CLASS_CAST((klass), GTK_TYPE_GOBAN_WINDOW,			\
-			GtkGobanWindowClass))
+  GTK_CHECK_CLASS_CAST ((klass), GTK_TYPE_GOBAN_WINDOW,			\
+			GtkGobanWindowClass)
 
 #define GTK_IS_GOBAN_WINDOW(obj)					\
-  (GTK_CHECK_TYPE((obj), GTK_TYPE_GOBAN_WINDOW))
+  GTK_CHECK_TYPE ((obj), GTK_TYPE_GOBAN_WINDOW)
 #define GTK_IS_GOBAN_WINDOW_CLASS(klass)				\
-  (GTK_CHECK_CLASS_TYPE((klass), GTK_TYPE_GOBAN_WINDOW))
+  GTK_CHECK_CLASS_TYPE ((klass), GTK_TYPE_GOBAN_WINDOW)
 
 #define GTK_GOBAN_WINDOW_GET_CLASS(obj)					\
-  (GTK_CHECK_GET_CLASS((obj), GTK_TYPE_GOBAN_WINDOW,			\
-		       GtkGobanWindowClass))
+  GTK_CHECK_GET_CLASS ((obj), GTK_TYPE_GOBAN_WINDOW,			\
+		       GtkGobanWindowClass)
 
 
 enum {
@@ -166,10 +166,10 @@ struct _GtkGobanWindowClass {
 };
 
 
-GtkType		gtk_goban_window_get_type(void);
+GtkType		gtk_goban_window_get_type (void);
 
-GtkWidget *	gtk_goban_window_new(SgfCollection *sgf_collection,
-				     const char *filename);
+GtkWidget *	gtk_goban_window_new (SgfCollection *sgf_collection,
+				      const char *filename);
 
 void		gtk_goban_window_enter_game_record_mode
 		  (GtkGobanWindow *goban_window);
