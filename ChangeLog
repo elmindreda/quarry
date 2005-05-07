@@ -1,3 +1,9 @@
+2005-05-07  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* COPYING: Update to the latest version from www.gnu.org to
+	reflect the change of FSF address.
+	* COPYING-DOC: Likewise.
+
 2005-04-12  Paul Pogonyshev  <pogonyshev@gmx.net>
 
 	* THANKS: Thank Jérémie Knuesel for the French translation.
