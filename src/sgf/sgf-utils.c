@@ -63,6 +63,9 @@ static void	    find_time_control_data (SgfGameTree *tree,
 static void	    determine_final_color_to_play (SgfGameTree *tree);
 
 
+static SgfUndoHistoryEntry *
+		    create_new_node_undo_history_entry (SgfNode *new_node,
+							SgfGameTree *tree);
 static void	    apply_undo_history_entry (SgfGameTree *tree,
 					      SgfUndoHistoryEntry *entry);
 
@@ -395,8 +398,6 @@ void
 sgf_utils_append_variation (SgfGameTree *tree, int color, ...)
 {
   SgfNode *new_node;
-  SgfNodeOperationEntry *operation_data
-    = utils_malloc (sizeof (SgfNodeOperationEntry));
 
   assert (tree);
   assert (tree->current_node);
@@ -421,12 +422,112 @@ sgf_utils_append_variation (SgfGameTree *tree, int color, ...)
     va_end (arguments);
   }
 
-  operation_data->entry.operation_index = SGF_OPERATION_NEW_NODE;
-  operation_data->node			= new_node;
-  operation_data->parent_current_variation
-    = tree->current_node->current_variation;
+  apply_undo_history_entry (tree,
+			    create_new_node_undo_history_entry (new_node,
+								tree));
+}
 
-  apply_undo_history_entry (tree, (SgfUndoHistoryEntry *) operation_data);
+
+/* FIXME: Add complete undo information. */
+int
+sgf_utils_apply_setup_changes (SgfGameTree *tree,
+			       const char grid[BOARD_GRID_SIZE])
+{
+  BoardPositionList *difference_lists[NUM_ON_GRID_VALUES];
+  SgfNode *node;
+  int have_any_difference;
+  int created_new_node = 0;
+  int anything_changed = 0;
+
+  assert (tree);
+  assert (tree->current_node);
+  assert (tree->board);
+  assert (grid);
+
+  node = tree->current_node;
+  if (node->move_color == SETUP_NODE) {
+    if (node->parent)
+      ascend_nodes (tree, 1);
+    else
+      board_undo (tree->board, 1);
+  }
+
+  grid_diff (tree->board->grid, grid, tree->board_width, tree->board_height,
+	     difference_lists);
+  assert (!difference_lists[ARROW] || tree->game == GAME_AMAZONS);
+
+  have_any_difference = (difference_lists[EMPTY]
+			 || difference_lists[BLACK]
+			 || difference_lists[WHITE]
+			 || difference_lists[ARROW]);
+
+  if (IS_STONE (node->move_color)) {
+    if (!have_any_difference)
+      return 0;
+
+    node	     = sgf_node_new (tree, node);
+    created_new_node = 1;
+  }
+
+  node->move_color = (have_any_difference ? SETUP_NODE : EMPTY);
+
+  anything_changed |= (sgf_utils_set_list_of_point_property
+		       (node, tree, SGF_ADD_EMPTY, difference_lists[EMPTY]));
+  anything_changed |= (sgf_utils_set_list_of_point_property
+		       (node, tree, SGF_ADD_BLACK, difference_lists[BLACK]));
+  anything_changed |= (sgf_utils_set_list_of_point_property
+		       (node, tree, SGF_ADD_WHITE, difference_lists[WHITE]));
+  anything_changed |= (sgf_utils_set_list_of_point_property
+		       (node, tree, SGF_ADD_ARROWS, difference_lists[ARROW]));
+
+  if (created_new_node) {
+    apply_undo_history_entry (tree,
+			      create_new_node_undo_history_entry (node, tree));
+  }
+  else {
+    if (node->parent)
+      descend_nodes (tree, 1);
+    else
+      do_enter_tree (tree, node);
+  }
+
+  return anything_changed;
+}
+
+
+/* FIXME: Store undo information (that's the purpose of this
+ *	  function!)
+ */
+int
+sgf_utils_set_list_of_point_property (SgfNode *node, SgfGameTree *tree,
+				      SgfType type,
+				      BoardPositionList *position_list)
+{
+  SgfProperty **link;
+
+  if (sgf_node_find_property (node, type, &link)) {
+    if (position_list) {
+      if (board_position_lists_are_equal ((*link)->value.position_list,
+					  position_list)) {
+	board_position_list_delete (position_list);
+	return 0;
+      }
+
+      board_position_list_delete ((*link)->value.position_list);
+      (*link)->value.position_list = position_list;
+    }
+    else
+      sgf_property_delete_at_link (link, tree);    
+  }
+  else {
+    if (!position_list)
+      return 0;
+
+    *link = sgf_property_new (tree, type, *link);
+    (*link)->value.position_list = position_list;
+  }
+
+  return 1;
 }
 
 
@@ -1152,6 +1253,23 @@ determine_final_color_to_play (SgfGameTree *tree)
 
 
 
+/* Undo history functions. */
+
+
+static SgfUndoHistoryEntry *
+create_new_node_undo_history_entry (SgfNode *new_node, SgfGameTree *tree)
+{
+  SgfNodeOperationEntry *operation_data
+    = utils_malloc (sizeof (SgfNodeOperationEntry));
+
+  operation_data->entry.operation_index = SGF_OPERATION_NEW_NODE;
+  operation_data->node			= new_node;
+  operation_data->parent_current_variation
+    = tree->current_node->current_variation;
+
+  return (SgfUndoHistoryEntry *) operation_data;
+}
+
 
 static void
 apply_undo_history_entry (SgfGameTree *tree, SgfUndoHistoryEntry *entry)

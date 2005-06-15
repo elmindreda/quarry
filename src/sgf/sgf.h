@@ -759,6 +759,13 @@ void	      sgf_utils_switch_to_given_node (SgfGameTree *tree,
 void	      sgf_utils_append_variation (SgfGameTree *tree,
 					  int color, ...);
 
+int	      sgf_utils_apply_setup_changes (SgfGameTree *tree,
+					     const char grid[BOARD_GRID_SIZE]);
+
+int	      sgf_utils_set_list_of_point_property
+		(SgfNode *node, SgfGameTree *tree, SgfType type,
+		 BoardPositionList *position_list);
+
 void	      sgf_utils_delete_current_node (SgfGameTree *tree);
 void	      sgf_utils_delete_current_node_children (SgfGameTree *tree);
 
