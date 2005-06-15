@@ -596,7 +596,8 @@ board_position_list_sort (BoardPositionList *list)
  */
 
 BoardPositionList*
-board_position_list_union (BoardPositionList *list1, BoardPositionList *list2)
+board_position_list_union (const BoardPositionList *list1,
+			   const BoardPositionList *list2)
 {
   int i;
   int j;
@@ -642,6 +643,38 @@ board_position_list_union (BoardPositionList *list1, BoardPositionList *list2)
 			(sizeof (BoardPositionList)
 			 - (BOARD_MAX_POSITIONS - k) * sizeof (int)));
 
+}
+
+
+/* Add a single position to the `list', without creating a new
+ * position list.  It is OK if the position is already there.  Since
+ * this function may reallocate the list, you need to assign return
+ * value back to your pointer.
+ */
+BoardPositionList *
+board_position_list_add_position (BoardPositionList *list, int pos)
+{
+  assert (list);
+
+  if (board_position_list_find_position (list, pos) == -1) {
+    int k;
+
+    list->num_positions++;
+    list = utils_realloc (list,
+			  (sizeof (BoardPositionList)
+			   - ((BOARD_MAX_POSITIONS - list->num_positions)
+			      * sizeof (int))));
+
+    /* Unfortunately, bsearch() doesn't allow to find where to insert
+     * the element if it is missing.
+     */
+    for (k = list->num_positions; --k > 0 && list->positions[k - 1] > pos;)
+      list->positions[k] = list->positions[k - 1];
+
+    list->positions[k] = pos;
+  }
+
+  return list;
 }
 
 
@@ -1038,6 +1071,56 @@ pointer_grid_copy (void *destination[BOARD_GRID_SIZE],
 		   int width, int height)
 {
   DO_COPY_GRID ((destination), (source), const void *, (width), (height));
+}
+
+
+int
+grid_diff (const char grid1[BOARD_GRID_SIZE],
+	   const char grid2[BOARD_GRID_SIZE],
+	   int width, int height,
+	   BoardPositionList *difference_lists[NUM_ON_GRID_VALUES])
+{
+  int k;
+  int x;
+  int y;
+  int pos;
+  int num_positions[NUM_ON_GRID_VALUES];
+  int positions[NUM_ON_GRID_VALUES][BOARD_MAX_POSITIONS];
+  int have_difference = 0;
+
+  assert (grid1);
+  assert (grid2);
+  assert (BOARD_MIN_WIDTH <= (width) && (width) <= BOARD_MAX_WIDTH);
+  assert (BOARD_MIN_HEIGHT <= (height) && (height) <= BOARD_MAX_HEIGHT);
+
+  for (k = 0; k < NUM_ON_GRID_VALUES; k++)
+    num_positions[k] = 0;
+
+  for (y = 0, pos = POSITION (0, 0); y < height; y++) {
+    for (x = 0; x < width; x++, pos++) {
+      int new_contents = grid2[pos];
+
+      if (new_contents != grid1[pos]) {
+	assert (0 <= new_contents && new_contents < NUM_ON_GRID_VALUES);
+
+	positions[new_contents][num_positions[new_contents]++] = pos;
+      }
+    }
+
+    pos += BOARD_MAX_WIDTH + 1 - width;
+  }
+
+  for (k = 0; k < NUM_ON_GRID_VALUES; k++) {
+    if (num_positions[k] > 0) {
+      difference_lists[k] = board_position_list_new (positions[k],
+						     num_positions[k]);
+      have_difference = 1;
+    }
+    else
+      difference_lists[k] = NULL;
+  }
+
+  return have_difference;
 }
 
 

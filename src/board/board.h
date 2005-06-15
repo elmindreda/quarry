@@ -231,8 +231,11 @@ BoardPositionList *  board_position_list_new_empty (int num_positions);
 				(position_list)->num_positions)		\
 			       * sizeof (int)))))
 
-BoardPositionList *  board_position_list_union (BoardPositionList *list1,
-						BoardPositionList *list2);
+BoardPositionList *  board_position_list_union
+		       (const BoardPositionList *list1,
+			const BoardPositionList *list2);
+BoardPositionList *  board_position_list_add_position (BoardPositionList *list,
+						       int pos);
 
 void		     board_position_list_sort (BoardPositionList *list);
 
@@ -319,6 +322,13 @@ void		pointer_grid_copy (void *destination[BOARD_GRID_SIZE],
 #define uint_grid_copy(destination, source, width, height)		\
   int_grid_copy ((int *) (destination), (int *) source,			\
 		 (width), (height))
+
+
+int		grid_diff
+		  (const char grid1[BOARD_GRID_SIZE],
+		   const char grid2[BOARD_GRID_SIZE],
+		   int width, int height,
+		   BoardPositionList *difference_lists[NUM_ON_GRID_VALUES]);
 
 
 
