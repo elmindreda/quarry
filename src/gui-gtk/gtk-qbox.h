@@ -35,7 +35,7 @@
 #define GTK_QBOX_CLASS(klass)						\
   GTK_CHECK_CLASS_CAST ((klass), GTK_TYPE_QBOX, GtkQBoxClass)
 
-#define GTK_IS_QBOX(obj)	GTK_CHECK_TYPE ((obj), GTK_TYPE_QBOX))
+#define GTK_IS_QBOX(obj)	GTK_CHECK_TYPE ((obj), GTK_TYPE_QBOX)
 #define GTK_IS_QBOX_CLASS(klass)					\
   GTK_CHECK_CLASS_TYPE ((klass), GTK_TYPE_QBOX)
 
@@ -60,7 +60,7 @@ struct _GtkQBoxClass {
 };
 
 
-GtkType		 gtk_qbox_get_type (void);
+GType		 gtk_qbox_get_type (void);
 
 void		 gtk_qbox_set_ruling_widget (GtkQBox *qbox, GtkWidget *widget,
 					     GtkQBoxCallback widget_callback);
