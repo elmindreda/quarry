@@ -109,6 +109,9 @@ struct _GtkGobanWindow {
   int			   amazons_to_y;
   BoardAmazonsMoveData     amazons_move;
 
+  BoardPositionList	  *drawn_position_list;
+  int			   drawing_mode;
+
   int			   black_variations[BOARD_GRID_SIZE];
   int			   white_variations[BOARD_GRID_SIZE];
   char			   sgf_markup[BOARD_GRID_SIZE];
