@@ -1,3 +1,51 @@
+2005-06-15  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* gui-gtk/gtk-goban-window.c (gtk_goban_window_init): Add
+	"Edit/Tools" submenu.  Initialize new `drawn_position_list' field.
+	(free_handicap_mode_done): Use grid_diff() instead of
+	gtk_goban_diff_against_grid().
+	(go_scoring_mode_done): Modify to work when used as an editing
+	tool instead of in game mode.
+	(set_goban_signal_handlers): Emit `click-canceled' signal on the
+	goban.
+	(setup_mode_pointer_moved, setup_mode_goban_clicked)
+	(delete_drawn_position_list): New functions.
+	(activate_move_tool, activate_setup_tool, activate_scoring_tool):
+	New functions.
+
+	* sgf/sgf-utils.c (sgf_utils_apply_setup_changes)
+	(sgf_utils_set_list_of_point_property): New functions.
+	(create_new_node_undo_history_entry): New function, break out of
+	sgf_utils_append_variation().
+
+2005-05-09  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* gui-gtk/gtk-goban.c (gtk_goban_class_init): Create
+	`click-canceled' signal.  Fix copy'n'paste bug in `goban-clicked'
+	signal creation.
+	(gtk_goban_size_allocate): Emit `click-canceled'.
+	(gtk_goban_button_release_event): Emit `click-canceled' when
+	needed; handle cases when anti-slipping is disabled.
+	(gtk_goban_leave_notify_event): Emit `click-canceled'.
+	(gtk_goban_click_canceled): New function.
+	(gtk_goban_disable_anti_slip_mode): New function.
+	(gtk_goban_diff_against_grid): Remove function (essentially moved
+	to grid_diff() in `board/board.c'.)
+	(set_feedback_data): Handle two new feedbacks:
+	`GOBAN_FEEDBACK_GHOSTIFY' and `GOBAN_FEEDBACK_GHOSTIFY_SLIGHTLY'.
+	Process goban markup feedback before main feedback, because the
+	latter can now modify the former.
+
+	* board/board.c (board_position_list_union): Add `const' modifier
+	to both arguments.
+	(board_position_list_add_position): New function.
+	(grid_diff): New function, essentially inherit code of
+	gtk_goban_diff_against_grid() from `gui-gtk/gtk-goban.c'.
+
+2005-05-08  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* gui-gtk/gtk-qbox.h (GTK_IS_QBOX): Remove extra parenthesis.
+
 2005-05-07  Paul Pogonyshev  <pogonyshev@gmx.net>
 
 	* (Globally: update FSF address in the legal notices.)
@@ -9,7 +57,7 @@
 
 	* gui-gtk/gtk-goban.c (gtk_goban_init): Initalize `last_move_pos'
 	field that replaced `last_move_x' and `last_move_y'.
-	(gtk_goban_set_parameters): Fille `sgf_markup' grid with
+	(gtk_goban_set_parameters): Fill `sgf_markup' grid with
 	`SGF_MARKUP_NONE', not `TILE_NONE' value.
 	(gtk_goban_expose): Remove special code for marking last move
 	position.  Do that based on `last_move_pos' field with SGF markup
