@@ -1,7 +1,7 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *\
  * This file is part of Quarry.                                    *
  *                                                                 *
- * Copyright (C) 2003, 2004 Paul Pogonyshev.                       *
+ * Copyright (C) 2003, 2004, 2005 Paul Pogonyshev.                 *
  *                                                                 *
  * This program is free software; you can redistribute it and/or   *
  * modify it under the terms of the GNU General Public License as  *
@@ -85,12 +85,14 @@ typedef enum {
   GOBAN_FEEDBACK_GHOST,
   GOBAN_FEEDBACK_BLACK_GHOST	     = GOBAN_FEEDBACK_GHOST + BLACK_INDEX,
   GOBAN_FEEDBACK_WHITE_GHOST	     = GOBAN_FEEDBACK_GHOST + WHITE_INDEX,
+  GOBAN_FEEDBACK_GHOSTIFY,
 
   GOBAN_FEEDBACK_THICK_GHOST,
   GOBAN_FEEDBACK_THICK_BLACK_GHOST   = (GOBAN_FEEDBACK_THICK_GHOST
 					+ BLACK_INDEX),
   GOBAN_FEEDBACK_THICK_WHITE_GHOST   = (GOBAN_FEEDBACK_THICK_GHOST
 					+ WHITE_INDEX),
+  GOBAN_FEEDBACK_GHOSTIFY_SLIGHTLY,
 
   GOBAN_FEEDBACK_PRESS_DEFAULT,
 
@@ -106,8 +108,8 @@ typedef enum {
   GOBAN_FEEDBACK_SPECIAL,
 
   /* Must be more than enough. */
-  GOBAN_FEEDBACK_MARKUP_FACTOR = 1 << 8,
-  GOBAN_FEEDBACK_GRID_MASK = GOBAN_FEEDBACK_MARKUP_FACTOR - 1
+  GOBAN_FEEDBACK_MARKUP_FACTOR	     = 1 << 8,
+  GOBAN_FEEDBACK_GRID_MASK	     = GOBAN_FEEDBACK_MARKUP_FACTOR - 1
 } GtkGobanPointerFeedback;
 
 /* Note that there _must not_ be zero enumeration element.  These
@@ -208,7 +210,8 @@ struct _GtkGobanClass {
 
   GtkGobanPointerFeedback (* pointer_moved) (GtkGoban *goban,
 					     GtkGobanPointerData *data);
-  void (* goban_clicked) (GtkGoban *goban, GtkGobanClickData *data);
+  void (* click_canceled) (GtkGoban *goban);
+  void (* goban_clicked)  (GtkGoban *goban, GtkGobanClickData *data);
 
   void (* navigate) (GtkGoban *goban, GtkGobanNavigationCommand command);
 };
@@ -232,6 +235,8 @@ void		gtk_goban_update (GtkGoban *goban,
 				  int last_move_x, int last_move_y);
 void		gtk_goban_force_feedback_poll (GtkGoban *goban);
 
+void		gtk_goban_disable_anti_slip_mode (GtkGoban *goban);
+
 void		gtk_goban_set_overlay_data (GtkGoban *goban, int overlay_index,
 					    BoardPositionList *position_list,
 					    int tile, int goban_markup_tile);
@@ -241,9 +246,6 @@ void		gtk_goban_set_contents (GtkGoban *goban,
 					int grid_contents,
 					int goban_markup_contents);
 int		gtk_goban_get_grid_contents (GtkGoban *goban, int x, int y);
-void		gtk_goban_diff_against_grid
-		  (GtkGoban *goban, const char *grid,
-		   BoardPositionList *position_lists[NUM_ON_GRID_VALUES]);
 
 gint		gtk_goban_negotiate_width (GtkWidget *widget, gint height);
 gint		gtk_goban_negotiate_height (GtkWidget *widget, gint width);

@@ -1,7 +1,7 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *\
  * This file is part of Quarry.                                    *
  *                                                                 *
- * Copyright (C) 2003, 2004 Paul Pogonyshev.                       *
+ * Copyright (C) 2003, 2004, 2005 Paul Pogonyshev.                 *
  *                                                                 *
  * This program is free software; you can redistribute it and/or   *
  * modify it under the terms of the GNU General Public License as  *
@@ -115,10 +115,13 @@ static void	 gtk_goban_allocate_screen_resources
 		   (GtkGobanBase *goban_base);
 static void	 gtk_goban_free_screen_resources (GtkGobanBase *goban_base);
 
+static void	 gtk_goban_click_canceled (GtkGoban *goban);
+
 static void	 gtk_goban_finalize (GObject *object);
 
 static void	 emit_pointer_moved (GtkGoban *goban, int x, int y,
 				     GdkModifierType modifiers);
+
 static void	 set_feedback_data (GtkGoban *goban, int x, int y,
 				    BoardPositionList *position_list,
 				    GtkGobanPointerFeedback feedback);
@@ -139,6 +142,7 @@ static GtkGobanBaseClass  *parent_class;
 
 enum {
   POINTER_MOVED,
+  CLICK_CANCELED,
   GOBAN_CLICKED,
   NAVIGATE,
   NUM_SIGNALS
@@ -214,9 +218,10 @@ gtk_goban_class_init (GtkGobanClass *class)
   base_class->allocate_screen_resources = gtk_goban_allocate_screen_resources;
   base_class->free_screen_resources	= gtk_goban_free_screen_resources;
 
-  class->pointer_moved = NULL;
-  class->goban_clicked = NULL;
-  class->navigate      = NULL;
+  class->pointer_moved	= NULL;
+  class->click_canceled = gtk_goban_click_canceled;
+  class->goban_clicked	= NULL;
+  class->navigate	= NULL;
 
   goban_signals[POINTER_MOVED]
     = g_signal_new ("pointer-moved",
@@ -227,11 +232,20 @@ gtk_goban_class_init (GtkGobanClass *class)
 		    quarry_marshal_INT__POINTER,
 		    G_TYPE_INT, 1, G_TYPE_POINTER);
 
+  goban_signals[CLICK_CANCELED]
+    = g_signal_new ("click-canceled",
+		    G_TYPE_FROM_CLASS (class),
+		    G_SIGNAL_RUN_LAST | G_SIGNAL_ACTION,
+		    G_STRUCT_OFFSET (GtkGobanClass, click_canceled),
+		    NULL, NULL,
+		    quarry_marshal_VOID__VOID,
+		    G_TYPE_NONE, 0);
+
   goban_signals[GOBAN_CLICKED]
     = g_signal_new ("goban-clicked",
 		    G_TYPE_FROM_CLASS (class),
 		    G_SIGNAL_RUN_LAST,
-		    G_STRUCT_OFFSET (GtkGobanClass, pointer_moved),
+		    G_STRUCT_OFFSET (GtkGobanClass, goban_clicked),
 		    NULL, NULL,
 		    quarry_marshal_VOID__POINTER,
 		    G_TYPE_NONE, 1, G_TYPE_POINTER);
@@ -447,7 +461,7 @@ gtk_goban_size_allocate (GtkWidget *widget, GtkAllocation *allocation)
 				 + (-0.5 + goban->height) * cell_size
 				 + vertical_padding);
 
-  goban->button_pressed = 0;
+  g_signal_emit (goban, goban_signals[CLICK_CANCELED], 0);
 
   GTK_WIDGET_CLASS (parent_class)->size_allocate (widget, allocation);
 
@@ -970,19 +984,25 @@ gtk_goban_button_release_event (GtkWidget *widget, GdkEventButton *event)
     if (goban->button_pressed == event->button) {
       goban->button_pressed = 0;
 
-      if (data.x == goban->press_x && data.y == goban->press_y
+      /* If anti-slipping has been disabled for this press, then
+       * `goban->press_*' fields are set to null point.
+       */
+      if ((IS_NULL_POINT (goban->press_x, goban->press_y)
+	   || (data.x == goban->press_x && data.y == goban->press_y))
 	  && (((modifiers & MODIFIER_MASK) | button_mask)
 	      == goban->press_modifiers)) {
 	data.feedback_tile = goban->feedback_tile;
 	data.button	   = event->button;
 	data.modifiers	   = modifiers & ~button_mask;
-	g_signal_emit (G_OBJECT (goban), goban_signals[GOBAN_CLICKED], 0,
-		       &data);
+
+	g_signal_emit (goban, goban_signals[GOBAN_CLICKED], 0, &data);
       }
+      else
+	g_signal_emit (goban, goban_signals[CLICK_CANCELED], 0);
     }
     else {
       if (!(modifiers & (GDK_BUTTON1_MASK | GDK_BUTTON3_MASK)))
-	goban->button_pressed = 0;
+	g_signal_emit (goban, goban_signals[CLICK_CANCELED], 0);
     }
 
     emit_pointer_moved (goban, data.x, data.y, modifiers & MODIFIER_MASK);
@@ -1030,7 +1050,7 @@ gtk_goban_leave_notify_event (GtkWidget *widget, GdkEventCrossing *event)
   UNUSED (event);
 
   if (goban->button_pressed)
-    goban->button_pressed = 0;
+    g_signal_emit (goban, goban_signals[CLICK_CANCELED], 0);
 
   set_feedback_data (goban, NULL_X, NULL_Y, NULL, GOBAN_FEEDBACK_NONE);
 
@@ -1074,7 +1094,7 @@ gtk_goban_scroll_event (GtkWidget *widget, GdkEventScroll *event)
     return FALSE;
   }
 
-  g_signal_emit (G_OBJECT (widget), goban_signals[NAVIGATE], 0, direction);
+  g_signal_emit (widget, goban_signals[NAVIGATE], 0, direction);
 
   return FALSE;
 }
@@ -1212,6 +1232,13 @@ gtk_goban_free_screen_resources (GtkGobanBase *goban_base)
   }
 
   parent_class->free_screen_resources (goban_base);
+}
+
+
+static void
+gtk_goban_click_canceled (GtkGoban *goban)
+{
+  goban->button_pressed = 0;
 }
 
 
@@ -1475,6 +1502,17 @@ gtk_goban_set_overlay_data (GtkGoban *goban, int overlay_index,
 }
 
 
+void
+gtk_goban_disable_anti_slip_mode (GtkGoban *goban)
+{
+  assert (GTK_IS_GOBAN (goban));
+  assert (goban->button_pressed != 0);
+
+  goban->press_x = NULL_X;
+  goban->press_y = NULL_Y;
+}
+
+
 
 void
 gtk_goban_set_contents (GtkGoban *goban, BoardPositionList *position_list,
@@ -1519,47 +1557,6 @@ gtk_goban_get_grid_contents (GtkGoban *goban, int x, int y)
 }
 
 
-void
-gtk_goban_diff_against_grid
-  (GtkGoban *goban, const char *grid,
-   BoardPositionList *position_lists[NUM_ON_GRID_VALUES])
-{
-  int k;
-  int x;
-  int y;
-  int num_positions[NUM_ON_GRID_VALUES];
-  int positions[NUM_ON_GRID_VALUES][BOARD_MAX_POSITIONS];
-
-  assert (GTK_IS_GOBAN (goban));
-  assert (grid);
-
-  for (k = 0; k < NUM_ON_GRID_VALUES; k++)
-    num_positions[k] = 0;
-
-  for (y = 0; y < goban->height; y++) {
-    for (x = 0; x < goban->width; x++) {
-      int pos = POSITION (x, y);
-      int contents = goban->grid[pos];
-
-      if (contents != grid[pos]) {
-	assert (0 <= contents && contents < NUM_ON_GRID_VALUES);
-
-	positions[contents][num_positions[contents]++] = pos;
-      }
-    }
-  }
-
-  for (k = 0; k < NUM_ON_GRID_VALUES; k++) {
-    if (num_positions[k] > 0) {
-      position_lists[k] = board_position_list_new (positions[k],
-						   num_positions[k]);
-    }
-    else
-      position_lists[k] = NULL;
-  }
-}
-
-
 static void
 emit_pointer_moved (GtkGoban *goban, int x, int y, GdkModifierType modifiers)
 {
@@ -1577,8 +1574,7 @@ emit_pointer_moved (GtkGoban *goban, int x, int y, GdkModifierType modifiers)
     data.press_x		= goban->press_x;
     data.press_y		= goban->press_y;
 
-    g_signal_emit (G_OBJECT (goban), goban_signals[POINTER_MOVED], 0,
-		   &data, &feedback);
+    g_signal_emit (goban, goban_signals[POINTER_MOVED], 0, &data, &feedback);
 
     assert (data.button
 	    || ((feedback & GOBAN_FEEDBACK_GRID_MASK)
@@ -1610,6 +1606,36 @@ set_feedback_data (GtkGoban *goban,
   int feedback_tile;
   int goban_markup_feedback_tile;
 
+  switch (feedback_goban_markup) {
+  case GOBAN_FEEDBACK_FORCE_TILE_NONE:
+    goban_markup_feedback_tile = TILE_NONE;
+    break;
+
+  case GOBAN_FEEDBACK_BLACK_OPAQUE:
+  case GOBAN_FEEDBACK_WHITE_OPAQUE:
+    goban_markup_feedback_tile = (STONE_OPAQUE
+				  + (feedback_goban_markup
+				     - GOBAN_FEEDBACK_OPAQUE));
+    break;
+
+  case GOBAN_FEEDBACK_BLACK_GHOST:
+  case GOBAN_FEEDBACK_WHITE_GHOST:
+    goban_markup_feedback_tile = (STONE_50_TRANSPARENT
+				  + (feedback_goban_markup
+				     - GOBAN_FEEDBACK_GHOST));
+    break;
+
+  case GOBAN_FEEDBACK_THICK_BLACK_GHOST:
+  case GOBAN_FEEDBACK_THICK_WHITE_GHOST:
+    goban_markup_feedback_tile = (STONE_25_TRANSPARENT
+				  + (feedback_goban_markup
+				     - GOBAN_FEEDBACK_THICK_GHOST));
+    break;
+
+  default:
+    goban_markup_feedback_tile = GOBAN_TILE_DONT_CHANGE;
+  }
+
   switch (feedback_grid) {
   case GOBAN_FEEDBACK_FORCE_TILE_NONE:
     feedback_tile = TILE_NONE;
@@ -1626,10 +1652,20 @@ set_feedback_data (GtkGoban *goban,
 		     + (feedback_grid - GOBAN_FEEDBACK_GHOST));
     break;
 
+  case GOBAN_FEEDBACK_GHOSTIFY:
+    feedback_tile	       = GOBAN_TILE_DONT_CHANGE;
+    goban_markup_feedback_tile = GOBAN_MARKUP_GHOSTIFY;
+    break;
+
   case GOBAN_FEEDBACK_THICK_BLACK_GHOST:
   case GOBAN_FEEDBACK_THICK_WHITE_GHOST:
     feedback_tile = (STONE_25_TRANSPARENT
 		     + (feedback_grid - GOBAN_FEEDBACK_THICK_GHOST));
+    break;
+
+  case GOBAN_FEEDBACK_GHOSTIFY_SLIGHTLY:
+    feedback_tile	       = GOBAN_TILE_DONT_CHANGE;
+    goban_markup_feedback_tile = GOBAN_MARKUP_GHOSTIFY_SLIGHTLY;
     break;
 
   case GOBAN_FEEDBACK_PRESS_DEFAULT:
@@ -1695,36 +1731,6 @@ set_feedback_data (GtkGoban *goban,
 
   default:
     feedback_tile = GOBAN_TILE_DONT_CHANGE;
-  }
-
-  switch (feedback_goban_markup) {
-  case GOBAN_FEEDBACK_FORCE_TILE_NONE:
-    goban_markup_feedback_tile = TILE_NONE;
-    break;
-
-  case GOBAN_FEEDBACK_BLACK_OPAQUE:
-  case GOBAN_FEEDBACK_WHITE_OPAQUE:
-    goban_markup_feedback_tile = (STONE_OPAQUE
-				  + (feedback_goban_markup
-				     - GOBAN_FEEDBACK_OPAQUE));
-    break;
-
-  case GOBAN_FEEDBACK_BLACK_GHOST:
-  case GOBAN_FEEDBACK_WHITE_GHOST:
-    goban_markup_feedback_tile = (STONE_50_TRANSPARENT
-				  + (feedback_goban_markup
-				     - GOBAN_FEEDBACK_GHOST));
-    break;
-
-  case GOBAN_FEEDBACK_THICK_BLACK_GHOST:
-  case GOBAN_FEEDBACK_THICK_WHITE_GHOST:
-    goban_markup_feedback_tile = (STONE_25_TRANSPARENT
-				  + (feedback_goban_markup
-				     - GOBAN_FEEDBACK_THICK_GHOST));
-    break;
-
-  default:
-    goban_markup_feedback_tile = GOBAN_TILE_DONT_CHANGE;
   }
 
   if (feedback_tile != GOBAN_TILE_DONT_CHANGE
