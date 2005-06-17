@@ -85,6 +85,11 @@ static GdkPixbuf *  scale_and_paint_svg_image (char *buffer,
 static void	    set_pixbuf_size (gint *width, gint *height,
 				     gpointer tile_size);
 
+inline static GdkPixbuf *
+		    create_pixbuf_from_pixel_data (int tile_size,
+						   unsigned char *pixel_data,
+						   int row_stride);
+
 
 ObjectCache	gtk_main_tile_set_cache =
   { NULL, NULL, 0, 20,
@@ -184,43 +189,35 @@ gtk_main_tile_set_create (const GtkMainTileSetKey *key)
   pixel_data = duplicate_and_adjust_alpha (3, 4, tile_size,
 					   black_pixel_data, row_stride);
   tile_set->tiles[BLACK_25_TRANSPARENT]
-    = gdk_pixbuf_new_from_data (pixel_data, GDK_COLORSPACE_RGB, TRUE, 8,
-				tile_size, tile_size, row_stride,
-				(GdkPixbufDestroyNotify) utils_free, NULL);
+    = create_pixbuf_from_pixel_data (tile_size, pixel_data, row_stride);
 
   pixel_data = duplicate_and_adjust_alpha (3, 4, tile_size,
 					   white_pixel_data, row_stride);
   tile_set->tiles[WHITE_25_TRANSPARENT]
-    = gdk_pixbuf_new_from_data (pixel_data, GDK_COLORSPACE_RGB, TRUE, 8,
-				tile_size, tile_size, row_stride,
-				(GdkPixbufDestroyNotify) utils_free, NULL);
+    = create_pixbuf_from_pixel_data (tile_size, pixel_data, row_stride);
 
   black_50_transparent_pixel_data
     = duplicate_and_adjust_alpha (1, 2, tile_size,
 				  black_pixel_data, row_stride);
   tile_set->tiles[BLACK_50_TRANSPARENT]
-    = gdk_pixbuf_new_from_data (black_50_transparent_pixel_data,
-				GDK_COLORSPACE_RGB, TRUE, 8,
-				tile_size, tile_size, row_stride,
-				(GdkPixbufDestroyNotify) utils_free, NULL);
+    = create_pixbuf_from_pixel_data (tile_size,
+				     black_50_transparent_pixel_data,
+				     row_stride);
 
   white_50_transparent_pixel_data
     = duplicate_and_adjust_alpha (1, 2, tile_size,
 				  white_pixel_data, row_stride);
   tile_set->tiles[WHITE_50_TRANSPARENT]
-    = gdk_pixbuf_new_from_data (white_50_transparent_pixel_data,
-				GDK_COLORSPACE_RGB, TRUE, 8,
-				tile_size, tile_size, row_stride,
-				(GdkPixbufDestroyNotify) utils_free, NULL);
+    = create_pixbuf_from_pixel_data (tile_size,
+				     white_50_transparent_pixel_data,
+				     row_stride);
 
   pixel_data = combine_pixels_diagonally (tile_size,
 					  black_50_transparent_pixel_data,
 					  white_50_transparent_pixel_data,
 					  row_stride);
   tile_set->tiles[MIXED_50_TRANSPARENT]
-    = gdk_pixbuf_new_from_data (pixel_data, GDK_COLORSPACE_RGB, TRUE, 8,
-				tile_size, tile_size, row_stride,
-				(GdkPixbufDestroyNotify) utils_free, NULL);
+    = create_pixbuf_from_pixel_data (tile_size, pixel_data, row_stride);
 
   return tile_set;
 }
@@ -346,9 +343,10 @@ gtk_sgf_markup_tile_set_create (const GtkSgfMarkupTileSetKey *key)
     = { "cross", "circle", "square", "triangle", "selected", "last-move" };
 
   GtkSgfMarkupTileSet *tile_set = g_malloc (sizeof (GtkSgfMarkupTileSet));
+  gint tile_size = key->tile_size;
   int k;
 
-  tile_set->tile_size = key->tile_size;
+  tile_set->tile_size = tile_size;
 
   for (k = 0; k < NUM_ALL_SGF_MARKUPS; k++) {
     gchar *filename = g_strdup_printf ((PACKAGE_DATA_DIR
@@ -376,15 +374,42 @@ gtk_sgf_markup_tile_set_create (const GtkSgfMarkupTileSetKey *key)
 	}
 
 	if (j == i) {
-	  tile_set->tiles[k][i]
-	    = scale_and_paint_svg_image (buffer, buffer + file_size,
-					 key->tile_size, key->scale,
-					 key->colors[i], key->opacity);
+	  GdkPixbuf *tile;
+	  unsigned char *pixel_data;
+	  unsigned char *transparent_pixel_data;
+	  int row_stride;
+
+	  tile = scale_and_paint_svg_image (buffer, buffer + file_size,
+					    tile_size, key->scale,
+					    key->colors[i], key->opacity);
+	  tile_set->tiles[SGF_MARKUP_OPAQUE + k][i] = tile;
+
+	  pixel_data = gdk_pixbuf_get_pixels (tile);
+	  row_stride = gdk_pixbuf_get_rowstride (tile);
+
+	  transparent_pixel_data
+	    = duplicate_and_adjust_alpha (3, 4, tile_size,
+					  pixel_data, row_stride);
+	  tile_set->tiles[SGF_MARKUP_25_TRANSPARENT + k][i]
+	    = create_pixbuf_from_pixel_data (tile_size, transparent_pixel_data,
+					     row_stride);
+
+	  transparent_pixel_data
+	    = duplicate_and_adjust_alpha (1, 2, tile_size,
+					  pixel_data, row_stride);
+	  tile_set->tiles[SGF_MARKUP_50_TRANSPARENT + k][i]
+	    = create_pixbuf_from_pixel_data (tile_size, transparent_pixel_data,
+					     row_stride);
 	}
 	else {
-	  /* Reuse tile and add reference. */
-	  tile_set->tiles[k][i] = tile_set->tiles[k][j];
-	  g_object_ref (tile_set->tiles[k][i]);
+	  int shade;
+
+	  /* Reuse tiles and add reference. */
+	  for (shade = SGF_MARKUP_OPAQUE; shade < NUM_ALL_SGF_MARKUP_SHADES;
+	       shade += NUM_ALL_SGF_MARKUPS) {
+	    tile_set->tiles[shade + k][i] = tile_set->tiles[shade + k][j];
+	    g_object_ref (tile_set->tiles[shade + k][i]);
+	  }
 	}
       }
 
@@ -392,8 +417,11 @@ gtk_sgf_markup_tile_set_create (const GtkSgfMarkupTileSetKey *key)
     }
     else {
       /* GDK will print some warnings to stderr. */
-      for (i = 0; i < NUM_SGF_MARKUP_BACKGROUNDS; i++)
-	tile_set->tiles[k][i] = NULL;
+      for (i = 0; i < NUM_SGF_MARKUP_BACKGROUNDS; i++) {
+	tile_set->tiles[SGF_MARKUP_OPAQUE + k][i]	  = NULL;
+	tile_set->tiles[SGF_MARKUP_25_TRANSPARENT + k][i] = NULL;
+	tile_set->tiles[SGF_MARKUP_50_TRANSPARENT + k][i] = NULL;
+      }
     }
 
     g_free (filename);
@@ -409,7 +437,7 @@ gtk_sgf_markup_tile_set_delete (GtkSgfMarkupTileSet *tile_set)
   int k;
   int i;
 
-  for (k = 0; k < NUM_ALL_SGF_MARKUPS; k++) {
+  for (k = 0; k < NUM_ALL_SGF_MARKUP_SHADES; k++) {
     for (i = 0; i < NUM_SGF_MARKUP_BACKGROUNDS; i++)
       g_object_unref (tile_set->tiles[k][i]);
   }
@@ -418,6 +446,7 @@ gtk_sgf_markup_tile_set_delete (GtkSgfMarkupTileSet *tile_set)
 }
 
 
+
 static GdkPixbuf *
 scale_and_paint_svg_image (char *buffer, const char *buffer_end,
 			   gint tile_size,
@@ -613,6 +642,16 @@ set_pixbuf_size (gint *width, gint *height, gpointer tile_size)
 {
   *width = GPOINTER_TO_INT (tile_size);
   *height = GPOINTER_TO_INT (tile_size);
+}
+
+
+inline static GdkPixbuf *
+create_pixbuf_from_pixel_data (int tile_size, unsigned char *pixel_data,
+			       int row_stride)
+{
+  return gdk_pixbuf_new_from_data (pixel_data, GDK_COLORSPACE_RGB, TRUE, 8,
+				   tile_size, tile_size, row_stride,
+				   (GdkPixbufDestroyNotify) utils_free, NULL);
 }
 
 
