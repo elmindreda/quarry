@@ -68,7 +68,7 @@ struct _GtkGobanPointerData {
 struct _GtkGobanClickData {
   gint		      x;
   gint		      y;
-  gint		      feedback_tile;
+  gint		      non_empty_feedback;
   GdkModifierType     modifiers;
   gint		      button;
 };
@@ -109,7 +109,61 @@ typedef enum {
 
   /* Must be more than enough. */
   GOBAN_FEEDBACK_MARKUP_FACTOR	     = 1 << 8,
-  GOBAN_FEEDBACK_GRID_MASK	     = GOBAN_FEEDBACK_MARKUP_FACTOR - 1
+
+  /* SGF markup feedback. */
+  GOBAN_FEEDBACK_SGF_FACTOR	     = 1 << 16,
+
+  GOBAN_FEEDBACK_SGF_NONE	     = 0,
+  GOBAN_FEEDBACK_SGF_TILE_BASE,
+
+  GOBAN_FEEDBACK_SGF_OPAQUE	     = (GOBAN_FEEDBACK_SGF_TILE_BASE
+					+ SGF_MARKUP_OPAQUE),
+  GOBAN_FEEDBACK_SGF_CROSS_OPAQUE    = (GOBAN_FEEDBACK_SGF_OPAQUE
+					+ SGF_MARKUP_CROSS),
+  GOBAN_FEEDBACK_SGF_CIRCLE_OPAQUE   = (GOBAN_FEEDBACK_SGF_OPAQUE
+					+ SGF_MARKUP_CIRCLE),
+  GOBAN_FEEDBACK_SGF_SQUARE_OPAQUE   = (GOBAN_FEEDBACK_SGF_OPAQUE
+					+ SGF_MARKUP_SQUARE),
+  GOBAN_FEEDBACK_SGF_TRIANGLE_OPAQUE = (GOBAN_FEEDBACK_SGF_OPAQUE
+					+ SGF_MARKUP_TRIANGLE),
+  GOBAN_FEEDBACK_SGF_SELECTED_OPAQUE = (GOBAN_FEEDBACK_SGF_OPAQUE
+					+ SGF_MARKUP_SELECTED),
+
+  GOBAN_FEEDBACK_SGF_GHOST	     = (GOBAN_FEEDBACK_SGF_TILE_BASE
+					+ SGF_MARKUP_50_TRANSPARENT),
+  GOBAN_FEEDBACK_SGF_CROSS_GHOST     = (GOBAN_FEEDBACK_SGF_GHOST
+					+ SGF_MARKUP_CROSS),
+  GOBAN_FEEDBACK_SGF_CIRCLE_GHOST    = (GOBAN_FEEDBACK_SGF_GHOST
+					+ SGF_MARKUP_CIRCLE),
+  GOBAN_FEEDBACK_SGF_SQUARE_GHOST    = (GOBAN_FEEDBACK_SGF_GHOST
+					+ SGF_MARKUP_SQUARE),
+  GOBAN_FEEDBACK_SGF_TRIANGLE_GHOST  = (GOBAN_FEEDBACK_SGF_GHOST
+					+ SGF_MARKUP_TRIANGLE),
+  GOBAN_FEEDBACK_SGF_SELECTED_GHOST  = (GOBAN_FEEDBACK_SGF_GHOST
+					+ SGF_MARKUP_SELECTED),
+
+  GOBAN_FEEDBACK_SGF_THICK_GHOST	  = (GOBAN_FEEDBACK_SGF_TILE_BASE
+					     + SGF_MARKUP_25_TRANSPARENT),
+  GOBAN_FEEDBACK_SGF_CROSS_THICK_GHOST	  = (GOBAN_FEEDBACK_SGF_THICK_GHOST
+					     + SGF_MARKUP_CROSS),
+  GOBAN_FEEDBACK_SGF_CIRCLE_THICK_GHOST	  = (GOBAN_FEEDBACK_SGF_THICK_GHOST
+					     + SGF_MARKUP_CIRCLE),
+  GOBAN_FEEDBACK_SGF_SQUARE_THICK_GHOST	  = (GOBAN_FEEDBACK_SGF_THICK_GHOST
+					     + SGF_MARKUP_SQUARE),
+  GOBAN_FEEDBACK_SGF_TRIANGLE_THICK_GHOST = (GOBAN_FEEDBACK_SGF_THICK_GHOST
+					     + SGF_MARKUP_TRIANGLE),
+  GOBAN_FEEDBACK_SGF_SELECTED_THICK_GHOST = (GOBAN_FEEDBACK_SGF_THICK_GHOST
+					     + SGF_MARKUP_SELECTED),
+
+  GOBAN_FEEDBACK_SGF_GHOSTIFY		  = NUM_ALL_SGF_MARKUP_SHADES,
+  GOBAN_FEEDBACK_SGF_GHOSTIFY_SLIGHTLY,
+
+  /* Masks for the three feedback parts. */
+  GOBAN_FEEDBACK_GRID_MASK	     = GOBAN_FEEDBACK_MARKUP_FACTOR - 1,
+  GOBAN_FEEDBACK_MARKUP_MASK	     = ((GOBAN_FEEDBACK_SGF_FACTOR - 1)
+					^ GOBAN_FEEDBACK_GRID_MASK),
+  GOBAN_FEEDBACK_SGF_MASK	     = ~(GOBAN_FEEDBACK_GRID_MASK
+					 | GOBAN_FEEDBACK_MARKUP_MASK)
 } GtkGobanPointerFeedback;
 
 /* Note that there _must not_ be zero enumeration element.  These
@@ -128,6 +182,7 @@ typedef enum {
   GOBAN_NAVIGATE_VARIATION_END
 } GtkGobanNavigationCommand;
 
+
 /* Goban markup flags controlling appearance of stones in marked
  * positions.  Tiles are enumerated in `gui-utils/tile-set.h'.
  */
@@ -136,14 +191,26 @@ typedef enum {
 #endif
 
 enum {
-  GOBAN_TILE_DONT_CHANGE	 = NUM_TILES,
+  GOBAN_TILE_DONT_CHANGE		    = NUM_TILES,
 
-  GOBAN_MARKUP_GHOSTIFY		 = 1 << 4,
-  GOBAN_MARKUP_GHOSTIFY_SLIGHTLY = 1 << 5,
+  GOBAN_MARKUP_GHOSTIFY			    = 1 << 4,
+  GOBAN_MARKUP_GHOSTIFY_SLIGHTLY	    = 1 << 5,
 
-  GOBAN_MARKUP_FLAGS_MASK	 = (GOBAN_MARKUP_GHOSTIFY
-				    | GOBAN_MARKUP_GHOSTIFY_SLIGHTLY),
-  GOBAN_MARKUP_TILE_MASK	 = ~GOBAN_MARKUP_FLAGS_MASK
+  GOBAN_MARKUP_GHOSTIFY_SGF_MARKUP	    = 1 << 6,
+  GOBAN_MARKUP_GHOSTIFY_SGF_MARKUP_SLIGHTLY = 1 << 7,
+
+  GOBAN_MARKUP_GRID_FLAGS_MASK = (GOBAN_MARKUP_GHOSTIFY
+				  | GOBAN_MARKUP_GHOSTIFY_SLIGHTLY),
+  GOBAN_MARKUP_SGF_FLAGS_MASK  = (GOBAN_MARKUP_GHOSTIFY_SGF_MARKUP
+				  | GOBAN_MARKUP_GHOSTIFY_SGF_MARKUP_SLIGHTLY),
+  GOBAN_MARKUP_FLAGS_MASK      = (GOBAN_MARKUP_GRID_FLAGS_MASK
+				  | GOBAN_MARKUP_SGF_FLAGS_MASK),
+  GOBAN_MARKUP_TILE_MASK       = ~GOBAN_MARKUP_FLAGS_MASK
+};
+
+
+enum {
+  GOBAN_SGF_MARKUP_TILE_DONT_CHANGE = NUM_ALL_SGF_MARKUP_SHADES,
 };
 
 
@@ -196,11 +263,13 @@ struct _GtkGoban {
   int			 pointer_x;
   int			 pointer_y;
   int			 feedback_tile;
+  int			 non_empty_feedback;
 
   GdkModifierType	 modifiers;
   unsigned int		 button_pressed;
   gint			 press_x;
   gint			 press_y;
+  gboolean		 anti_slip_disabled;
   GdkModifierType	 press_modifiers;
   int			 feedback_tile_at_press;
 };
@@ -239,13 +308,18 @@ void		gtk_goban_disable_anti_slip_mode (GtkGoban *goban);
 
 void		gtk_goban_set_overlay_data (GtkGoban *goban, int overlay_index,
 					    BoardPositionList *position_list,
-					    int tile, int goban_markup_tile);
+					    int tile, int goban_markup_tile,
+					    int sgf_markup_tile);
 
 void		gtk_goban_set_contents (GtkGoban *goban,
 					BoardPositionList *position_list,
 					int grid_contents,
-					int goban_markup_contents);
+					int goban_markup_contents,
+					int sgf_markup_contents);
+
 int		gtk_goban_get_grid_contents (GtkGoban *goban, int x, int y);
+int		gtk_goban_get_sgf_markup_contents (GtkGoban *goban,
+						   int x, int y);
 
 gint		gtk_goban_negotiate_width (GtkWidget *widget, gint height);
 gint		gtk_goban_negotiate_height (GtkWidget *widget, gint width);
