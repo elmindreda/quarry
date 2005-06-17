@@ -1,3 +1,18 @@
+2005-06-17  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* configure.ac: Quarry version 0.1.15.
+	* NEWS: Update.
+	* TODO: Update.
+
+2005-06-16  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* acinclude.m4: Remove file.  All the files it contained should be
+	found in `/usr/share/aclocal' or `/usr/local/share/autoconf' if
+	you have `pkg-config' and `gettext' installed.
+
+	* configure.ac: Add `foreign' and `check-news' arguments to the
+	`AM_INIT_AUTOMAKE' macro.
+
 2005-05-07  Paul Pogonyshev  <pogonyshev@gmx.net>
 
 	* COPYING: Update to the latest version from www.gnu.org to

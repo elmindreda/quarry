@@ -1,3 +1,62 @@
+2005-06-17  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* (Quarry version 0.1.15.)
+
+	* gui-gtk/gtk-goban-window.c (gtk_goban_window_init): Add items
+	for five SGF markup types to the "Edit/Tools" menu.
+	(setup_mode_pointer_moved): When removing a string of stones with
+	Ctrl-click, hide all feedback if the pointer moves outside the
+	string.
+	(setup_mode_goban_clicked): Likewise, don't make any changes if
+	pointer has been moved outside the string.  Call
+	set_sgf_collection_is_modified(): we're not switching to proper
+	modification tracking with undo history yet.
+	(markup_mode_pointer_moved, markup_mode_goban_clicked)
+	(activate_markup_tool): New functions.
+
+	* sgf/sgf-utils.c (sgf_utils_apply_markup_changes): New function.
+
+	* board/board.c (board_position_list_add_position): Allow `list'
+	to be NULL.
+
+	* board/go.c (go_is_same_string): New function.
+
+	* gui-gtk/gtk-goban.c (gtk_goban_expose): Handle
+	`GOBAN_MARKUP_GHOSTIFY_SGF_MARKUP' and
+	`GOBAN_MARKUP_GHOSTIFY_SGF_MARKUP_SLIGHTLY' flags.
+	(gtk_goban_button_press_event): Reset new `anti_slip_disabled'
+	field upon a new button press.
+	(gtk_goban_button_release_event): Use `anti_slip_disabled' instead
+	of checking if press point has been reset to null.  Set new
+	`non_empty_feedback' field in the data sent to callbacks.
+	(gtk_goban_set_overlay_data): Add `sgf_markup_tile' argument.
+	(gtk_goban_disable_anti_slip_mode): Set `anti_slip_disabled' to
+	`TRUE' instead of setting the press point to null.
+	(gtk_goban_set_contents): Add `sgf_markup_contents' argument.
+	Free the dummy overlay contents (a memory leak plug.)
+	(gtk_goban_get_sgf_markup_contents): New function.
+	(set_feedback_data): Handle all the new SGF markup feedbacks.  Set
+	`non_empty_feedback' field.
+	(set_overlay_data): Add `sgf_markup_tile' arguments.  Add special
+	handling for ghostifying flags in goban markup.
+
+	* gui-gtk/gtk-goban.h: A whole lot of new feedback types for SGF
+	markup feedback.  Add `GOBAN_MARKUP_GHOSTIFY_SGF_MARKUP',
+	`GOBAN_MARKUP_GHOSTIFY_SGF_MARKUP_SLIGHTLY',
+	`GOBAN_MARKUP_GRID_FLAGS_MASK', `GOBAN_MARKUP_SGF_FLAGS_MASK' and
+	`GOBAN_SGF_MARKUP_TILE_DONT_CHANGE' constants.
+	(GtkGobanClickData): Replace `feedback_tile' field with
+	`non_empty_feedback'.
+
+	* gui-gtk/gtk-tile-set.c (gtk_sgf_markup_tile_set_create): Create
+	additional 25% and 50% transparent tiles.
+	(gtk_sgf_markup_tile_set_delete): Unreference new tiles.
+	(create_pixbuf_from_pixel_data): New function.
+
+	* gui-gtk/gtk-tile-set.h (SGF_MARKUP_OPAQUE)
+	(SGF_MARKUP_25_TRANSPARENT, SGF_MARKUP_50_TRANSPARENT)
+	(NUM_ALL_SGF_MARKUP_SHADES): New macros.
+
 2005-06-15  Paul Pogonyshev  <pogonyshev@gmx.net>
 
 	* gui-gtk/gtk-goban-window.c (gtk_goban_window_init): Add
