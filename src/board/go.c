@@ -1,7 +1,7 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *	\
  * This file is part of Quarry.                                    *
  *                                                                 *
- * Copyright (C) 2003, 2004 Paul Pogonyshev.                       *
+ * Copyright (C) 2003, 2004, 2005 Paul Pogonyshev.                 *
  *                                                                 *
  * This program is free software; you can redistribute it and/or   *
  * modify it under the terms of the GNU General Public License as  *
@@ -1105,6 +1105,57 @@ go_get_hoshi_points (int board_width, int board_height,
   }
   else
     return 0;
+}
+
+
+/* Weird names of arguments because y1() is a standard function. */
+int
+go_is_same_string (Board *board, int _x1, int _y1, int _x2, int _y2)
+{
+  const char *grid = board->grid;
+  int pos1 = POSITION (_x1, _y1);
+  int pos2 = POSITION (_x2, _y2);
+
+  assert (board);
+  assert (board->game == GAME_GO);
+  assert (ON_BOARD (board, _x1, _y1));
+  assert (ON_BOARD (board, _x2, _y2));
+
+  if (IS_STONE (grid[pos1])) {
+    if (pos1 == pos2)
+      return 1;
+
+    if (grid[pos1] == grid[pos2]) {
+      int color = grid[pos1];
+      int queue[BOARD_MAX_POSITIONS];
+      int queue_start = 0;
+      int queue_end   = 1;
+
+      board->data.go.position_mark++;
+
+      queue[0] = pos1;
+      MARK_POSITION (board, pos1);
+
+      do {
+	int k;
+	int stone = queue[queue_start++];
+
+	for (k = 0; k < 4; k++) {
+	  int neighbor = stone + delta[k];
+
+	  if (grid[neighbor] == color && UNMARKED_POSITION (board, neighbor)) {
+	    if (neighbor == pos2)
+	      return 1;
+
+	    queue[queue_end++] = neighbor;
+	    MARK_POSITION (board, neighbor);
+	  }
+	}
+      } while (queue_start < queue_end);
+    }
+  }
+
+  return 0;
 }
 
 
