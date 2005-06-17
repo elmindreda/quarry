@@ -761,6 +761,8 @@ void	      sgf_utils_append_variation (SgfGameTree *tree,
 
 int	      sgf_utils_apply_setup_changes (SgfGameTree *tree,
 					     const char grid[BOARD_GRID_SIZE]);
+int	      sgf_utils_apply_markup_changes
+		(SgfGameTree *tree, const char markup_grid[BOARD_GRID_SIZE]);
 
 int	      sgf_utils_set_list_of_point_property
 		(SgfNode *node, SgfGameTree *tree, SgfType type,

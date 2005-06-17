@@ -495,6 +495,68 @@ sgf_utils_apply_setup_changes (SgfGameTree *tree,
 }
 
 
+/* FIXME: Add complete undo information. */
+int
+sgf_utils_apply_markup_changes (SgfGameTree *tree,
+				const char markup_grid[BOARD_GRID_SIZE])
+{
+  int num_positions[NUM_SGF_MARKUPS];
+  int positions[NUM_SGF_MARKUPS][BOARD_MAX_POSITIONS];
+  BoardPositionList *new_markup_lists[NUM_SGF_MARKUPS];
+  int k;
+  int x;
+  int y;
+  int anything_changed = 0;
+
+  assert (tree);
+  assert (tree->current_node);
+  assert (markup_grid);
+
+  for (k = 0; k < NUM_SGF_MARKUPS; k++)
+    num_positions[k] = 0;
+
+  for (y = 0; y < tree->board_height; y++) {
+    for (x = 0; x < tree->board_width; x++) {
+      int pos    = POSITION (x, y);
+      int markup = markup_grid[pos];
+
+      if (markup != SGF_MARKUP_NONE) {
+	assert (markup < NUM_SGF_MARKUPS);
+
+	positions[markup][num_positions[markup]++] = pos;
+      }
+    }
+  }
+
+  for (k = 0; k < NUM_SGF_MARKUPS; k++) {
+    if (num_positions[k] > 0) {
+      new_markup_lists[k] = board_position_list_new (positions[k],
+						     num_positions[k]);
+    }
+    else
+      new_markup_lists[k] = NULL;
+  }
+
+  anything_changed |= (sgf_utils_set_list_of_point_property
+		       (tree->current_node, tree, SGF_MARK,
+			new_markup_lists[SGF_MARKUP_CROSS]));
+  anything_changed |= (sgf_utils_set_list_of_point_property
+		       (tree->current_node, tree, SGF_CIRCLE,
+			new_markup_lists[SGF_MARKUP_CIRCLE]));
+  anything_changed |= (sgf_utils_set_list_of_point_property
+		       (tree->current_node, tree, SGF_SQUARE,
+			new_markup_lists[SGF_MARKUP_SQUARE]));
+  anything_changed |= (sgf_utils_set_list_of_point_property
+		       (tree->current_node, tree, SGF_TRIANGLE,
+			new_markup_lists[SGF_MARKUP_TRIANGLE]));
+  anything_changed |= (sgf_utils_set_list_of_point_property
+		       (tree->current_node, tree, SGF_SELECTED,
+			new_markup_lists[SGF_MARKUP_SELECTED]));
+
+  return anything_changed;
+}
+
+
 /* FIXME: Store undo information (that's the purpose of this
  *	  function!)
  */
