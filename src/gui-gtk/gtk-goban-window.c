@@ -248,6 +248,12 @@ static void	 setup_mode_goban_clicked (GtkGobanWindow *goban_window,
 					   GtkGobanClickData *data);
 
 static GtkGobanPointerFeedback
+		 markup_mode_pointer_moved (GtkGobanWindow *goban_window,
+					    GtkGobanPointerData *data);
+static void	 markup_mode_goban_clicked (GtkGobanWindow *goban_window,
+					    GtkGobanClickData *data);
+
+static GtkGobanPointerFeedback
 		 free_handicap_mode_pointer_moved
 		   (GtkGobanWindow *goban_window, GtkGobanPointerData *data);
 static void	 free_handicap_mode_goban_clicked
@@ -337,6 +343,9 @@ static void	 activate_setup_tool (GtkGobanWindow *goban_window,
 static void	 activate_scoring_tool (GtkGobanWindow *goban_window,
 					guint callback_action,
 					GtkCheckMenuItem *menu_item);
+static void	 activate_markup_tool (GtkGobanWindow *goban_window,
+				       gint sgf_markup_type,
+				       GtkCheckMenuItem *menu_item);
 
 
 static GtkUtilsToolbarEntry toolbar_open = {
@@ -533,9 +542,26 @@ gtk_goban_window_init (GtkGobanWindow *goban_window)
       "/Edit/Tools/Move Tool" },
     { N_("/Edit/Tools/"), NULL, NULL, 0, "<Separator>" },
 
-    { N_("/Edit/Tools/S_coring Tool"),	NULL,
-      activate_scoring_tool,		0,
+    { N_("/Edit/Tools/C_ross Markup"),	"<ctrl>1",
+      activate_markup_tool,		SGF_MARKUP_CROSS,
       "/Edit/Tools/Setup Tool" },
+    { N_("/Edit/Tools/_Circle Markup"), "<ctrl>2",
+      activate_markup_tool,		SGF_MARKUP_CIRCLE,
+      "/Edit/Tools/Cross Markup" },
+    { N_("/Edit/Tools/S_quare Markup"), "<ctrl>3",
+      activate_markup_tool,		SGF_MARKUP_SQUARE,
+      "/Edit/Tools/Circle Markup" },
+    { N_("/Edit/Tools/_Triangle Markup"), "<ctrl>4",
+      activate_markup_tool,		SGF_MARKUP_TRIANGLE,
+      "/Edit/Tools/Square Markup" },
+    { N_("/Edit/Tools/S_elected Markup"), "<ctrl>5",
+      activate_markup_tool,		SGF_MARKUP_SELECTED,
+      "/Edit/Tools/Triangle Markup" },
+    { N_("/Edit/Tools/"), NULL, NULL, 0, "<Separator>" },
+
+    { N_("/Edit/Tools/Scori_ng Tool"),	NULL,
+      activate_scoring_tool,		0,
+      "/Edit/Tools/Selected Markup" },
     { N_("/Edit/"), NULL, NULL, 0, "<Separator>" },
 
 
@@ -2937,12 +2963,12 @@ cancel_amazons_move (GtkGobanWindow *goban_window)
 {
   if (goban_window->amazons_move_stage == SHOOTING_ARROW) {
     gtk_goban_set_overlay_data (goban_window->goban, 1, NULL,
-				TILE_NONE, TILE_NONE);
+				TILE_NONE, TILE_NONE, SGF_MARKUP_NONE);
   }
 
   if (goban_window->amazons_move_stage != SELECTING_QUEEN) {
     gtk_goban_set_overlay_data (goban_window->goban, 0, NULL,
-				TILE_NONE, TILE_NONE);
+				TILE_NONE, TILE_NONE, SGF_MARKUP_NONE);
   }
 
   reset_amazons_move_data (goban_window);
@@ -3065,8 +3091,7 @@ playing_mode_goban_clicked (GtkGobanWindow *goban_window,
 {
   switch (data->button) {
   case 1:
-    if (data->feedback_tile != GOBAN_TILE_DONT_CHANGE
-	&& !(data->modifiers & GDK_SHIFT_MASK)) {
+    if (data->non_empty_feedback && !(data->modifiers & GDK_SHIFT_MASK)) {
       int color_to_play = goban_window->sgf_board_state.color_to_play;
 
       if (color_to_play == EMPTY)
@@ -3086,7 +3111,8 @@ playing_mode_goban_clicked (GtkGobanWindow *goban_window,
 				      board_position_list_new (&pos, 1),
 				      (STONE_50_TRANSPARENT
 				       + COLOR_INDEX (color_to_play)),
-				      GOBAN_TILE_DONT_CHANGE);
+				      GOBAN_TILE_DONT_CHANGE,
+				      GOBAN_SGF_MARKUP_TILE_DONT_CHANGE);
 
 	  return;
 	}
@@ -3097,7 +3123,8 @@ playing_mode_goban_clicked (GtkGobanWindow *goban_window,
 				      board_position_list_new (&pos, 1),
 				      (STONE_25_TRANSPARENT
 				       + COLOR_INDEX (color_to_play)),
-				      GOBAN_TILE_DONT_CHANGE);
+				      GOBAN_TILE_DONT_CHANGE,
+				      GOBAN_SGF_MARKUP_TILE_DONT_CHANGE);
 
 	  return;
 	}
@@ -3152,8 +3179,10 @@ setup_mode_pointer_moved (GtkGobanWindow *goban_window,
   switch (data->button) {
   case 0:
     if (data->modifiers & GDK_CONTROL_MASK
-	&& board->game == GAME_GO
-	&& IS_STONE (board->grid[pos])) {
+	&& board->game == GAME_GO) {
+      if (!IS_STONE (board->grid[pos]))
+	break;
+
       data->feedback_position_list = go_get_string_stones (board,
 							   data->x, data->y);
       return GOBAN_FEEDBACK_THICK_GHOST + COLOR_INDEX (board->grid[pos]);
@@ -3165,22 +3194,21 @@ setup_mode_pointer_moved (GtkGobanWindow *goban_window,
 
   case 1:
   case 3:
+    gtk_goban_disable_anti_slip_mode (goban_window->goban);
+
     if (data->modifiers & GDK_CONTROL_MASK
-	&& board->game == GAME_GO
-	&& IS_STONE (board->grid[pos])) {
+	&& board->game == GAME_GO) {
+      if (!IS_STONE (board->grid[POSITION (data->press_x, data->press_y)])
+	  || !go_is_same_string (board, data->press_x, data->press_y,
+				 data->x, data->y))
+	break;
+
       data->feedback_position_list = go_get_string_stones (board,
 							   data->x, data->y);
       return GOBAN_FEEDBACK_GHOST + COLOR_INDEX (board->grid[pos]);
     }
 
-    gtk_goban_disable_anti_slip_mode (goban_window->goban);
-
-    if (goban_window->drawn_position_list) {
-      goban_window->drawn_position_list
-	= board_position_list_add_position (goban_window->drawn_position_list,
-					    pos);
-    }
-    else {
+    if (!goban_window->drawn_position_list) {
       if (IS_STONE (board->grid[pos]))
 	goban_window->drawing_mode = EMPTY;
       else {
@@ -3188,10 +3216,11 @@ setup_mode_pointer_moved (GtkGobanWindow *goban_window,
 				       || (data->modifiers & GDK_SHIFT_MASK))
 				      ? BLACK : WHITE);
       }
-
-      goban_window->drawn_position_list = board_position_list_new (&pos, 1);
     }
 
+    goban_window->drawn_position_list
+      = board_position_list_add_position (goban_window->drawn_position_list,
+					  pos);
     data->feedback_position_list
       = board_position_list_duplicate (goban_window->drawn_position_list);
 
@@ -3218,26 +3247,30 @@ static void
 setup_mode_goban_clicked (GtkGobanWindow *goban_window,
 			  GtkGobanClickData *data)
 {
-  int pos = POSITION (data->x, data->y);
-
   if (data->button != 1 && data->button != 3)
     return;
 
   if (data->modifiers & GDK_CONTROL_MASK
-      && goban_window->board->game == GAME_GO
-      && IS_STONE (goban_window->board->grid[pos])) {
-    BoardPositionList *string_stones
-      = go_get_string_stones (goban_window->board, data->x, data->y);
+      && goban_window->board->game == GAME_GO) {
+    BoardPositionList *string_stones;
+
+    if (!data->non_empty_feedback)
+      return;
+
+    string_stones = go_get_string_stones (goban_window->board,
+					  data->x, data->y);
 
     gtk_goban_set_contents (goban_window->goban, string_stones,
-			    EMPTY, GOBAN_TILE_DONT_CHANGE);
+			    EMPTY, GOBAN_TILE_DONT_CHANGE,
+			    GOBAN_SGF_MARKUP_TILE_DONT_CHANGE);
     board_position_list_delete (string_stones);
   }
   else {
     gtk_goban_set_contents (goban_window->goban,
 			    goban_window->drawn_position_list,
 			    goban_window->drawing_mode,
-			    GOBAN_TILE_DONT_CHANGE);
+			    GOBAN_TILE_DONT_CHANGE,
+			    GOBAN_SGF_MARKUP_TILE_DONT_CHANGE);
 
     board_position_list_delete (goban_window->drawn_position_list);
     goban_window->drawn_position_list = NULL;
@@ -3247,7 +3280,123 @@ setup_mode_goban_clicked (GtkGobanWindow *goban_window,
 				     goban_window->goban->grid)) {
     goban_window->last_displayed_node = NULL;
     update_children_for_new_node (goban_window);
+
+    set_sgf_collection_is_modified (goban_window, TRUE);
   }
+}
+
+
+static GtkGobanPointerFeedback
+markup_mode_pointer_moved (GtkGobanWindow *goban_window,
+			   GtkGobanPointerData *data)
+{
+  GtkGoban *const goban = goban_window->goban;
+  Board *const board = goban_window->board;
+  int pos = POSITION (data->x, data->y);
+
+  switch (data->button) {
+  case 0:
+    {
+      int is_over_same_existing_markup
+	= (gtk_goban_get_sgf_markup_contents (goban, data->x, data->y)
+	   == goban_window->sgf_markup_type);
+
+      if (data->modifiers & GDK_CONTROL_MASK
+	  && board->game == GAME_GO) {
+	if (!IS_STONE (board->grid[pos]))
+	  break;
+
+	data->feedback_position_list = go_get_string_stones (board,
+							     data->x, data->y);
+
+	if (is_over_same_existing_markup) {
+	  return (GOBAN_FEEDBACK_SGF_GHOSTIFY_SLIGHTLY
+		  * GOBAN_FEEDBACK_SGF_FACTOR);
+	}
+      }
+
+      return (((is_over_same_existing_markup
+		? GOBAN_FEEDBACK_SGF_THICK_GHOST : GOBAN_FEEDBACK_SGF_GHOST)
+	       + goban_window->sgf_markup_type)
+	      * GOBAN_FEEDBACK_SGF_FACTOR);
+    }
+
+  case 1:
+  case 3:
+    gtk_goban_disable_anti_slip_mode (goban_window->goban);
+
+    if (gtk_goban_get_sgf_markup_contents (goban, data->press_x, data->press_y)
+	== goban_window->sgf_markup_type)
+      goban_window->drawing_mode = SGF_MARKUP_NONE;
+    else
+      goban_window->drawing_mode = goban_window->sgf_markup_type;
+
+    if (data->modifiers & GDK_CONTROL_MASK
+	&& board->game == GAME_GO) {
+      if (!IS_STONE (board->grid[POSITION (data->press_x, data->press_y)])
+	  || !go_is_same_string (board, data->press_x, data->press_y,
+				 data->x, data->y))
+	break;
+
+      data->feedback_position_list = go_get_string_stones (board,
+							   data->x, data->y);
+    }
+    else {
+      goban_window->drawn_position_list
+	= board_position_list_add_position (goban_window->drawn_position_list,
+					    pos);
+      data->feedback_position_list
+	= board_position_list_duplicate (goban_window->drawn_position_list);
+    }
+
+    if (goban_window->drawing_mode == SGF_MARKUP_NONE)
+      return GOBAN_FEEDBACK_SGF_GHOSTIFY * GOBAN_FEEDBACK_SGF_FACTOR;
+    else {
+      return ((GOBAN_FEEDBACK_SGF_THICK_GHOST + goban_window->drawing_mode)
+	      * GOBAN_FEEDBACK_SGF_FACTOR);
+    }
+  }
+
+  return GOBAN_FEEDBACK_NONE;
+}
+
+
+static void
+markup_mode_goban_clicked (GtkGobanWindow *goban_window,
+			   GtkGobanClickData *data)
+{
+  if (data->button != 1 && data->button != 3)
+    return;
+
+  if (data->modifiers & GDK_CONTROL_MASK
+      && goban_window->board->game == GAME_GO) {
+    BoardPositionList *string_stones;
+
+    if (!data->non_empty_feedback)
+      return;
+
+    string_stones = go_get_string_stones (goban_window->board,
+					  data->x, data->y);
+
+    gtk_goban_set_contents (goban_window->goban, string_stones,
+			    GOBAN_TILE_DONT_CHANGE, GOBAN_TILE_DONT_CHANGE,
+			    goban_window->drawing_mode);
+    board_position_list_delete (string_stones);
+  }
+  else {
+    gtk_goban_set_contents (goban_window->goban,
+			    goban_window->drawn_position_list,
+			    GOBAN_TILE_DONT_CHANGE,
+			    GOBAN_TILE_DONT_CHANGE,
+			    goban_window->drawing_mode);
+
+    board_position_list_delete (goban_window->drawn_position_list);
+    goban_window->drawn_position_list = NULL;
+  }
+
+  if (sgf_utils_apply_markup_changes (goban_window->current_tree,
+				      goban_window->goban->sgf_markup))
+    set_sgf_collection_is_modified (goban_window, TRUE);
 }
 
 
@@ -3283,7 +3432,7 @@ free_handicap_mode_goban_clicked (GtkGobanWindow *goban_window,
 				  GtkGobanClickData *data)
 {
   if (data->button == 1
-      && data->feedback_tile != GOBAN_TILE_DONT_CHANGE
+      && data->non_empty_feedback
       && !(data->modifiers & GDK_SHIFT_MASK)) {
     int contents = gtk_goban_get_grid_contents (goban_window->goban,
 						data->x, data->y);
@@ -3302,7 +3451,8 @@ free_handicap_mode_goban_clicked (GtkGobanWindow *goban_window,
       assert (0);
 
     gtk_goban_set_contents (goban_window->goban, position_list,
-			    contents, GOBAN_TILE_DONT_CHANGE);
+			    contents, GOBAN_TILE_DONT_CHANGE,
+			    GOBAN_SGF_MARKUP_TILE_DONT_CHANGE);
     board_position_list_delete (position_list);
 
     gtk_widget_set_sensitive (goban_window->done_button,
@@ -4914,6 +5064,19 @@ activate_scoring_tool (GtkGobanWindow *goban_window, guint callback_action,
     goban_window->dead_stones = NULL;
 
     leave_special_mode (goban_window);
+  }
+}
+
+
+static void
+activate_markup_tool (GtkGobanWindow *goban_window, gint sgf_markup_type,
+		      GtkCheckMenuItem *menu_item)
+{
+  if (gtk_check_menu_item_get_active (menu_item)) {
+    goban_window->sgf_markup_type = sgf_markup_type;
+    set_goban_signal_handlers (goban_window,
+			       G_CALLBACK (markup_mode_pointer_moved),
+			       G_CALLBACK (markup_mode_goban_clicked));
   }
 }
 

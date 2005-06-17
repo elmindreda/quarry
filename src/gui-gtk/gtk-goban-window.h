@@ -112,6 +112,8 @@ struct _GtkGobanWindow {
   BoardPositionList	  *drawn_position_list;
   int			   drawing_mode;
 
+  int			   sgf_markup_type;
+
   int			   black_variations[BOARD_GRID_SIZE];
   int			   white_variations[BOARD_GRID_SIZE];
   char			   sgf_markup[BOARD_GRID_SIZE];
@@ -169,7 +171,7 @@ struct _GtkGobanWindowClass {
 };
 
 
-GtkType		gtk_goban_window_get_type (void);
+GType		gtk_goban_window_get_type (void);
 
 GtkWidget *	gtk_goban_window_new (SgfCollection *sgf_collection,
 				      const char *filename);
