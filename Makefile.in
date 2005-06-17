@@ -172,9 +172,9 @@ RECURSIVE_TARGETS = info-recursive dvi-recursive pdf-recursive \
 	check-recursive installcheck-recursive
 DIST_COMMON = README $(srcdir)/Makefile.in $(srcdir)/configure AUTHORS \
 	COPYING ChangeLog INSTALL Makefile.am NEWS THANKS TODO \
-	acinclude.m4 aclocal.m4 aux/config.guess aux/config.rpath \
-	aux/config.sub aux/depcomp aux/install-sh aux/missing \
-	aux/mkinstalldirs config.h.in configure configure.ac
+	aclocal.m4 aux/config.guess aux/config.rpath aux/config.sub \
+	aux/depcomp aux/install-sh aux/missing aux/mkinstalldirs \
+	config.h.in configure configure.ac
 DIST_SUBDIRS = $(SUBDIRS)
 all: config.h
 	$(MAKE) $(AM_MAKEFLAGS) all-recursive
@@ -194,7 +194,7 @@ $(top_builddir)/config.status: $(srcdir)/configure $(CONFIG_STATUS_DEPENDENCIES)
 $(srcdir)/configure: @MAINTAINER_MODE_TRUE@ $(srcdir)/configure.ac $(ACLOCAL_M4) $(CONFIGURE_DEPENDENCIES)
 	cd $(srcdir) && $(AUTOCONF)
 
-$(ACLOCAL_M4): @MAINTAINER_MODE_TRUE@ configure.ac acinclude.m4
+$(ACLOCAL_M4): @MAINTAINER_MODE_TRUE@ configure.ac 
 	cd $(srcdir) && $(ACLOCAL) $(ACLOCAL_AMFLAGS)
 
 config.h: stamp-h1
@@ -353,6 +353,12 @@ distuninstallcheck_listfiles = find . -type f -print
 distcleancheck_listfiles = find . -type f -print
 
 distdir: $(DISTFILES)
+	@case `sed 15q $(srcdir)/NEWS` in \
+	*"$(VERSION)"*) : ;; \
+	*) \
+	  echo "NEWS not updated; not releasing" 1>&2; \
+	  exit 1;; \
+	esac
 	$(am__remove_distdir)
 	mkdir $(distdir)
 	$(mkinstalldirs) $(distdir)/aux $(distdir)/po
