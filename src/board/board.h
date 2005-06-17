@@ -1,7 +1,7 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *\
  * This file is part of Quarry.                                    *
  *                                                                 *
- * Copyright (C) 2003, 2004 Paul Pogonyshev.                       *
+ * Copyright (C) 2003, 2004, 2005 Paul Pogonyshev.                 *
  *                                                                 *
  * This program is free software; you can redistribute it and/or   *
  * modify it under the terms of the GNU General Public License as  *
@@ -341,6 +341,9 @@ BoardPositionList *  go_get_fixed_handicap_stones (int board_width,
 						   int num_stones);
 int		     go_get_hoshi_points (int board_width, int board_height,
 					  BoardPoint hoshi_points[9]);
+
+int		     go_is_same_string (Board *board,
+					int _x1, int _y1, int _x2, int _y2);
 
 BoardPositionList *  go_get_string_stones (Board *board, int x, int y);
 BoardPositionList *  go_get_logically_dead_stones (Board *board, int x, int y);
