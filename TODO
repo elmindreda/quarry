@@ -1,5 +1,4 @@
-Things that need to be done before releasing 0.2.
-
+	   THINGS THAT NEED TO BE DONE BEFORE RELEASING 0.2
 
 * PLAYING GAMES
 
@@ -17,30 +16,19 @@ Things that need to be done before releasing 0.2.
 
 *** Implement search history.
 
-*** Maybe search other properties too?  `N' seems like a good
-    candidate.
-
 ** Support multiple games in one file (postpone?)
 
 * EDITING GAME RECORDS
 
 ** Add a command to create a game record without starting a game.
 
-** Add setup stones mode (add black/white stones or delete stones.)
-
-** Add SGF markup editing mode.
-
 ** Add SGF labels editing mode.
-
-** Add commands to delete node with children/children only.
-
-** Add a command to score current position.
 
 ** Support editing various SGF properties (`VA', `BM' etc.)
 
-** Add undo/redo commands.
-
 ** Add command(s) to rearrange children of given node.
+
+** Ask before dismissing modifications.
 
 ** GAME INFORMATION
 
@@ -55,8 +43,6 @@ Things that need to be done before releasing 0.2.
 
 ** Do something about the Control Center, it is kinda ugly.
    (Oh, graphical artist, where art thou?)
-
-** Support GTK+ 2.4 file chooser dialog.
 
 ** Think of what to add to the toolbars (help of anyone who uses
    toolbars is welcome.)
@@ -74,6 +60,8 @@ Things that need to be done before releasing 0.2.
 * INTERNAL GTP CODE
 
 ** Issue `clear_board' command after `boardsize'.
+
+** Be nicer to engines, don't crash if they don't support some command.
 
 * GENERAL
 

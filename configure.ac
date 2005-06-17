@@ -1,7 +1,7 @@
 dnl  Process this file with Autoconf to produce a `configure' script.
 
 # Package name and version.
-AC_INIT([Quarry], [0.1.14], [quarry-dev@gna.org])
+AC_INIT([Quarry], [0.1.15], [quarry-dev@gna.org])
 AC_PREREQ(2.57)
 
 # Check if the script is running in the proper directory.  Alarm if it
@@ -10,7 +10,7 @@ AC_CONFIG_SRCDIR(src/quarry.c)
 AC_CONFIG_AUX_DIR(aux)
 
 # Initialize Automake and add maintainer mode as an option.
-AM_INIT_AUTOMAKE
+AM_INIT_AUTOMAKE([foreign check-news])
 AM_MAINTAINER_MODE
 
 AC_CONFIG_HEADER(config.h)
