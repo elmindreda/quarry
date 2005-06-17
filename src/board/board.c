@@ -3,6 +3,7 @@
  *                                                                 *
  * Copyright (C) 2003 Paul Pogonyshev.                             *
  * Copyright (C) 2004 Paul Pogonyshev and Martin Holters.          *
+ * Copyright (C) 2005 Paul Pogonyshev.                             *
  *                                                                 *
  * This program is free software; you can redistribute it and/or   *
  * modify it under the terms of the GNU General Public License as  *
@@ -650,11 +651,20 @@ board_position_list_union (const BoardPositionList *list1,
  * position list.  It is OK if the position is already there.  Since
  * this function may reallocate the list, you need to assign return
  * value back to your pointer.
+ *
+ * It is also possible to pass NULL as `list'.  In this case, the
+ * function returns a newly allocated list with just one position in
+ * it.  In other words,
+ *
+ *	list = board_position_list_add_position (list, pos);
+ *
+ * will do The Right Thing whether `list' is NULL or not.
  */
 BoardPositionList *
 board_position_list_add_position (BoardPositionList *list, int pos)
 {
-  assert (list);
+  if (!list)
+    return board_position_list_new (&pos, 1);
 
   if (board_position_list_find_position (list, pos) == -1) {
     int k;
