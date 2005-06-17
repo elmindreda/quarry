@@ -40,6 +40,14 @@
 #define SGF_PSEUDO_MARKUP_LAST_MOVE	NUM_SGF_MARKUPS
 #define NUM_ALL_SGF_MARKUPS		(SGF_PSEUDO_MARKUP_LAST_MOVE + 1)
 
+#define SGF_MARKUP_OPAQUE		0
+#define SGF_MARKUP_25_TRANSPARENT	NUM_ALL_SGF_MARKUPS
+#define SGF_MARKUP_50_TRANSPARENT	(SGF_MARKUP_25_TRANSPARENT	\
+					 + NUM_ALL_SGF_MARKUPS)
+
+#define NUM_ALL_SGF_MARKUP_SHADES	(SGF_MARKUP_50_TRANSPARENT	\
+					 + NUM_ALL_SGF_MARKUPS)
+
 
 enum {
   TILE_NONE    = EMPTY,
@@ -59,7 +67,6 @@ enum {
 };
 
 
-
 typedef struct _GtkMainTileSet		GtkMainTileSet;
 typedef struct _GtkSgfMarkupTileSet	GtkSgfMarkupTileSet;
 
@@ -75,7 +82,7 @@ struct _GtkMainTileSet {
 struct _GtkSgfMarkupTileSet {
   gint		tile_size;
 
-  GdkPixbuf    *tiles[NUM_ALL_SGF_MARKUPS][NUM_SGF_MARKUP_BACKGROUNDS];
+  GdkPixbuf    *tiles[NUM_ALL_SGF_MARKUP_SHADES][NUM_SGF_MARKUP_BACKGROUNDS];
 };
 
 
