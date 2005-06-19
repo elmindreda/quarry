@@ -75,6 +75,9 @@ GType		gtk_assistant_get_type (void);
 
 GtkWidget *	gtk_assistant_new (const gchar *title, gpointer user_data);
 
+void		gtk_assistant_set_user_data (GtkAssistant *assistant,
+					     gpointer user_data);
+
 void		gtk_assistant_add_page
 		  (GtkAssistant *assistant, GtkWidget *widget,
 		   const gchar *icon_stock_id, const gchar *title,

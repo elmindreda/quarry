@@ -1,7 +1,7 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *\
  * This file is part of Quarry.                                    *
  *                                                                 *
- * Copyright (C) 2003, 2004 Paul Pogonyshev.                       *
+ * Copyright (C) 2003, 2004, 2005 Paul Pogonyshev.                 *
  *                                                                 *
  * This program is free software; you can redistribute it and/or   *
  * modify it under the terms of the GNU General Public License as  *
@@ -144,6 +144,15 @@ gtk_assistant_new (const char *title, gpointer user_data)
   GTK_ASSISTANT (widget)->user_data = user_data;
 
   return widget;
+}
+
+
+void
+gtk_assistant_set_user_data (GtkAssistant *assistant, gpointer user_data)
+{
+  assert (GTK_IS_ASSISTANT (assistant));
+
+  assistant->user_data = user_data;
 }
 
 
