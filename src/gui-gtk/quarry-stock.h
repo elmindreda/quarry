@@ -35,6 +35,7 @@
 
 /* Other buttons. */
 #define QUARRY_STOCK_BROWSE		"quarry-browse"
+#define QUARRY_STOCK_CREATE		"quarry-create"
 #define QUARRY_STOCK_DONE		"quarry-done"
 #define QUARRY_STOCK_MODIFY		"quarry-modify"
 #define QUARRY_STOCK_MOVE_UP		"quarry-move-up"
