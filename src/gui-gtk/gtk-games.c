@@ -22,6 +22,7 @@
 
 #include "gtk-games.h"
 
+#include "board.h"
 #include "game-info.h"
 
 #include <assert.h>
@@ -33,6 +34,12 @@ const gchar *game_labels[NUM_SUPPORTED_GAMES] = {
   N_("_Go"),
   N_("_Amazons"),
   N_("_Othello")
+};
+
+const gchar *game_rules_labels[NUM_SUPPORTED_GAMES] = {
+  N_("Go Rules"),
+  N_("Amazons Rules"),
+  N_("Othello Rules"),
 };
 
 const Game index_to_game[NUM_SUPPORTED_GAMES] = {
@@ -88,6 +95,81 @@ gtk_games_get_game_index (Game game)
 
   default:
     return GTK_GAME_UNSUPPORTED;
+  }
+}
+
+
+GtkAdjustment *
+gtk_games_create_board_size_adjustment (GtkGameIndex game_index,
+					gint initial_value)
+{
+  assert (0 <= game_index && game_index < NUM_SUPPORTED_GAMES);
+
+  if (initial_value <= 0)
+    initial_value = game_info[index_to_game[game_index]].default_board_size;
+
+  switch (game_index) {
+  case GTK_GAME_GO:
+    return ((GtkAdjustment *)
+	    gtk_adjustment_new (initial_value,
+				GTK_MIN_BOARD_SIZE, GTK_MAX_BOARD_SIZE,
+				1, 2, 0));
+
+  case GTK_GAME_AMAZONS:
+    return ((GtkAdjustment *)
+	    gtk_adjustment_new (initial_value,
+				GTK_MIN_BOARD_SIZE, GTK_MAX_BOARD_SIZE,
+				1, 2, 0));
+
+  case GTK_GAME_OTHELLO:
+    return ((GtkAdjustment *)
+	    gtk_adjustment_new (initial_value,
+				ROUND_UP (GTK_MIN_BOARD_SIZE, 2),
+				ROUND_DOWN (GTK_MAX_BOARD_SIZE, 2),
+				2, 4, 0));
+
+  default:
+    assert (0);
+  }
+}
+
+
+GtkAdjustment *
+gtk_games_create_handicap_adjustment (gint initial_value)
+{
+  return ((GtkAdjustment *)
+	  gtk_adjustment_new (initial_value,
+			      0, GTK_MAX_BOARD_SIZE * GTK_MAX_BOARD_SIZE,
+			      1, 2, 0));
+}
+
+
+GtkAdjustment *
+gtk_games_create_komi_adjustmet (gdouble initial_value)
+{
+  return ((GtkAdjustment *)
+	  gtk_adjustment_new (initial_value, -999.5, 999.5, 1.0, 5.0, 0.0));
+}
+
+
+void
+gtk_games_set_handicap_adjustment_limits
+  (gint board_width, gint board_height,
+   GtkAdjustment *fixed_handicap_adjustment,
+   GtkAdjustment *free_handicap_adjustment)
+{
+  if (fixed_handicap_adjustment) {
+    int max_fixed_handicap = go_get_max_fixed_handicap (board_width,
+							board_height);
+
+    fixed_handicap_adjustment->upper = (gdouble) max_fixed_handicap;
+    gtk_adjustment_changed (fixed_handicap_adjustment);
+  }
+
+  if (free_handicap_adjustment) {
+    free_handicap_adjustment->upper = ((gdouble)
+				       (board_width * board_height - 1));
+    gtk_adjustment_changed (free_handicap_adjustment);
   }
 }
 

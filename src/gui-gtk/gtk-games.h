@@ -58,6 +58,7 @@ typedef enum {
 
 
 extern const gchar  *game_labels[NUM_SUPPORTED_GAMES];
+extern const gchar  *game_rules_labels[NUM_SUPPORTED_GAMES];
 extern const Game    index_to_game[NUM_SUPPORTED_GAMES];
 
 
@@ -65,13 +66,23 @@ extern const Game    index_to_game[NUM_SUPPORTED_GAMES];
   (game_info[index_to_game[game_index]].name)
 
 
-gboolean	gtk_games_engine_supports_game (GtpEngineListItem *engine_data,
-						GtkGameIndex game_index);
+gboolean	 gtk_games_engine_supports_game
+		   (GtpEngineListItem *engine_data, GtkGameIndex game_index);
 
-gint		gtk_games_name_to_index (const gchar *game_name,
-					 gboolean case_sensitive);
+gint		 gtk_games_name_to_index (const gchar *game_name,
+					  gboolean case_sensitive);
 
-GtkGameIndex	gtk_games_get_game_index (Game game);
+GtkGameIndex	 gtk_games_get_game_index (Game game);
+
+GtkAdjustment *	 gtk_games_create_board_size_adjustment
+		   (GtkGameIndex game_index, gint initial_value);
+GtkAdjustment *	 gtk_games_create_handicap_adjustment (gint initial_value);
+GtkAdjustment *	 gtk_games_create_komi_adjustmet (gdouble initial_value);
+
+void		 gtk_games_set_handicap_adjustment_limits
+		   (gint board_width, gint board_height,
+		    GtkAdjustment *fixed_handicap_adjustment,
+		    GtkAdjustment *free_handicap_adjustment);
 
 
 #endif /* QUARRY_GTK_GAMES_H */
