@@ -24,6 +24,7 @@
 
 #include "gtk-assistant.h"
 #include "gtk-configuration.h"
+#include "gtk-control-center.h"
 #include "gtk-games.h"
 #include "gtk-goban-window.h"
 #include "gtk-gtp-client-interface.h"
@@ -40,65 +41,59 @@
 #include <assert.h>
 
 
-typedef struct _TimeControlData		TimeControlData;
-typedef struct _NewGameDialogData	NewGameDialogData;
-
-struct _TimeControlData {
-  GtkNotebook	   *notebook;
-  GtkToggleButton  *track_total_time_button;
-
-  GtkAdjustment    *game_time_limit;
-  GtkAdjustment    *move_time_limit;
-  GtkAdjustment	   *main_time;
-  GtkAdjustment	   *overtime_period;
-  GtkAdjustment	   *moves_per_overtime;
-};
-
-struct _NewGameDialogData {
-  GtkAssistant	   *assistant;
-
-  GtkToggleButton  *game_radio_buttons[NUM_SUPPORTED_GAMES];
-  GtkWidget	   *game_supported_icons[NUM_SUPPORTED_GAMES];
-
-  GtkToggleButton  *player_radio_buttons[NUM_COLORS][2];
-  GtkEntry	   *human_name_entries[NUM_COLORS];
-  GtkWidget	   *engine_selectors[NUM_COLORS];
-
-  GtkNotebook	   *games_notebook;
-
-  GtkAdjustment	   *board_sizes[NUM_SUPPORTED_GAMES];
-  GtkToggleButton  *handicap_toggle_buttons[2];
-  GtkAdjustment	   *handicaps[2];
-  GtkAdjustment	   *komi;
-
-  TimeControlData   time_control_data[NUM_SUPPORTED_GAMES];
-
-  GtpClient	   *players[NUM_COLORS];
-};
+static void	      gtk_new_game_dialog_init (GtkNewGameDialog *dialog);
 
 
 static void	      update_game_and_players_page (GtkWidget *widget,
 						    gpointer user_data);
-static void	      swap_players (NewGameDialogData *data);
-static GtkGameIndex   get_selected_game (NewGameDialogData *data);
+static void	      swap_players (GtkNewGameDialog *dialog);
+static GtkGameIndex   get_selected_game (GtkNewGameDialog *dialog);
 
-static void	      show_game_specific_rules (NewGameDialogData *data);
+static void	      show_game_specific_rules (GtkNewGameDialog *dialog);
 static void	      set_handicap_adjustment_limits
 			(GtkAdjustment *board_size_adjustment,
-			 NewGameDialogData *data);
+			 GtkNewGameDialog *dialog);
 
 static void	      time_control_type_changed (GtkWidget *selector,
 						 GtkNotebook *notebook);
 
-static const gchar *  get_game_rules_help_link_id (NewGameDialogData *data);
+static const gchar *  get_game_rules_help_link_id (GtkNewGameDialog *dialog);
 
-static gboolean	      instantiate_players (NewGameDialogData *data);
+static gboolean	      instantiate_players (GtkNewGameDialog *dialog);
 static void	      begin_game (GtkEnginesInstantiationStatus status,
 				  gpointer user_data);
 
 
-void
-gtk_new_game_dialog_present (void)
+GType
+gtk_new_game_dialog_get_type (void)
+{
+  static GType new_game_dialog_type = 0;
+
+  if (!new_game_dialog_type) {
+    static GTypeInfo new_game_dialog_info = {
+      sizeof (GtkNewGameDialogClass),
+      NULL,
+      NULL,
+      NULL,
+      NULL,
+      NULL,
+      sizeof (GtkNewGameDialog),
+      1,
+      (GInstanceInitFunc) gtk_new_game_dialog_init,
+      NULL
+    };
+
+    new_game_dialog_type = g_type_register_static (GTK_TYPE_ASSISTANT,
+						   "GtkNewGameDialog",
+						   &new_game_dialog_info, 0);
+  }
+
+  return new_game_dialog_type;
+}
+
+
+static void
+gtk_new_game_dialog_init (GtkNewGameDialog *dialog)
 {
   static const gchar *hint_text
     = N_("Note that most GTP engines support only one game. Hence certain "
@@ -111,10 +106,8 @@ gtk_new_game_dialog_present (void)
     = { N_("No limit"), N_("Limited time for entire game"),
 	N_("Limited time per move"), N_("Canadian overtime") };
 
-  NewGameDialogData *data = g_malloc (sizeof (NewGameDialogData));
   gint game_index = gtk_games_name_to_index (new_game_configuration.game_name,
 					     FALSE);
-  GtkWidget *assistant;
   GtkWidget *vbox1;
   GtkWidget **radio_buttons;
   GtkWidget *label;
@@ -129,11 +122,11 @@ gtk_new_game_dialog_present (void)
   GtkRadioButton *last_radio_button = NULL;
   int k;
 
-  /* Create assistant dialog that will hold two pages. */
-  assistant = gtk_assistant_new (_("New Game"), data);
-  data->assistant = GTK_ASSISTANT (assistant);
-  gtk_assistant_set_finish_button (data->assistant, QUARRY_STOCK_PLAY);
-  gtk_utils_make_window_only_horizontally_resizable (GTK_WINDOW (assistant));
+  gtk_window_set_title (GTK_WINDOW (dialog), _("New Game"));
+  gtk_utils_make_window_only_horizontally_resizable (GTK_WINDOW (dialog));
+
+  gtk_assistant_set_user_data (&dialog->assistant, dialog);
+  gtk_assistant_set_finish_button (&dialog->assistant, QUARRY_STOCK_PLAY);
 
   /* "Game & Players" page. */
 
@@ -144,22 +137,22 @@ gtk_new_game_dialog_present (void)
   for (k = 0; k < NUM_SUPPORTED_GAMES; k++) {
     GtkWidget *radio_button;
 
-    label = gtk_label_new_with_mnemonic (game_labels[k]);
-    data->game_supported_icons[k]
+    label = gtk_label_new_with_mnemonic (_(game_labels[k]));
+    dialog->game_supported_icons[k]
       = gtk_image_new_from_stock (GTK_STOCK_YES, GTK_ICON_SIZE_MENU);
 
     hbox = gtk_utils_pack_in_box (GTK_TYPE_HBOX, QUARRY_SPACING_SMALL,
 				  label, GTK_UTILS_PACK_DEFAULT,
-				  data->game_supported_icons[k], 0, NULL);
+				  dialog->game_supported_icons[k], 0, NULL);
 
     radio_button = gtk_radio_button_new_from_widget (last_radio_button);
     last_radio_button = GTK_RADIO_BUTTON (radio_button);
-    data->game_radio_buttons[k] = GTK_TOGGLE_BUTTON (radio_button);
+    dialog->game_radio_buttons[k] = GTK_TOGGLE_BUTTON (radio_button);
     gtk_container_add (GTK_CONTAINER (radio_button), hbox);
     gtk_box_pack_start (GTK_BOX (vbox1), radio_button, FALSE, TRUE, 0);
 
     g_signal_connect (radio_button, "toggled",
-		      G_CALLBACK (update_game_and_players_page), data);
+		      G_CALLBACK (update_game_and_players_page), dialog);
   }
 
   /* Hint about engine/game (non-)compatibility. */
@@ -189,16 +182,16 @@ gtk_new_game_dialog_present (void)
     /* Two radio buttons for selecting who is controlling this
      * player--human or computer.
      */
-    radio_buttons = (GtkWidget **) data->player_radio_buttons[k];
+    radio_buttons = (GtkWidget **) dialog->player_radio_buttons[k];
     gtk_utils_create_radio_chain (radio_buttons, radio_labels[k], 2);
     if (new_game_configuration.player_is_computer[k])
-      gtk_toggle_button_set_active (data->player_radio_buttons[k][1], TRUE);
+      gtk_toggle_button_set_active (dialog->player_radio_buttons[k][1], TRUE);
 
     /* Text entry for human's name. */
     entry = gtk_utils_create_entry (new_game_configuration.player_names[k],
 				    RETURN_ACTIVATES_DEFAULT);
-    data->human_name_entries[k] = GTK_ENTRY (entry);
-    gtk_utils_set_sensitive_on_toggle (data->player_radio_buttons[k][0],
+    dialog->human_name_entries[k] = GTK_ENTRY (entry);
+    gtk_utils_set_sensitive_on_toggle (dialog->player_radio_buttons[k][0],
 				       entry, FALSE);
 
     /* Pack it together with corresponding radio button. */
@@ -207,20 +200,20 @@ gtk_new_game_dialog_present (void)
 				       entry, GTK_UTILS_PACK_DEFAULT, NULL);
 
     /* Selector (combo box/option menu) for computer player. */
-    data->engine_selectors[k]
+    dialog->engine_selectors[k]
       = gtk_preferences_create_engine_selector (GTK_GAME_GO, FALSE,
 						engine_data,
 						update_game_and_players_page,
-						data);
-    gtk_utils_set_sensitive_on_toggle (data->player_radio_buttons[k][1],
-				       data->engine_selectors[k], FALSE);
+						dialog);
+    gtk_utils_set_sensitive_on_toggle (dialog->player_radio_buttons[k][1],
+				       dialog->engine_selectors[k], FALSE);
     g_signal_connect (radio_buttons[1], "toggled",
-		      G_CALLBACK (update_game_and_players_page), data);
+		      G_CALLBACK (update_game_and_players_page), dialog);
 
     /* Horizontal box with a radio button and the selector. */
     hboxes[1] = gtk_utils_pack_in_box (GTK_TYPE_HBOX, QUARRY_SPACING_VERY_BIG,
 				       radio_buttons[1], 0,
-				       data->engine_selectors[k],
+				       dialog->engine_selectors[k],
 				       GTK_UTILS_PACK_DEFAULT,
 				       NULL);
 
@@ -236,10 +229,10 @@ gtk_new_game_dialog_present (void)
 
   /* Make sure the radio buttons line up nicely. */
   gtk_utils_create_size_group (GTK_SIZE_GROUP_HORIZONTAL,
-			       data->player_radio_buttons[WHITE_INDEX][0],
-			       data->player_radio_buttons[WHITE_INDEX][1],
-			       data->player_radio_buttons[BLACK_INDEX][0],
-			       data->player_radio_buttons[BLACK_INDEX][1],
+			       dialog->player_radio_buttons[WHITE_INDEX][0],
+			       dialog->player_radio_buttons[WHITE_INDEX][1],
+			       dialog->player_radio_buttons[BLACK_INDEX][0],
+			       dialog->player_radio_buttons[BLACK_INDEX][1],
 			       vbox1, NULL);
 
   /* Button which opens "Preferences" dialog at "GTP Engines" page. */
@@ -265,7 +258,7 @@ gtk_new_game_dialog_present (void)
   /* A button that allows to quickly swap colors of the players. */
   button = gtk_button_new_with_mnemonic (_("_Swap"));
   g_signal_connect_swapped (button, "clicked",
-			    G_CALLBACK (swap_players), data);
+			    G_CALLBACK (swap_players), dialog);
 
   /* Pack the button into a box with top and bottom padding so it ends
    * up just between two players' control sets.
@@ -291,43 +284,32 @@ gtk_new_game_dialog_present (void)
     = gtk_utils_pack_in_box (GTK_TYPE_VBOX, QUARRY_SPACING_BIG,
 			     named_vbox, GTK_UTILS_FILL,
 			     hbox, GTK_UTILS_FILL, NULL);
-  gtk_assistant_add_page (data->assistant, game_and_players_page,
+  gtk_assistant_add_page (&dialog->assistant, game_and_players_page,
 			  GTK_STOCK_REFRESH, _("Game &amp; Players"),
 			  NULL, NULL);
-  gtk_assistant_set_page_help_link_id (data->assistant, game_and_players_page,
+  gtk_assistant_set_page_help_link_id (&dialog->assistant,
+				       game_and_players_page,
 				       "new-game-dialog-game-and-players");
   gtk_widget_show_all (game_and_players_page);
 
-  if (game_index != -1)
-    gtk_toggle_button_set_active (data->game_radio_buttons[game_index], TRUE);
+  if (game_index != -1) {
+    gtk_toggle_button_set_active (dialog->game_radio_buttons[game_index],
+				  TRUE);
+  }
 
-  update_game_and_players_page (NULL, data);
+  update_game_and_players_page (NULL, dialog);
 
   /* "Game Rules" page. */
 
   /* Notebook with a page for each game. */
   games_notebook = gtk_utils_create_invisible_notebook ();
-  data->games_notebook = GTK_NOTEBOOK (games_notebook);
-
-  /* Board size adjustments for each of the games. */
-  data->board_sizes[GTK_GAME_GO]
-    = ((GtkAdjustment *)
-       gtk_adjustment_new (new_go_game_configuration.board_size,
-			   GTK_MIN_BOARD_SIZE, GTK_MAX_BOARD_SIZE, 1, 2, 0));
-  data->board_sizes[GTK_GAME_AMAZONS]
-    = ((GtkAdjustment *)
-       gtk_adjustment_new (new_amazons_game_configuration.board_size,
-			   GTK_MIN_BOARD_SIZE, GTK_MAX_BOARD_SIZE, 1, 2, 0));
-  data->board_sizes[GTK_GAME_OTHELLO]
-    = ((GtkAdjustment *)
-       gtk_adjustment_new (new_othello_game_configuration.board_size,
-			   ROUND_UP (GTK_MIN_BOARD_SIZE, 2),
-			   ROUND_DOWN (GTK_MAX_BOARD_SIZE, 2),
-			   2, 4, 0));
+  dialog->games_notebook = GTK_NOTEBOOK (games_notebook);
 
   for (k = 0; k < NUM_SUPPORTED_GAMES; k++) {
-    TimeControlData *const time_control_data = data->time_control_data + k;
+    NewGameDialogTimeControlData *const time_control_data
+      = dialog->time_control_data + k;
     const TimeControlConfiguration *time_control_configuration = NULL;
+    gint initial_board_size = 0;
 
     GtkWidget *rules_vbox_widget;
     GtkBox *rules_vbox;
@@ -342,29 +324,34 @@ gtk_new_game_dialog_present (void)
     GtkWidget *moves_per_overtime_spin_button;
     GtkWidget *time_control_named_vbox;
     GtkSizeGroup *spin_buttons_size_group;
-    char rules_vbox_title[64];
 
-    if (k == GTK_GAME_GO)
+    if (k == GTK_GAME_GO) {
       time_control_configuration = &new_go_game_configuration.time_control;
+      initial_board_size	 = new_go_game_configuration.board_size;
+    }
     else if (k == GTK_GAME_AMAZONS) {
       time_control_configuration
 	= &new_amazons_game_configuration.time_control;
+      initial_board_size = new_amazons_game_configuration.board_size;
     }
     else if (k == GTK_GAME_OTHELLO) {
       time_control_configuration
 	= &new_othello_game_configuration.time_control;
+      initial_board_size = new_othello_game_configuration.board_size;
     }
 
     /* "Game Rules" named vertical box. */
     /* FIXME: i18n. */
-    sprintf (rules_vbox_title, "%s Rules", game_info[index_to_game[k]].name);
-    rules_vbox_widget = gtk_named_vbox_new (rules_vbox_title, FALSE,
+    rules_vbox_widget = gtk_named_vbox_new (_(game_rules_labels[k]), FALSE,
 					    QUARRY_SPACING_SMALL);
     rules_vbox = GTK_BOX (rules_vbox_widget);
 
     /* Board size spin button and a label for it. */
+    dialog->board_sizes[k] =
+      gtk_games_create_board_size_adjustment (k, initial_board_size);
     board_size_spin_button
-      = gtk_utils_create_spin_button (data->board_sizes[k], 0.0, 0, TRUE);
+      = gtk_utils_create_spin_button (dialog->board_sizes[k], 0.0, 0, TRUE);
+
     label = gtk_utils_create_mnemonic_label (_("Board _size:"),
 					     board_size_spin_button);
 
@@ -541,27 +528,26 @@ gtk_new_game_dialog_present (void)
       /* Two radio buttons for choosing fixed (Japanese) or free
        * (Chinese) handicaps.
        */
-      radio_buttons = (GtkWidget **) data->handicap_toggle_buttons;
+      radio_buttons = (GtkWidget **) dialog->handicap_toggle_buttons;
       gtk_utils_create_radio_chain (radio_buttons,
 				    handicap_radio_button_labels, 2);
-      if (!new_go_game_configuration.handicap_is_fixed)
-	gtk_toggle_button_set_active (data->handicap_toggle_buttons[1], TRUE);
+      if (!new_go_game_configuration.handicap_is_fixed) {
+	gtk_toggle_button_set_active (dialog->handicap_toggle_buttons[1],
+				      TRUE);
+      }
 
       /* Handicap spin buttons and boxes to pack them together with
        * the radio buttons.
        */
       for (i = 0; i < 2; i++) {
-	data->handicaps[i]
-	  = ((GtkAdjustment *)
-	     gtk_adjustment_new ((i == 0
-				  ? new_go_game_configuration.fixed_handicap
-				  : new_go_game_configuration.free_handicap),
-				 0, GTK_MAX_BOARD_SIZE * GTK_MAX_BOARD_SIZE,
-				 1, 2, 0));
+	dialog->handicaps[i] = (gtk_games_create_handicap_adjustment
+				(i == 0
+				 ? new_go_game_configuration.fixed_handicap
+				 : new_go_game_configuration.free_handicap));
 
 	handicap_spin_buttons[i]
-	  = gtk_utils_create_spin_button (data->handicaps[i], 0.0, 0, TRUE);
-	gtk_utils_set_sensitive_on_toggle (data->handicap_toggle_buttons[i],
+	  = gtk_utils_create_spin_button (dialog->handicaps[i], 0.0, 0, TRUE);
+	gtk_utils_set_sensitive_on_toggle (dialog->handicap_toggle_buttons[i],
 					   handicap_spin_buttons[i], FALSE);
 
 	hboxes[i] = gtk_utils_pack_in_box (GTK_TYPE_HBOX, QUARRY_SPACING,
@@ -584,15 +570,15 @@ gtk_new_game_dialog_present (void)
       gtk_box_pack_start (rules_vbox, vbox1,
 			  FALSE, TRUE, QUARRY_SPACING_SMALL);
 
-      set_handicap_adjustment_limits (data->board_sizes[GTK_GAME_GO], data);
-      g_signal_connect (data->board_sizes[GTK_GAME_GO], "value-changed",
-			G_CALLBACK (set_handicap_adjustment_limits), data);
+      set_handicap_adjustment_limits (dialog->board_sizes[GTK_GAME_GO],
+				      dialog);
+      g_signal_connect (dialog->board_sizes[GTK_GAME_GO], "value-changed",
+			G_CALLBACK (set_handicap_adjustment_limits), dialog);
 
       /* Komi spin button and label. */
-      data->komi = ((GtkAdjustment *)
-		    gtk_adjustment_new (new_go_game_configuration.komi,
-					-999.5, 999.5, 1.0, 5.0, 0.0));
-      komi_spin_button = gtk_utils_create_spin_button (data->komi,
+      dialog->komi
+	= gtk_games_create_komi_adjustmet (new_go_game_configuration.komi);
+      komi_spin_button = gtk_utils_create_spin_button (dialog->komi,
 						       0.0, 1, FALSE);
 
       label = gtk_utils_create_mnemonic_label (_("_Komi:"), komi_spin_button);
@@ -615,40 +601,55 @@ gtk_new_game_dialog_present (void)
 				   rules_vbox_widget, GTK_UTILS_FILL,
 				   time_control_named_vbox, GTK_UTILS_FILL,
 				   NULL);
-    gtk_notebook_append_page (data->games_notebook, vbox1, NULL);
+    gtk_notebook_append_page (dialog->games_notebook, vbox1, NULL);
 
     /* Align all labels in one call. */
     gtk_utils_align_left_widgets (GTK_CONTAINER (vbox1), NULL);
   }
 
   /* Finally, add the game rules notebook as an assistant page. */
-  gtk_assistant_add_page (data->assistant, games_notebook,
+  gtk_assistant_add_page (&dialog->assistant, games_notebook,
 			  GTK_STOCK_PREFERENCES, _("Game Rules"),
 			  ((GtkAssistantPageShownCallback)
 			   show_game_specific_rules),
 			  ((GtkAssistantPageAcceptableCallback)
 			   instantiate_players));
   gtk_assistant_set_page_help_link_id_callback
-    (data->assistant, games_notebook,
+    (&dialog->assistant, games_notebook,
      (GtkAssistantPageHelpLinkIDCallback) get_game_rules_help_link_id);
   gtk_widget_show_all (games_notebook);
+}
 
-  gtk_widget_show (assistant);
+
+void
+gtk_new_game_dialog_present (void)
+{
+  static GtkWindow *new_game_dialog = NULL;
+
+  if (!new_game_dialog) {
+    new_game_dialog = GTK_WINDOW (g_object_new (GTK_TYPE_NEW_GAME_DIALOG,
+						NULL));
+
+    gtk_control_center_window_created (new_game_dialog);
+    gtk_utils_null_pointer_on_destroy (&new_game_dialog, TRUE);
+  }
+
+  gtk_window_present (new_game_dialog);
 }
 
 
 static void
 update_game_and_players_page (GtkWidget *widget, gpointer user_data)
 {
-  NewGameDialogData *data = (NewGameDialogData *) user_data;
-  GtkGameIndex selected_game = get_selected_game (data);
+  GtkNewGameDialog *dialog   = GTK_NEW_GAME_DIALOG (user_data);
+  GtkGameIndex selected_game = get_selected_game (dialog);
   GtpEngineListItem *engine_datum[NUM_COLORS] = { NULL, NULL };
   int k;
 
   UNUSED (widget);
 
   for (k = 0; k < NUM_COLORS; k++) {
-    GtkWidget *selector = data->engine_selectors[k];
+    GtkWidget *selector = dialog->engine_selectors[k];
 
     if (gtk_preferences_have_non_hidden_gtp_engine ()) {
       if (GTK_WIDGET_IS_SENSITIVE (selector)) {
@@ -656,13 +657,13 @@ update_game_and_players_page (GtkWidget *widget, gpointer user_data)
 	  = gtk_preferences_get_engine_selector_selection (selector);
       }
 
-      gtk_widget_set_sensitive (GTK_WIDGET (data->player_radio_buttons[k][1]),
-				TRUE);
+      gtk_widget_set_sensitive
+	(GTK_WIDGET (dialog->player_radio_buttons[k][1]), TRUE);
     }
     else {
-      gtk_toggle_button_set_active (data->player_radio_buttons[k][0], TRUE);
-      gtk_widget_set_sensitive (GTK_WIDGET (data->player_radio_buttons[k][1]),
-				FALSE);
+      gtk_toggle_button_set_active (dialog->player_radio_buttons[k][0], TRUE);
+      gtk_widget_set_sensitive
+	(GTK_WIDGET (dialog->player_radio_buttons[k][1]), FALSE);
     }
 
     gtk_preferences_set_engine_selector_game_index (selector, selected_game);
@@ -673,12 +674,12 @@ update_game_and_players_page (GtkWidget *widget, gpointer user_data)
       = (gtk_games_engine_supports_game (engine_datum[BLACK_INDEX], k)
 	 && gtk_games_engine_supports_game (engine_datum[WHITE_INDEX], k));
 
-    if (gtk_toggle_button_get_active (data->game_radio_buttons[k])) {
-      gtk_widget_set_sensitive (data->assistant->next_button,
+    if (gtk_toggle_button_get_active (dialog->game_radio_buttons[k])) {
+      gtk_widget_set_sensitive (dialog->assistant.next_button,
 				game_is_supported);
     }
 
-    gtk_image_set_from_stock (GTK_IMAGE (data->game_supported_icons[k]),
+    gtk_image_set_from_stock (GTK_IMAGE (dialog->game_supported_icons[k]),
 			      game_is_supported ? GTK_STOCK_YES : GTK_STOCK_NO,
 			      GTK_ICON_SIZE_MENU);
   }
@@ -686,7 +687,7 @@ update_game_and_players_page (GtkWidget *widget, gpointer user_data)
 
 
 static void
-swap_players (NewGameDialogData *data)
+swap_players (GtkNewGameDialog *dialog)
 {
   gboolean player_is_human[NUM_COLORS];
   gchar *human_names[NUM_COLORS];
@@ -694,25 +695,25 @@ swap_players (NewGameDialogData *data)
   int k;
 
   for (k = 0; k < NUM_COLORS; k++) {
-    GtkWidget *selector = data->engine_selectors[k];
+    GtkWidget *selector = dialog->engine_selectors[k];
 
     player_is_human[k]
-      = gtk_toggle_button_get_active (data->player_radio_buttons[k][0]);
+      = gtk_toggle_button_get_active (dialog->player_radio_buttons[k][0]);
 
     human_names[k]
-      = g_strdup (gtk_entry_get_text (data->human_name_entries[k]));
+      = g_strdup (gtk_entry_get_text (dialog->human_name_entries[k]));
     engine_datum[k] = gtk_preferences_get_engine_selector_selection (selector);
   }
 
   for (k = 0; k < NUM_COLORS; k++) {
     int other = OTHER_INDEX (k);
 
-    gtk_entry_set_text (data->human_name_entries[other], human_names[k]);
+    gtk_entry_set_text (dialog->human_name_entries[other], human_names[k]);
     gtk_preferences_set_engine_selector_selection
-      (data->engine_selectors[other], engine_datum[k]);
+      (dialog->engine_selectors[other], engine_datum[k]);
 
     gtk_toggle_button_set_active
-      (data->player_radio_buttons[other][player_is_human[k] ? 0 : 1], TRUE);
+      (dialog->player_radio_buttons[other][player_is_human[k] ? 0 : 1], TRUE);
 
     g_free (human_names[k]);
   }
@@ -720,12 +721,13 @@ swap_players (NewGameDialogData *data)
 
 
 static GtkGameIndex
-get_selected_game (NewGameDialogData *data)
+get_selected_game (GtkNewGameDialog *dialog)
 {
   gboolean selected_game;
 
   for (selected_game = 0; ; selected_game++) {
-    if (gtk_toggle_button_get_active (data->game_radio_buttons[selected_game]))
+    if (gtk_toggle_button_get_active
+	(dialog->game_radio_buttons[selected_game]))
       break;
   }
 
@@ -734,25 +736,22 @@ get_selected_game (NewGameDialogData *data)
 
 
 static void
-show_game_specific_rules (NewGameDialogData *data)
+show_game_specific_rules (GtkNewGameDialog *dialog)
 {
-  gtk_notebook_set_current_page (data->games_notebook,
-				 get_selected_game (data));
+  gtk_notebook_set_current_page (dialog->games_notebook,
+				 get_selected_game (dialog));
 }
 
 
 static void
 set_handicap_adjustment_limits (GtkAdjustment *board_size_adjustment,
-				NewGameDialogData *data)
+				GtkNewGameDialog *dialog)
 {
   gint board_size = gtk_adjustment_get_value (board_size_adjustment);
-  int max_fixed_handicap = go_get_max_fixed_handicap (board_size, board_size);
 
-  data->handicaps[0]->upper = (gdouble) max_fixed_handicap;
-  gtk_adjustment_changed (data->handicaps[0]);
-
-  data->handicaps[1]->upper = (gdouble) (board_size * board_size - 1);
-  gtk_adjustment_changed (data->handicaps[1]);
+  gtk_games_set_handicap_adjustment_limits (board_size, board_size,
+					    dialog->handicaps[0],
+					    dialog->handicaps[1]);
 }
 
 
@@ -766,9 +765,9 @@ time_control_type_changed (GtkWidget *selector, GtkNotebook *notebook)
 
 
 static const gchar *
-get_game_rules_help_link_id (NewGameDialogData *data)
+get_game_rules_help_link_id (GtkNewGameDialog *dialog)
 {
-  switch (get_selected_game (data)) {
+  switch (get_selected_game (dialog)) {
   case GTK_GAME_GO:
     return "new-game-dialog-go-rules";
 
@@ -785,22 +784,22 @@ get_game_rules_help_link_id (NewGameDialogData *data)
 
 
 static gboolean
-instantiate_players (NewGameDialogData *data)
+instantiate_players (GtkNewGameDialog *dialog)
 {
   int k;
-  GtkWindow *window = GTK_WINDOW (data->assistant);
+  GtkWindow *window = GTK_WINDOW (dialog);
   GtkEngineChain *engine_chain
     = gtk_preferences_create_engines_instantiation_chain (window,
-							  begin_game, data);
+							  begin_game, dialog);
 
   for (k = 0; k < NUM_COLORS; k++) {
-    if (GTK_WIDGET_IS_SENSITIVE (data->engine_selectors[k])) {
+    if (GTK_WIDGET_IS_SENSITIVE (dialog->engine_selectors[k])) {
       gtk_preferences_instantiate_selected_engine (engine_chain,
-						   data->engine_selectors[k],
-						   &data->players[k]);
+						   dialog->engine_selectors[k],
+						   &dialog->players[k]);
     }
     else
-      data->players[k] = NULL;
+      dialog->players[k] = NULL;
   }
 
   gtk_preferences_do_instantiate_engines (engine_chain);
@@ -812,14 +811,14 @@ instantiate_players (NewGameDialogData *data)
 static void
 begin_game (GtkEnginesInstantiationStatus status, gpointer user_data)
 {
-  NewGameDialogData *data;
+  GtkNewGameDialog *dialog;
   GtkGameIndex game_index;
   Game game;
   int board_size;
   gboolean player_is_computer[NUM_COLORS];
   const char *human_names[NUM_COLORS];
   const char *engine_screen_names[NUM_COLORS];
-  TimeControlData * time_control_data;
+  NewGameDialogTimeControlData * time_control_data;
   TimeControlConfiguration *time_control_configuration;
   TimeControl *time_control;
   SgfGameTree *game_tree;
@@ -830,12 +829,12 @@ begin_game (GtkEnginesInstantiationStatus status, gpointer user_data)
   if (status != ENGINES_INSTANTIATED)
     return;
 
-  data	     = (NewGameDialogData *) user_data;
-  game_index = get_selected_game (data);
+  dialog     = GTK_NEW_GAME_DIALOG (user_data);
+  game_index = get_selected_game (dialog);
   game	     = index_to_game[game_index];
-  board_size = gtk_adjustment_get_value (data->board_sizes[game_index]);
+  board_size = gtk_adjustment_get_value (dialog->board_sizes[game_index]);
 
-  time_control_data	     = data->time_control_data + game_index;
+  time_control_data	     = dialog->time_control_data + game_index;
   time_control_configuration = NULL;
   time_control		     = NULL;
 
@@ -848,11 +847,11 @@ begin_game (GtkEnginesInstantiationStatus status, gpointer user_data)
   for (k = 0; k < NUM_COLORS; k++) {
     GtpEngineListItem *engine_data =
       (gtk_preferences_get_engine_selector_selection
-       (data->engine_selectors[k]));
+       (dialog->engine_selectors[k]));
 
     player_is_computer[k]
-      = GTK_WIDGET_IS_SENSITIVE (data->engine_selectors[k]);
-    human_names[k] = gtk_entry_get_text (data->human_name_entries[k]);
+      = GTK_WIDGET_IS_SENSITIVE (dialog->engine_selectors[k]);
+    human_names[k] = gtk_entry_get_text (dialog->human_name_entries[k]);
     engine_screen_names[k] = (engine_data ? engine_data->screen_name : NULL);
 
     sgf_node_add_text_property
@@ -865,10 +864,11 @@ begin_game (GtkEnginesInstantiationStatus status, gpointer user_data)
 
   if (game == GAME_GO) {
     gboolean handicap_is_fixed
-      = gtk_toggle_button_get_active (data->handicap_toggle_buttons[0]);
-    gint handicap = gtk_adjustment_get_value (data->handicaps[handicap_is_fixed
-							      ? 0 : 1]);
-    gdouble komi = gtk_adjustment_get_value (data->komi);
+      = gtk_toggle_button_get_active (dialog->handicap_toggle_buttons[0]);
+    gint handicap
+      = gtk_adjustment_get_value (dialog->handicaps[handicap_is_fixed
+						    ? 0 : 1]);
+    gdouble komi = gtk_adjustment_get_value (dialog->komi);
 
     /* Don't bother user with handicap subtleties. */
     if (handicap == 1)
@@ -973,13 +973,12 @@ begin_game (GtkEnginesInstantiationStatus status, gpointer user_data)
 
   goban_window = gtk_goban_window_new (sgf_collection, NULL);
   gtk_goban_window_enter_game_mode (GTK_GOBAN_WINDOW (goban_window),
-				    data->players[BLACK_INDEX],
-				    data->players[WHITE_INDEX],
+				    dialog->players[BLACK_INDEX],
+				    dialog->players[WHITE_INDEX],
 				    time_control);
   gtk_widget_show (goban_window);
 
-  gtk_widget_destroy (GTK_WIDGET (data->assistant));
-  g_free (data);
+  gtk_widget_destroy (GTK_WIDGET (dialog));
 }
 
 
