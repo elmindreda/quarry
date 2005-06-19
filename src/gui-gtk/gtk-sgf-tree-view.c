@@ -100,7 +100,8 @@ static void	 gtk_sgf_tree_view_destroy (GtkObject *object);
 
 
 static void	 configure_adjustment (GtkSgfTreeView *view,
-				       gboolean horizontal);
+				       gboolean horizontal,
+				       gint original_value);
 static void	 disconnect_adjustment (GtkSgfTreeView *view,
 					GtkAdjustment *adjustment);
 static void	 scroll_adjustment_value_changed (GtkSgfTreeView *view);
@@ -328,7 +329,7 @@ gtk_sgf_tree_view_set_scroll_adjustments (GtkSgfTreeView *view,
     g_object_ref (hadjustment);
     gtk_object_sink (GTK_OBJECT (hadjustment));
 
-    configure_adjustment (view, TRUE);
+    configure_adjustment (view, TRUE, 0);
 
     g_signal_connect_swapped (hadjustment, "value-changed",
 			      G_CALLBACK (scroll_adjustment_value_changed),
@@ -349,7 +350,7 @@ gtk_sgf_tree_view_set_scroll_adjustments (GtkSgfTreeView *view,
     g_object_ref (vadjustment);
     gtk_object_sink (GTK_OBJECT (vadjustment));
 
-    configure_adjustment (view, FALSE);
+    configure_adjustment (view, FALSE, 0);
 
     g_signal_connect_swapped (vadjustment, "value-changed",
 			      G_CALLBACK (scroll_adjustment_value_changed),
@@ -715,13 +716,14 @@ gtk_sgf_tree_view_center_on_current_node (GtkSgfTreeView *view)
 
 
 static void
-configure_adjustment (GtkSgfTreeView *view, gboolean horizontal)
+configure_adjustment (GtkSgfTreeView *view, gboolean horizontal,
+		      gint original_value)
 {
   GtkAdjustment *adjustment = (horizontal
 			       ? view->hadjustment : view->vadjustment);
   GtkWidget *widget = GTK_WIDGET (view);
   gboolean adjustment_has_changed = FALSE;
-  gboolean value_has_changed = FALSE;
+  gboolean value_has_changed = (original_value != (gint) adjustment->value);
   gint page_size = (horizontal
 		    ? widget->allocation.width : widget->allocation.height);
   gint full_cell_size = FULL_CELL_SIZE (view);
@@ -1035,8 +1037,8 @@ update_view_port_and_maybe_move_or_resize_window
 
   view->ignore_adjustment_changes = TRUE;
 
-  configure_adjustment (view, TRUE);
-  configure_adjustment (view, FALSE);
+  configure_adjustment (view, TRUE, original_hadjustment_value);
+  configure_adjustment (view, FALSE, original_vadjustment_value);
 
   view->ignore_adjustment_changes = FALSE;
 
