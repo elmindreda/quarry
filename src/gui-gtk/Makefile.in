@@ -231,6 +231,7 @@ libguigtk_a_SOURCES = \
 	gtk-help.c			\
 	gtk-named-vbox.c		\
 	gtk-new-game-dialog.c		\
+	gtk-new-game-record-dialog.c	\
 	gtk-parser-interface.c		\
 	gtk-preferences.c		\
 	gtk-progress-dialog.c		\
@@ -261,6 +262,7 @@ libguigtk_a_SOURCES = \
 	gtk-help.h			\
 	gtk-named-vbox.h		\
 	gtk-new-game-dialog.h		\
+	gtk-new-game-record-dialog.h	\
 	gtk-parser-interface.h		\
 	gtk-preferences.h		\
 	gtk-progress-dialog.h		\
@@ -326,9 +328,11 @@ am_libguigtk_a_OBJECTS = gtk-assistant.$(OBJEXT) gtk-clock.$(OBJEXT) \
 	gtk-goban.$(OBJEXT) gtk-goban-base.$(OBJEXT) \
 	gtk-goban-window.$(OBJEXT) gtk-gtp-client-interface.$(OBJEXT) \
 	gtk-help.$(OBJEXT) gtk-named-vbox.$(OBJEXT) \
-	gtk-new-game-dialog.$(OBJEXT) gtk-parser-interface.$(OBJEXT) \
-	gtk-preferences.$(OBJEXT) gtk-progress-dialog.$(OBJEXT) \
-	gtk-qbox.$(OBJEXT) gtk-qhbox.$(OBJEXT) gtk-qvbox.$(OBJEXT) \
+	gtk-new-game-dialog.$(OBJEXT) \
+	gtk-new-game-record-dialog.$(OBJEXT) \
+	gtk-parser-interface.$(OBJEXT) gtk-preferences.$(OBJEXT) \
+	gtk-progress-dialog.$(OBJEXT) gtk-qbox.$(OBJEXT) \
+	gtk-qhbox.$(OBJEXT) gtk-qvbox.$(OBJEXT) \
 	gtk-resume-game-dialog.$(OBJEXT) \
 	gtk-sgf-tree-signal-proxy.$(OBJEXT) gtk-sgf-tree-view.$(OBJEXT) \
 	gtk-tile-set.$(OBJEXT) gtk-utils.$(OBJEXT) \
@@ -359,6 +363,7 @@ am__depfiles_maybe = depfiles
 @AMDEP_TRUE@	./$(DEPDIR)/gtk-help.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/gtk-named-vbox.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/gtk-new-game-dialog.Po \
+@AMDEP_TRUE@	./$(DEPDIR)/gtk-new-game-record-dialog.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/gtk-parser-interface.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/gtk-preferences.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/gtk-progress-dialog.Po \
@@ -424,6 +429,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gtk-help.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gtk-named-vbox.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gtk-new-game-dialog.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gtk-new-game-record-dialog.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gtk-parser-interface.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gtk-preferences.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gtk-progress-dialog.Po@am__quote@

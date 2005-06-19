@@ -80,6 +80,7 @@ libguigtk_a_SOURCES =			\
 	gtk-help.c			\
 	gtk-named-vbox.c		\
 	gtk-new-game-dialog.c		\
+	gtk-new-game-record-dialog.c	\
 	gtk-parser-interface.c		\
 	gtk-preferences.c		\
 	gtk-progress-dialog.c		\
@@ -110,6 +111,7 @@ libguigtk_a_SOURCES =			\
 	gtk-help.h			\
 	gtk-named-vbox.h		\
 	gtk-new-game-dialog.h		\
+	gtk-new-game-record-dialog.h	\
 	gtk-parser-interface.h		\
 	gtk-preferences.h		\
 	gtk-progress-dialog.h		\
