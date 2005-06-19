@@ -40,6 +40,7 @@
 #include "gtk-help.h"
 #include "gtk-named-vbox.h"
 #include "gtk-new-game-dialog.h"
+#include "gtk-new-game-record-dialog.h"
 #include "gtk-parser-interface.h"
 #include "gtk-preferences.h"
 #include "gtk-qhbox.h"
@@ -490,6 +491,9 @@ gtk_goban_window_init (GtkGobanWindow *goban_window)
     { N_("/File/_New Game..."),		"<ctrl>N",
       gtk_new_game_dialog_present,	0,
       "<StockItem>",			GTK_STOCK_NEW },
+    { N_("/File/Ne_w Game Record..."),	"<shift><ctrl>N",
+      gtk_new_game_record_dialog_present, 0,
+      "<Item>" },
     { N_("/File/"), NULL, NULL, 0, "<Separator>" },
 
     { N_("/File/_Open..."),		"<ctrl>O",
