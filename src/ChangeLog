@@ -1,3 +1,59 @@
+2005-06-19  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* gui-gtk/gtk-new-game-dialog.c: Make it a GLib class (lots of
+	small changes everywhere.)
+	(gtk_new_game_dialog_get_type): New function.
+	(gtk_new_game_dialog_init): New function, break out of
+	gtk_new_game_dialog_present().  Pass `game_labels[k]' string
+	through gettext.
+	(gtk_new_game_dialog_present): Only allow one dialog at a time.
+	(swap_players): Change argument's type to `GtkNewGameDialog'.
+	(get_selected_game): Likewise.
+	(show_game_specific_rules): Likewise.
+	(set_handicap_adjustment_limits): Likewise.
+	(get_game_rules_help_link_id): Likewise.
+	(instantiate_players): Likewise.
+
+	* gui-gtk/gtk-new-game-dialog.h (GTK_TYPE_NEW_GAME_DIALOG)
+	(GTK_NEW_GAME_DIALOG, GTK_NEW_GAME_DIALOG_CLASS)
+	(GTK_IS_NEW_GAME_DIALOG, GTK_IS_NEW_GAME_DIALOG_CLASS)
+	(GTK_NEW_GAME_DIALOG_GET_CLASS): New macros.
+
+	* gui-gtk/gtk-assistant.c (gtk_assistant_set_user_data): New
+	function.
+
+	* gui-gtk/gtk-goban-window.c (gtk_goban_window_init): Add "New
+	Game Record" item to the "File" menu.
+
+	* gui-gtk/gtk-control-center.c (gtk_control_center_present): Add
+	"New Game Record Button".  Pass "Resume Game" string through
+	gettext.
+
+	* gui-gtk/gtk-new-game-record-dialog.c: New file.
+	* gui-gtk/gtk-new-game-record-dialog.h: New file.
+
+	* gui-gtk/gtk-games.c (game_rules_labels): New global array of
+	constant strings.
+	(gtk_games_create_board_size_adjustment)
+	(gtk_games_create_handicap_adjustment)
+	(gtk_games_create_komi_adjustmet): New functions, break out of
+	gtk_new_game_dialog_present().
+	(gtk_games_set_handicap_adjustment_limits): New function, break
+	out of set_handicap_adjustment_limits() in
+	`gtk-new-game-dialog.c'.
+
+2005-06-18  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* gui-gtk/gtk-utils.c (gtk_utils_pack_array_in_box)
+	(gtk_utils_get_selected_radio_index): New functions.
+
+	* gui-gtk/quarry-stock.c: New stock item `QUARRY_STOCK_CREATE'.
+
+	* gui-gtk/gtk-sgf-tree-view.c (configure_adjustment): Add
+	`original_value' argument and call gtk_adjustment_value_changed()
+	if current value doesn't match original.  Fixes problem when tree
+	view's scrollbars wouldn't reflect most scrolls.
+
 2005-06-17  Paul Pogonyshev  <pogonyshev@gmx.net>
 
 	* (Quarry version 0.1.15.)
