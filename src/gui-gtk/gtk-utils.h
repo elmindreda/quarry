@@ -212,6 +212,11 @@ GtkWidget *	gtk_utils_create_titled_page (GtkWidget *contents,
 					      const gchar *title);
 
 GtkWidget *	gtk_utils_pack_in_box (GType box_type, gint spacing, ...);
+GtkWidget *	gtk_utils_pack_array_in_box (GType box_type, gint spacing,
+					     GtkWidget **widgets,
+					     gint num_widgets,
+					     guint packing_parameters);
+
 GtkWidget *	gtk_utils_align_widget (GtkWidget *widget,
 					gfloat x_alignment,
 					gfloat y_alignment);
@@ -296,6 +301,9 @@ void		gtk_text_buffer_select_range (GtkTextBuffer *text_buffer,
 
 #endif
 
+
+gint		gtk_utils_get_selected_radio_index
+		  (GSList *radio_button_group);
 
 void		gtk_utils_set_sensitive_on_toggle
 		  (GtkToggleButton *toggle_button, GtkWidget *widget,

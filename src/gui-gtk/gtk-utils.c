@@ -417,6 +417,28 @@ gtk_utils_pack_in_box (GType box_type, gint spacing, ...)
 
 
 GtkWidget *
+gtk_utils_pack_array_in_box (GType box_type, gint spacing,
+			     GtkWidget **widgets, gint num_widgets,
+			     guint packing_parameters)
+{
+  int k;
+
+  GtkBox *box = GTK_BOX (g_object_new (box_type, NULL));
+
+  gtk_box_set_spacing (box, spacing);
+
+  for (k = 0; k < num_widgets; k++) {
+    gtk_box_pack_start (box, widgets[k],
+			packing_parameters & GTK_UTILS_EXPAND ? TRUE : FALSE,
+			packing_parameters & GTK_UTILS_FILL ? TRUE : FALSE,
+			packing_parameters & GTK_UTILS_PACK_PADDING_MASK);
+  }
+
+  return GTK_WIDGET (box);
+}
+
+
+GtkWidget *
 gtk_utils_align_widget (GtkWidget *widget,
 			gfloat x_alignment, gfloat y_alignment)
 {
@@ -1150,6 +1172,25 @@ gtk_text_buffer_select_range (GtkTextBuffer *text_buffer,
 
 
 #endif /* not GTK_2_4_OR_LATER */
+
+
+
+gint
+gtk_utils_get_selected_radio_index (GSList *radio_button_group)
+{
+  int k;
+  int length = g_slist_length (radio_button_group);
+
+  for (k = 0; radio_button_group;
+       k++, radio_button_group = radio_button_group->next) {
+    gpointer *radio_button = radio_button_group->data;
+
+    if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (radio_button)))
+      return (length - 1) - k;
+  }
+
+  return -1;
+}
 
 
 
