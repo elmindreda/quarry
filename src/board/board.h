@@ -357,6 +357,10 @@ void		     go_mark_territory_on_grid (Board *board, char *grid,
 						const char *dead_stones,
 						char black_territory_mark,
 						char white_territory_mark);
+void		     go_guess_dead_stones
+		       (Board *board, char *dead_stones,
+			const BoardPositionList *black_territory,
+			const BoardPositionList *white_territory);
 
 
 

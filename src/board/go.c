@@ -1546,6 +1546,62 @@ go_mark_territory_on_grid (Board *board, char *grid, const char *dead_stones,
 }
 
 
+void
+go_guess_dead_stones (Board *board, char *dead_stones,
+		      const BoardPositionList *black_territory,
+		      const BoardPositionList *white_territory)
+{
+  const char *grid = board->grid;
+  int queue[BOARD_MAX_POSITIONS];
+  int queue_start = 0;
+  int queue_end   = 0;
+  int k;
+
+  assert (board);
+  assert (dead_stones);
+
+  board->data.go.position_mark++;
+
+  if (black_territory) {
+    for (k = 0; k < black_territory->num_positions; k++) {
+      int pos = black_territory->positions[k];
+
+      if (grid[pos] == WHITE) {
+	queue[queue_end++] = pos;
+	MARK_POSITION (board, pos);
+      }
+    }
+  }
+
+  if (white_territory) {
+    for (k = 0; k < white_territory->num_positions; k++) {
+      int pos = white_territory->positions[k];
+
+      if (grid[pos] == BLACK) {
+	queue[queue_end++] = pos;
+	MARK_POSITION (board, pos);
+      }
+    }
+  }
+
+  while (queue_start < queue_end) {
+    int stone = queue[queue_start++];
+
+    dead_stones[stone] = 1;
+
+    for (k = 0; k < 4; k++) {
+      int neighbor = stone + delta[k];
+
+      if (grid[neighbor] == grid[stone]
+	  && UNMARKED_POSITION (board, neighbor)) {
+	queue[queue_end++] = neighbor;
+	MARK_POSITION (board, neighbor);
+      }
+    }
+  }
+}
+
+
 /*
  * Local Variables:
  * tab-width: 8
