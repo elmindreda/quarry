@@ -7,6 +7,7 @@ src/gui-gtk/gtk-games.c
 src/gui-gtk/gtk-goban-window.c
 src/gui-gtk/gtk-gtp-client-interface.c
 src/gui-gtk/gtk-new-game-dialog.c
+src/gui-gtk/gtk-new-game-record-dialog.c
 src/gui-gtk/gtk-parser-interface.c
 src/gui-gtk/gtk-preferences.c
 src/gui-gtk/gtk-resume-game-dialog.c
