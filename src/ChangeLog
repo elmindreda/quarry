@@ -1,3 +1,32 @@
+2005-06-22  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* gui-gtk/gtk-goban-window.c (go_scoring_mode_cancel): New
+	function.
+	(handle_go_scoring_results): New function, break out of
+	go_scoring_mode_done().  Use `board' and `board_state' stored in
+	the current tree (they may correspond to the off-screen game
+	position.)
+	(update_commands_sensitivity): Desensitize all tools except the
+	move tool when playing a game.  Likewise for scoring tool when
+	scoring a game (unlike scoring a position in a game record.)
+	(move_has_been_played): Use board stored in the current tree (same
+	as for handle_go_scoring_results().)  When scoring using GTP
+	engines, don't leave game mode yet.
+	(engine_has_scored): If the human gets to score, be sure to switch
+	to the game position node.  If the engines agree with each other,
+	add results to the game position node instead of the displayed
+	node.  And leave game mode here.
+	(cancel_scoring): Likewise, except that ``engines agree'' case
+	cannot happen here.
+	(enter_scoring_mode): Activate appropriate menu item and let the
+	callback do the rest.
+	(activate_scoring_tool): Move most code of enter_scoring_mode()
+	here.  Allow to cancel scoring when not in game mode.  Guess
+	``initial'' dead stones from SGF territory properties using
+	go_guess_dead_stones().
+
+	* board/go.c (go_guess_dead_stones): New function.
+
 2005-06-19  Paul Pogonyshev  <pogonyshev@gmx.net>
 
 	* gui-gtk/gtk-new-game-dialog.c: Make it a GLib class (lots of
