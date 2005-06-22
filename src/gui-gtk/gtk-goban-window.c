@@ -213,6 +213,9 @@ static void	 cancel_scoring (GtkProgressDialog *progress_dialog,
 static void	 enter_scoring_mode (GtkGobanWindow *goban_window);
 
 static void	 go_scoring_mode_done (GtkGobanWindow *goban_window);
+static void	 go_scoring_mode_cancel (GtkGobanWindow *goban_window);
+static void	 handle_go_scoring_results (GtkGobanWindow *goban_window);
+
 static void	 free_handicap_mode_done (GtkGobanWindow *goban_window);
 
 
@@ -2711,44 +2714,7 @@ free_handicap_mode_done (GtkGobanWindow *goban_window)
 static void
 go_scoring_mode_done (GtkGobanWindow *goban_window)
 {
-  SgfGameTree *current_tree = goban_window->current_tree;
-  SgfNode *game_info_node
-    = (goban_window->in_game_mode
-       ? goban_window->game_position.board_state->game_info_node
-       : goban_window->sgf_board_state.game_info_node);
-  double komi = 0.0;
-  double score;
-  char *detailed_score;
-  BoardPositionList *black_territory;
-  BoardPositionList *white_territory;
-
-  sgf_node_get_komi (goban_window->sgf_board_state.game_info_node, &komi);
-
-  go_score_game (goban_window->board, goban_window->dead_stones, komi,
-		 &score, &detailed_score, &black_territory, &white_territory);
-
-  sgf_node_append_text_property (current_tree->current_node, current_tree,
-				 SGF_COMMENT, detailed_score,
-				 "\n\n----------------\n\n");
-
-  sgf_node_add_list_of_point_property (current_tree->current_node,
-				       current_tree,
-				       SGF_BLACK_TERRITORY, black_territory,
-				       1);
-  sgf_node_add_list_of_point_property (current_tree->current_node,
-				       current_tree,
-				       SGF_WHITE_TERRITORY, white_territory,
-				       1);
-
-  sgf_node_add_score_result (game_info_node, goban_window->current_tree,
-			     score, 1);
-
-  set_sgf_collection_is_modified (goban_window, TRUE);
-
-  g_free (goban_window->dead_stones);
-  goban_window->dead_stones = NULL;
-
-  leave_special_mode (goban_window);
+  handle_go_scoring_results (goban_window);
 
   if (goban_window->in_game_mode) {
     set_goban_signal_handlers (goban_window,
@@ -2766,6 +2732,59 @@ go_scoring_mode_done (GtkGobanWindow *goban_window)
   }
 
   reenter_current_node (goban_window);
+}
+
+
+static void
+go_scoring_mode_cancel (GtkGobanWindow *goban_window)
+{
+  GtkWidget *move_tool_menu_item
+    = gtk_item_factory_get_widget (goban_window->item_factory,
+				   "/Edit/Tools/Move Tool");
+
+  /* Activate move tool. */
+  gtk_check_menu_item_set_active (GTK_CHECK_MENU_ITEM (move_tool_menu_item),
+				  TRUE);
+
+  reenter_current_node (goban_window);
+}
+
+
+static void
+handle_go_scoring_results (GtkGobanWindow *goban_window)
+{
+  SgfGameTree *current_tree = goban_window->current_tree;
+  SgfNode *game_info_node   = current_tree->board_state->game_info_node;
+  double komi = 0.0;
+  double score;
+  char *detailed_score;
+  BoardPositionList *black_territory;
+  BoardPositionList *white_territory;
+
+  sgf_node_get_komi (game_info_node, &komi);
+
+  go_score_game (current_tree->board, goban_window->dead_stones, komi,
+		 &score, &detailed_score, &black_territory, &white_territory);
+
+  sgf_node_append_text_property (current_tree->current_node, current_tree,
+				 SGF_COMMENT, detailed_score,
+				 "\n\n----------------\n\n");
+
+  sgf_node_add_list_of_point_property (current_tree->current_node,
+				       current_tree,
+				       SGF_BLACK_TERRITORY, black_territory,
+				       1);
+  sgf_node_add_list_of_point_property (current_tree->current_node,
+				       current_tree,
+				       SGF_WHITE_TERRITORY, white_territory,
+				       1);
+
+  sgf_node_add_score_result (game_info_node, current_tree, score, 1);
+
+  set_sgf_collection_is_modified (goban_window, TRUE);
+
+  g_free (goban_window->dead_stones);
+  goban_window->dead_stones = NULL;
 }
 
 
@@ -4129,6 +4148,29 @@ update_commands_sensitivity (const GtkGobanWindow *goban_window)
 				       && current_node->child != NULL),
 				      "/Edit/Delete Node's Children", NULL);
 
+  /* "Edit/Tools" submenu. */
+
+  /* Only desensitize when scoring a game. */
+  gtk_utils_set_menu_items_sensitive (goban_window->item_factory,
+				      (!goban_window->in_game_mode
+				       || !goban_window->dead_stones),
+				      "/Edit/Tools/Move Tool", NULL);
+
+  gtk_utils_set_menu_items_sensitive (goban_window->item_factory,
+				      !goban_window->in_game_mode,
+				      "/Edit/Tools/Setup Tool",
+				      "/Edit/Tools/Cross Markup",
+				      "/Edit/Tools/Circle Markup",
+				      "/Edit/Tools/Square Markup",
+				      "/Edit/Tools/Triangle Markup",
+				      "/Edit/Tools/Selected Markup", NULL);
+
+  /* Only desensitize when playing a game. */
+  gtk_utils_set_menu_items_sensitive (goban_window->item_factory,
+				      (!goban_window->in_game_mode
+				       || goban_window->dead_stones),
+				      "/Edit/Tools/Scoring Tool", NULL);
+
   /* "Play" submenu. */
   gtk_utils_set_menu_items_sensitive (goban_window->item_factory,
 				      pass_sensitive, "/Play/Pass", NULL);
@@ -4649,6 +4691,12 @@ free_handicap_has_been_placed (GtkGobanWindow *goban_window,
 static void
 move_has_been_played (GtkGobanWindow *goban_window)
 {
+  /* This may be either the displayed board or an ``off-screen''
+   * board.  In either case, it stores the game position.  See
+   * move_has_been_generated().
+   */
+  const Board *board = goban_window->current_tree->board;
+
   SgfNode *move_node
     = goban_window->game_position.board_state->last_move_node;
   TimeControl *time_control
@@ -4680,8 +4728,7 @@ move_has_been_played (GtkGobanWindow *goban_window)
 					goban_window->current_tree, move_node);
   }
 
-  if (!board_is_game_over (goban_window->board, RULE_SET_DEFAULT,
-			   color_to_play)) {
+  if (!board_is_game_over (board, RULE_SET_DEFAULT, color_to_play)) {
     if (GTP_ENGINE_CAN_PLAY_MOVES (goban_window, color_to_play)) {
       /* If the next move is to be played by a GTP engine and the engine
        * is ready, ask for a move now.
@@ -4697,13 +4744,13 @@ move_has_been_played (GtkGobanWindow *goban_window)
     SgfNode *game_info_node
       = goban_window->game_position.board_state->game_info_node;
 
-    switch (goban_window->board->game) {
+    switch (board->game) {
     case GAME_GO:
       {
 	int player;
 
 	goban_window->dead_stones = g_malloc (BOARD_GRID_SIZE * sizeof (char));
-	board_fill_grid (goban_window->board, goban_window->dead_stones, 0);
+	board_fill_grid (board, goban_window->dead_stones, 0);
 
 	goban_window->scoring_engine_player = -1;
 
@@ -4729,12 +4776,15 @@ move_has_been_played (GtkGobanWindow *goban_window)
 					  engine_has_scored,
 					  goban_window,
 					  GTP_DEAD);
-	    break;
+
+	    /* Note that we skip leave_game_mode() below in this case.
+	     * One reason is that we need the game position intact.
+	     */
+	    return;
 	  }
 	}
 
-	if (goban_window->scoring_engine_player == -1)
-	  enter_scoring_mode (goban_window);
+	enter_scoring_mode (goban_window);
       }
 
       break;
@@ -4755,8 +4805,7 @@ move_has_been_played (GtkGobanWindow *goban_window)
 	int num_black_disks;
 	int num_white_disks;
 
-	othello_count_disks (goban_window->board,
-			     &num_black_disks, &num_white_disks);
+	othello_count_disks (board, &num_black_disks, &num_white_disks);
 	sgf_node_add_score_result (game_info_node, goban_window->current_tree,
 				   num_black_disks - num_white_disks, 1);
       }
@@ -4819,15 +4868,36 @@ engine_has_scored (GtpClient *client, int successful,
 	|| !board_position_lists_are_equal (goban_window->dead_stones_list,
 					    dead_stones)) {
       /* Either one human player or engines disagree. */
+      if (!IS_DISPLAYING_GAME_NODE (goban_window)) {
+	switch_to_given_node (goban_window,
+			      goban_window->game_position.current_node);
+      }
+
       enter_scoring_mode (goban_window);
     }
-    else
-      go_scoring_mode_done (goban_window);
+    else {
+      /* Need to add scoring results to the proper node. */
+      if (!IS_DISPLAYING_GAME_NODE (goban_window)) {
+	gtk_sgf_tree_signal_proxy_push_tree_state
+	  (goban_window->current_tree, &goban_window->game_position);
+      }
+
+      handle_go_scoring_results (goban_window);
+
+      if (IS_DISPLAYING_GAME_NODE (goban_window))
+	reenter_current_node (goban_window);
+      else {
+	gtk_sgf_tree_signal_proxy_pop_tree_state (goban_window->current_tree,
+						  NULL);
+      }
+    }
 
     if (goban_window->dead_stones_list) {
       board_position_list_delete (goban_window->dead_stones_list);
       goban_window->dead_stones_list = NULL;
     }
+
+    leave_game_mode (goban_window);
   }
 }
 
@@ -4846,23 +4916,26 @@ cancel_scoring (GtkProgressDialog *progress_dialog,
    */
   goban_window->engine_scoring_cancelled = TRUE;
   gtk_widget_destroy (GTK_WIDGET (progress_dialog));
+
+  if (!IS_DISPLAYING_GAME_NODE (goban_window)) {
+    switch_to_given_node (goban_window,
+			  goban_window->game_position.current_node);
+  }
+
   enter_scoring_mode (goban_window);
+  leave_game_mode (goban_window);
 }
 
 
 static void
 enter_scoring_mode (GtkGobanWindow *goban_window)
 {
-  enter_special_mode (goban_window,
-		      _("Please select dead stones\nto score the game"),
-		      go_scoring_mode_done, NULL);
-  set_goban_signal_handlers (goban_window,
-			     G_CALLBACK (go_scoring_mode_pointer_moved),
-			     G_CALLBACK (go_scoring_mode_goban_clicked));
+  GtkWidget *scoring_tool_menu_item
+    = gtk_item_factory_get_widget (goban_window->item_factory,
+				   "/Edit/Tools/Scoring Tool");
 
-  update_commands_sensitivity (goban_window);
-
-  update_territory_markup (goban_window);
+  gtk_check_menu_item_set_active (GTK_CHECK_MENU_ITEM (scoring_tool_menu_item),
+				  TRUE);
 }
 
 
@@ -5052,18 +5125,43 @@ activate_scoring_tool (GtkGobanWindow *goban_window, guint callback_action,
   UNUSED (callback_action);
 
   if (gtk_check_menu_item_get_active (menu_item)) {
-    if (goban_window->dead_stones) {
-      /* Which means we are already in the scoring mode. */
-      return;
+    if (goban_window->in_game_mode)
+      assert (goban_window->dead_stones);
+    else {
+      const SgfNode *current_node = goban_window->current_tree->current_node;
+      const BoardPositionList *black_territory
+	= sgf_node_get_list_of_point_property_value (current_node,
+						     SGF_BLACK_TERRITORY);
+      const BoardPositionList *white_territory
+	= sgf_node_get_list_of_point_property_value (current_node,
+						     SGF_WHITE_TERRITORY);
+	
+      assert (!goban_window->dead_stones);
+
+      goban_window->dead_stones = g_malloc (BOARD_GRID_SIZE * sizeof (char));
+      board_fill_grid (goban_window->board, goban_window->dead_stones, 0);
+
+      go_guess_dead_stones (goban_window->board, goban_window->dead_stones,
+			    black_territory, white_territory);
     }
 
-    goban_window->dead_stones = g_malloc (BOARD_GRID_SIZE * sizeof (char));
-    board_fill_grid (goban_window->board, goban_window->dead_stones, 0);
+    enter_special_mode (goban_window,
+			_("Please select dead stones\nto score the game"),
+			go_scoring_mode_done,
+			(goban_window->in_game_mode
+			 ? NULL : go_scoring_mode_cancel));
+    set_goban_signal_handlers (goban_window,
+			       G_CALLBACK (go_scoring_mode_pointer_moved),
+			       G_CALLBACK (go_scoring_mode_goban_clicked));
 
-    enter_scoring_mode (goban_window);
+    update_territory_markup (goban_window);
+    update_commands_sensitivity (goban_window);
   }
   else {
-    /* Switching to a different tool, cancel scoring. */
+    /* Switching to a different tool, cancel scoring.
+     * go_scoring_mode_done() also indirectly calls this function, and
+     * in that case we actually leave scoring mode, not cancel it.
+     */
     g_free (goban_window->dead_stones);
     goban_window->dead_stones = NULL;
 
