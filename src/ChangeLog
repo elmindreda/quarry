@@ -1,3 +1,13 @@
+2005-06-23  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* sgf/sgf-utils.c (sgf_utils_set_time_left): New function, break
+	out of time_control_save_state_in_sgf_node() in
+	`gui-utils/time-control.c', but also update board state of the
+	tree if setting time in the current node.
+	(sgf_utils_find_time_control_data): New function.
+	(find_time_control_data): Only use ``weird fix'' if `upper_limit'
+	has children.
+
 2005-06-22  Paul Pogonyshev  <pogonyshev@gmx.net>
 
 	* gui-gtk/gtk-goban-window.c (go_scoring_mode_cancel): New
