@@ -593,6 +593,48 @@ sgf_utils_set_list_of_point_property (SgfNode *node, SgfGameTree *tree,
 }
 
 
+/* FIXME: Store undo information. */
+int
+sgf_utils_set_time_left (SgfNode *node, SgfGameTree *tree,
+			 int color, double time_left, int moves_left)
+{
+  assert (node);
+  assert (tree);
+  assert (IS_STONE (color));
+
+  sgf_node_add_real_property (node, tree,
+			      (color == BLACK
+			       ? SGF_TIME_LEFT_FOR_BLACK
+			       : SGF_TIME_LEFT_FOR_WHITE),
+			      time_left, 1);
+
+  if (moves_left) {
+    sgf_node_add_number_property (node, tree,
+				  (color == BLACK
+				   ? SGF_MOVES_LEFT_FOR_BLACK
+				   : SGF_MOVES_LEFT_FOR_WHITE),
+				  moves_left, 1);
+  }
+
+  if (tree->board_state && tree->current_node == node) {
+    tree->board_state->time_left[COLOR_INDEX (color)]  = time_left;
+    tree->board_state->moves_left[COLOR_INDEX (color)] = moves_left;
+  }
+
+  return 1;
+}
+
+
+void
+sgf_utils_find_time_control_data (const SgfGameTree *tree)
+{
+  assert (tree);
+  assert (tree->current_node);
+
+  find_time_control_data (tree, tree->root, tree->current_node);
+}
+
+
 void
 sgf_utils_delete_current_node (SgfGameTree *tree)
 {
@@ -1253,7 +1295,8 @@ find_time_control_data (SgfGameTree *tree,
   }
   else {
     /* Weird fix for do_enter_tree()'s `root_predecessor'. */
-    upper_limit = upper_limit->child->parent;
+    if (upper_limit->child)
+      upper_limit = upper_limit->child->parent;
   }
 
   node = lower_limit;

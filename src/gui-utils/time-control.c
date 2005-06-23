@@ -187,28 +187,14 @@ time_control_save_state_in_sgf_node (const TimeControl *time_control,
 
   assert (time_control);
   assert (!time_control->is_active);
-  assert (sgf_node);
-  assert (sgf_tree);
-  assert (IS_STONE (color));
 
   if (!TIME_CONTROL_CLOCK_RUNS_DOWN (time_control))
     return;
 
   seconds_left = time_control_get_time_left (time_control, &moves_to_play);
-
-  sgf_node_add_real_property (sgf_node, sgf_tree,
-			      (color == BLACK
-			       ? SGF_TIME_LEFT_FOR_BLACK
-			       : SGF_TIME_LEFT_FOR_WHITE),
-			      floor (seconds_left * 1000.0 + 0.5) / 1000.0, 1);
-
-  if (moves_to_play) {
-    sgf_node_add_number_property (sgf_node, sgf_tree,
-				  (color == BLACK
-				   ? SGF_MOVES_LEFT_FOR_BLACK
-				   : SGF_MOVES_LEFT_FOR_WHITE),
-				  moves_to_play, 1);
-  }
+  sgf_utils_set_time_left (sgf_node, sgf_tree, color,
+			   floor (seconds_left * 1000.0 + 0.5) / 1000.0,
+			   moves_to_play);
 }
 
 

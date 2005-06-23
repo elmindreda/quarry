@@ -767,6 +767,11 @@ int	      sgf_utils_apply_markup_changes
 int	      sgf_utils_set_list_of_point_property
 		(SgfNode *node, SgfGameTree *tree, SgfType type,
 		 BoardPositionList *position_list);
+int	      sgf_utils_set_time_left (SgfNode *node, SgfGameTree *tree,
+				       int color,
+				       double time_left, int moves_left);
+
+void	      sgf_utils_find_time_control_data (const SgfGameTree *tree);
 
 void	      sgf_utils_delete_current_node (SgfGameTree *tree);
 void	      sgf_utils_delete_current_node_children (SgfGameTree *tree);
