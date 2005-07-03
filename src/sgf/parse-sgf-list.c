@@ -28,6 +28,19 @@
 #include <assert.h>
 
 
+/* True for current 32-bit platforms.  The reason for this is that
+ * real properties are very rare and we don't want to waste space in
+ * `SgfValue' just because `double' has larger size than the other
+ * value types.
+ *
+ * Floats have so low precision, that there will be problems with
+ * storing fractional number of seconds in it.  So we have to use
+ * doubles.
+ */
+#define SGF_REAL_VALUES_ALLOCATED_SEPARATELY			\
+  (SIZEOF_DOUBLE > SIZEOF_INT && SIZEOF_DOUBLE > SIZEOF_VOID_P)
+
+
 typedef struct _ValueTypeListItem	ValueTypeListItem;
 typedef struct _ValueTypeList		ValueTypeList;
 
@@ -133,10 +146,17 @@ static const ListDescription undo_operations_list[] = {
   { NULL, 0, SORT_NORMAL, 0, NULL, NULL, NULL, NULL, NULL }
 };
 
-const ListDescriptionSet list_sets[] = {
+static const ListDescriptionSet list_sets[] = {
   { "properties",      properties_lists },
   { "errors",	       errors_list },
   { "undo_operations", undo_operations_list }
+};
+
+
+static const PredefinedCondition conditions[] = {
+  { "SGF_REAL_VALUES_ALLOCATED_SEPARATELY",
+    SGF_REAL_VALUES_ALLOCATED_SEPARATELY },
+  { NULL, 0 }
 };
 
 
@@ -158,7 +178,8 @@ main (int argc, char *argv[])
   int result;
 
   result = parse_list_main (argc, argv, list_sets,
-			    sizeof list_sets / sizeof (ListDescriptionSet));
+			    sizeof list_sets / sizeof (ListDescriptionSet),
+			    conditions);
 
   string_list_empty (&value_types);
 
