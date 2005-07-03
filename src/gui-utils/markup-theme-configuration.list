@@ -20,14 +20,14 @@
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
 
-mode configuration
+@mode configuration
 
 
-h_include "configuration-internals.h"
-h_include "utils.h"
+@h_include "configuration-internals.h"
+@h_include "utils.h"
 
-c_include "markup-theme-configuration.h"
-c_include "utils.h"
+@c_include "markup-theme-configuration.h"
+@c_include "utils.h"
 
 
 section_list  unnamed markup_theme_configuration_sections {

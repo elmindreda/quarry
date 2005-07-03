@@ -20,12 +20,12 @@
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
 
-mode errors
+@mode errors
 
 
-c_include "quarry.h"
+@c_include "quarry.h"
 
-c_include <stdlib.h>
+@c_include <stdlib.h>
 
 
 errors  SgfError sgf_errors {

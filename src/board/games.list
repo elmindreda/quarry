@@ -20,15 +20,15 @@
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
 
-mode games
+@mode games
 
 
-c_include "game-info.h"
-c_include "go.h"
-c_include "othello.h"
-c_include "amazons.h"
+@c_include "game-info.h"
+@c_include "go.h"
+@c_include "othello.h"
+@c_include "amazons.h"
 
-c_include <stdlib.h>
+@c_include <stdlib.h>
 
 
 games  Game game_info {
