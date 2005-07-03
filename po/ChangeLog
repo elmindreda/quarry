@@ -1,3 +1,21 @@
+2005-06-30  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* Rules-quot: Remove file.
+	* insert-header.sin: Remove file, unused without quotes catalogs.
+
+	* boldquot.sed: Remove file.  Bold quotes are additionally only
+	useful for console programs.
+	* en@boldquot.header: Remove file.
+
+	* quot.sed: Remove file.  Proper quotes are good, but the way they
+	are implemented is not :(.
+	* en@quot.header: Remove file.
+
+2005-06-25  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* en_GB.po: New file (British English translation.)
+	* LINGUAS: List `en_GB' code.
+
 2005-06-20  Paul Pogonyshev  <pogonyshev@gmx.net>
 
 	* POTFILES.in: Add `src/gui-gtk/gtk-new-game-record-dialog.c'.

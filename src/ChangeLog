@@ -1,3 +1,135 @@
+2005-07-03  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* sgf/sgf-utils.c (sgf_utils_append_variation): Call
+	sgf_utils_begin_action() and sgf_utils_end_action().
+	(sgf_utils_apply_setup_changes): Call sgf_utils_begin_action() and
+	sgf_utils_end_action().  Pass node's `move_color' change through
+	undo history so that it is done not only the first time.
+	(sgf_utils_apply_markup_changes): Call sgf_utils_begin_action()
+	and sgf_utils_end_action().
+	(sgf_utils_set_none_property, sgf_utils_set_number_property)
+	(sgf_utils_set_real_property, sgf_utils_set_text_property)
+	(sgf_utils_set_list_of_label_property): New functions.
+	(sgf_utils_set_time_left): Use sgf_utils_set_*() functions instead
+	of sgf_node_add_*() ones.  Call sgf_utils_begin_action() and
+	sgf_utils_end_action().
+	(sgf_utils_delete_current_node): Call sgf_utils_begin_action() and
+	sgf_utils_end_action().
+	(sgf_utils_delete_current_node_children): Likewise.
+	(sgf_utils_delete_property, sgf_utils_begin_action)
+	(sgf_utils_end_action): New functions.
+	(sgf_utils_undo): Call begin_undoing_or_redoing() and
+	end_undoing_or_redoing().  Handle actions comprised of multiple
+	history entries.
+	(sgf_utils_redo): Likewise.
+	(sgf_undo_history_delete): Use delete_undo_history_entry() to
+	handle NULL `free_data' functions.
+	(do_set_pointer_property, strings_are_equal)
+	(create_new_property_undo_history_entry)
+	(create_delete_property_undo_history_entry)
+	(create_change_property_undo_history_entry): New functions.
+	(delete_undo_history_entry): New function, don't call `free_data'
+	if it is NULL.
+	(begin_undoing_or_redoing, set_is_modifying_map)
+	(set_is_modifying_tree, end_undoing_or_redoing): New functions.
+	(apply_undo_history_entry): Use delete_undo_history_entry().
+	Initialize `is_last_in_action' field of the `entry'.
+	(sgf_operation_add_node): Pass notifications through
+	set_is_modifying_*() functions.  Schedule current tree node
+	switching using `node_to_switch_to' field.
+	(sgf_operation_delete_node): Likewise.
+	(sgf_operation_delete_node_children_undo): Likewise.
+	(sgf_operation_delete_node_children_redo): Likewise.
+	(sgf_operation_change_node_move_color_do_change)
+	(sgf_operation_add_property, sgf_operation_delete_property)
+	(sgf_operation_new_property_free_data)
+	(sgf_operation_delete_property_free_data)
+	(sgf_operation_change_property_do_change)
+	(sgf_operation_change_property_free_data): New functions.
+	(sgf_operation_change_real_property_do_change): New function,
+	conditioned on `SGF_REAL_VALUES_ALLOCATED_SEPARATELY'.
+	(find_property_link): New function.
+
+	* sgf/sgf-undo-operations.list: New operations:
+	`SGF_OPERATION_CHANGE_NODE_MOVE_COLOR',
+	`SGF_OPERATION_NEW_PROPERTY', `SGF_OPERATION_DELETE_PROPERTY',
+	`SGF_OPERATION_CHANGE_PROPERTY' and (conditional)
+	`SGF_OPERATION_CHANGE_REAL_PROPERTY'.
+
+	* sgf/sgf.h (sgf_utils_set_double_property)
+	(sgf_utils_set_color_property): New macros.
+
+	* sgf/sgf-tree.c (sgf_game_tree_new): Initialize new field
+	`undo_operation_level'.
+	(sgf_property_free_value): New function, break code out of
+	free_property_value() and change signature.
+	(sgf_label_lists_are_equal): New function.
+
+2005-06-30  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* board/board.h (POINTS_ARE_EQUAL): Move from
+	`sgf/sgf-diff-utils.c'
+
+	* sgf/sgf-writer.c (sgf_write_none): Change `value' type from
+	`SgfValue' to `SgfValue *'.
+	(sgf_write_number): Likewise.
+	(sgf_write_real): Likewise.  Also access `value->real' as
+	determined by `SGF_REAL_VALUES_ALLOCATED_SEPARATELY'.
+	(sgf_write_double): Likewise.
+	(sgf_write_color): Likewise.
+	(sgf_write_simple_text): Likewise.
+	(sgf_write_fake_simple_text): Likewise.
+	(sgf_write_text): Likewise.
+	(sgf_write_list_of_point): Likewise.
+	(sgf_write_list_of_vector): Likewise.
+	(sgf_write_list_of_label): Likewise.
+	(sgf_write_figure_description): Likewise.
+	(sgf_write_unknown): Likewise.
+
+	* sgf/sgf-parser.c (sgf_parse_real): Access `(*link)->value.real'
+	as determined by `SGF_REAL_VALUES_ALLOCATED_SEPARATELY'.
+
+	* sgf/sgf-tree.c (sgf_node_get_real_property_value): Access
+	`properties->value.real' as determined by
+	`SGF_REAL_VALUES_ALLOCATED_SEPARATELY'.
+	(sgf_node_add_real_property): Likewise.
+	(sgf_property_duplicate): Likewise.
+
+	* sgf/sgf-properties.list: Use
+	`SGF_REAL_VALUES_ALLOCATED_SEPARATELY' as appropriate.
+
+	* sgf/parse-sgf-list.c (SGF_REAL_VALUES_ALLOCATED_SEPARATELY): New
+	macro.  Pass it as condition to parse_list_main().
+
+	* board/games.list: Add '@' signs before all directives.
+	* sgf/sgf-errors.list: Likewise.
+	* sgf/sgf-undo-operations.list: Likewise.
+	* gui-utils/markup-theme-configuration.list: Likewise.
+	* gui-gtk/gtk-configuration.list: Likewise.
+
+	* utils/parse-list.c: Add conditionals support.  Make all
+	directives (`mode', `c_include' etc.) start with '@' sign.
+	(parse_list_main): Add `conditions' argument.  Strip `_NEW'
+	suffix (if present) from `.h' file global control macro name.
+	Empty the new condition stack.
+	(do_parse_lists): Die in error if condition stack is not empty
+	after having processed the list file.  Process new
+	`@define_condition' directive.
+	(read_line): Process new `@if', `@ifnot', `@else' and `@endif'
+	directives.  Ignore lines inside condition blocks when condition
+	is false.
+	(get_condition, push_condition_stack, pop_condition_stack): New
+	functions.
+
+2005-06-25  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* gui-gtk/gtk-utils.c (gtk_utils_create_message_dialog): Use
+	g_markup_escape_text() on message and hint texts.
+	(gtk_utils_create_titled_page): Likewise for title text.
+
+	* sgf/sgf-utils.c (find_time_control_data): Add `const' qualifier
+	to `tree' argument.
+
 2005-06-23  Paul Pogonyshev  <pogonyshev@gmx.net>
 
 	* sgf/sgf-utils.c (sgf_utils_set_time_left): New function, break

@@ -1,3 +1,7 @@
+2005-06-27  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* configure.ac: Check size of `int', `double' and `void *' types.
+
 2005-06-17  Paul Pogonyshev  <pogonyshev@gmx.net>
 
 	* configure.ac: Quarry version 0.1.15.
