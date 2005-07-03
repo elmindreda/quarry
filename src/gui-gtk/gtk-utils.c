@@ -166,6 +166,7 @@ gtk_utils_create_message_dialog (GtkWindow *parent, const gchar *icon_stock_id,
   GtkWidget *label;
   GtkWidget *hbox;
   gchar *message_text;
+  gchar *message_text_escaped;
   gchar *label_text;
   va_list arguments;
 
@@ -211,16 +212,24 @@ gtk_utils_create_message_dialog (GtkWindow *parent, const gchar *icon_stock_id,
   message_text = g_strdup_vprintf (message_format_string, arguments);
   va_end (arguments);
 
-  if (hint) {
+  message_text_escaped = g_markup_escape_text (message_text, -1);
+  g_free (message_text);
+
+  if (hint && *hint) {
+    gchar *hint_escaped = g_markup_escape_text (hint, -1);
+
     label_text = g_strdup_printf (("<span weight=\"bold\" size=\"larger\">%s"
 				   "</span>\n\n%s"),
-				  message_text, hint);
+				  message_text_escaped, hint_escaped);
+    g_free (hint_escaped);
   }
   else {
     label_text = g_strdup_printf (("<span weight=\"bold\" size=\"larger\">%s"
 				   "</span>"),
-				  message_text);
+				  message_text_escaped);
   }
+
+  g_free (message_text_escaped);
 
   label = gtk_label_new (NULL);
   gtk_label_set_line_wrap (GTK_LABEL (label), TRUE);
@@ -228,7 +237,6 @@ gtk_utils_create_message_dialog (GtkWindow *parent, const gchar *icon_stock_id,
   gtk_label_set_markup (GTK_LABEL (label), label_text);
   gtk_misc_set_alignment (GTK_MISC (label), 0.0, 0.0);
 
-  g_free (message_text);
   g_free (label_text);
 
   hbox = gtk_utils_pack_in_box (GTK_TYPE_HBOX, QUARRY_SPACING,
@@ -349,10 +357,13 @@ gtk_utils_create_titled_page (GtkWidget *contents,
   }
 
   if (title) {
+    gchar *title_escaped = g_markup_escape_text (title, -1);
     char *marked_up_title
       = utils_cat_strings (NULL,
 			   "<span weight=\"bold\" size=\"x-large\">",
-			   title, "</span>", NULL);
+			   title_escaped, "</span>", NULL);
+
+    g_free (title_escaped);
 
     label = gtk_label_new (NULL);
     gtk_label_set_markup (GTK_LABEL (label), marked_up_title);

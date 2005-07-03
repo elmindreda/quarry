@@ -285,8 +285,7 @@ gtk_new_game_dialog_init (GtkNewGameDialog *dialog)
 			     named_vbox, GTK_UTILS_FILL,
 			     hbox, GTK_UTILS_FILL, NULL);
   gtk_assistant_add_page (&dialog->assistant, game_and_players_page,
-			  GTK_STOCK_REFRESH, _("Game &amp; Players"),
-			  NULL, NULL);
+			  GTK_STOCK_REFRESH, _("Game & Players"), NULL, NULL);
   gtk_assistant_set_page_help_link_id (&dialog->assistant,
 				       game_and_players_page,
 				       "new-game-dialog-game-and-players");
