@@ -103,35 +103,36 @@ sgf_game_tree_new (void)
 {
   SgfGameTree *tree = utils_malloc (sizeof (SgfGameTree));
 
-  tree->previous = NULL;
-  tree->next	 = NULL;
+  tree->previous	      = NULL;
+  tree->next		      = NULL;
 
-  tree->root		   = NULL;
-  tree->current_node	   = NULL;
-  tree->current_node_depth = 0;
+  tree->root		      = NULL;
+  tree->current_node	      = NULL;
+  tree->current_node_depth    = 0;
 
-  tree->board	    = NULL;
-  tree->board_state = NULL;
+  tree->board		      = NULL;
+  tree->board_state	      = NULL;
 
-  tree->undo_history = NULL;
+  tree->undo_history	      = NULL;
+  tree->undo_operation_level  = 0;
 
-  tree->char_set = NULL;
+  tree->char_set	      = NULL;
 
-  tree->application_name    = NULL;
-  tree->application_version = NULL;
-  tree->style_is_set	    = 0;
+  tree->application_name      = NULL;
+  tree->application_version   = NULL;
+  tree->style_is_set	      = 0;
 
-  tree->node_pool.item_size = 0;
+  tree->node_pool.item_size   = 0;
 
   memory_pool_init (&tree->property_pool, sizeof (SgfProperty));
 
   tree->notification_callback = NULL;
   tree->user_data	      = NULL;
 
-  tree->map_data_list = NULL;
+  tree->map_data_list	      = NULL;
 
-  tree->view_port_nodes = NULL;
-  tree->view_port_lines = NULL;
+  tree->view_port_nodes	      = NULL;
+  tree->view_port_lines	      = NULL;
 
   return tree;
 }
@@ -853,7 +854,12 @@ sgf_node_get_real_property_value (const SgfNode *node, SgfType type,
   for (property = node->properties; property && property->type <= type;
        property = property->next) {
     if (property->type == type) {
+#if SGF_REAL_VALUES_ALLOCATED_SEPARATELY
       *value = * property->value.real;
+#else
+      *value = property->value.real;
+#endif
+
       return 1;
     }
   }
@@ -958,14 +964,23 @@ sgf_node_add_real_property (SgfNode *node, SgfGameTree *tree,
 
   if (!sgf_node_find_property (node, type, &link)) {
     *link = sgf_property_new (tree, type, *link);
-    (*link)->value.real = utils_malloc (sizeof (double));
-    * (*link)->value.real = value;
+
+#if SGF_REAL_VALUES_ALLOCATED_SEPARATELY
+    (*link)->value.real = utils_duplicate_buffer (&value, sizeof (double));
+#else
+    (*link)->value.real = value;
+#endif
 
     return 1;
   }
 
   if (overwrite) {
+#if SGF_REAL_VALUES_ALLOCATED_SEPARATELY
     * (*link)->value.real = value;
+#else
+    (*link)->value.real = value;
+#endif
+
     return 1;
   }
 
@@ -1290,8 +1305,14 @@ sgf_property_duplicate (const SgfProperty *property, SgfGameTree *tree,
     break;
 
   case SGF_REAL:
-    property_copy->value.real = utils_malloc (sizeof (double));
-    *property_copy->value.real = *property->value.real;
+
+#if SGF_REAL_VALUES_ALLOCATED_SEPARATELY
+    property_copy->value.real = utils_duplicate_buffer (property->value.real,
+							sizeof (double));
+#else
+    property_copy->value.real = property->value.real;
+#endif
+
     break;
 
   case SGF_SIMPLE_TEXT:
@@ -1336,31 +1357,40 @@ sgf_property_duplicate (const SgfProperty *property, SgfGameTree *tree,
 }
 
 
-inline static void
-free_property_value (SgfProperty *property)
+void
+sgf_property_free_value (SgfValueType value_type, SgfValue *value)
 {
-  if (SGF_FIRST_MALLOC_TYPE <= property_info[property->type].value_type
-      && property_info[property->type].value_type <= SGF_LAST_MALLOC_TYPE) {
-    switch (property_info[property->type].value_type) {
+  /* `SGF_REAL' type may or may not belong to this range. */
+  if (SGF_FIRST_MALLOC_TYPE <= value_type
+      && value_type <= SGF_LAST_MALLOC_TYPE) {
+    switch (value_type) {
     default:
-      utils_free (property->value.memory_block);
+      utils_free (value->memory_block);
       break;
 
     case SGF_LIST_OF_LABEL:
-      sgf_label_list_delete (property->value.label_list);
+      sgf_label_list_delete (value->label_list);
       break;
 
     case SGF_FIGURE_DESCRIPTION:
-      if (property->value.figure)
-	sgf_figure_description_delete (property->value.figure);
+      if (value->figure)
+	sgf_figure_description_delete (value->figure);
 
       break;
 
     case SGF_TYPE_UNKNOWN:
-      string_list_delete (property->value.unknown_value_list);
+      string_list_delete (value->unknown_value_list);
       break;
     }
   }
+}
+
+
+inline static void
+free_property_value (SgfProperty *property)
+{
+  sgf_property_free_value (property_info[property->type].value_type,
+			   &property->value);
 }
 
 
@@ -1528,6 +1558,30 @@ sgf_label_list_duplicate (const SgfLabelList *list)
   }
 
   return list_copy;
+}
+
+
+int
+sgf_label_lists_are_equal (const SgfLabelList *first_list,
+			   const SgfLabelList *second_list)
+{
+  int k;
+
+  assert (first_list);
+  assert (second_list);
+
+  if (first_list->num_labels != second_list->num_labels)
+    return 0;
+
+  for (k = 0; k < first_list->num_labels; k++) {
+    if (!POINTS_ARE_EQUAL (first_list->labels[k].point,
+			   second_list->labels[k].point)
+	|| (strcmp (first_list->labels[k].text, second_list->labels[k].text)
+	    != 0))
+      return 0;
+  }
+
+  return 1;
 }
 
 

@@ -44,12 +44,17 @@ struct _SgfPropertyInfo {
   SgfValueType	   value_type;
 
   SgfError (* value_parser) (SgfParsingData *data);
-  void (* value_writer)	    (SgfWritingData *data, SgfValue value);
+  void (* value_writer)	    (SgfWritingData *data, SgfValue *value);
 };
 
 
 /* Information about each property type. */
 extern const SgfPropertyInfo	property_info[];
+
+
+/* Defined in `sgf-tree.c' and is only used from `sgf-utils.c'. */
+void		sgf_property_free_value (SgfValueType value_type,
+					 SgfValue *value);
 
 
 #endif /* QUARRY_SGF_PRIVATES_H */
