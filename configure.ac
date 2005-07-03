@@ -84,6 +84,11 @@ AC_C_CONST
 AC_C_INLINE
 AC_TYPE_SIZE_T
 
+# Check size of some types.
+AC_CHECK_SIZEOF([int], , [#include <stdio.h>])
+AC_CHECK_SIZEOF([double], , [#include <stdio.h>])
+AC_CHECK_SIZEOF([void *], , [#include <stdio.h>])
+
 # Checks for library functions.
 AC_FUNC_VPRINTF
 AC_FUNC_MEMCMP
