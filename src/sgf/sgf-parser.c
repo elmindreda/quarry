@@ -157,7 +157,7 @@ static SgfError	    do_parse_go_move (SgfParsingData *data);
 static SgfError	    do_parse_othello_move (SgfParsingData *data);
 static SgfError	    do_parse_amazons_move (SgfParsingData *data);
 
-static inline int   do_parse_point_or_rectangle (SgfParsingData *data,
+inline static int   do_parse_point_or_rectangle (SgfParsingData *data,
 						 BoardPoint *left_top,
 						 BoardPoint *right_bottom);
 static int	    do_parse_list_of_point
@@ -185,7 +185,7 @@ static SgfError	    invalid_game_info_property
 		      (SgfParsingData *data, SgfProperty *property,
 		       BufferPositionStorage *storage);
 
-static inline void  begin_parsing_value (SgfParsingData *data);
+inline static void  begin_parsing_value (SgfParsingData *data);
 static int	    is_composed_value (SgfParsingData *data,
 				       int expecting_simple_text);
 static SgfError	    end_parsing_value (SgfParsingData *data);
@@ -194,7 +194,7 @@ static int	    format_error_valist (SgfParsingData *data, char *buffer,
 					 SgfError error, va_list arguments);
 
 
-static inline void  next_token (SgfParsingData *data);
+inline static void  next_token (SgfParsingData *data);
 static void	    next_token_in_value (SgfParsingData *data);
 static void	    next_character (SgfParsingData *data);
 
@@ -1384,7 +1384,12 @@ sgf_parse_real (SgfParsingData *data)
 
   if (do_parse_real (data, &real)) {
     *link = sgf_property_new (data->tree, data->property_type, *link);
+
+#if SGF_REAL_VALUES_ALLOCATED_SEPARATELY
     (*link)->value.real = utils_duplicate_buffer (&real, sizeof (double));
+#else
+    (*link)->value.real = real;
+#endif
 
     return end_parsing_value (data);
   }
@@ -2974,7 +2979,7 @@ invalid_game_info_property (SgfParsingData *data, SgfProperty *property,
 }
 
 
-static inline void
+inline static void
 begin_parsing_value (SgfParsingData *data)
 {
   data->whitespace_error_position.line = 0;
@@ -3186,7 +3191,7 @@ format_error_valist (SgfParsingData *data, char *buffer,
 /* Read characters from the input buffer skipping any whitespace
  * encountered.  This is just a wrapper around next_character().
  */
-static inline void
+inline static void
 next_token (SgfParsingData *data)
 {
   do
