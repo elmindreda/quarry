@@ -44,7 +44,8 @@ struct _SgfUndoHistoryEntry {
   SgfUndoHistoryEntry  *next;
   SgfUndoHistoryEntry  *previous;
 
-  unsigned int		operation_index;
+  unsigned char		operation_index;
+  char			is_last_in_action;
 };
 
 
@@ -75,6 +76,28 @@ DECLARE_FREE_DATA_FUNCTION (sgf_operation_delete_node_free_data);
 DECLARE_UNDO_OR_REDO_FUNCTION (sgf_operation_delete_node_children_undo);
 DECLARE_UNDO_OR_REDO_FUNCTION (sgf_operation_delete_node_children_redo);
 DECLARE_FREE_DATA_FUNCTION (sgf_operation_delete_node_children_free_data);
+
+DECLARE_UNDO_OR_REDO_FUNCTION (sgf_operation_change_node_move_color_do_change);
+
+/* Used both for node adding and removing undo/redo. */
+DECLARE_UNDO_OR_REDO_FUNCTION (sgf_operation_add_property);
+DECLARE_UNDO_OR_REDO_FUNCTION (sgf_operation_delete_property);
+
+DECLARE_FREE_DATA_FUNCTION (sgf_operation_new_property_free_data);
+DECLARE_FREE_DATA_FUNCTION (sgf_operation_delete_property_free_data);
+
+/* Used as both undo and redo handler. */
+DECLARE_UNDO_OR_REDO_FUNCTION (sgf_operation_change_property_do_change);
+
+DECLARE_FREE_DATA_FUNCTION (sgf_operation_change_property_free_data);
+
+
+#if SGF_REAL_VALUES_ALLOCATED_SEPARATELY
+
+/* Used as both undo and redo handler. */
+DECLARE_UNDO_OR_REDO_FUNCTION (sgf_operation_change_real_property_do_change);
+
+#endif
 
 
 #endif /* QUARRY_SGF_UNDO_H */

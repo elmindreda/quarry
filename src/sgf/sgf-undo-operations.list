@@ -20,10 +20,10 @@
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
 
-mode undo_operations
+@mode undo_operations
 
 
-c_include "sgf-undo.h"
+@c_include "sgf-undo.h"
 
 
 operations  SgfUndoOperation sgf_undo_operations {
@@ -41,6 +41,33 @@ operations  SgfUndoOperation sgf_undo_operations {
 		sgf_operation_delete_node_children_undo
   		sgf_operation_delete_node_children_redo
   		sgf_operation_delete_node_children_free_data
+
+  SGF_OPERATION_CHANGE_NODE_MOVE_COLOR
+		sgf_operation_change_node_move_color_do_change
+		sgf_operation_change_node_move_color_do_change
+		NULL
+
+  SGF_OPERATION_NEW_PROPERTY
+		sgf_operation_delete_property
+		sgf_operation_add_property
+		sgf_operation_new_property_free_data
+
+  SGF_OPERATION_DELETE_PROPERTY
+		sgf_operation_add_property
+		sgf_operation_delete_property
+		sgf_operation_delete_property_free_data
+
+  SGF_OPERATION_CHANGE_PROPERTY
+		sgf_operation_change_property_do_change
+		sgf_operation_change_property_do_change
+		sgf_operation_change_property_free_data
+
+@if SGF_REAL_VALUES_ALLOCATED_SEPARATELY
+  SGF_OPERATION_CHANGE_REAL_PROPERTY
+		sgf_operation_change_real_property_do_change
+		sgf_operation_change_real_property_do_change
+		NULL
+@endif
 
   + SGF_NUM_OPERATIONS
 }
