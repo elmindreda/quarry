@@ -48,7 +48,7 @@ struct _SgfWritingData {
 
 
 #define DECLARE_VALUE_WRITER(name)				\
-  void		name (SgfWritingData *data, SgfValue value)
+  void		name (SgfWritingData *data, SgfValue *value)
 
 
 DECLARE_VALUE_WRITER (sgf_write_none);

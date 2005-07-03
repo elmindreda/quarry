@@ -38,7 +38,7 @@ static void	    write_game_tree (SgfWritingData *data, SgfGameTree *tree,
 static void	    write_node_sequence (SgfWritingData *data, SgfNode *node);
 
 
-static inline void  do_write_point (SgfWritingData *data, BoardPoint point);
+inline static void  do_write_point (SgfWritingData *data, BoardPoint point);
 static void	    do_write_point_or_rectangle (SgfWritingData *data,
 						 BoardPoint left_top,
 						 BoardPoint right_bottom);
@@ -201,7 +201,7 @@ write_node_sequence (SgfWritingData *data, SgfNode *node)
 	buffered_writer_cat_string (&data->writer,
 				    property_info[property->type].name);
 
-	property_info[property->type].value_writer (data, property->value);
+	property_info[property->type].value_writer (data, &property->value);
 
 	if (SGF_FIRST_GAME_INFO_PROPERTY <= property->type
 	    && property->type <= SGF_LAST_GAME_INFO_PROPERTY
@@ -245,7 +245,7 @@ write_node_sequence (SgfWritingData *data, SgfNode *node)
 
 
 
-static inline void
+inline static void
 do_write_point (SgfWritingData *data, BoardPoint point)
 {
   buffered_writer_add_character (&data->writer,
@@ -308,7 +308,7 @@ do_write_amazons_move (SgfWritingData *data, SgfNode *node)
 
 
 void
-sgf_write_none (SgfWritingData *data, SgfValue value)
+sgf_write_none (SgfWritingData *data, SgfValue *value)
 {
   UNUSED (value);
 
@@ -318,39 +318,45 @@ sgf_write_none (SgfWritingData *data, SgfValue value)
 
 
 void
-sgf_write_number (SgfWritingData *data, SgfValue value)
+sgf_write_number (SgfWritingData *data, SgfValue *value)
 {
   buffered_writer_add_character (&data->writer, '[');
-  buffered_writer_cprintf (&data->writer, "%d", value.number);
+  buffered_writer_cprintf (&data->writer, "%d", value->number);
   buffered_writer_add_character (&data->writer, ']');
 }
 
 
 void
-sgf_write_real (SgfWritingData *data, SgfValue value)
+sgf_write_real (SgfWritingData *data, SgfValue *value)
 {
   buffered_writer_add_character (&data->writer, '[');
-  buffered_writer_cprintf (&data->writer, "%.f", *value.real);
+
+#if SGF_REAL_VALUES_ALLOCATED_SEPARATELY
+  buffered_writer_cprintf (&data->writer, "%.f", *value->real);
+#else
+  buffered_writer_cprintf (&data->writer, "%.f", value->real);
+#endif
+
   buffered_writer_add_character (&data->writer, ']');
 }
 
 
 void
-sgf_write_double (SgfWritingData *data, SgfValue value)
+sgf_write_double (SgfWritingData *data, SgfValue *value)
 {
   buffered_writer_add_character (&data->writer, '[');
-  buffered_writer_add_character (&data->writer, value.emphasized ? '2' : '1');
+  buffered_writer_add_character (&data->writer, value->emphasized ? '2' : '1');
   buffered_writer_add_character (&data->writer, ']');
 }
 
 
 void
-sgf_write_color (SgfWritingData *data, SgfValue value)
+sgf_write_color (SgfWritingData *data, SgfValue *value)
 {
   buffered_writer_add_character (&data->writer, '[');
 
   buffered_writer_add_character (&data->writer,
-				 value.color == BLACK ? 'B' : 'W');
+				 value->color == BLACK ? 'B' : 'W');
 
   buffered_writer_add_character (&data->writer, ']');
 }
@@ -466,12 +472,12 @@ do_write_text (SgfWritingData *data, const char *text,
 
 
 void
-sgf_write_simple_text (SgfWritingData *data, SgfValue value)
+sgf_write_simple_text (SgfWritingData *data, SgfValue *value)
 {
   int multi_line_value;
 
   buffered_writer_add_character (&data->writer, '[');
-  multi_line_value = do_write_text (data, value.text, ']', 1);
+  multi_line_value = do_write_text (data, value->text, ']', 1);
 
   if (multi_line_value)
     buffered_writer_add_newline (&data->writer);
@@ -479,7 +485,7 @@ sgf_write_simple_text (SgfWritingData *data, SgfValue value)
 
 
 void
-sgf_write_fake_simple_text (SgfWritingData *data, SgfValue value)
+sgf_write_fake_simple_text (SgfWritingData *data, SgfValue *value)
 {
   const char *text;
   const char *written_up_to;
@@ -489,7 +495,7 @@ sgf_write_fake_simple_text (SgfWritingData *data, SgfValue value)
   buffered_writer_set_iconv_handle (&data->writer,
 				    data->utf8_to_tree_encoding);
 
-  for (text = value.text, written_up_to = text; *text; text++) {
+  for (text = value->text, written_up_to = text; *text; text++) {
     if (*text == '\\' || *text == ']') {
       buffered_writer_cat_as_string (&data->writer,
 				     written_up_to, text - written_up_to);
@@ -510,12 +516,12 @@ sgf_write_fake_simple_text (SgfWritingData *data, SgfValue value)
 
 
 void
-sgf_write_text (SgfWritingData *data, SgfValue value)
+sgf_write_text (SgfWritingData *data, SgfValue *value)
 {
   int multi_line_value;
 
   buffered_writer_add_character (&data->writer, '[');
-  multi_line_value = do_write_text (data, value.text, ']', 0);
+  multi_line_value = do_write_text (data, value->text, ']', 0);
 
   if (multi_line_value)
     buffered_writer_add_newline (&data->writer);
@@ -529,10 +535,10 @@ sgf_write_text (SgfWritingData *data, SgfValue value)
  * NOTE: It relies on points being sorted in ascending order.
  */
 void
-sgf_write_list_of_point (SgfWritingData *data, SgfValue value)
+sgf_write_list_of_point (SgfWritingData *data, SgfValue *value)
 {
-  int num_positions = value.position_list->num_positions;
-  int *positions = value.position_list->positions;
+  int num_positions = value->position_list->num_positions;
+  int *positions    = value->position_list->positions;
 
   if (num_positions > 1) {
     int k;
@@ -623,11 +629,11 @@ sgf_write_list_of_point (SgfWritingData *data, SgfValue value)
 
 
 void
-sgf_write_list_of_vector (SgfWritingData *data, SgfValue value)
+sgf_write_list_of_vector (SgfWritingData *data, SgfValue *value)
 {
   int k;
-  int num_vectors = value.vector_list->num_vectors;
-  const SgfVector *vectors = value.vector_list->vectors;
+  int num_vectors = value->vector_list->num_vectors;
+  const SgfVector *vectors = value->vector_list->vectors;
 
   for (k = 0; k < num_vectors; k++) {
     if (data->writer.column >= FILL_BREAK_POINT)
@@ -646,9 +652,9 @@ sgf_write_list_of_vector (SgfWritingData *data, SgfValue value)
 
 
 void
-sgf_write_list_of_label (SgfWritingData *data, SgfValue value)
+sgf_write_list_of_label (SgfWritingData *data, SgfValue *value)
 {
-  SgfLabelList *label_list = value.label_list;
+  SgfLabelList *label_list = value->label_list;
   int multi_line_value = 0;
   int k;
 
@@ -671,24 +677,24 @@ sgf_write_list_of_label (SgfWritingData *data, SgfValue value)
 
 
 void
-sgf_write_figure_description (SgfWritingData *data, SgfValue value)
+sgf_write_figure_description (SgfWritingData *data, SgfValue *value)
 {
   buffered_writer_add_character (&data->writer, '[');
 
-  if (value.figure)
-    buffered_writer_cprintf (&data->writer, "%d:", value.figure->flags);
+  if (value->figure)
+    buffered_writer_cprintf (&data->writer, "%d:", value->figure->flags);
 
-  if (value.figure && value.figure->diagram_name)
-    do_write_text (data, value.figure->diagram_name, ']', 1);
+  if (value->figure && value->figure->diagram_name)
+    do_write_text (data, value->figure->diagram_name, ']', 1);
   else
     buffered_writer_add_character (&data->writer, ']');
 }
 
 
 void
-sgf_write_unknown (SgfWritingData *data, SgfValue value)
+sgf_write_unknown (SgfWritingData *data, SgfValue *value)
 {
-  const StringListItem *list_item = value.unknown_value_list->first;
+  const StringListItem *list_item = value->unknown_value_list->first;
   int need_newline;
 
   buffered_writer_cat_string (&data->writer, list_item->text);
