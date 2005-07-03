@@ -1,0 +1,1427 @@
+# English (British) translation of Quarry.
+# Copyright (C) 2005 Paul Pogonyshev
+# This file is distributed under the same license as the Quarry package.
+# Paul Pogonyshev <pogonyshev@gmx.net>, 2005.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Quarry\n"
+"Report-Msgid-Bugs-To: quarry-dev@gna.org\n"
+"POT-Creation-Date: 2005-06-17 23:04+0300\n"
+"PO-Revision-Date: 2005-06-25 21:23+0300\n"
+"Last-Translator: Paul Pogonyshev <pogonyshev@gmx.net>\n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=n == 1 ? 0 : 1;\n"
+
+#: src/gui-gtk/gtk-color-button.c:581
+msgid "Pick a Color"
+msgstr "Pick a Colour"
+
+#: src/gui-gtk/gtk-control-center.c:57
+msgid "Quarry Control Center"
+msgstr "Quarry Control Centre"
+
+#: src/gui-gtk/gtk-file-dialog.c:288
+msgid ""
+"Note that all information in the existing file will be lost permanently if "
+"you choose to overwrite it."
+msgstr ""
+"Note that all information in the existing file will be lost permanently if "
+"you choose to overwrite it."
+
+#: src/gui-gtk/gtk-file-dialog.c:291
+#, c-format
+msgid ""
+"File named `%s' already exists. Do you want to overwrite it with the one you "
+"are saving?"
+msgstr ""
+"File named `%s' already exists. Do you want to overwrite it with the one you "
+"are saving?"
+
+#: src/gui-gtk/gtk-game-info-dialog.c:147
+#: src/gui-gtk/gtk-game-info-dialog.c:213
+msgid "Game Information"
+msgstr "Game Information"
+
+#: src/gui-gtk/gtk-game-info-dialog.c:152
+#: src/gui-gtk/gtk-resume-game-dialog.c:323
+msgid "N_ame:"
+msgstr "N_ame:"
+
+#: src/gui-gtk/gtk-game-info-dialog.c:152
+#: src/gui-gtk/gtk-resume-game-dialog.c:322
+msgid "_Name:"
+msgstr "_Name:"
+
+#: src/gui-gtk/gtk-game-info-dialog.c:159
+msgid "Team:"
+msgstr "Team:"
+
+#: src/gui-gtk/gtk-game-info-dialog.c:165
+msgid "Rank:"
+msgstr "Rank:"
+
+#: src/gui-gtk/gtk-game-info-dialog.c:177
+#: src/gui-gtk/gtk-new-game-dialog.c:234
+#: src/gui-gtk/gtk-resume-game-dialog.c:362
+msgid "Black Player"
+msgstr "Black Player"
+
+#: src/gui-gtk/gtk-game-info-dialog.c:177
+#: src/gui-gtk/gtk-new-game-dialog.c:234
+#: src/gui-gtk/gtk-resume-game-dialog.c:362
+msgid "White Player"
+msgstr "White Player"
+
+#: src/gui-gtk/gtk-game-info-dialog.c:191
+msgid "_Game name:"
+msgstr "_Game name:"
+
+#: src/gui-gtk/gtk-game-info-dialog.c:194
+msgid "_Place:"
+msgstr "_Place:"
+
+#: src/gui-gtk/gtk-game-info-dialog.c:197
+msgid "Da_te:"
+msgstr "Da_te:"
+
+#: src/gui-gtk/gtk-game-info-dialog.c:200
+msgid "_Event:"
+msgstr "_Event:"
+
+#: src/gui-gtk/gtk-game-info-dialog.c:203
+msgid "_Round:"
+msgstr "_Round:"
+
+#: src/gui-gtk/gtk-game-info-dialog.c:216
+msgid "Rule _set:"
+msgstr "Rule _set:"
+
+#: src/gui-gtk/gtk-game-info-dialog.c:239
+msgid "Han_dicap:"
+msgstr "Han_dicap:"
+
+#: src/gui-gtk/gtk-game-info-dialog.c:260
+#: src/gui-gtk/gtk-new-game-dialog.c:598
+msgid "_Komi:"
+msgstr "_Komi:"
+
+#: src/gui-gtk/gtk-game-info-dialog.c:285
+#: src/gui-gtk/gtk-new-game-dialog.c:467
+msgid "_Main time:"
+msgstr "_Main time:"
+
+#: src/gui-gtk/gtk-game-info-dialog.c:297
+msgid "_Overtime:"
+msgstr "_Overtime:"
+
+#: src/gui-gtk/gtk-game-info-dialog.c:307
+#: src/gui-gtk/gtk-new-game-dialog.c:626
+msgid "Game Rules"
+msgstr "Game Rules"
+
+#: src/gui-gtk/gtk-game-info-dialog.c:322
+msgid "General"
+msgstr "General"
+
+#: src/gui-gtk/gtk-game-info-dialog.c:325
+msgid "Game _result:"
+msgstr "Game _result:"
+
+#: src/gui-gtk/gtk-game-info-dialog.c:328
+msgid "_Opening played:"
+msgstr "_Opening played:"
+
+#: src/gui-gtk/gtk-game-info-dialog.c:354
+msgid "Comment / _description:"
+msgstr "Comment / _description:"
+
+#: src/gui-gtk/gtk-game-info-dialog.c:368
+msgid "Description & Result"
+msgstr "Description & Result"
+
+#: src/gui-gtk/gtk-game-info-dialog.c:371
+msgid "Co_pyright string:"
+msgstr "Co_pyright string:"
+
+#: src/gui-gtk/gtk-game-info-dialog.c:375
+msgid "_Annotator:"
+msgstr "_Annotator:"
+
+#: src/gui-gtk/gtk-game-info-dialog.c:379
+msgid "_Source:"
+msgstr "_Source:"
+
+#: src/gui-gtk/gtk-game-info-dialog.c:382
+msgid "_Entered by:"
+msgstr "_Entered by:"
+
+#: src/gui-gtk/gtk-game-info-dialog.c:391
+msgid "Copyright & Credits"
+msgstr "Copyright & Credits"
+
+#: src/gui-gtk/gtk-game-info-dialog.c:404
+msgid "Game Record"
+msgstr "Game Record"
+
+#: src/gui-gtk/gtk-games.c:33
+msgid "_Go"
+msgstr "_Go"
+
+#: src/gui-gtk/gtk-games.c:34
+msgid "_Amazons"
+msgstr "_Amazons"
+
+#: src/gui-gtk/gtk-games.c:35
+msgid "_Othello"
+msgstr "_Othello"
+
+#: src/gui-gtk/gtk-goban-window.c:352
+msgid "Open"
+msgstr "Open"
+
+#: src/gui-gtk/gtk-goban-window.c:352
+msgid "Open a game record"
+msgstr "Open a game record"
+
+#: src/gui-gtk/gtk-goban-window.c:357
+msgid "Save"
+msgstr "Save"
+
+#: src/gui-gtk/gtk-goban-window.c:357
+msgid "Save the current file"
+msgstr "Save the current file"
+
+#: src/gui-gtk/gtk-goban-window.c:362 src/gui-gtk/gtk-goban-window.c:1516
+msgid "Find"
+msgstr "Find"
+
+#: src/gui-gtk/gtk-goban-window.c:362
+msgid "Search for a string in comments"
+msgstr "Search for a string in comments"
+
+#: src/gui-gtk/gtk-goban-window.c:367
+msgid "Info"
+msgstr "Info"
+
+#: src/gui-gtk/gtk-goban-window.c:367
+msgid "View and edit game information"
+msgstr "View and edit game information"
+
+#: src/gui-gtk/gtk-goban-window.c:373
+msgid "Root"
+msgstr "Root"
+
+#: src/gui-gtk/gtk-goban-window.c:373
+msgid "Go to root node"
+msgstr "Go to root node"
+
+#: src/gui-gtk/gtk-goban-window.c:378
+msgid "Back"
+msgstr "Back"
+
+#: src/gui-gtk/gtk-goban-window.c:378
+msgid "Go to previous node"
+msgstr "Go to previous node"
+
+#: src/gui-gtk/gtk-goban-window.c:383
+msgid "Forward"
+msgstr "Forward"
+
+#: src/gui-gtk/gtk-goban-window.c:383
+msgid "Go to next node"
+msgstr "Go to next node"
+
+#: src/gui-gtk/gtk-goban-window.c:388
+msgid "End"
+msgstr "End"
+
+#: src/gui-gtk/gtk-goban-window.c:388
+msgid "Go to current variation's last node"
+msgstr "Go to current variation's last node"
+
+#: src/gui-gtk/gtk-goban-window.c:393
+msgid "Previous"
+msgstr "Previous"
+
+#: src/gui-gtk/gtk-goban-window.c:393
+msgid "Switch to previous variation"
+msgstr "Switch to previous variation"
+
+#: src/gui-gtk/gtk-goban-window.c:399
+msgid "Next"
+msgstr "Next"
+
+#: src/gui-gtk/gtk-goban-window.c:399
+msgid "Switch to next variation"
+msgstr "Switch to next variation"
+
+#: src/gui-gtk/gtk-goban-window.c:489
+msgid "/_File"
+msgstr "/_File"
+
+#: src/gui-gtk/gtk-goban-window.c:490
+msgid "/File/_New Game..."
+msgstr "/File/_New Game..."
+
+#: src/gui-gtk/gtk-goban-window.c:493 src/gui-gtk/gtk-goban-window.c:501
+#: src/gui-gtk/gtk-goban-window.c:509
+msgid "/File/"
+msgstr "/File/"
+
+#: src/gui-gtk/gtk-goban-window.c:495
+msgid "/File/_Open..."
+msgstr "/File/_Open..."
+
+#: src/gui-gtk/gtk-goban-window.c:498
+msgid "/File/_Resume Game..."
+msgstr "/File/_Resume Game..."
+
+#: src/gui-gtk/gtk-goban-window.c:503
+msgid "/File/_Save"
+msgstr "/File/_Save"
+
+#: src/gui-gtk/gtk-goban-window.c:506
+msgid "/File/Save _As..."
+msgstr "/File/Save _As..."
+
+#: src/gui-gtk/gtk-goban-window.c:511
+msgid "/File/_Close"
+msgstr "/File/_Close"
+
+#: src/gui-gtk/gtk-goban-window.c:514
+msgid "/File/_Quit"
+msgstr "/File/_Quit"
+
+#: src/gui-gtk/gtk-goban-window.c:519
+msgid "/_Edit"
+msgstr "/_Edit"
+
+#: src/gui-gtk/gtk-goban-window.c:520
+msgid "/Edit/_Undo"
+msgstr "/Edit/_Undo"
+
+#: src/gui-gtk/gtk-goban-window.c:523
+msgid "/Edit/_Redo"
+msgstr "/Edit/_Redo"
+
+#: src/gui-gtk/gtk-goban-window.c:526 src/gui-gtk/gtk-goban-window.c:534
+#: src/gui-gtk/gtk-goban-window.c:565 src/gui-gtk/gtk-goban-window.c:571
+#: src/gui-gtk/gtk-goban-window.c:582 src/gui-gtk/gtk-goban-window.c:587
+msgid "/Edit/"
+msgstr "/Edit/"
+
+#: src/gui-gtk/gtk-goban-window.c:528
+msgid "/Edit/_Delete Node"
+msgstr "/Edit/_Delete Node"
+
+#: src/gui-gtk/gtk-goban-window.c:531
+msgid "/Edit/Delete Node's _Children"
+msgstr "/Edit/Delete Node's _Children"
+
+#: src/gui-gtk/gtk-goban-window.c:536
+msgid "/Edit/_Tools"
+msgstr "/Edit/_Tools"
+
+#: src/gui-gtk/gtk-goban-window.c:537
+msgid "/Edit/Tools/_Move Tool"
+msgstr "/Edit/Tools/_Move Tool"
+
+#: src/gui-gtk/gtk-goban-window.c:540
+msgid "/Edit/Tools/_Setup Tool"
+msgstr "/Edit/Tools/_Setup Tool"
+
+#: src/gui-gtk/gtk-goban-window.c:543 src/gui-gtk/gtk-goban-window.c:560
+msgid "/Edit/Tools/"
+msgstr "/Edit/Tools/"
+
+#: src/gui-gtk/gtk-goban-window.c:545
+msgid "/Edit/Tools/C_ross Markup"
+msgstr "/Edit/Tools/C_ross Markup"
+
+#: src/gui-gtk/gtk-goban-window.c:548
+msgid "/Edit/Tools/_Circle Markup"
+msgstr "/Edit/Tools/_Circle Markup"
+
+#: src/gui-gtk/gtk-goban-window.c:551
+msgid "/Edit/Tools/S_quare Markup"
+msgstr "/Edit/Tools/S_quare Markup"
+
+#: src/gui-gtk/gtk-goban-window.c:554
+msgid "/Edit/Tools/_Triangle Markup"
+msgstr "/Edit/Tools/_Triangle Markup"
+
+#: src/gui-gtk/gtk-goban-window.c:557
+msgid "/Edit/Tools/S_elected Markup"
+msgstr "/Edit/Tools/S_elected Markup"
+
+#: src/gui-gtk/gtk-goban-window.c:562
+msgid "/Edit/Tools/Scori_ng Tool"
+msgstr "/Edit/Tools/Scori_ng Tool"
+
+#: src/gui-gtk/gtk-goban-window.c:568
+msgid "/Edit/Edit Node _Name"
+msgstr "/Edit/Edit Node _Name"
+
+#: src/gui-gtk/gtk-goban-window.c:573
+msgid "/Edit/_Find"
+msgstr "/Edit/_Find"
+
+#: src/gui-gtk/gtk-goban-window.c:576
+msgid "/Edit/Find Ne_xt"
+msgstr "/Edit/Find Ne_xt"
+
+#: src/gui-gtk/gtk-goban-window.c:579
+msgid "/Edit/Find Pre_vious"
+msgstr "/Edit/Find Pre_vious"
+
+#: src/gui-gtk/gtk-goban-window.c:584
+msgid "/Edit/Game _Information"
+msgstr "/Edit/Game _Information"
+
+#: src/gui-gtk/gtk-goban-window.c:589
+msgid "/Edit/_Preferences"
+msgstr "/Edit/_Preferences"
+
+#: src/gui-gtk/gtk-goban-window.c:594
+msgid "/_View"
+msgstr "/_View"
+
+#: src/gui-gtk/gtk-goban-window.c:595
+msgid "/View/_Main Toolbar"
+msgstr "/View/_Main Toolbar"
+
+#: src/gui-gtk/gtk-goban-window.c:598
+msgid "/View/_Navigation Toolbar"
+msgstr "/View/_Navigation Toolbar"
+
+#: src/gui-gtk/gtk-goban-window.c:601 src/gui-gtk/gtk-goban-window.c:606
+#: src/gui-gtk/gtk-goban-window.c:614
+msgid "/View/"
+msgstr "/View/"
+
+#: src/gui-gtk/gtk-goban-window.c:603
+msgid "/View/_Game Action Buttons"
+msgstr "/View/_Game Action Buttons"
+
+#: src/gui-gtk/gtk-goban-window.c:608
+msgid "/View/Game _Tree"
+msgstr "/View/Game _Tree"
+
+#: src/gui-gtk/gtk-goban-window.c:611
+msgid "/View/_Recenter on Current Node"
+msgstr "/View/_Recentre on Current Node"
+
+#: src/gui-gtk/gtk-goban-window.c:616
+msgid "/View/_Control Center"
+msgstr "/View/_Control Centre"
+
+#: src/gui-gtk/gtk-goban-window.c:621
+msgid "/_Play"
+msgstr "/_Play"
+
+#: src/gui-gtk/gtk-goban-window.c:622
+msgid "/Play/_Pass"
+msgstr "/Play/_Pass"
+
+#: src/gui-gtk/gtk-goban-window.c:625 src/gui-gtk/gtk-goban-window.c:630
+msgid "/Play/"
+msgstr "/Play/"
+
+#: src/gui-gtk/gtk-goban-window.c:627
+msgid "/Play/_Resign"
+msgstr "/Play/_Resign"
+
+#: src/gui-gtk/gtk-goban-window.c:632
+msgid "/Play/_Adjourn Game"
+msgstr "/Play/_Adjourn Game"
+
+#: src/gui-gtk/gtk-goban-window.c:637
+msgid "/_Go"
+msgstr "/_Go"
+
+#: src/gui-gtk/gtk-goban-window.c:638
+msgid "/Go/_Previous Node"
+msgstr "/Go/_Previous Node"
+
+#: src/gui-gtk/gtk-goban-window.c:641
+msgid "/Go/_Next Node"
+msgstr "/Go/_Next Node"
+
+#: src/gui-gtk/gtk-goban-window.c:644
+msgid "/Go/Ten Nodes _Backward"
+msgstr "/Go/Ten Nodes _Backward"
+
+#: src/gui-gtk/gtk-goban-window.c:647
+msgid "/Go/Ten Nodes _Forward"
+msgstr "/Go/Ten Nodes _Forward"
+
+#: src/gui-gtk/gtk-goban-window.c:650 src/gui-gtk/gtk-goban-window.c:658
+msgid "/Go/"
+msgstr "/Go/"
+
+#: src/gui-gtk/gtk-goban-window.c:652
+msgid "/Go/_Root Node"
+msgstr "/Go/_Root Node"
+
+#: src/gui-gtk/gtk-goban-window.c:655
+msgid "/Go/Variation _Last Node"
+msgstr "/Go/Variation _Last Node"
+
+#: src/gui-gtk/gtk-goban-window.c:660
+msgid "/Go/Pre_vious Variation"
+msgstr "/Go/Pre_vious Variation"
+
+#: src/gui-gtk/gtk-goban-window.c:663
+msgid "/Go/Ne_xt Variation"
+msgstr "/Go/Ne_xt Variation"
+
+#: src/gui-gtk/gtk-goban-window.c:668
+msgid "/_Help"
+msgstr "/_Help"
+
+#: src/gui-gtk/gtk-goban-window.c:669
+msgid "/Help/_Contents"
+msgstr "/Help/_Contents"
+
+#: src/gui-gtk/gtk-goban-window.c:672
+msgid "/Help/_About"
+msgstr "/Help/_About"
+
+#: src/gui-gtk/gtk-goban-window.c:736
+msgid "Black"
+msgstr "Black"
+
+#: src/gui-gtk/gtk-goban-window.c:736
+msgid "White"
+msgstr "White"
+
+#: src/gui-gtk/gtk-goban-window.c:1148
+msgid "A good width for the right side to have."
+msgstr "A good width for the right side to have."
+
+#: src/gui-gtk/gtk-goban-window.c:1201
+#, c-format
+msgid ""
+"Please set up %d (or less)\n"
+"stones of free handicap"
+msgstr ""
+"Please set up %d (or less)\n"
+"stones of free handicap"
+
+#: src/gui-gtk/gtk-goban-window.c:1366
+msgid "Adjourn & Save As..."
+msgstr "Adjourn & Save As..."
+
+#: src/gui-gtk/gtk-goban-window.c:1366
+msgid "Save As..."
+msgstr "Save As..."
+
+#: src/gui-gtk/gtk-goban-window.c:1479
+msgid ""
+"You can later resume the game by pressing the `Resume Game' button in Quarry "
+"Control Center, or selecting `Resume Game' item from  `File' menu."
+msgstr "You can later resume the game by pressing the `Resume Game' button in Quarry Control Centre, or selecting `Resume Game' item from  `File' menu."
+
+#: src/gui-gtk/gtk-goban-window.c:1485
+#, c-format
+msgid "The game is adjourned and saved in file `%s'."
+msgstr "The game is adjourned and saved in file `%s'."
+
+#: src/gui-gtk/gtk-goban-window.c:1508
+msgid "Whole game _tree"
+msgstr "Whole game _tree"
+
+#: src/gui-gtk/gtk-goban-window.c:1508
+msgid "Current no_de only"
+msgstr "Current no_de only"
+
+#: src/gui-gtk/gtk-goban-window.c:1511
+msgid "C_omments & node names"
+msgstr "C_omments & node names"
+
+#: src/gui-gtk/gtk-goban-window.c:1512
+msgid "Comm_ents only"
+msgstr "Comm_ents only"
+
+#: src/gui-gtk/gtk-goban-window.c:1512
+msgid "Node na_mes only"
+msgstr "Node na_mes only"
+
+#: src/gui-gtk/gtk-goban-window.c:1571
+msgid "Search _for:"
+msgstr "Search _for:"
+
+#: src/gui-gtk/gtk-goban-window.c:1578
+msgid "Case _sensitive"
+msgstr "Case _sensitive"
+
+#: src/gui-gtk/gtk-goban-window.c:1592
+msgid "Whole _words only"
+msgstr "Whole _words only"
+
+#: src/gui-gtk/gtk-goban-window.c:1606
+msgid "Wrap _around"
+msgstr "Wrap _around"
+
+#: src/gui-gtk/gtk-goban-window.c:1628
+msgid "A_uto-close this dialog"
+msgstr "A_uto-close this dialogue"
+
+#: src/gui-gtk/gtk-goban-window.c:1644
+msgid "Options"
+msgstr "Options"
+
+#: src/gui-gtk/gtk-goban-window.c:1705
+msgid "Search Scope"
+msgstr "Search Scope"
+
+#: src/gui-gtk/gtk-goban-window.c:2539
+msgid "A GUI program for Go, Amazons and Othello board games"
+msgstr "A GUI program for Go, Amazons and Othello board games"
+
+#: src/gui-gtk/gtk-goban-window.c:2541
+msgid "Copyright © 2003, 2004, 2005 Paul Pogonyshev and others"
+msgstr "Copyright © 2003, 2004, 2005 Paul Pogonyshev and others"
+
+#: src/gui-gtk/gtk-goban-window.c:2557
+msgid "About Quarry"
+msgstr "About Quarry"
+
+#: src/gui-gtk/gtk-goban-window.c:2928
+msgid "Really resign this game?"
+msgstr "Really resign this game?"
+
+#: src/gui-gtk/gtk-goban-window.c:2931
+msgid "_Resign"
+msgstr "_Resign"
+
+#: src/gui-gtk/gtk-goban-window.c:3834
+#, c-format
+msgid "%s (W) vs. %s"
+msgstr "%s (W) vs. %s"
+
+#: src/gui-gtk/gtk-goban-window.c:3858
+msgid "Unnamed Game"
+msgstr "Unnamed Game"
+
+#: src/gui-gtk/gtk-goban-window.c:3862
+msgid "modified"
+msgstr "modified"
+
+#: src/gui-gtk/gtk-goban-window.c:3895
+msgid "[unknown]"
+msgstr "[unknown]"
+
+#: src/gui-gtk/gtk-goban-window.c:3928 src/gui-gtk/gtk-goban-window.c:3946
+#, c-format
+msgid "%d capture"
+msgid_plural "%d captures"
+msgstr[0] "%d capture"
+msgstr[1] "%d captures"
+
+#: src/gui-gtk/gtk-goban-window.c:3935
+#, c-format
+msgid "%d capture %c %.*f komi"
+msgid_plural "%d captures %c %.*f komi"
+msgstr[0] "%d capture %c %.*f komi"
+msgstr[1] "%d captures %c %.*f komi"
+
+#: src/gui-gtk/gtk-goban-window.c:3956 src/gui-gtk/gtk-goban-window.c:3959
+#, c-format
+msgid "%d disk"
+msgid_plural "%d disks"
+msgstr[0] "%d disk"
+msgstr[1] "%d disks"
+
+#: src/gui-gtk/gtk-goban-window.c:3989
+#, c-format
+msgid "Move %d: "
+msgstr "Move %d: "
+
+#: src/gui-gtk/gtk-goban-window.c:3993
+#, c-format
+msgid "Last move: %u, "
+msgstr "Last move: %u, "
+
+#: src/gui-gtk/gtk-goban-window.c:3999
+msgid "B "
+msgstr "B "
+
+#: src/gui-gtk/gtk-goban-window.c:3999
+msgid "W "
+msgstr "W "
+
+#: src/gui-gtk/gtk-goban-window.c:3999
+msgid "pass"
+msgstr "pass"
+
+#: src/gui-gtk/gtk-goban-window.c:4002
+#, c-format
+msgid "Game beginning"
+msgstr "Game beginning"
+
+#: src/gui-gtk/gtk-goban-window.c:4019
+msgid "; black to play"
+msgstr "; black to play"
+
+#: src/gui-gtk/gtk-goban-window.c:4019
+msgid "; white to play"
+msgstr "; white to play"
+
+#: src/gui-gtk/gtk-goban-window.c:4022
+msgid "; game over"
+msgstr "; game over"
+
+#: src/gui-gtk/gtk-goban-window.c:4030
+msgid "Black wins"
+msgstr "Black wins"
+
+#: src/gui-gtk/gtk-goban-window.c:4033
+msgid "White wins"
+msgstr "White wins"
+
+#: src/gui-gtk/gtk-goban-window.c:4037
+msgid "Black wins by forfeit"
+msgstr "Black wins by forfeit"
+
+#: src/gui-gtk/gtk-goban-window.c:4040
+msgid "White wins by forfeit"
+msgstr "White wins by forfeit"
+
+#: src/gui-gtk/gtk-goban-window.c:4044
+msgid "White resigns"
+msgstr "White resigns"
+
+#: src/gui-gtk/gtk-goban-window.c:4047
+msgid "Black resigns"
+msgstr "Black resigns"
+
+#: src/gui-gtk/gtk-goban-window.c:4061
+#, c-format
+msgid "Black wins by %.*f"
+msgstr "Black wins by %.*f"
+
+#: src/gui-gtk/gtk-goban-window.c:4061
+#, c-format
+msgid "White wins by %.*f"
+msgstr "White wins by %.*f"
+
+#: src/gui-gtk/gtk-goban-window.c:4068
+msgid "White runs out of time and loses"
+msgstr "White runs out of time and loses"
+
+#: src/gui-gtk/gtk-goban-window.c:4071
+msgid "Black runs out of time and loses"
+msgstr "Black runs out of time and loses"
+
+#: src/gui-gtk/gtk-goban-window.c:4075
+msgid "Game is draw"
+msgstr "Game is draw"
+
+#: src/gui-gtk/gtk-goban-window.c:4213
+msgid "insert node name here"
+msgstr "insert node name here"
+
+#: src/gui-gtk/gtk-goban-window.c:4714
+msgid "GTP engine is scoring..."
+msgstr "GTP engine is scoring..."
+
+#: src/gui-gtk/gtk-goban-window.c:4853
+msgid ""
+"Please select dead stones\n"
+"to score the game"
+msgstr ""
+"Please select dead stones\n"
+"to score the game"
+
+#: src/gui-gtk/gtk-gtp-client-interface.c:283
+msgid "Engine hung up"
+msgstr "Engine hung up"
+
+#: src/gui-gtk/gtk-gtp-client-interface.c:392
+msgid "* ERROR: wrong response format\n"
+msgstr "* ERROR: wrong response format\n"
+
+#: src/gui-gtk/gtk-gtp-client-interface.c:396
+msgid "* WARNING: unexpected response:\n"
+msgstr "* WARNING: unexpected response:\n"
+
+#: src/gui-gtk/gtk-gtp-client-interface.c:400
+msgid "* ERROR: unrecognized response line:\n"
+msgstr "* ERROR: unrecognised response line:\n"
+
+#: src/gui-gtk/gtk-gtp-client-interface.c:405
+#, c-format
+msgid "* ERROR: mismatched ID (%d expected):\n"
+msgstr "* ERROR: mismatched ID (%d expected):\n"
+
+#: src/gui-gtk/gtk-gtp-client-interface.c:409
+msgid "* ERROR: unexpected ID in response (the command had none):\n"
+msgstr "* ERROR: unexpected ID in response (the command had none):\n"
+
+#: src/gui-gtk/gtk-gtp-client-interface.c:414
+msgid "* WARNING: future GTP version, I don't know about it....\n"
+msgstr "* WARNING: future GTP version, I don't know about it....\n"
+
+#: src/gui-gtk/gtk-new-game-dialog.c:104
+msgid ""
+"Note that most GTP engines support only one game. Hence certain game / "
+"computer player combinations may be not possible to play."
+msgstr ""
+"Note that most GTP engines support only one game. Hence certain game / "
+"computer player combinations may be not possible to play."
+
+#: src/gui-gtk/gtk-new-game-dialog.c:108
+msgid "Fi_xed handicap:"
+msgstr "Fi_xed handicap:"
+
+#: src/gui-gtk/gtk-new-game-dialog.c:108
+msgid "_Free handicap:"
+msgstr "_Free handicap:"
+
+#: src/gui-gtk/gtk-new-game-dialog.c:111
+msgid "No limit"
+msgstr "No limit"
+
+#: src/gui-gtk/gtk-new-game-dialog.c:111
+msgid "Limited time for entire game"
+msgstr "Limited time for entire game"
+
+#: src/gui-gtk/gtk-new-game-dialog.c:112
+msgid "Limited time per move"
+msgstr "Limited time per move"
+
+#: src/gui-gtk/gtk-new-game-dialog.c:112
+msgid "Canadian overtime"
+msgstr "Canadian overtime"
+
+#: src/gui-gtk/gtk-new-game-dialog.c:133
+msgid "New Game"
+msgstr "New Game"
+
+#: src/gui-gtk/gtk-new-game-dialog.c:175
+msgid "Game"
+msgstr "Game"
+
+#: src/gui-gtk/gtk-new-game-dialog.c:181
+#: src/gui-gtk/gtk-resume-game-dialog.c:305
+msgid "Hu_man"
+msgstr "Hu_man"
+
+#: src/gui-gtk/gtk-new-game-dialog.c:181
+#: src/gui-gtk/gtk-resume-game-dialog.c:305
+msgid "Compu_ter"
+msgstr "Compu_ter"
+
+#: src/gui-gtk/gtk-new-game-dialog.c:182
+#: src/gui-gtk/gtk-resume-game-dialog.c:306
+msgid "H_uman"
+msgstr "H_uman"
+
+#: src/gui-gtk/gtk-new-game-dialog.c:182
+#: src/gui-gtk/gtk-resume-game-dialog.c:306
+msgid "Com_puter"
+msgstr "Com_puter"
+
+#: src/gui-gtk/gtk-new-game-dialog.c:246
+msgid "Manage _Engine List"
+msgstr "Manage _Engine List"
+
+#: src/gui-gtk/gtk-new-game-dialog.c:266
+msgid "_Swap"
+msgstr "_Swap"
+
+#: src/gui-gtk/gtk-new-game-dialog.c:295
+msgid "Game &amp; Players"
+msgstr "Game &amp; Players"
+
+#: src/gui-gtk/gtk-new-game-dialog.c:368
+msgid "Board _size:"
+msgstr "Board _size:"
+
+#: src/gui-gtk/gtk-new-game-dialog.c:385
+msgid "Time control _type:"
+msgstr "Time control _type:"
+
+#: src/gui-gtk/gtk-new-game-dialog.c:407
+msgid "Time Limit"
+msgstr "Time Limit"
+
+#: src/gui-gtk/gtk-new-game-dialog.c:410
+msgid "K_eep track of total time"
+msgstr "K_eep track of total time"
+
+#: src/gui-gtk/gtk-new-game-dialog.c:430
+msgid "Time _limit for game:"
+msgstr "Time _limit for game:"
+
+#: src/gui-gtk/gtk-new-game-dialog.c:436
+msgid "(per player)"
+msgstr "(per player)"
+
+#: src/gui-gtk/gtk-new-game-dialog.c:450
+msgid "Time _limit for move:"
+msgstr "Time _limit for move:"
+
+#: src/gui-gtk/gtk-new-game-dialog.c:484
+msgid "_Overtime period length:"
+msgstr "_Overtime period length:"
+
+#: src/gui-gtk/gtk-new-game-dialog.c:501
+msgid "Mo_ves per overtime:"
+msgstr "Mo_ves per overtime:"
+
+#: src/gui-gtk/gtk-parser-interface.c:58
+#, c-format
+msgid "Error reading file `%s'."
+msgstr "Error reading file `%s'."
+
+#: src/gui-gtk/gtk-parser-interface.c:60
+#, c-format
+msgid "File `%s' doesn't appear to be a valid SGF file."
+msgstr "File `%s' doesn't appear to be a valid SGF file."
+
+#: src/gui-gtk/gtk-parser-interface.c:63
+msgid ""
+"Please check that the file exists and its permission allow you to read it."
+msgstr ""
+"Please check that the file exists and its permission allow you to read it."
+
+#: src/gui-gtk/gtk-parser-interface.c:67
+msgid ""
+"Quarry uses SGF file format for storing game records. SGF files would "
+"normally have `sgf' extension, but that's not necessarily true. Please make "
+"sure you select a proper SGF file."
+msgstr "Quarry uses SGF file format for storing game records. SGF files would normally have `sgf' extension, but that's not necessarily true. Please make sure you select a correct SGF file."
+
+#: src/gui-gtk/gtk-parser-interface.c:100
+msgid "Open SGF File..."
+msgstr "Open SGF File..."
+
+#: src/gui-gtk/gtk-parser-interface.c:189
+#, c-format
+msgid "Parsing file `%s'..."
+msgstr "Parsing file `%s'..."
+
+#: src/gui-gtk/gtk-preferences.c:415
+msgid "<b>General</b>"
+msgstr "<b>General</b>"
+
+#: src/gui-gtk/gtk-preferences.c:418
+msgid "Interface"
+msgstr "Interface"
+
+#: src/gui-gtk/gtk-preferences.c:419
+msgid "General Interface"
+msgstr "General Interface"
+
+#: src/gui-gtk/gtk-preferences.c:421
+msgid "<b>Editing &amp; Viewing</b>"
+msgstr "<b>Editing &amp; Viewing</b>"
+
+#: src/gui-gtk/gtk-preferences.c:424 src/gui-gtk/gtk-preferences.c:425
+msgid "Game Tree"
+msgstr "Game Tree"
+
+#: src/gui-gtk/gtk-preferences.c:428
+msgid "<b>GTP</b>"
+msgstr "<b>GTP</b>"
+
+#: src/gui-gtk/gtk-preferences.c:431 src/gui-gtk/gtk-preferences.c:432
+msgid "GTP Engines"
+msgstr "GTP Engines"
+
+#: src/gui-gtk/gtk-preferences.c:435
+msgid "<b>Game Records (SGF)</b>"
+msgstr "<b>Game Records (SGF)</b>"
+
+#: src/gui-gtk/gtk-preferences.c:438
+msgid "Saving"
+msgstr "Saving"
+
+#: src/gui-gtk/gtk-preferences.c:439
+msgid "Saving Game Records"
+msgstr "Saving Game Records"
+
+#: src/gui-gtk/gtk-preferences.c:442
+msgid "<b>Board Appearance</b>"
+msgstr "<b>Board Appearance</b>"
+
+#: src/gui-gtk/gtk-preferences.c:445
+msgid "Go"
+msgstr "Go"
+
+#: src/gui-gtk/gtk-preferences.c:446
+msgid "Go Board Appearance"
+msgstr "Go Board Appearance"
+
+#: src/gui-gtk/gtk-preferences.c:448
+msgid "Amazons"
+msgstr "Amazons"
+
+#: src/gui-gtk/gtk-preferences.c:449
+msgid "Amazons Board Appearance"
+msgstr "Amazons Board Appearance"
+
+#: src/gui-gtk/gtk-preferences.c:451
+msgid "Othello"
+msgstr "Othello"
+
+#: src/gui-gtk/gtk-preferences.c:452
+msgid "Othello Board Appearance"
+msgstr "Othello Board Appearance"
+
+#: src/gui-gtk/gtk-preferences.c:464
+msgid "Preferences"
+msgstr "Preferences"
+
+#: src/gui-gtk/gtk-preferences.c:500
+msgid "Categor_y:"
+msgstr "Categor_y:"
+
+#: src/gui-gtk/gtk-preferences.c:613
+msgid "Use _newer (GTK+ 2.4) file chooser"
+msgstr "Use _newer (GTK+ 2.4) file chooser"
+
+#: src/gui-gtk/gtk-preferences.c:614
+msgid "Use _old-style file selection dialog"
+msgstr "Use _old-style file selection dialogue"
+
+#: src/gui-gtk/gtk-preferences.c:623
+msgid "Desktop default"
+msgstr "Desktop default"
+
+#: src/gui-gtk/gtk-preferences.c:624
+msgid "Text below icons"
+msgstr "Text below icons"
+
+#: src/gui-gtk/gtk-preferences.c:630
+msgid "Text beside important icons"
+msgstr "Text beside important icons"
+
+#: src/gui-gtk/gtk-preferences.c:633
+msgid "Icons only"
+msgstr "Icons only"
+
+#: src/gui-gtk/gtk-preferences.c:634
+msgid "Text only"
+msgstr "Text only"
+
+#: src/gui-gtk/gtk-preferences.c:661
+msgid "File Chooser Dialog Style"
+msgstr "File Chooser Dialogue Style"
+
+#: src/gui-gtk/gtk-preferences.c:690
+msgid "_Main toolbar style:"
+msgstr "_Main toolbar style:"
+
+#: src/gui-gtk/gtk-preferences.c:714
+msgid "N_avigation toolbar style:"
+msgstr "N_avigation toolbar style:"
+
+#: src/gui-gtk/gtk-preferences.c:726
+msgid "Toolbar Styles"
+msgstr "Toolbar Styles"
+
+#: src/gui-gtk/gtk-preferences.c:770
+msgid "Show"
+msgstr "Show"
+
+#: src/gui-gtk/gtk-preferences.c:777
+msgid "Name"
+msgstr "Name"
+
+#: src/gui-gtk/gtk-preferences.c:786
+msgid "_List of GTP engines:"
+msgstr "_List of GTP engines:"
+
+#: src/gui-gtk/gtk-preferences.c:834
+msgid "Name:"
+msgstr "Name:"
+
+#: src/gui-gtk/gtk-preferences.c:843
+msgid "Version:"
+msgstr "Version:"
+
+#: src/gui-gtk/gtk-preferences.c:854
+msgid "Supported game(s):"
+msgstr "Supported game(s):"
+
+#: src/gui-gtk/gtk-preferences.c:866
+msgid "Command line:"
+msgstr "Command line:"
+
+#: src/gui-gtk/gtk-preferences.c:891
+msgid "GTP Engine Information"
+msgstr "GTP Engine Information"
+
+#: src/gui-gtk/gtk-preferences.c:912
+msgid "_Always"
+msgstr "_Always"
+
+#: src/gui-gtk/gtk-preferences.c:912
+msgid "A_utomatically"
+msgstr "A_utomatically"
+
+#: src/gui-gtk/gtk-preferences.c:912
+msgid "_Never"
+msgstr "_Never"
+
+#: src/gui-gtk/gtk-preferences.c:914
+msgid "Al_ways"
+msgstr "Al_ways"
+
+#: src/gui-gtk/gtk-preferences.c:914
+msgid "Au_tomatically"
+msgstr "Au_tomatically"
+
+#: src/gui-gtk/gtk-preferences.c:914
+msgid "Ne_ver"
+msgstr "Ne_ver"
+
+#: src/gui-gtk/gtk-preferences.c:916
+msgid "Scroll _minimal distance"
+msgstr "Scroll _minimal distance"
+
+#: src/gui-gtk/gtk-preferences.c:917
+msgid "_Recenter view on the current node"
+msgstr "_Recentre view on the current node"
+
+#: src/gui-gtk/gtk-preferences.c:920
+msgid ""
+"In automatic mode the game tree is shown only if it has at least one "
+"variation. In any case, you can show/hide game tree in each window "
+"separately."
+msgstr ""
+"In automatic mode the game tree is shown only if it has at least one "
+"variation. In any case, you can show/hide game tree in each window "
+"separately."
+
+#: src/gui-gtk/gtk-preferences.c:924
+msgid ""
+"In automatic mode the game tree view scrolls to show the current node only "
+"if it has been showing current node before.  I.e. unless you scrolled it "
+"away manually."
+msgstr ""
+"In automatic mode the game tree view scrolls to show the current node only "
+"if it has been showing current node before.  I.e. unless you scrolled it "
+"away manually."
+
+#: src/gui-gtk/gtk-preferences.c:967
+msgid "Show Game Tree"
+msgstr "Show Game Tree"
+
+#: src/gui-gtk/gtk-preferences.c:1014
+msgid "Track Tree's Current Node"
+msgstr "Track Tree's Current Node"
+
+#: src/gui-gtk/gtk-preferences.c:1026
+msgid "Always use UTF-8 (recommended)"
+msgstr "Always use UTF-8 (recommended)"
+
+#: src/gui-gtk/gtk-preferences.c:1027
+msgid "Preserve original encoding"
+msgstr "Preserve original encoding"
+
+#: src/gui-gtk/gtk-preferences.c:1029
+msgid ""
+"Note that many characters cannot be represented in non-UTF-8 encodings and "
+"thus some information may be lost if you use them. Quarry also works fastest "
+"with UTF-8; this may be important if you have very large SGF files."
+msgstr ""
+"Note that many characters cannot be represented in non-UTF-8 encodings and "
+"thus some information may be lost if you use them. Quarry also works fastest "
+"with UTF-8; this may be important if you have very large SGF files."
+
+#: src/gui-gtk/gtk-preferences.c:1054
+msgid "Encoding"
+msgstr "Encoding"
+
+#: src/gui-gtk/gtk-preferences.c:1064
+msgid "_Relative to stone size"
+msgstr "_Relative to stone size"
+
+#: src/gui-gtk/gtk-preferences.c:1065
+msgid "On _white stones:"
+msgstr "On _white stones:"
+
+#: src/gui-gtk/gtk-preferences.c:1066
+msgid "On _black stones:"
+msgstr "On _black stones:"
+
+#: src/gui-gtk/gtk-preferences.c:1067
+msgid "On _empty intersections:"
+msgstr "On _empty intersections:"
+
+#: src/gui-gtk/gtk-preferences.c:1081
+msgid "_Relative to amazon size"
+msgstr "_Relative to amazon size"
+
+#: src/gui-gtk/gtk-preferences.c:1082
+msgid "On _white amazons:"
+msgstr "On _white amazons:"
+
+#: src/gui-gtk/gtk-preferences.c:1083
+msgid "On _black amazons:"
+msgstr "On _black amazons:"
+
+#: src/gui-gtk/gtk-preferences.c:1084 src/gui-gtk/gtk-preferences.c:1143
+msgid "On _empty fields:"
+msgstr "On _empty fields:"
+
+#: src/gui-gtk/gtk-preferences.c:1103
+msgid "Pick Checkerboard Pattern Color"
+msgstr "Pick Chequered Pattern Colour"
+
+#: src/gui-gtk/gtk-preferences.c:1112
+msgid "Checkerboard _pattern color:"
+msgstr "Chequered _pattern colour:"
+
+#: src/gui-gtk/gtk-preferences.c:1128
+msgid "Checkerboard pattern _opacity:"
+msgstr "Chequered pattern _opacity:"
+
+#: src/gui-gtk/gtk-preferences.c:1140
+msgid "_Relative to disk size"
+msgstr "_Relative to disk size"
+
+#: src/gui-gtk/gtk-preferences.c:1141
+msgid "On _white disks:"
+msgstr "On _white disks:"
+
+#: src/gui-gtk/gtk-preferences.c:1142
+msgid "On _black disks:"
+msgstr "On _black disks:"
+
+#: src/gui-gtk/gtk-preferences.c:1156
+msgid "Use _texture:"
+msgstr "Use _texture:"
+
+#: src/gui-gtk/gtk-preferences.c:1157
+msgid "Use _solid color:"
+msgstr "Use _solid colour:"
+
+#: src/gui-gtk/gtk-preferences.c:1232
+msgid "Choose a Background Texture..."
+msgstr "Choose a Background Texture..."
+
+#: src/gui-gtk/gtk-preferences.c:1243
+msgid "Pick Background Color"
+msgstr "Pick Background Colour"
+
+#: src/gui-gtk/gtk-preferences.c:1257
+msgid "Pick Color for Grid and Labels"
+msgstr "Pick Colour for Grid and Labels"
+
+#: src/gui-gtk/gtk-preferences.c:1267
+msgid "_Grid and labels color:"
+msgstr "_Grid and labels colour:"
+
+#: src/gui-gtk/gtk-preferences.c:1306
+msgid "_Theme:"
+msgstr "_Theme:"
+
+#: src/gui-gtk/gtk-preferences.c:1316
+msgid "Use theme _defaults"
+msgstr "Use theme _defaults"
+
+#: src/gui-gtk/gtk-preferences.c:1333
+msgid "_Size:"
+msgstr "_Size:"
+
+#: src/gui-gtk/gtk-preferences.c:1360
+msgid "_Opacity:"
+msgstr "_Opacity:"
+
+#: src/gui-gtk/gtk-preferences.c:1375
+msgid "Size & Opacity"
+msgstr "Size & Opacity"
+
+#: src/gui-gtk/gtk-preferences.c:1391
+msgid "Color"
+msgstr "Colour"
+
+#: src/gui-gtk/gtk-preferences.c:1405
+msgid "Pick Color for Markup"
+msgstr "Pick Colour for Markup"
+
+#: src/gui-gtk/gtk-preferences.c:1441
+msgid "Background"
+msgstr "Background"
+
+#: src/gui-gtk/gtk-preferences.c:1443
+msgid "Markup"
+msgstr "Markup"
+
+#: src/gui-gtk/gtk-preferences.c:1569
+msgid "This engine comes from site configuration."
+msgstr "This engine comes from site configuration."
+
+#: src/gui-gtk/gtk-preferences.c:1788
+msgid ""
+"You can use `%n' and `%v' strings in <i>Screen name</i> field. They will "
+"substituted with name and version of the engine correspondingly. By default, "
+"`%n %v' is used."
+msgstr ""
+"You can use `%n' and `%v' strings in <i>Screen name</i> field. They will "
+"substituted with name and version of the engine correspondingly. By default, "
+"`%n %v' is used."
+
+#: src/gui-gtk/gtk-preferences.c:1834
+msgid "Modify GTP Engine Information"
+msgstr "Modify GTP Engine Information"
+
+#: src/gui-gtk/gtk-preferences.c:1835
+msgid "New GTP Engine"
+msgstr "New GTP Engine"
+
+#: src/gui-gtk/gtk-preferences.c:1881
+msgid "Command _line:"
+msgstr "Command _line:"
+
+#: src/gui-gtk/gtk-preferences.c:1887
+msgid "Choose GTP Engine..."
+msgstr "Choose GTP Engine..."
+
+#: src/gui-gtk/gtk-preferences.c:1898
+msgid "Screen _name:"
+msgstr "Screen _name:"
+
+#: src/gui-gtk/gtk-preferences.c:1943
+msgid "Querying engine's name, version and known commands..."
+msgstr "Querying engine's name, version and known commands..."
+
+#: src/gui-gtk/gtk-preferences.c:1964
+msgid ""
+"Please make sure you typed engine's filename correctly and that you have "
+"permission to execute it."
+msgstr ""
+"Please make sure you typed engine's filename correctly and that you have "
+"permission to execute it."
+
+#: src/gui-gtk/gtk-preferences.c:2000
+msgid "Waiting for the engine to quit..."
+msgstr "Waiting for the engine to quit..."
+
+#: src/gui-gtk/gtk-preferences.c:2104
+msgid ""
+"The engine might have crashed, quit prematurely or disconnected. Please "
+"verify command line, including options, and consult engine's documentation "
+"if needed."
+msgstr ""
+"The engine might have crashed, quit prematurely or disconnected. Please "
+"verify command line, including options, and consult engine's documentation "
+"if needed."
+
+#: src/gui-gtk/gtk-preferences.c:2119
+#, c-format
+msgid "Lost connection to GTP Engine (%s)."
+msgstr "Lost connection to GTP Engine (%s)."
+
+#: src/gui-gtk/gtk-preferences.c:2912
+msgid ""
+"Perhaps engine's binary has been deleted or changed. You will probably need "
+"to alter engine's command line in preferences dialog."
+msgstr "Perhaps engine's binary has been deleted or changed. You will probably need to alter engine's command line in preferences dialogue."
+
+#: src/gui-gtk/gtk-resume-game-dialog.c:91
+msgid "Resume Game..."
+msgstr "Resume Game..."
+
+#: src/gui-gtk/gtk-resume-game-dialog.c:115
+#, c-format
+msgid "The game stored in file `%s' (%s) is not supported by Quarry."
+msgstr "The game stored in file `%s' (%s) is not supported by Quarry."
+
+#: src/gui-gtk/gtk-resume-game-dialog.c:138
+msgid ""
+"This game appears to have been finished. Open it for viewing and/or editing "
+"instead?"
+msgstr ""
+"This game appears to have been finished. Open it for viewing and/or editing "
+"instead?"
+
+#: src/gui-gtk/gtk-resume-game-dialog.c:212
+msgid "Resuming Game"
+msgstr "Resuming Game"
+
+#: src/gui-gtk/gtk-resume-game-dialog.c:214
+msgid "_Resume"
+msgstr "_Resume"
+
+#: src/gui-gtk/gtk-resume-game-dialog.c:226
+msgid "Short Game Information"
+msgstr "Short Game Information"
+
+#: src/gui-gtk/gtk-resume-game-dialog.c:230
+msgid "Game:"
+msgstr "Game:"
+
+#: src/gui-gtk/gtk-resume-game-dialog.c:239
+msgid "Board size:"
+msgstr "Board size:"
+
+#: src/gui-gtk/gtk-resume-game-dialog.c:257
+msgid "Handicap:"
+msgstr "Handicap:"
+
+#: src/gui-gtk/gtk-resume-game-dialog.c:260
+#: src/gui-gtk/gtk-resume-game-dialog.c:269
+msgid "Not set"
+msgstr "Not set"
+
+#: src/gui-gtk/gtk-resume-game-dialog.c:266
+msgid "Komi:"
+msgstr "Komi:"
+
+#: src/gui-gtk/gtk-resume-game-dialog.c:292
+msgid "Filename:"
+msgstr "Filename:"
+
+#: src/gui-gtk/quarry-stock.c:52
+msgid "_New Game"
+msgstr "_New Game"
+
+#: src/gui-gtk/quarry-stock.c:53
+msgid "_Open Game Record"
+msgstr "_Open Game Record"
+
+#: src/gui-gtk/quarry-stock.c:55
+msgid "_Done"
+msgstr "_Done"
+
+#: src/gui-gtk/quarry-stock.c:56
+msgid "_Browse..."
+msgstr "_Browse..."
+
+#: src/gui-gtk/quarry-stock.c:57
+msgid "_Modify"
+msgstr "_Modify"
+
+#: src/gui-gtk/quarry-stock.c:58
+msgid "Move _Up"
+msgstr "Move _Up"
+
+#: src/gui-gtk/quarry-stock.c:59
+msgid "Move _Down"
+msgstr "Move _Down"
+
+#: src/gui-gtk/quarry-stock.c:60
+msgid "_Next"
+msgstr "_Next"
+
+#: src/gui-gtk/quarry-stock.c:61
+msgid "_Overwrite"
+msgstr "_Overwrite"
+
+#: src/gui-gtk/quarry-stock.c:62
+msgid "_Play"
+msgstr "_Play"
+
+#: src/gui-gtk/quarry-stock.c:63
+msgid "_Previous"
+msgstr "_Previous"
