@@ -164,11 +164,14 @@ struct _SgfFigureDescription {
 union _SgfValue {
   int			    number;
 
-  /* Floats have so low precision, that there will be problems with
-   * storing fractional number of seconds in it.  Will have to
-   * allocate doubles on heap :(
-   */
+#if SGF_REAL_VALUES_ALLOCATED_SEPARATELY
+
+  /* Have to allocate doubles on heap :( */
   double		   *real;
+
+#else
+  double		    real;
+#endif
 
   int			    emphasized;
   int			    color;
@@ -341,6 +344,14 @@ struct _SgfGameTree {
   SgfBoardState		   *board_state;
 
   SgfUndoHistory	   *undo_history;
+
+  /* These fields are related to the undo history, but are used even
+   * if there is no active history.
+   */
+  int			    undo_operation_level;
+  SgfNode		   *node_to_switch_to;
+  unsigned int		    is_modifying_map  : 1;
+  unsigned int		    is_modifying_tree : 1;
 
   int			    file_format;
   char			   *char_set;
@@ -613,6 +624,9 @@ void		 sgf_label_list_delete (SgfLabelList *list);
 
 SgfLabelList *	 sgf_label_list_duplicate (const SgfLabelList *list);
 
+int		 sgf_label_lists_are_equal (const SgfLabelList *first_list,
+					    const SgfLabelList *second_list);
+
 
 SgfFigureDescription *
 		 sgf_figure_description_new (int flags, char *diagram_name);
@@ -764,9 +778,29 @@ int	      sgf_utils_apply_setup_changes (SgfGameTree *tree,
 int	      sgf_utils_apply_markup_changes
 		(SgfGameTree *tree, const char markup_grid[BOARD_GRID_SIZE]);
 
+int	      sgf_utils_set_none_property (SgfNode *node, SgfGameTree *tree,
+					   SgfType type);
+int	      sgf_utils_set_number_property (SgfNode *node, SgfGameTree *tree,
+					     SgfType type, int number);
+int	      sgf_utils_set_real_property (SgfNode *node, SgfGameTree *tree,
+					   SgfType type, double value);
+int	      sgf_utils_set_text_property (SgfNode *node, SgfGameTree *tree,
+					   SgfType type, char *text);
 int	      sgf_utils_set_list_of_point_property
 		(SgfNode *node, SgfGameTree *tree, SgfType type,
 		 BoardPositionList *position_list);
+int	      sgf_utils_set_list_of_label_property (SgfNode *node,
+						    SgfGameTree *tree,
+						    SgfType type,
+						    SgfLabelList *label_list);
+
+#define sgf_utils_set_double_property(node, tree, type, emphasized)	\
+  sgf_utils_set_number_property ((node), (tree), (type), (emphasized))
+
+#define sgf_utils_set_color_property(node, tree, type, color)		\
+  sgf_utils_set_number_property ((node), (tree), (type), (color))
+
+
 int	      sgf_utils_set_time_left (SgfNode *node, SgfGameTree *tree,
 				       int color,
 				       double time_left, int moves_left);
@@ -776,6 +810,9 @@ void	      sgf_utils_find_time_control_data (const SgfGameTree *tree);
 void	      sgf_utils_delete_current_node (SgfGameTree *tree);
 void	      sgf_utils_delete_current_node_children (SgfGameTree *tree);
 
+int	      sgf_utils_delete_property (SgfNode *node, SgfGameTree *tree,
+					 SgfType type);
+
 
 #define sgf_utils_can_undo(tree)					\
   ((tree)->undo_history && (tree)->undo_history->last_applied_entry)
@@ -784,6 +821,9 @@ void	      sgf_utils_delete_current_node_children (SgfGameTree *tree);
   ((tree)->undo_history							\
    && ((tree)->undo_history->last_applied_entry				\
        != (tree)->undo_history->last_entry))
+
+void	      sgf_utils_begin_action (SgfGameTree *tree);
+void	      sgf_utils_end_action (SgfGameTree *tree);
 
 void	      sgf_utils_undo (SgfGameTree *tree);
 void	      sgf_utils_redo (SgfGameTree *tree);
