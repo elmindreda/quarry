@@ -58,6 +58,11 @@
 #define OTHER_INDEX(index)	(BLACK_INDEX + WHITE_INDEX - (index))
 
 
+#define POINTS_ARE_EQUAL(first_point, second_point)	\
+  ((first_point).x == (second_point).x			\
+   && (first_point).y == (second_point).y)
+
+
 typedef struct _BoardPoint	BoardPoint;
 
 struct _BoardPoint {

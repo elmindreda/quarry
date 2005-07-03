@@ -33,11 +33,6 @@
 #define OUT_OF_GRAPH		INT_MAX
 
 
-#define POINTS_ARE_EQUAL(first_point, second_point)	\
-  ((first_point).x == (second_point).x			\
-   && (first_point).y == (second_point).y)
-
-
 #define NUM_CONTEXT_TREES		1
 #define CONTEXT_TREE_ROOT_DEPTH		3
 
