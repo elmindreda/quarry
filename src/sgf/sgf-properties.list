@@ -20,12 +20,15 @@
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
 
-mode properties
+@mode properties
 
 
-c_include "sgf-privates.h"
-c_include "sgf-parser.h"
-c_include "sgf-writer.h"
+@c_include "sgf-privates.h"
+@c_include "sgf-parser.h"
+@c_include "sgf-writer.h"
+
+
+@define_condition SGF_REAL_VALUES_ALLOCATED_SEPARATELY
 
 
 value_types  SgfValueType - {
@@ -35,8 +38,14 @@ value_types  SgfValueType - {
   double		SGF_DOUBLE		sgf_write_double
   color			SGF_COLOR		sgf_write_color
 
+@if SGF_REAL_VALUES_ALLOCATED_SEPARATELY
 			+ SGF_FIRST_MALLOC_TYPE
   real			SGF_REAL		sgf_write_real
+@else
+  real			SGF_REAL		sgf_write_real
+			+ SGF_FIRST_MALLOC_TYPE
+@endif
+
   simple_text		SGF_SIMPLE_TEXT		sgf_write_simple_text
   fake_simple_text	SGF_FAKE_SIMPLE_TEXT	sgf_write_fake_simple_text
   text			SGF_TEXT		sgf_write_text
