@@ -47,6 +47,8 @@ typedef enum {
 typedef struct _ListDescription		ListDescription;
 typedef struct _ListDescriptionSet	ListDescriptionSet;
 
+typedef struct _PredefinedCondition	PredefinedCondition;
+
 struct _ListDescription {
   const char		   *name;
   int			    multiple_lists_allowed;
@@ -68,8 +70,14 @@ struct _ListDescription {
 };
 
 struct _ListDescriptionSet {
-  const char		 *mode_name;
-  const ListDescription	 *lists;
+  const char		   *mode_name;
+  const ListDescription	   *lists;
+};
+
+
+struct _PredefinedCondition {
+  const char		   *identifier;
+  int			    value;
 };
 
 
@@ -88,7 +96,8 @@ typedef enum {
 
 int		parse_list_main (int argc, char *argv[],
 				 const ListDescriptionSet *list_sets,
-				 int num_sets);
+				 int num_sets,
+				 const PredefinedCondition *conditions);
 
 void		print_error (const char *format_string, ...);
 

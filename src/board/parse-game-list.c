@@ -51,7 +51,7 @@ static const char  *game_full_name;
 int
 main (int argc, char *argv[])
 {
-  return parse_list_main (argc, argv, &list_set, 1);
+  return parse_list_main (argc, argv, &list_set, 1, NULL);
 }
 
 

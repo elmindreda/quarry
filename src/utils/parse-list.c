@@ -1,7 +1,7 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *\
  * This file is part of Quarry.                                    *
  *                                                                 *
- * Copyright (C) 2003, 2004 Paul Pogonyshev.                       *
+ * Copyright (C) 2003, 2004, 2005 Paul Pogonyshev.                 *
  *                                                                 *
  * This program is free software; you can redistribute it and/or   *
  * modify it under the terms of the GNU General Public License as  *
@@ -80,6 +80,17 @@ static void	    file_list_item_dispose (FileListItem *item);
    string_list_find_after_notch ((list), (filename), (notch)))
 
 
+typedef struct _ConditionStackEntry	ConditionStackEntry;
+
+struct _ConditionStackEntry {
+  ConditionStackEntry	     *next;
+
+  const PredefinedCondition  *condition;
+  char			      is_true;
+  char			      is_in_else_clause;
+};
+
+
 inline static void  print_usage (FILE *where);
 
 static FILE *	    open_file (const char *filename, int for_writing);
@@ -88,23 +99,33 @@ static int	    do_parse_lists (FILE *h_file, FILE *c_file,
 				    const ListDescription *lists);
 static void	    reuse_last_line (char **current_line);
 
+static const PredefinedCondition *
+		    get_condition (char **line);
 
-const char		*tab_string = "\t\t\t\t\t\t\t\t\t\t\t\t";
-
-
-StringBuffer		 h_file_top;
-StringBuffer		 h_file_bottom;
-
-StringBuffer		 c_file_top;
-StringBuffer		 c_file_bottom;
+inline static void  push_condition_stack (const PredefinedCondition *condition,
+					  int is_negated);
+inline static void  pop_condition_stack (void);
 
 
-static AssociationList   substitutions = STATIC_ASSOCIATION_LIST;
+const char			  *tab_string = "\t\t\t\t\t\t\t\t\t\t\t\t";
 
-static FileList		 list_files = STATIC_FILE_LIST;
 
-static StringList	 lines = STATIC_STRING_LIST;
-static int		 last_line_reusable = 0;
+StringBuffer			   h_file_top;
+StringBuffer			   h_file_bottom;
+
+StringBuffer			   c_file_top;
+StringBuffer			   c_file_bottom;
+
+
+static AssociationList		   substitutions = STATIC_ASSOCIATION_LIST;
+static const PredefinedCondition  *predefined_conditions;
+
+static FileList			   list_files = STATIC_FILE_LIST;
+
+static StringList		   lines = STATIC_STRING_LIST;
+static int			   last_line_reusable = 0;
+
+static ConditionStackEntry	  *condition_stack = NULL;
 
 
 enum {
@@ -128,7 +149,8 @@ static const char *help_string =
 
 int
 parse_list_main (int argc, char *argv[],
-		 const ListDescriptionSet *list_sets, int num_sets)
+		 const ListDescriptionSet *list_sets, int num_sets,
+		 const PredefinedCondition *conditions)
 {
   int option;
   int result = 255;
@@ -197,7 +219,7 @@ parse_list_main (int argc, char *argv[],
 	line = read_line ();
       while (line && (! *line || *line == '#'));
 
-      if (looking_at ("mode", &line)) {
+      if (looking_at ("@mode", &line)) {
 	const char *mode = parse_thing (IDENTIFIER, &line, "mode name");
 
 	if (mode) {
@@ -213,7 +235,7 @@ parse_list_main (int argc, char *argv[],
 	}
       }
       else
-	print_error ("fatal: `mode' expected");
+	print_error ("fatal: `@mode' expected");
 
       if (lists) {
 	FILE *h_file = open_file (h_file_name, 1);
@@ -248,9 +270,13 @@ parse_list_main (int argc, char *argv[],
 	    }
 
 	    h_file_name[n] = 0;
+	    if (n > 4 && strcmp (h_file_name + n - 4, "_NEW") == 0)
+	      h_file_name[n - 4] = 0;
+
 	    fprintf (h_file, "\n\n#ifndef QUARRY_%s\n#define QUARRY_%s\n",
 		     h_file_name, h_file_name);
 
+	    predefined_conditions = conditions;
 	    result = do_parse_lists (h_file, c_file, lists);
 
 	    fprintf (h_file, "\n\n#endif /* QUARRY_%s */\n", h_file_name);
@@ -263,6 +289,9 @@ parse_list_main (int argc, char *argv[],
       }
 
       string_list_empty (&list_files);
+
+      while (condition_stack)
+	pop_condition_stack ();
     }
   }
   else {
@@ -347,19 +376,25 @@ do_parse_lists (FILE *h_file, FILE *c_file, const ListDescription *lists)
       while (lists->name && lists->multiple_lists_allowed)
 	lists++;
 
-      if (!lists->name) {
-	result = 0;
+      if (!condition_stack) {
+	if (!lists->name) {
+	  result = 0;
 
-	if (lists->list_finalizer) {
-	  if (lists->list_finalizer (NULL))
-	    result = 1;
+	  if (lists->list_finalizer) {
+	    if (lists->list_finalizer (NULL))
+	      result = 1;
+	  }
+	}
+	else {
+	  fprintf (stderr,
+		   "%s: unexpected end of file: list of type `%s' expected\n",
+		   short_program_name, lists->name);
 	}
       }
       else {
 	fprintf (stderr,
-		 "%s: unexpected end of file---list of type `%s' expected\n",
-		 short_program_name,
-		 lists->name);
+		 "%s: unexpected end of file: condition `%s' unterminated\n",
+		 short_program_name, condition_stack->condition->identifier);
       }
 
       break;
@@ -567,14 +602,7 @@ do_parse_lists (FILE *h_file, FILE *c_file, const ListDescription *lists)
       }
     }
     else {
-      const char *identifier = parse_thing (IDENTIFIER, &line,
-					    "list name or `include'");
-
-      if (!identifier)
-	break;
-
-      if (strcmp (identifier, "include") == 0
-	  || strcmp (identifier, "c_include") == 0) {
+      if (looking_at ("@include", &line) || looking_at ("@c_include", &line)) {
 	if (! *line) {
 	  print_error ("filename expected");
 	  break;
@@ -587,20 +615,41 @@ do_parse_lists (FILE *h_file, FILE *c_file, const ListDescription *lists)
 
 	fprintf (c_file, "#include %s\n", line);
       }
-      else if (strcmp (identifier, "h_include") == 0) {
+      else if (looking_at ("@h_include", &line)) {
 	if (! *line) {
 	  print_error ("filename expected");
 	  break;
 	}
 
-	if (!had_h_includes) {
-	  fputs ("\n\n", h_file);
+	if (had_h_includes != 1) {
+	  fputs ((had_h_includes == 0 ? "\n\n" : "\n"), h_file);
 	  had_h_includes = 1;
 	}
 
 	fprintf (h_file, "#include %s\n", line);
       }
+      else if (looking_at ("@define_condition", &line)) {
+	const PredefinedCondition *condition = get_condition (&line);
+
+	if (!condition)
+	  break;
+
+	if (had_h_includes != 2) {
+	  fputs ((had_h_includes == 0 ? "\n\n" : "\n"), h_file);
+	  had_h_includes = 2;
+	}
+
+	fprintf (h_file, "#define %s%s%d\n",
+		 condition->identifier,
+		 TABBING (4, 8 + strlen (condition->identifier)),
+		 condition->value);
+      }
       else {
+	const char *identifier = parse_thing (IDENTIFIER, &line, "list name");
+
+	if (!identifier)
+	  break;
+
 	if (!lists->name) {
 	  print_error ("unexpected list beginning");
 	  break;
@@ -746,7 +795,7 @@ do_parse_lists (FILE *h_file, FILE *c_file, const ListDescription *lists)
 }
 
 
-void
+static void
 reuse_last_line (char **current_line)
 {
   static char empty_line[] = "";
@@ -779,12 +828,15 @@ print_error (const char *format_string, ...)
 char *
 read_line (void)
 {
+  char *line;
+
   if (!last_line_reusable) {
     int length;
-    char *line = NULL;
     char *beginning;
     char *end;
 
+  read_next_line:
+    line = NULL;
     while (!line && !string_list_is_empty (&list_files)) {
       line = utils_fgets (list_files.first->file, &length);
       if (!line)
@@ -840,10 +892,7 @@ read_line (void)
 								scan);
 	      if (!substitution) {
 		print_error ("undefined substitution symbol `%s'", scan);
-		string_list_empty (&list_files);
-		utils_free (line);
-
-		return NULL;
+		goto error;
 	      }
 
 	      substitution_length = strlen (substitution);
@@ -870,7 +919,7 @@ read_line (void)
 	}
       }
 
-      if (looking_at ("include_list", &beginning)) {
+      if (looking_at ("@include_list", &beginning)) {
 	if (*beginning) {
 	  FILE *new_list_file = fopen (beginning, "r");
 
@@ -891,8 +940,59 @@ read_line (void)
 	}
 
 	utils_free (line);
-	return read_line ();
+	goto read_next_line;
       }
+      else if (looking_at ("@if", &beginning)) {
+	const PredefinedCondition *condition = get_condition (&beginning);
+
+	if (!condition)
+	  goto error;
+
+	push_condition_stack (condition, 0);
+
+	utils_free (line);
+	goto read_next_line;
+      }
+      else if (looking_at ("@ifnot", &beginning)) {
+	const PredefinedCondition *condition = get_condition (&beginning);
+
+	if (!condition)
+	  goto error;
+
+	push_condition_stack (condition, 1);
+
+	utils_free (line);
+	goto read_next_line;
+      }
+      else if (looking_at ("@else", &beginning)) {
+	if (!condition_stack || condition_stack->is_in_else_clause) {
+	  print_error ("unexpected `@else'");
+	  goto error;
+	}
+
+	condition_stack->is_in_else_clause = 1;
+
+	utils_free (line);
+	goto read_next_line;
+      }
+      else if (looking_at ("@endif", &beginning)) {
+	if (!condition_stack) {
+	  print_error ("unexpected `@endif'");
+	  goto error;
+	}
+
+	pop_condition_stack ();
+
+	utils_free (line);
+	goto read_next_line;
+      }
+    }
+
+    if (condition_stack
+	&& !(condition_stack->is_true ^ condition_stack->is_in_else_clause)) {
+      /* In conditioned block and with false condition: skip line. */
+      utils_free (line);
+      goto read_next_line;
     }
 
     string_list_add_from_buffer (&lines, beginning, end - beginning);
@@ -901,6 +1001,32 @@ read_line (void)
 
   last_line_reusable = 0;
   return lines.last->text;
+
+ error:
+  string_list_empty (&list_files);
+  utils_free (line);
+
+  return NULL;
+}
+
+
+static const PredefinedCondition *
+get_condition (char **line)
+{
+  const PredefinedCondition *condition;
+  const char *condition_identifier = parse_thing (IDENTIFIER, line,
+						  "condition identifier");
+
+  if (!condition_identifier)
+    return NULL;
+
+  for (condition = predefined_conditions; condition->identifier; condition++) {
+    if (strcmp (condition->identifier, condition_identifier) == 0)
+      return condition;
+  }
+
+  print_error ("unknown condition identifier `%s'", condition_identifier);
+  return NULL;
 }
 
 
@@ -1119,6 +1245,30 @@ looking_at (const char *what, char **line)
   }
 
   return 0;
+}
+
+
+inline static void
+push_condition_stack (const PredefinedCondition *condition, int is_negated)
+{
+  ConditionStackEntry *entry = utils_malloc (sizeof (ConditionStackEntry));
+
+  entry->condition	   = condition;
+  entry->is_true	   = (condition->value != 0) ^ (is_negated != 0);
+  entry->is_in_else_clause = 0;
+
+  entry->next		   = condition_stack;
+  condition_stack	   = entry;
+}
+
+
+inline static void
+pop_condition_stack (void)
+{
+  ConditionStackEntry *entry = condition_stack;
+
+  condition_stack = entry->next;
+  utils_free (entry);
 }
 
 

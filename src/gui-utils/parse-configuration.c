@@ -233,7 +233,7 @@ main (int argc, char *argv[])
   string_buffer_init (&dispose_function_prototypes, 0x400, 0x100);
   string_buffer_init (&dispose_functions, 0x1000, 0x400);
 
-  result = parse_list_main (argc, argv, &list_set, 1);
+  result = parse_list_main (argc, argv, &list_set, 1, NULL);
 
   string_list_empty (&value_arrays);
   string_list_empty (&defaults_lists);
