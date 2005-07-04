@@ -143,8 +143,8 @@ static void	 force_minimal_width (GtkWidget *label,
 static void	 do_enter_game_mode (GtkGobanWindow *goban_window);
 static void	 leave_game_mode (GtkGobanWindow *goban_window);
 
-static void	 set_sgf_collection_is_modified (GtkGobanWindow *goban_window,
-						 gboolean is_modified);
+static void	 collection_modification_state_changed
+		   (SgfCollection *sgf_collection, void *user_data);
 
 static void	 gtk_goban_window_save (GtkGobanWindow *goban_window,
 					guint callback_action);
@@ -1080,15 +1080,18 @@ gtk_goban_window_new (SgfCollection *sgf_collection, const char *filename)
   if (filename) {
     goban_window->filename = g_strdup (filename);
 
-    goban_window->sgf_collection_is_modified = FALSE;
-
     gtk_utils_set_menu_items_sensitive (goban_window->item_factory, FALSE,
 					"/File/Save", NULL);
     gtk_utils_set_toolbar_buttons_sensitive (goban_window->main_toolbar, FALSE,
 					     &toolbar_save, NULL);
   }
-  else
-    goban_window->sgf_collection_is_modified = TRUE;
+  else {
+    /* Because there is no ``unmodified'' state for new files. */
+    sgf_collection->is_irreversibly_modified = 1;
+  }
+
+  sgf_collection_set_notification_callback
+    (sgf_collection, collection_modification_state_changed, goban_window);
 
   set_current_tree (goban_window, sgf_collection->first_tree);
 
@@ -1323,24 +1326,20 @@ leave_game_mode (GtkGobanWindow *goban_window)
 }
 
 
-/* FIXME: Temporary, this should be tracked in SGF module together
- *	  with proper undo history.
- */
 static void
-set_sgf_collection_is_modified (GtkGobanWindow *goban_window,
-				gboolean is_modified)
+collection_modification_state_changed (SgfCollection *sgf_collection,
+				       void *user_data)
 {
-  if (goban_window->sgf_collection_is_modified != is_modified) {
-    goban_window->sgf_collection_is_modified = is_modified;
+  GtkGobanWindow *goban_window = (GtkGobanWindow *) user_data;
+  int is_modified = sgf_collection_is_modified (sgf_collection);
 
-    gtk_utils_set_menu_items_sensitive (goban_window->item_factory,
-					is_modified, "/File/Save", NULL);
-    gtk_utils_set_toolbar_buttons_sensitive (goban_window->main_toolbar,
-					     is_modified,
-					     &toolbar_save, NULL);
+  gtk_utils_set_menu_items_sensitive (goban_window->item_factory,
+				      is_modified, "/File/Save", NULL);
+  gtk_utils_set_toolbar_buttons_sensitive (goban_window->main_toolbar,
+					   is_modified,
+					   &toolbar_save, NULL);
 
-    update_window_title (goban_window);
-  }
+  update_window_title (goban_window);
 }
 
 
@@ -1352,7 +1351,7 @@ gtk_goban_window_save (GtkGobanWindow *goban_window, guint callback_action)
     sgf_write_file (goban_window->filename, goban_window->sgf_collection,
 		    sgf_configuration.force_utf8);
 
-    set_sgf_collection_is_modified (goban_window, FALSE);
+    sgf_collection_set_unmodified (goban_window->sgf_collection);
 
     if (callback_action == GTK_GOBAN_WINDOW_ADJOURN)
       game_has_been_adjourned (goban_window);
@@ -1467,8 +1466,10 @@ save_file_as_response (GtkWidget *file_dialog, gint response_id,
 	return;
       }
 
-      /* This should always update window title. */
-      set_sgf_collection_is_modified (goban_window, FALSE);
+      /* This should always update window title through
+       * collection_modification_state_changed().
+       */
+      sgf_collection_set_unmodified (goban_window->sgf_collection);
     }
     else
       g_free (filename);
@@ -2397,8 +2398,6 @@ game_info_dialog_property_changed (GtkGobanWindow *goban_window,
     /* Silence warnings. */
     break;
   }
-
-  set_sgf_collection_is_modified (goban_window, TRUE);
 }
 
 
@@ -2781,8 +2780,6 @@ handle_go_scoring_results (GtkGobanWindow *goban_window)
 
   sgf_node_add_score_result (game_info_node, current_tree, score, 1);
 
-  set_sgf_collection_is_modified (goban_window, TRUE);
-
   g_free (goban_window->dead_stones);
   goban_window->dead_stones = NULL;
 }
@@ -2931,7 +2928,6 @@ play_pass_move (GtkGobanWindow *goban_window)
   sgf_utils_append_variation (goban_window->current_tree,
 			      goban_window->sgf_board_state.color_to_play,
 			      PASS_X, PASS_Y);
-  set_sgf_collection_is_modified (goban_window, TRUE);
 
   if (goban_window->in_game_mode && IS_DISPLAYING_GAME_NODE (goban_window))
     move_has_been_played (goban_window);
@@ -2976,7 +2972,6 @@ do_resign_game (GtkGobanWindow *goban_window)
 			      1);
 
   sgf_utils_append_variation (goban_window->current_tree, EMPTY);
-  set_sgf_collection_is_modified (goban_window, TRUE);
   update_children_for_new_node (goban_window);
 }
 
@@ -3160,8 +3155,6 @@ playing_mode_goban_clicked (GtkGobanWindow *goban_window,
 	}
       }
 
-      set_sgf_collection_is_modified (goban_window, TRUE);
-
       if (goban_window->in_game_mode && IS_DISPLAYING_GAME_NODE (goban_window))
 	move_has_been_played (goban_window);
 
@@ -3303,8 +3296,6 @@ setup_mode_goban_clicked (GtkGobanWindow *goban_window,
 				     goban_window->goban->grid)) {
     goban_window->last_displayed_node = NULL;
     update_children_for_new_node (goban_window);
-
-    set_sgf_collection_is_modified (goban_window, TRUE);
   }
 }
 
@@ -3417,9 +3408,8 @@ markup_mode_goban_clicked (GtkGobanWindow *goban_window,
     goban_window->drawn_position_list = NULL;
   }
 
-  if (sgf_utils_apply_markup_changes (goban_window->current_tree,
-				      goban_window->goban->sgf_markup))
-    set_sgf_collection_is_modified (goban_window, TRUE);
+  sgf_utils_apply_markup_changes (goban_window->current_tree,
+				  goban_window->goban->sgf_markup);
 }
 
 
@@ -3881,7 +3871,7 @@ update_window_title (GtkGobanWindow *goban_window)
       title = utils_duplicate_string (_("Unnamed Game"));
   }
 
-  if (goban_window->sgf_collection_is_modified)
+  if (sgf_collection_is_modified (goban_window->sgf_collection))
     title = utils_cat_strings (title, " [", _("modified"), "]", NULL);
 
   gtk_window_set_title (GTK_WINDOW (goban_window), title);
@@ -4442,13 +4432,11 @@ fetch_comment_and_node_name (GtkGobanWindow *goban_window,
 	  || strcmp (original_comment, normalized_comment) != 0) {
 	sgf_node_add_text_property (node, goban_window->current_tree,
 				    SGF_COMMENT, normalized_comment, 1);
-	set_sgf_collection_is_modified (goban_window, TRUE);
       }
     }
     else {
-      if (sgf_node_delete_property (node, goban_window->current_tree,
-				    SGF_COMMENT))
-	set_sgf_collection_is_modified (goban_window, TRUE);
+      sgf_node_delete_property (node, goban_window->current_tree,
+				SGF_COMMENT);
     }
 
     normalized_node_name = (new_node_name
@@ -4466,13 +4454,11 @@ fetch_comment_and_node_name (GtkGobanWindow *goban_window,
 	  || strcmp (original_node_name, normalized_node_name) != 0) {
 	sgf_node_add_text_property (node, goban_window->current_tree,
 				    SGF_NODE_NAME, normalized_node_name, 1);
-	set_sgf_collection_is_modified (goban_window, TRUE);
       }
     }
     else {
-      if (sgf_node_delete_property (node, goban_window->current_tree,
-				    SGF_NODE_NAME))
-	set_sgf_collection_is_modified (goban_window, TRUE);
+      sgf_node_delete_property (node, goban_window->current_tree,
+				SGF_NODE_NAME);
     }
 
     g_free (new_comment);
@@ -4712,8 +4698,6 @@ move_has_been_played (GtkGobanWindow *goban_window)
 					 move_node, goban_window->current_tree,
 					 move_node->move_color);
   }
-
-  set_sgf_collection_is_modified (goban_window, TRUE);
 
   if (GTP_ENGINE_CAN_PLAY_MOVES (goban_window,
 				 OTHER_COLOR (move_node->move_color))) {
@@ -5041,7 +5025,6 @@ player_is_out_of_time (GtkClock *clock, GtkGobanWindow *goban_window)
 			      utils_cprintf ("%c+Time", winner_color_char), 1);
 
   sgf_utils_append_variation (goban_window->current_tree, EMPTY);
-  set_sgf_collection_is_modified (goban_window, TRUE);
   update_children_for_new_node (goban_window);
 }
 
@@ -5073,7 +5056,6 @@ static void
 delete_current_node (GtkGobanWindow *goban_window)
 {
   sgf_utils_delete_current_node (goban_window->current_tree);
-  set_sgf_collection_is_modified (goban_window, TRUE);
 
   goban_window->last_displayed_node = NULL;
   update_children_for_new_node (goban_window);
@@ -5084,7 +5066,6 @@ static void
 delete_current_node_children (GtkGobanWindow *goban_window)
 {
   sgf_utils_delete_current_node_children (goban_window->current_tree);
-  set_sgf_collection_is_modified (goban_window, TRUE);
 
   update_commands_sensitivity (goban_window);
 }
