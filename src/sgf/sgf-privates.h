@@ -32,6 +32,21 @@
 #include "quarry.h"
 
 
+#define COLLECTION_DO_NOTIFY(collection)				\
+  do {									\
+    if ((collection)->notification_callback)				\
+      (collection)->notification_callback ((collection),		\
+					   (collection)->user_data);	\
+  } while (0)
+
+#define GAME_TREE_DO_NOTIFY(tree, notification_code)			\
+  do {									\
+    if ((tree)->notification_callback)					\
+      (tree)->notification_callback ((tree), (notification_code),	\
+				     (tree)->user_data);		\
+  } while (0)
+
+
 typedef struct _SgfPropertyInfo	SgfPropertyInfo;
 
 struct _SgfPropertyInfo {
