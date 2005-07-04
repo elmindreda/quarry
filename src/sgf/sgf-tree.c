@@ -45,9 +45,15 @@ sgf_collection_new (void)
 {
   SgfCollection *collection = utils_malloc (sizeof (SgfCollection));
 
-  collection->num_trees	 = 0;
-  collection->first_tree = NULL;
-  collection->last_tree	 = NULL;
+  collection->num_trees			  = 0;
+  collection->first_tree		  = NULL;
+  collection->last_tree			  = NULL;
+
+  collection->num_modified_undo_histories = 0;
+  collection->is_irreversibly_modified	  = 0;
+
+  collection->notification_callback	  = NULL;
+  collection->user_data			  = NULL;
 
   return collection;
 }
@@ -83,8 +89,9 @@ sgf_collection_add_game_tree (SgfCollection *collection, SgfGameTree *tree)
   assert (collection);
   assert (tree);
 
-  tree->previous = collection->last_tree;
-  tree->next = NULL;
+  tree->collection = collection;
+  tree->previous   = collection->last_tree;
+  tree->next	   = NULL;
 
   if (collection->last_tree)
     collection->last_tree->next = tree;
@@ -96,6 +103,54 @@ sgf_collection_add_game_tree (SgfCollection *collection, SgfGameTree *tree)
 }
 
 
+int
+sgf_collection_is_modified (const SgfCollection *collection)
+{
+  assert (collection);
+
+  return (collection->num_modified_trees > 0
+	  || collection->is_irreversibly_modified);
+}
+
+
+/* Note: caller is responsible for resetting any undo histories that
+ * are used with collection's trees, but are not attached to them
+ * right now.
+ */
+void
+sgf_collection_set_unmodified (SgfCollection *collection)
+{
+  SgfGameTree *tree;
+
+  if (!sgf_collection_is_modified (collection))
+    return;
+
+  collection->num_modified_trees       = 0;
+  collection->is_irreversibly_modified = 0;
+
+  for (tree = collection->first_tree; tree; tree = tree->next) {
+    if (tree->undo_history) {
+      tree->undo_history->unmodified_state_entry
+	= tree->undo_history->last_applied_entry;
+    }
+  }
+
+  COLLECTION_DO_NOTIFY (collection);
+}
+
+
+void
+sgf_collection_set_notification_callback
+  (SgfCollection *collection,
+   SgfCollectionNotificationCallback callback, void *user_data)
+{
+  assert (collection);
+
+  collection->notification_callback = callback;
+  collection->user_data		    = user_data;
+}
+
+
 
 /* Dynamically allocate an SgfGameTree structure. */
 SgfGameTree *
@@ -103,6 +158,7 @@ sgf_game_tree_new (void)
 {
   SgfGameTree *tree = utils_malloc (sizeof (SgfGameTree));
 
+  tree->collection	      = NULL;
   tree->previous	      = NULL;
   tree->next		      = NULL;
 
@@ -382,9 +438,9 @@ sgf_game_tree_count_nodes (const SgfGameTree *tree)
 
 
 void
-sgf_game_tree_set_notification_callback (SgfGameTree *tree,
-					 SgfNotificationCallback callback,
-					 void *user_data)
+sgf_game_tree_set_notification_callback
+  (SgfGameTree *tree,
+   SgfGameTreeNotificationCallback callback, void *user_data)
 {
   assert (tree);
 

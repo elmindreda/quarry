@@ -33,9 +33,10 @@ static void	gtk_sgf_tree_signal_proxy_class_init
 		  (GtkSgfTreeSignalProxyClass *class);
 static void	gtk_sgf_tree_signal_proxy_finalize (GObject *object);
 
-static void	receive_notification (SgfGameTree *sgf_tree,
-				      SgfNotificationCode notification_code,
-				      GtkSgfTreeSignalProxy *proxy);
+static void	receive_notification
+		  (SgfGameTree *sgf_tree,
+		   SgfGameTreeNotificationCode notification_code,
+		   GtkSgfTreeSignalProxy *proxy);
 
 
 enum {
@@ -188,7 +189,7 @@ gtk_sgf_tree_signal_proxy_attach (SgfGameTree *sgf_tree)
     GTK_SGF_TREE_SIGNAL_PROXY (proxy)->state_stack = NULL;
 
     sgf_game_tree_set_notification_callback (sgf_tree,
-					     ((SgfNotificationCallback)
+					     ((SgfGameTreeNotificationCallback)
 					      receive_notification),
 					     proxy);
 
@@ -246,7 +247,7 @@ gtk_sgf_tree_signal_proxy_pop_tree_state (SgfGameTree *sgf_tree,
 
 static void
 receive_notification (SgfGameTree *sgf_tree,
-		      SgfNotificationCode notification_code,
+		      SgfGameTreeNotificationCode notification_code,
 		      GtkSgfTreeSignalProxy *proxy)
 {
   SgfGameTreeState current_tree_state;
