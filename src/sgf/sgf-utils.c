@@ -33,14 +33,6 @@
 #endif
 
 
-#define DO_NOTIFY(tree, notification_code)				\
-  do {									\
-    if ((tree)->notification_callback)					\
-      (tree)->notification_callback ((tree), (notification_code),	\
-				     (tree)->user_data);		\
-  } while (0)
-
-
 typedef struct _SgfNodeOperationEntry		SgfNodeOperationEntry;
 typedef struct _SgfChangeNodeMoveColorOperationEntry
 		SgfChangeNodeMoveColorOperationEntry;
@@ -245,9 +237,9 @@ sgf_utils_go_down_in_tree (SgfGameTree *tree, int num_nodes)
   assert (tree->board_state);
 
   if (num_nodes != 0 && tree->current_node->child) {
-    DO_NOTIFY (tree, SGF_ABOUT_TO_CHANGE_CURRENT_NODE);
+    GAME_TREE_DO_NOTIFY (tree, SGF_ABOUT_TO_CHANGE_CURRENT_NODE);
     descend_nodes (tree, num_nodes);
-    DO_NOTIFY (tree, SGF_CURRENT_NODE_CHANGED);
+    GAME_TREE_DO_NOTIFY (tree, SGF_CURRENT_NODE_CHANGED);
   }
 }
 
@@ -268,14 +260,14 @@ sgf_utils_go_up_in_tree (SgfGameTree *tree, int num_nodes)
   assert (tree->board_state);
 
   if (num_nodes != 0 && tree->current_node->parent) {
-    DO_NOTIFY (tree, SGF_ABOUT_TO_CHANGE_CURRENT_NODE);
+    GAME_TREE_DO_NOTIFY (tree, SGF_ABOUT_TO_CHANGE_CURRENT_NODE);
 
     if (num_nodes > 0)
       ascend_nodes (tree, num_nodes);
     else
       do_enter_tree (tree, tree->root);
 
-    DO_NOTIFY (tree, SGF_CURRENT_NODE_CHANGED);
+    GAME_TREE_DO_NOTIFY (tree, SGF_CURRENT_NODE_CHANGED);
   }
 }
 
@@ -410,14 +402,14 @@ sgf_utils_switch_to_variation (SgfGameTree *tree, SgfDirection direction)
       return;
   }
 
-  DO_NOTIFY (tree, SGF_ABOUT_TO_CHANGE_CURRENT_NODE);
+  GAME_TREE_DO_NOTIFY (tree, SGF_ABOUT_TO_CHANGE_CURRENT_NODE);
 
   ascend_nodes (tree, 1);
 
   parent->current_variation = switch_to;
   descend_nodes (tree, 1);
 
-  DO_NOTIFY (tree, SGF_CURRENT_NODE_CHANGED);
+  GAME_TREE_DO_NOTIFY (tree, SGF_CURRENT_NODE_CHANGED);
 }
 
 
@@ -431,14 +423,14 @@ sgf_utils_switch_to_given_variation (SgfGameTree *tree, SgfNode *node)
   assert (tree->board_state);
 
   if (tree->current_node != node) {
-    DO_NOTIFY (tree, SGF_ABOUT_TO_CHANGE_CURRENT_NODE);
+    GAME_TREE_DO_NOTIFY (tree, SGF_ABOUT_TO_CHANGE_CURRENT_NODE);
 
     ascend_nodes (tree, 1);
 
     node->parent->current_variation = node;
     descend_nodes (tree, 1);
 
-    DO_NOTIFY (tree, SGF_CURRENT_NODE_CHANGED);
+    GAME_TREE_DO_NOTIFY (tree, SGF_CURRENT_NODE_CHANGED);
   }
 }
 
@@ -452,11 +444,11 @@ sgf_utils_switch_to_given_node (SgfGameTree *tree, SgfNode *node)
   assert (tree->board_state);
 
   if (tree->current_node != node) {
-    DO_NOTIFY (tree, SGF_ABOUT_TO_CHANGE_CURRENT_NODE);
+    GAME_TREE_DO_NOTIFY (tree, SGF_ABOUT_TO_CHANGE_CURRENT_NODE);
 
     do_switch_to_given_node (tree, node);
 
-    DO_NOTIFY (tree, SGF_CURRENT_NODE_CHANGED);
+    GAME_TREE_DO_NOTIFY (tree, SGF_CURRENT_NODE_CHANGED);
   }
 }
 
@@ -509,7 +501,7 @@ sgf_utils_apply_setup_changes (SgfGameTree *tree,
 {
   BoardPositionList *difference_lists[NUM_ON_GRID_VALUES];
   SgfNode *node;
-  SgfUndoHistory *undo_history;
+  SgfUndoHistory *undo_history = NULL;
   int have_any_difference;
   int new_move_color;
   int created_new_node = 0;
@@ -966,9 +958,10 @@ sgf_utils_end_action (SgfGameTree *tree)
   tree->undo_operation_level--;
   assert (tree->undo_operation_level >= 0);
 
-  if (tree->undo_operation_level == 0
-      && tree->undo_history && tree->undo_history->last_entry) {
-    tree->undo_history->last_entry->is_last_in_action = 1;
+  if (tree->undo_operation_level == 0) {
+    if (tree->undo_history && tree->undo_history->last_entry)
+      tree->undo_history->last_entry->is_last_in_action = 1;
+
     end_undoing_or_redoing (tree);
   }
 }
@@ -1042,12 +1035,12 @@ sgf_utils_set_node_is_collapsed (SgfGameTree *tree, SgfNode *node,
 
   if ((is_collapsed && !node->is_collapsed)
       || (!is_collapsed && node->is_collapsed)) {
-    DO_NOTIFY (tree, SGF_ABOUT_TO_MODIFY_MAP);
+    GAME_TREE_DO_NOTIFY (tree, SGF_ABOUT_TO_MODIFY_MAP);
 
     node->is_collapsed = (is_collapsed ? 1 : 0);
     sgf_game_tree_invalidate_map (tree, node);
 
-    DO_NOTIFY (tree, SGF_MAP_MODIFIED);
+    GAME_TREE_DO_NOTIFY (tree, SGF_MAP_MODIFIED);
   }
 }
 
@@ -1302,9 +1295,10 @@ sgf_undo_history_new (void)
 {
   SgfUndoHistory *history = utils_malloc (sizeof (SgfUndoHistory));
 
-  history->first_entry	      = NULL;
-  history->last_entry	      = NULL;
-  history->last_applied_entry = NULL;
+  history->first_entry		  = NULL;
+  history->last_entry		  = NULL;
+  history->last_applied_entry	  = NULL;
+  history->unmodified_state_entry = NULL;
 
   return history;
 }
@@ -1798,6 +1792,14 @@ begin_undoing_or_redoing (SgfGameTree *tree)
   tree->node_to_switch_to = NULL;
   tree->is_modifying_map  = 0;
   tree->is_modifying_tree = 0;
+
+  if (tree->undo_history) {
+    tree->tree_was_modified = (tree->undo_history->last_applied_entry
+			       != tree->undo_history->unmodified_state_entry);
+  }
+
+  tree->collection_was_modified
+    = sgf_collection_is_modified (tree->collection);
 }
 
 
@@ -1805,7 +1807,7 @@ static void
 set_is_modifying_map (SgfGameTree *tree)
 {
   if (!tree->is_modifying_map) {
-    DO_NOTIFY (tree, SGF_ABOUT_TO_MODIFY_MAP);
+    GAME_TREE_DO_NOTIFY (tree, SGF_ABOUT_TO_MODIFY_MAP);
     tree->is_modifying_map = 1;
   }
 }
@@ -1815,7 +1817,7 @@ static void
 set_is_modifying_tree (SgfGameTree *tree)
 {
   if (!tree->is_modifying_tree) {
-    DO_NOTIFY (tree, SGF_ABOUT_TO_MODIFY_TREE);
+    GAME_TREE_DO_NOTIFY (tree, SGF_ABOUT_TO_MODIFY_TREE);
     tree->is_modifying_tree = 1;
   }
 }
@@ -1827,7 +1829,7 @@ end_undoing_or_redoing (SgfGameTree *tree)
   SgfNode *node_to_switch_to = tree->node_to_switch_to;
 
   if (node_to_switch_to) {
-    DO_NOTIFY (tree, SGF_ABOUT_TO_CHANGE_CURRENT_NODE);
+    GAME_TREE_DO_NOTIFY (tree, SGF_ABOUT_TO_CHANGE_CURRENT_NODE);
 
     if (tree->current_node->parent == node_to_switch_to) {
       /* A common case, optimize it. */
@@ -1836,13 +1838,28 @@ end_undoing_or_redoing (SgfGameTree *tree)
     else
       do_switch_to_given_node (tree, node_to_switch_to);
 
-    DO_NOTIFY (tree, SGF_CURRENT_NODE_CHANGED);
-
-    if (tree->is_modifying_tree)
-      DO_NOTIFY (tree, SGF_TREE_MODIFIED);
-    if (tree->is_modifying_map)
-      DO_NOTIFY (tree, SGF_MAP_MODIFIED);
+    GAME_TREE_DO_NOTIFY (tree, SGF_CURRENT_NODE_CHANGED);
   }
+
+  if (tree->is_modifying_tree)
+    GAME_TREE_DO_NOTIFY (tree, SGF_TREE_MODIFIED);
+  if (tree->is_modifying_map)
+    GAME_TREE_DO_NOTIFY (tree, SGF_MAP_MODIFIED);
+
+  if (tree->undo_history) {
+    if (tree->tree_was_modified
+	&& (tree->undo_history->last_applied_entry
+	    == tree->undo_history->unmodified_state_entry))
+      tree->collection->num_modified_trees--;
+    else if (!tree->tree_was_modified
+	     && (tree->undo_history->last_applied_entry
+		 != tree->undo_history->unmodified_state_entry))
+      tree->collection->num_modified_trees++;
+  }
+
+  if (sgf_collection_is_modified (tree->collection)
+      != tree->collection_was_modified)
+    COLLECTION_DO_NOTIFY (tree->collection);
 }
 
 
@@ -1882,8 +1899,11 @@ apply_undo_history_entry (SgfGameTree *tree, SgfUndoHistoryEntry *entry)
   /* Perform the operation. */
   sgf_undo_operations[entry->operation_index].redo (entry, tree);
 
-  if (!history)
+  if (!history) {
     delete_undo_history_entry (entry, 1, tree);
+
+    tree->collection->is_irreversibly_modified = 1;
+  }
 }
 
 
