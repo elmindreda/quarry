@@ -1,4 +1,61 @@
+2005-07-04  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* gui-gtk/gtk-goban-window.c (gtk_goban_window_new): Set
+	collection notification callback to new
+	collection_modification_state_changed().  Set
+	`is_irreversibly_modified' for newly created collections.
+	(set_sgf_collection_is_modified): Remove function.
+	(collection_modification_state_changed): New function.
+	(gtk_goban_window_save): Call sgf_collection_set_unmodified()
+	after a successful save.
+	(save_file_as_response): Likewise.
+	(game_info_dialog_property_changed): Don't call removed
+	set_sgf_collection_is_modified() and rely on notifications.
+	(handle_go_scoring_results): Likewise.
+	(play_pass_move): Likewise.
+	(do_resign_game): Likewise.
+	(playing_mode_goban_clicked): Likewise.
+	(setup_mode_goban_clicked): Likewise.
+	(markup_mode_goban_clicked): Likewise.
+	(fetch_comment_and_node_name): Likewise.
+	(move_has_been_played): Likewise.
+	(player_is_out_of_time): Likewise.
+	(delete_current_node): Likewise.
+	(delete_current_node_children): Likewise.
+
+	* sgf/sgf-utils.c (sgf_undo_history_new): Initialize new
+	`unmodified_state_entry' field.
+	(begin_undoing_or_redoing): Set new `tree_was_modified' and
+	`collection_was_modified' fields.
+	(end_undoing_or_redoing): Bug-fix: emit notifications even if
+	`node_to_switch_to' is NULL.  Emit notification about collection's
+	modification state change when appropriate.
+	(apply_undo_history_entry): Set `is_irreversibly_modified'
+	collection's field when modifying a tree without an undo history.
+
+	* sgf/sgf-tree.c (sgf_collection_new): Initialize new fields
+	`num_modified_undo_histories', `is_irreversibly_modified',
+	`notification_callback' and `user_data' fields.
+	(sgf_collection_add_game_tree): Set `tree->collection' field.
+	(sgf_collection_is_modified, sgf_collection_set_unmodified)
+	(sgf_collection_set_notification_callback): New functions.
+	(sgf_game_tree_new): Initialize new `collection' field.
+
+	* sgf/sgf-privates.h (COLLECTION_DO_NOTIFY): New macro.
+	(GAME_TREE_DO_NOTIFY): Rename from DO_NOTIFY() and move from
+	`sgf-utils.c'
+
 2005-07-03  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* gui-gtk/gtk-utils.c (browsing_dialog_response): Die in assertion
+	failure if `data->associated_entry' is not `GTK_ENTRY' or
+	`GTK_FILE_SELECTOR' (avoid warning about uninitialized `entry'.)
+
+	* sgf/sgf-utils.c (sgf_utils_apply_setup_changes): Initialize
+	`undo_history' to avoid GCC warning.
+	(sgf_utils_end_action): Bug-fix: call end_undoing_or_redoing()
+	whenever `undo_operation_level' is zero, don't require an undo
+	history.
 
 	* sgf/sgf-utils.c (sgf_utils_append_variation): Call
 	sgf_utils_begin_action() and sgf_utils_end_action().
