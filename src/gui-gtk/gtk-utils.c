@@ -659,12 +659,14 @@ browsing_dialog_response (GtkWidget *file_dialog, gint response_id,
     }
 
 #ifdef GTK_TYPE_FILE_SELECTOR
-    else {
+    else if (GTK_IS_FILE_SELECTOR (data->associated_entry)) {
       entry = GTK_ENTRY (GTK_BIN (data->associated_entry)->child);
       gtk_file_selector_set_text (GTK_FILE_SELECTOR (data->associated_entry),
 				  filename_in_utf8);
     }
 #endif /* defined GTK_TYPE_FILE_SELECTOR */
+    else
+      assert (0);
 
     gtk_widget_grab_focus (data->associated_entry);
 
