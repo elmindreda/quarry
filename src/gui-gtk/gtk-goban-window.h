@@ -71,8 +71,12 @@ struct _GtkGobanWindow {
   GtkWindow		   window;
 
   GtkItemFactory	  *item_factory;
+  GtkItemFactory	  *tools_item_factory;
   GtkToolbar		  *main_toolbar;
+  GtkToolbar		  *editing_toolbar;
   GtkToolbar		  *navigation_toolbar;
+  GtkOptionMenu		  *tools_option_menu;
+
   GtkGoban		  *goban;
   GtkLabel		  *player_labels[NUM_COLORS];
   GtkLabel		  *game_specific_info[NUM_COLORS];

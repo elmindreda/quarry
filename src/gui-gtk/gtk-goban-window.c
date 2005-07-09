@@ -25,6 +25,11 @@
 /* FIXME: Certain parts can be simplified by switching from explicit
  *	  function calls to hooking to the new GtkSgfTreeSignalProxy
  *	  signals.
+ *
+ * FIXME: Current synchronization between the "Tools" menu in the main
+ *	  window menu and the menu available from the editing toolbar
+ *	  is hackish and ugly.  Should be possible to improve when we
+ *	  drop support for pre-2.4 GTK+.
  */
 
 
@@ -182,6 +187,7 @@ static void	 game_info_dialog_property_changed
 static void	 show_preferences_dialog (void);
 
 static void	 show_or_hide_main_toolbar (GtkGobanWindow *goban_window);
+static void	 show_or_hide_editing_toolbar (GtkGobanWindow *goban_window);
 static void	 show_or_hide_navigation_toolbar
 		   (GtkGobanWindow *goban_window);
 static void	 show_or_hide_game_action_buttons
@@ -195,6 +201,11 @@ static void	 show_sgf_tree_view_automatically
 
 static void	 show_about_dialog (void);
 static void	 show_help_contents (void);
+
+static void	 tools_option_menu_changed
+		   (GtkOptionMenu *option_menu,
+		    const GtkGobanWindow *goban_window);
+static void	 synchronize_tools_menus (const GtkGobanWindow *goban_window);
 
 static void	 update_territory_markup (GtkGobanWindow *goban_window);
 
@@ -373,34 +384,51 @@ static GtkUtilsToolbarEntry toolbar_game_information = {
 };
 
 
+static GtkUtilsToolbarEntry editing_toolbar_undo = {
+  N_("Undo"),	N_("Undo the last action"),		GTK_STOCK_UNDO,
+  (GtkUtilsToolbarEntryCallback) undo_operation, 0
+};
+
+static GtkUtilsToolbarEntry editing_toolbar_redo = {
+  N_("Redo"),	N_("Redo the last undone action"),	GTK_STOCK_REDO,
+  (GtkUtilsToolbarEntryCallback) redo_operation, 0
+};
+
+static GtkUtilsToolbarEntry editing_toolbar_delete = {
+  N_("Delete"),	N_("Delete the current node"),		GTK_STOCK_DELETE,
+  (GtkUtilsToolbarEntryCallback) delete_current_node, 0
+};
+
+
 static GtkUtilsToolbarEntry navigation_toolbar_root = {
-  N_("Root"),	N_("Go to root node"),			GTK_STOCK_GOTO_FIRST,
+  N_("Root"),	N_("Go to the root node"),		GTK_STOCK_GOTO_FIRST,
   (GtkUtilsToolbarEntryCallback) navigate_goban, GOBAN_NAVIGATE_ROOT
 };
 
 static GtkUtilsToolbarEntry navigation_toolbar_back = {
-  N_("Back"),	N_("Go to previous node"),		GTK_STOCK_GO_BACK,
+  N_("Back"),	N_("Go to the previous node"),		GTK_STOCK_GO_BACK,
   (GtkUtilsToolbarEntryCallback) navigate_goban, GOBAN_NAVIGATE_BACK
 };
 
 static GtkUtilsToolbarEntry navigation_toolbar_forward = {
-  N_("Forward"), N_("Go to next node"),			GTK_STOCK_GO_FORWARD,
+  N_("Forward"), N_("Go to the next node"),		GTK_STOCK_GO_FORWARD,
   (GtkUtilsToolbarEntryCallback) navigate_goban, GOBAN_NAVIGATE_FORWARD
 };
 
 static GtkUtilsToolbarEntry navigation_toolbar_variation_end = {
-  N_("End"),	N_("Go to current variation's last node"), GTK_STOCK_GOTO_LAST,
+  N_("End"),	N_("Go to the current variation's last node"),
+  GTK_STOCK_GOTO_LAST,
   (GtkUtilsToolbarEntryCallback) navigate_goban, GOBAN_NAVIGATE_VARIATION_END
 };
 
 static GtkUtilsToolbarEntry navigation_toolbar_previous_variation = {
-  N_("Previous"), N_("Switch to previous variation"),	GTK_STOCK_GO_UP,
+  N_("Previous"), N_("Switch to the previous variation"), GTK_STOCK_GO_UP,
   (GtkUtilsToolbarEntryCallback) navigate_goban,
   GOBAN_NAVIGATE_PREVIOUS_VARIATION
 };
 
 static GtkUtilsToolbarEntry navigation_toolbar_next_variation = {
-  N_("Next"),	N_("Switch to next variation"),		GTK_STOCK_GO_DOWN,
+  N_("Next"),	N_("Switch to the next variation"),	GTK_STOCK_GO_DOWN,
   (GtkUtilsToolbarEntryCallback) navigate_goban, GOBAN_NAVIGATE_NEXT_VARIATION
 };
 
@@ -602,6 +630,9 @@ gtk_goban_window_init (GtkGobanWindow *goban_window)
     { N_("/View/_Main Toolbar"),	NULL,
       show_or_hide_main_toolbar,	0,
       "<CheckItem>" },
+    { N_("/View/_Editing Toolbar"),	NULL,
+      show_or_hide_editing_toolbar,	0,
+      "<CheckItem>" },
     { N_("/View/_Navigation Toolbar"),	NULL,
       show_or_hide_navigation_toolbar,	0,
       "<CheckItem>" },
@@ -681,6 +712,21 @@ gtk_goban_window_init (GtkGobanWindow *goban_window)
       QUARRY_STOCK_MENU_ITEM_ABOUT }
   };
 
+  static GtkItemFactoryEntry tools_menu_entries[] = {
+    { N_("/Move Tool"),		"<ctrl>M",	NULL, 0, "<Item>" },
+    { N_("/Setup Tool"),	"<ctrl><alt>S",	NULL, 0, "<Item>" },
+    { "/", NULL, NULL, 0, "<Separator>" },
+
+    { N_("/Cross Markup"),	"<ctrl>1",	NULL, 0, "<Item>" },
+    { N_("/Circle Markup"),	"<ctrl>2",	NULL, 0, "<Item>" },
+    { N_("/Square Markup"),	"<ctrl>3",	NULL, 0, "<Item>" },
+    { N_("/Triangle Markup"),	"<ctrl>4",	NULL, 0, "<Item>" },
+    { N_("/Selected Markup"),	"<ctrl>5",	NULL, 0, "<Item>" },
+    { "/", NULL, NULL, 0, "<Separator>" },
+
+    { N_("/Scori_ng Tool"),	NULL,		NULL, 0, "<Item>" },
+  };
+
   GtkWidget *goban;
   GtkWidget *frame;
   GtkWidget *table;
@@ -697,6 +743,9 @@ gtk_goban_window_init (GtkGobanWindow *goban_window)
   GtkWidget *menu_bar;
   GtkWidget *main_toolbar;
   GtkWidget *main_handle_box;
+  GtkWidget *editing_toolbar;
+  GtkWidget *editing_handle_box;
+  GtkWidget *tools_option_menu;
   GtkWidget *navigation_toolbar;
   GtkWidget *navigation_handle_box;
   GtkAccelGroup *accel_group;
@@ -904,14 +953,22 @@ gtk_goban_window_init (GtkGobanWindow *goban_window)
 
   gtk_window_add_accel_group (GTK_WINDOW (goban_window), accel_group);
 
+  /* Tools menu, used with the editing toolbar below. */
+  goban_window->tools_item_factory
+    = gtk_item_factory_new (GTK_TYPE_MENU, "<QuarryToolsMenu>", NULL);
+  gtk_item_factory_set_translate_func (goban_window->tools_item_factory,
+				       (GtkTranslateFunc) gettext, NULL, NULL);
+  gtk_item_factory_create_items (goban_window->tools_item_factory,
+				 (sizeof tools_menu_entries
+				  / sizeof (GtkItemFactoryEntry)),
+				 tools_menu_entries, NULL);
+
   /* Main toolbar and a handle box for it. */
   main_toolbar = gtk_toolbar_new ();
   goban_window->main_toolbar = GTK_TOOLBAR (main_toolbar);
   gtk_preferences_register_main_toolbar (goban_window->main_toolbar);
 
-  /* Otherwise the toolbar collapse to the arrow alone on GTK+
-   * 2.4+.
-   */
+  /* Else the toolbar collapses to the arrow alone on GTK+ 2.4+. */
   gtk_toolbar_set_show_arrow (goban_window->main_toolbar, FALSE);
 
   gtk_utils_append_toolbar_button (goban_window->main_toolbar,
@@ -930,6 +987,60 @@ gtk_goban_window_init (GtkGobanWindow *goban_window)
 
   main_handle_box = gtk_handle_box_new ();
   gtk_container_add (GTK_CONTAINER (main_handle_box), main_toolbar);
+
+  /* Editing toolbar and a handle box for it. */
+  editing_toolbar = gtk_toolbar_new ();
+  goban_window->editing_toolbar = GTK_TOOLBAR (editing_toolbar);
+  gtk_preferences_register_editing_toolbar (goban_window->editing_toolbar);
+
+  /* Else the toolbar collapses to the arrow alone on GTK+ 2.4+. */
+  gtk_toolbar_set_show_arrow (goban_window->editing_toolbar, FALSE);
+
+  gtk_utils_append_toolbar_button (goban_window->editing_toolbar,
+				   &editing_toolbar_undo,
+				   GTK_UTILS_IS_IMPORTANT,
+				   goban_window);
+  gtk_utils_append_toolbar_button (goban_window->editing_toolbar,
+				   &editing_toolbar_redo, 0,
+				   goban_window);
+  gtk_utils_append_toolbar_space (goban_window->editing_toolbar);
+
+  gtk_utils_append_toolbar_button (goban_window->editing_toolbar,
+				   &editing_toolbar_delete,
+				   GTK_UTILS_IS_IMPORTANT,
+				   goban_window);
+  gtk_utils_append_toolbar_space (goban_window->editing_toolbar);
+
+  tools_option_menu = gtk_option_menu_new ();
+  goban_window->tools_option_menu = GTK_OPTION_MENU (tools_option_menu);
+
+  gtk_option_menu_set_menu (goban_window->tools_option_menu,
+			    (gtk_item_factory_get_widget
+			     (goban_window->tools_item_factory,
+			      "<QuarryToolsMenu>")));
+
+  g_signal_connect (tools_option_menu, "changed",
+		    G_CALLBACK (tools_option_menu_changed), goban_window);
+
+#if GTK_2_4_OR_LATER
+
+  {
+    GtkToolItem *tool_item = gtk_tool_item_new ();
+
+    gtk_container_add (GTK_CONTAINER (tool_item),
+		       gtk_utils_align_widget (tools_option_menu, 0.5, 0.5));
+    gtk_toolbar_insert (goban_window->editing_toolbar, tool_item, -1);
+  }
+
+#else /* not GTK_2_4_OR_LATER */
+
+  gtk_toolbar_append_widget (goban_window->editing_toolbar,
+			     tools_option_menu, NULL, NULL);
+
+#endif /* not GTK_2_4_OR_LATER */
+
+  editing_handle_box = gtk_handle_box_new ();
+  gtk_container_add (GTK_CONTAINER (editing_handle_box), editing_toolbar);
 
   /* Navigation toolbar and a handle box for it. */
   navigation_toolbar = gtk_toolbar_new ();
@@ -969,6 +1080,7 @@ gtk_goban_window_init (GtkGobanWindow *goban_window)
   /* Horizontal box with the toolbars. */
   hbox = gtk_utils_pack_in_box (GTK_TYPE_HBOX, 0,
 				main_handle_box, GTK_UTILS_FILL,
+				editing_handle_box, GTK_UTILS_FILL,
 				navigation_handle_box, GTK_UTILS_PACK_DEFAULT,
 				NULL);
 
@@ -994,6 +1106,10 @@ gtk_goban_window_init (GtkGobanWindow *goban_window)
   gtk_widget_hide (main_handle_box);
   if (gtk_ui_configuration.show_main_toolbar)
     show_or_hide_main_toolbar (goban_window);
+
+  gtk_widget_hide (editing_handle_box);
+  if (gtk_ui_configuration.show_editing_toolbar)
+    show_or_hide_editing_toolbar (goban_window);
 
   gtk_widget_hide (navigation_handle_box);
   if (gtk_ui_configuration.show_navigation_toolbar)
@@ -1122,6 +1238,7 @@ gtk_goban_window_finalize (GObject *object)
   GtkGobanWindow *goban_window = GTK_GOBAN_WINDOW (object);
 
   g_object_unref (goban_window->item_factory);
+  g_object_unref (goban_window->tools_item_factory);
 
   if (goban_window->board)
     board_delete (goban_window->board);
@@ -2427,6 +2544,24 @@ show_or_hide_main_toolbar (GtkGobanWindow *goban_window)
 
 
 static void
+show_or_hide_editing_toolbar (GtkGobanWindow *goban_window)
+{
+  GtkWidget *toolbar_handle_box
+    = gtk_widget_get_parent (GTK_WIDGET (goban_window->editing_toolbar));
+  GtkWidget *menu_item
+    = gtk_item_factory_get_widget (goban_window->item_factory,
+				   "/View/Editing Toolbar");
+
+  gtk_ui_configuration.show_editing_toolbar
+    = !GTK_WIDGET_VISIBLE (toolbar_handle_box);
+  gtk_check_menu_item_set_active (GTK_CHECK_MENU_ITEM (menu_item),
+				  gtk_ui_configuration.show_editing_toolbar);
+  gtk_utils_set_widgets_visible (gtk_ui_configuration.show_editing_toolbar,
+				 toolbar_handle_box, NULL);
+}
+
+
+static void
 show_or_hide_navigation_toolbar (GtkGobanWindow *goban_window)
 {
   GtkWidget *toolbar_handle_box
@@ -2611,6 +2746,50 @@ static void
 show_help_contents (void)
 {
   gtk_help_display (NULL);
+}
+
+
+static void
+tools_option_menu_changed (GtkOptionMenu *option_menu,
+			   const GtkGobanWindow *goban_window)
+{
+  gint tool_index = gtk_option_menu_get_history (option_menu);
+  GtkMenuShell *tools_menu
+    = GTK_MENU_SHELL (gtk_item_factory_get_widget (goban_window->item_factory,
+						   "/Edit/Tools"));
+  GtkCheckMenuItem *menu_item
+    = GTK_CHECK_MENU_ITEM (g_list_nth_data (tools_menu->children, tool_index));
+
+  gtk_check_menu_item_set_active (menu_item, TRUE);
+}
+
+
+static void
+synchronize_tools_menus (const GtkGobanWindow *goban_window)
+{
+  GtkMenuShell *main_tools_menu
+    = GTK_MENU_SHELL (gtk_item_factory_get_widget (goban_window->item_factory,
+						   "/Edit/Tools"));
+  GtkMenuShell *toolbar_tools_menu
+    = GTK_MENU_SHELL (gtk_option_menu_get_menu
+		      (goban_window->tools_option_menu));
+  GList *main_menu_child;
+  GList *toolbar_menu_child;
+  int k;
+
+  for (main_menu_child = main_tools_menu->children,
+	 toolbar_menu_child = toolbar_tools_menu->children, k = 0;
+       main_menu_child && toolbar_menu_child;
+       main_menu_child = main_menu_child->next,
+	 toolbar_menu_child = toolbar_menu_child->next, k++) {
+    gtk_widget_set_sensitive (GTK_WIDGET (toolbar_menu_child->data),
+			      GTK_WIDGET_SENSITIVE (main_menu_child->data));
+
+    if (GTK_IS_CHECK_MENU_ITEM (main_menu_child->data)
+	&& (gtk_check_menu_item_get_active
+	    (GTK_CHECK_MENU_ITEM (main_menu_child->data))))
+      gtk_option_menu_set_history (goban_window->tools_option_menu, k);
+  }
 }
 
 
@@ -4103,6 +4282,9 @@ update_commands_sensitivity (const GtkGobanWindow *goban_window)
   const SgfGameTree *current_tree = goban_window->current_tree;
   const SgfNode *current_node	  = current_tree->current_node;
 
+  gboolean can_undo = sgf_utils_can_undo (current_tree);
+  gboolean can_redo = sgf_utils_can_redo (current_tree);
+
   gboolean pass_sensitive   = (goban_window->board->game == GAME_GO
 			       && USER_CAN_PLAY_MOVES (goban_window)
 			       && !IS_IN_SPECIAL_MODE (goban_window));
@@ -4122,17 +4304,27 @@ update_commands_sensitivity (const GtkGobanWindow *goban_window)
 				       && !IS_IN_SPECIAL_MODE (goban_window));
 
   /* "Edit" submenu. */
-  gtk_utils_set_menu_items_sensitive (goban_window->item_factory,
-				      sgf_utils_can_undo (current_tree),
+  gtk_utils_set_menu_items_sensitive (goban_window->item_factory, can_undo,
 				      "/Edit/Undo", NULL);
-  gtk_utils_set_menu_items_sensitive (goban_window->item_factory,
-				      sgf_utils_can_redo (current_tree),
+  gtk_utils_set_toolbar_buttons_sensitive (goban_window->editing_toolbar,
+					   can_undo,
+					   &editing_toolbar_undo, NULL);
+
+  gtk_utils_set_menu_items_sensitive (goban_window->item_factory, can_redo,
 				      "/Edit/Redo", NULL);
+  gtk_utils_set_toolbar_buttons_sensitive (goban_window->editing_toolbar,
+					   can_redo,
+					   &editing_toolbar_redo, NULL);
 
   gtk_utils_set_menu_items_sensitive (goban_window->item_factory,
 				      (!goban_window->in_game_mode
 				       && current_node->parent != NULL),
 				      "/Edit/Delete Node", NULL);
+  gtk_utils_set_toolbar_buttons_sensitive (goban_window->editing_toolbar,
+					   (!goban_window->in_game_mode
+					    && current_node->parent != NULL),
+					   &editing_toolbar_delete, NULL);
+
   gtk_utils_set_menu_items_sensitive (goban_window->item_factory,
 				      (!goban_window->in_game_mode
 				       && current_node->child != NULL),
@@ -4160,6 +4352,8 @@ update_commands_sensitivity (const GtkGobanWindow *goban_window)
 				      (!goban_window->in_game_mode
 				       || goban_window->dead_stones),
 				      "/Edit/Tools/Scoring Tool", NULL);
+
+  synchronize_tools_menus (goban_window);
 
   /* "Play" submenu. */
   gtk_utils_set_menu_items_sensitive (goban_window->item_factory,
@@ -5078,6 +5272,8 @@ activate_move_tool (GtkGobanWindow *goban_window, guint callback_action,
   UNUSED (callback_action);
 
   if (gtk_check_menu_item_get_active (menu_item)) {
+    synchronize_tools_menus (goban_window);
+
     set_goban_signal_handlers (goban_window,
 			       G_CALLBACK (playing_mode_pointer_moved),
 			       G_CALLBACK (playing_mode_goban_clicked));
@@ -5092,6 +5288,8 @@ activate_setup_tool (GtkGobanWindow *goban_window, guint callback_action,
   UNUSED (callback_action);
 
   if (gtk_check_menu_item_get_active (menu_item)) {
+    synchronize_tools_menus (goban_window);
+
     set_goban_signal_handlers (goban_window,
 			       G_CALLBACK (setup_mode_pointer_moved),
 			       G_CALLBACK (setup_mode_goban_clicked));
@@ -5106,6 +5304,8 @@ activate_scoring_tool (GtkGobanWindow *goban_window, guint callback_action,
   UNUSED (callback_action);
 
   if (gtk_check_menu_item_get_active (menu_item)) {
+    synchronize_tools_menus (goban_window);
+
     if (goban_window->in_game_mode)
       assert (goban_window->dead_stones);
     else {
@@ -5156,6 +5356,8 @@ activate_markup_tool (GtkGobanWindow *goban_window, gint sgf_markup_type,
 		      GtkCheckMenuItem *menu_item)
 {
   if (gtk_check_menu_item_get_active (menu_item)) {
+    synchronize_tools_menus (goban_window);
+
     goban_window->sgf_markup_type = sgf_markup_type;
     set_goban_signal_handlers (goban_window,
 			       G_CALLBACK (markup_mode_pointer_moved),
