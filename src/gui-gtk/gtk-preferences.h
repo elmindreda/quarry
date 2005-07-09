@@ -77,6 +77,8 @@ void		     gtk_preferences_dialog_present (gpointer page_to_select);
 
 void		     gtk_preferences_register_main_toolbar
 		       (GtkToolbar *toolbar);
+void		     gtk_preferences_register_editing_toolbar
+		       (GtkToolbar *toolbar);
 void		     gtk_preferences_register_navigation_toolbar
 		       (GtkToolbar *toolbar);
 

@@ -144,6 +144,9 @@ static void	    handle_drag_and_drop (GtkTreeModel *gtp_engines_tree_model,
 
 
 static GtkWidget *  create_gtk_ui_page (void);
+static GtkWidget *  create_toolbar_style_box (gint item_to_select,
+					      GtkToolbarList *toolbar_list,
+					      const gchar *label_text);
 static GtkWidget *  create_gtp_engines_page (void);
 static GtkWidget *  create_game_tree_page (void);
 static GtkWidget *  create_saving_sgf_page (void);
@@ -271,6 +274,9 @@ static gint		  last_selected_page = 0;
 
 static GtkToolbarList	  main_toolbar_list =
   { NULL, &gtk_ui_configuration.main_toolbar_style };
+
+static GtkToolbarList	  editing_toolbar_list =
+  { NULL, &gtk_ui_configuration.editing_toolbar_style };
 
 static GtkToolbarList	  navigation_toolbar_list =
   { NULL, &gtk_ui_configuration.navigation_toolbar_style };
@@ -618,27 +624,10 @@ create_gtk_ui_page (void)
 
 #endif
 
-  /* NOTE: Keep in sync with values in `gtk-configuration.list'. */
-  static const gchar *toolbar_styles[]
-    = { N_("Desktop default"),
-	N_("Text below icons"),
-
-#if GTK_2_4_OR_LATER
-	/* I don't know of a simple way of making this work on earlier
-	 * GTK+ versions.
-	 */
-	N_("Text beside important icons"),
-#endif
-
-	N_("Icons only"),
-	N_("Text only") };
-
-  GtkWidget *selector;
-  GtkWidget *label;
-  GtkWidget *hbox1;
-  GtkWidget *hbox2;
+  GtkWidget *main_toolbar_hbox;
+  GtkWidget *editing_toolbar_hbox;
+  GtkWidget *navigation_toolbar_hbox;
   GtkWidget *toolbars_named_vbox;
-  gint item_to_select;
 
 #if GTK_2_4_OR_LATER
 
@@ -671,57 +660,25 @@ create_gtk_ui_page (void)
 	  && TOOLBAR_STYLE_ICONS_ONLY	     == 3
 	  && TOOLBAR_STYLE_TEXT_ONLY	     == 4);
 
-  item_to_select = gtk_ui_configuration.main_toolbar_style;
+  main_toolbar_hbox
+    = create_toolbar_style_box (gtk_ui_configuration.main_toolbar_style,
+				&main_toolbar_list,
+				_("_Main toolbar style:"));
+  editing_toolbar_hbox
+    = create_toolbar_style_box (gtk_ui_configuration.editing_toolbar_style,
+				&editing_toolbar_list,
+				_("_Editing toolbar style:"));
+  navigation_toolbar_hbox
+    = create_toolbar_style_box (gtk_ui_configuration.navigation_toolbar_style,
+				&navigation_toolbar_list,
+				_("N_avigation toolbar style:"));
 
-#if !GTK_2_4_OR_LATER
-  /* See above for explanation. */
-  if (item_to_select >= TOOLBAR_STYLE_BOTH_HORIZONTALLY)
-    item_to_select--;
-#endif
-
-  selector = gtk_utils_create_selector (toolbar_styles,
-					(sizeof toolbar_styles
-					 / sizeof (const gchar *)),
-					item_to_select);
-
-  g_signal_connect (selector, "changed",
-		    G_CALLBACK (change_toolbar_style), &main_toolbar_list);
-
-  label = gtk_utils_create_mnemonic_label (_("_Main toolbar style:"),
-					   selector);
-
-  hbox1 = gtk_utils_pack_in_box (GTK_TYPE_HBOX, QUARRY_SPACING,
-				 label, GTK_UTILS_FILL,
-				 selector, GTK_UTILS_FILL, NULL);
-
-  item_to_select = gtk_ui_configuration.navigation_toolbar_style;
-
-#if !GTK_2_4_OR_LATER
-  /* See above for explanation. */
-  if (item_to_select >= TOOLBAR_STYLE_BOTH_HORIZONTALLY)
-    item_to_select--;
-#endif
-
-  selector = gtk_utils_create_selector (toolbar_styles,
-					(sizeof toolbar_styles
-					 / sizeof (const gchar *)),
-					item_to_select);
-
-  g_signal_connect (selector, "changed",
-		    G_CALLBACK (change_toolbar_style),
-		    &navigation_toolbar_list);
-
-  label = gtk_utils_create_mnemonic_label (_("N_avigation toolbar style:"),
-					   selector);
-
-  hbox2 = gtk_utils_pack_in_box (GTK_TYPE_HBOX, QUARRY_SPACING,
-				 label, GTK_UTILS_FILL,
-				 selector, GTK_UTILS_FILL, NULL);
-
-  toolbars_named_vbox = gtk_utils_pack_in_box (GTK_TYPE_NAMED_VBOX,
-					       QUARRY_SPACING_SMALL,
-					       hbox1, GTK_UTILS_FILL,
-					       hbox2, GTK_UTILS_FILL, NULL);
+  toolbars_named_vbox
+    = gtk_utils_pack_in_box (GTK_TYPE_NAMED_VBOX,
+			     QUARRY_SPACING_SMALL,
+			     main_toolbar_hbox, GTK_UTILS_FILL,
+			     editing_toolbar_hbox, GTK_UTILS_FILL,
+			     navigation_toolbar_hbox, GTK_UTILS_FILL, NULL);
   gtk_named_vbox_set_label_text (GTK_NAMED_VBOX (toolbars_named_vbox),
 				 _("Toolbar Styles"));
 
@@ -734,6 +691,49 @@ create_gtk_ui_page (void)
 #else
   return toolbars_named_vbox;
 #endif
+}
+
+
+static GtkWidget *
+create_toolbar_style_box (gint item_to_select, GtkToolbarList *toolbar_list,
+			  const gchar *label_text)
+{
+  /* NOTE: Keep in sync with values in `gtk-configuration.list'. */
+  static const gchar *toolbar_styles[]
+    = { N_("Desktop default"),
+	N_("Text below icons"),
+
+#if GTK_2_4_OR_LATER
+	/* I don't know of a simple way of making this work on earlier
+	 * GTK+ versions.
+	 */
+	N_("Text beside important icons"),
+#endif
+
+	N_("Icons only"),
+	N_("Text only") };
+
+  GtkWidget *selector;
+  GtkWidget *label;
+
+#if !GTK_2_4_OR_LATER
+  /* See toolbar_styles[] for explanation. */
+  if (item_to_select >= TOOLBAR_STYLE_BOTH_HORIZONTALLY)
+    item_to_select--;
+#endif
+
+  selector = gtk_utils_create_selector (toolbar_styles,
+					(sizeof toolbar_styles
+					 / sizeof (const gchar *)),
+					item_to_select);
+  g_signal_connect (selector, "changed",
+		    G_CALLBACK (change_toolbar_style), toolbar_list);
+
+  label = gtk_utils_create_mnemonic_label (label_text, selector);
+
+  return gtk_utils_pack_in_box (GTK_TYPE_HBOX, QUARRY_SPACING,
+				label, GTK_UTILS_FILL,
+				selector, GTK_UTILS_FILL, NULL);
 }
 
 
@@ -1517,7 +1517,7 @@ change_toolbar_style (GtkWidget *selector, GtkToolbarList *toolbar_list)
     = gtk_utils_get_selector_active_item_index (selector);
 
 #if !GTK_2_4_OR_LATER
-  /* See create_gtk_ui_page() for explanation. */
+  /* See create_toolbar_style_box() for explanation. */
   if (*toolbar_list->toolbar_style >= TOOLBAR_STYLE_BOTH_HORIZONTALLY)
     (*toolbar_list->toolbar_style)++;
 #endif
@@ -2373,6 +2373,13 @@ void
 gtk_preferences_register_main_toolbar (GtkToolbar *toolbar)
 {
   do_register_toolbar (toolbar, &main_toolbar_list);
+}
+
+
+void
+gtk_preferences_register_editing_toolbar (GtkToolbar *toolbar)
+{
+  do_register_toolbar (toolbar, &editing_toolbar_list);
 }
 
 
