@@ -1,3 +1,34 @@
+2005-07-09  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* gui-gtk/gtk-goban-window.c (gtk_goban_window_init): Add "Editing
+	toolbar" item in "View" menu.  Add editing toolbar with some
+	buttons and an option menu for selecting editing tool.
+	(gtk_goban_window_finalize): Unreference new `tools_item_factory'
+	field.
+	(show_or_hide_editing_toolbar, tools_option_menu_changed)
+	(synchronize_tools_menus): New functions.
+	(update_commands_sensitivity): Set editing toolbar's button
+	sensitive or insensitive, as appropriate.  Call
+	synchronize_tools_menus().
+	(activate_move_tool): Call synchronize_tools_menus ().
+	(activate_setup_tool): Likewise.
+	(activate_scoring_tool): Likewise.
+	(activate_markup_tool): Likewise.
+
+	* gui-gtk/gtk-preferences.c (create_gtk_ui_page): Also create
+	controls for editing toolbar parameters.
+	(create_toolbar_style_box): New function, break out of
+	create_gtk_ui_page().
+	(gtk_preferences_register_editing_toolbar): New function.
+
+	* gui-gtk/gtk-configuration.list: Add configuration parameters for
+	editing toolbars.
+
+	* sgf/sgf-tree.c (sgf_collection_is_modified): Rename accidentally
+	left `num_modified_trees' to `num_modified_undo_histories'.
+	(sgf_collection_set_unmodified): Likewise.
+	* sgf/sgf-utils.c (end_undoing_or_redoing): Likewise.
+
 2005-07-04  Paul Pogonyshev  <pogonyshev@gmx.net>
 
 	* gui-gtk/gtk-goban-window.c (gtk_goban_window_new): Set
