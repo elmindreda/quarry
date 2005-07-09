@@ -108,7 +108,7 @@ sgf_collection_is_modified (const SgfCollection *collection)
 {
   assert (collection);
 
-  return (collection->num_modified_trees > 0
+  return (collection->num_modified_undo_histories > 0
 	  || collection->is_irreversibly_modified);
 }
 
@@ -125,8 +125,8 @@ sgf_collection_set_unmodified (SgfCollection *collection)
   if (!sgf_collection_is_modified (collection))
     return;
 
-  collection->num_modified_trees       = 0;
-  collection->is_irreversibly_modified = 0;
+  collection->num_modified_undo_histories = 0;
+  collection->is_irreversibly_modified	  = 0;
 
   for (tree = collection->first_tree; tree; tree = tree->next) {
     if (tree->undo_history) {

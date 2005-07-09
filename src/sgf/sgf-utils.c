@@ -1850,11 +1850,11 @@ end_undoing_or_redoing (SgfGameTree *tree)
     if (tree->tree_was_modified
 	&& (tree->undo_history->last_applied_entry
 	    == tree->undo_history->unmodified_state_entry))
-      tree->collection->num_modified_trees--;
+      tree->collection->num_modified_undo_histories--;
     else if (!tree->tree_was_modified
 	     && (tree->undo_history->last_applied_entry
 		 != tree->undo_history->unmodified_state_entry))
-      tree->collection->num_modified_trees++;
+      tree->collection->num_modified_undo_histories++;
   }
 
   if (sgf_collection_is_modified (tree->collection)
