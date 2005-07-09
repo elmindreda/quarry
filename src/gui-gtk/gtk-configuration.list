@@ -114,6 +114,20 @@ values  - gtk_ui_section_values {
     TOOLBAR_STYLE_TEXT_ONLY	"Text only" "Text"
   end
 
+  "Show editing toolbar"	show_editing_toolbar		boolean
+  "Editing toolbar style"	editing_toolbar_style		enumeration
+								existing
+    TOOLBAR_STYLE_DEFAULT	"Default" "Desktop" "Desktop default"
+				"System" "System default"
+    TOOLBAR_STYLE_BOTH		"Both" "Both vertically" "Vertically"
+				"Text below icons"
+    TOOLBAR_STYLE_BOTH_HORIZONTALLY  "Both horizontally" "Horizontally"
+				"Text beside icons"
+				"Text beside important icons"
+    TOOLBAR_STYLE_ICONS_ONLY	"Icons only" "Icons"
+    TOOLBAR_STYLE_TEXT_ONLY	"Text only" "Text"
+  end
+
   "Show navigation toolbar"	show_navigation_toolbar		boolean
   "Navigation toolbar style"	navigation_toolbar_style	enumeration
 								existing
@@ -219,6 +233,9 @@ defaults  - gtk_ui_defaults {
 
   show_main_toolbar			boolean		true
   main_toolbar_style			enumeration	TOOLBAR_STYLE_DEFAULT
+
+  show_editing_toolbar			boolean		true
+  editing_toolbar_style			enumeration	TOOLBAR_STYLE_DEFAULT
 
   show_navigation_toolbar		boolean		true
   navigation_toolbar_style		enumeration	TOOLBAR_STYLE_DEFAULT
