@@ -37,6 +37,7 @@
 #define QUARRY_STOCK_BROWSE		"quarry-browse"
 #define QUARRY_STOCK_CREATE		"quarry-create"
 #define QUARRY_STOCK_DONE		"quarry-done"
+#define QUARRY_STOCK_GO_TO_NODE		"quarry-go-to-node"
 #define QUARRY_STOCK_MODIFY		"quarry-modify"
 #define QUARRY_STOCK_MOVE_UP		"quarry-move-up"
 #define QUARRY_STOCK_MOVE_DOWN		"quarry-move-down"
