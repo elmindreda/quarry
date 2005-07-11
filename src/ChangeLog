@@ -1,3 +1,72 @@
+2005-07-11  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* gui-gtk/gtk-goban-window.c (gtk_goban_window_init): Add "Go to
+	Named Node" item in "Go" menu when using GTK+ 2.4 and up.
+	(gtk_goban_window_enter_game_record_mode): Set undo history
+	notification callback to undo_or_redo_availability_changed().
+	(undo_or_redo_availability_changed): New function, break out of
+	update_commands_sensitivity().
+	(show_go_to_named_node_dialog): New function.
+	(set_current_tree): Call undo_or_redo_availability_changed().
+	(set_goban_signal_handlers): Call gtk_goban_force_feedback_poll():
+	changing editing tool normally involves changing feedback.
+
+	* gui-gtk/gtk-go-to-named-node-dialog.c: New file.
+	* gui-gtk/gtk-go-to-named-node-dialog.h: New file.
+
+	* gui-gtk/quarry-stock.c: New stock item `QUARRY_STOCK_GO_TO_NODE.
+
+	* sgf/sgf-undo.c (sgf_undo_history_new): Initialize new
+	`notification_callback' and `user_data' fields.
+	(sgf_undo_history_set_notification_callback): New function.
+	(begin_undoing_or_redoing): Set `could_undo' and `could_redo'
+	fields of `tree'.
+	(end_undoing_or_redoing): Send notification if undo/redo
+	availability has changed (based on `could_undo' and `could_redo'.)
+
+	* sgf/sgf-privates.h (UNDO_HISTORY_DO_NOTIFY): New macro.
+
+2005-07-10  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* sgf/sgf-undo.c: New file, break out of `sgf-utils.c'.
+	(sgf_undo_history_new): Link up the new history to tree's list of
+	undo histories.
+	(sgf_undo_history_delete): Detach the history from tree's list of
+	undo histories.
+	(sgf_new_node_undo_history_entry_new): Rename from
+	create_new_node_undo_history_entry() and make global.  Remove
+	`tree' argument and retrieve `current_variation' field from
+	`new_node->parent', not `tree->current_node' (removes restriction
+	on new node's parent.)
+	(sgf_delete_node_undo_history_entry_new): New function, break out
+	of sgf_utils_delete_current_node().
+	(sgf_delete_node_children_undo_history_entry_new): New function,
+	break out of sgf_utils_delete_current_node_children().
+	(sgf_change_node_move_color_undo_history_entry_new): New function,
+	break out of sgf_utils_apply_setup_changes().
+	(sgf_new_property_undo_history_entry_new): Rename from
+	create_new_property_undo_history_entry() and make global.
+	(sgf_delete_property_undo_history_entry_new): Rename from
+	create_delete_property_undo_history_entry() and make global.
+	(sgf_change_property_undo_history_entry_new): Rename from
+	create_change_property_undo_history_entry() and make global.
+	(sgf_change_real_property_undo_history_entry_new): New function,
+	break out of sgf_utils_set_real_property().
+	(sgf_utils_apply_undo_history_entry): Rename from
+	apply_undo_history_entry() and make global.
+
+	* sgf/sgf-tree.c (sgf_game_tree_new): Set new `undo_history_list'
+	field to NULL.
+	(sgf_game_tree_delete): Delete all undo histories in
+	`undo_history_list'.
+
+	* sgf/sgf-utils.c (sgf_utils_do_switch_to_given_node): Rename from
+	do_switch_to_given_node() and make global.
+	(sgf_utils_descend_nodes): Rename from descend_nodes() and make
+	global.
+	(sgf_utils_ascend_nodes): Rename from ascend_nodes() and make
+	global.
+
 2005-07-09  Paul Pogonyshev  <pogonyshev@gmx.net>
 
 	* gui-gtk/gtk-goban-window.c (gtk_goban_window_init): Add "Editing
