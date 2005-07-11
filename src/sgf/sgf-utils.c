@@ -33,110 +33,23 @@
 #endif
 
 
-typedef struct _SgfNodeOperationEntry		SgfNodeOperationEntry;
-typedef struct _SgfChangeNodeMoveColorOperationEntry
-		SgfChangeNodeMoveColorOperationEntry;
-
-typedef struct _SgfPropertyOperationEntry	SgfPropertyOperationEntry;
-typedef struct _SgfChangePropertyOperationEntry
-		SgfChangePropertyOperationEntry;
-typedef struct _SgfChangeRealPropertyOperationEntry
-		SgfChangeRealPropertyOperationEntry;
-
-struct _SgfNodeOperationEntry {
-  SgfUndoHistoryEntry	entry;
-
-  SgfNode	       *node;
-  SgfNode	       *parent_current_variation;
-};
-
-struct _SgfChangeNodeMoveColorOperationEntry {
-  SgfUndoHistoryEntry	entry;
-
-  SgfNode	       *node;
-  int			move_color;
-};
-
-struct _SgfPropertyOperationEntry {
-  SgfUndoHistoryEntry	entry;
-
-  SgfNode	       *node;
-  SgfProperty	       *property;
-};
-
-struct _SgfChangePropertyOperationEntry {
-  SgfUndoHistoryEntry	entry;
-
-  SgfNode	       *node;
-  SgfProperty	       *property;
-  SgfValue		value;
-};
-
-struct _SgfChangeRealPropertyOperationEntry {
-  SgfUndoHistoryEntry	entry;
-
-  SgfNode	       *node;
-  SgfProperty	       *property;
-  double		value;
-};
-
-
 typedef int (* ValuesComparator) (const void *first_value,
 				  const void *second_value);
 
 
-static void	    do_enter_tree (SgfGameTree *tree, SgfNode *down_to);
+static void	do_enter_tree (SgfGameTree *tree, SgfNode *down_to);
 
-inline static void  do_switch_to_given_node (SgfGameTree *tree, SgfNode *node);
-static void	    descend_nodes (SgfGameTree *tree, int num_nodes);
-static void	    ascend_nodes (SgfGameTree *tree, int num_nodes);
+static void	find_time_control_data (const SgfGameTree *tree,
+					SgfNode *upper_limit,
+					SgfNode *lower_limit);
+static void	determine_final_color_to_play (SgfGameTree *tree);
 
-static void	    find_time_control_data (const SgfGameTree *tree,
-					    SgfNode *upper_limit,
-					    SgfNode *lower_limit);
-static void	    determine_final_color_to_play (SgfGameTree *tree);
-
-
-static int	    do_set_pointer_property (SgfNode *node, SgfGameTree *tree,
-					     SgfType type,
-					     ValuesComparator values_are_equal,
-					     void *new_value);
-static int	    strings_are_equal (const void *first_string,
-				       const void *second_string);
-
-static SgfUndoHistoryEntry *
-		    create_new_node_undo_history_entry (SgfNode *new_node,
-							SgfGameTree *tree);
-static SgfUndoHistoryEntry *
-		    create_new_property_undo_history_entry (SgfGameTree *tree,
-							    SgfNode *node,
-							    SgfProperty **link,
-							    SgfType type);
-static SgfUndoHistoryEntry *
-		    create_delete_property_undo_history_entry
-		      (SgfNode *node, SgfProperty *property);
-static SgfUndoHistoryEntry *
-		    create_change_property_undo_history_entry
-		      (SgfNode *node, SgfProperty *property);
-
-inline static void  delete_undo_history_entry (SgfUndoHistoryEntry *entry,
-					       int is_applied,
-					       SgfGameTree *tree);
-
-static void	    begin_undoing_or_redoing (SgfGameTree *tree);
-static void	    set_is_modifying_map (SgfGameTree *tree);
-static void	    set_is_modifying_tree (SgfGameTree *tree);
-static void	    end_undoing_or_redoing (SgfGameTree *tree);
-
-static void	    apply_undo_history_entry (SgfGameTree *tree,
-					      SgfUndoHistoryEntry *entry);
-
-
-inline static SgfNode **
-		    find_node_link (SgfNode *parent, const SgfNode *next);
-inline static SgfProperty **
-		    find_property_link (SgfNode *node,
-					const SgfProperty *next);
+static int	do_set_pointer_property (SgfNode *node, SgfGameTree *tree,
+					 SgfType type,
+					 ValuesComparator values_are_equal,
+					 void *new_value);
+static int	strings_are_equal (const void *first_string,
+				   const void *second_string);
 
 
 inline void
@@ -238,7 +151,7 @@ sgf_utils_go_down_in_tree (SgfGameTree *tree, int num_nodes)
 
   if (num_nodes != 0 && tree->current_node->child) {
     GAME_TREE_DO_NOTIFY (tree, SGF_ABOUT_TO_CHANGE_CURRENT_NODE);
-    descend_nodes (tree, num_nodes);
+    sgf_utils_descend_nodes (tree, num_nodes);
     GAME_TREE_DO_NOTIFY (tree, SGF_CURRENT_NODE_CHANGED);
   }
 }
@@ -263,7 +176,7 @@ sgf_utils_go_up_in_tree (SgfGameTree *tree, int num_nodes)
     GAME_TREE_DO_NOTIFY (tree, SGF_ABOUT_TO_CHANGE_CURRENT_NODE);
 
     if (num_nodes > 0)
-      ascend_nodes (tree, num_nodes);
+      sgf_utils_ascend_nodes (tree, num_nodes);
     else
       do_enter_tree (tree, tree->root);
 
@@ -404,10 +317,10 @@ sgf_utils_switch_to_variation (SgfGameTree *tree, SgfDirection direction)
 
   GAME_TREE_DO_NOTIFY (tree, SGF_ABOUT_TO_CHANGE_CURRENT_NODE);
 
-  ascend_nodes (tree, 1);
+  sgf_utils_ascend_nodes (tree, 1);
 
   parent->current_variation = switch_to;
-  descend_nodes (tree, 1);
+  sgf_utils_descend_nodes (tree, 1);
 
   GAME_TREE_DO_NOTIFY (tree, SGF_CURRENT_NODE_CHANGED);
 }
@@ -425,10 +338,10 @@ sgf_utils_switch_to_given_variation (SgfGameTree *tree, SgfNode *node)
   if (tree->current_node != node) {
     GAME_TREE_DO_NOTIFY (tree, SGF_ABOUT_TO_CHANGE_CURRENT_NODE);
 
-    ascend_nodes (tree, 1);
+    sgf_utils_ascend_nodes (tree, 1);
 
     node->parent->current_variation = node;
-    descend_nodes (tree, 1);
+    sgf_utils_descend_nodes (tree, 1);
 
     GAME_TREE_DO_NOTIFY (tree, SGF_CURRENT_NODE_CHANGED);
   }
@@ -446,7 +359,7 @@ sgf_utils_switch_to_given_node (SgfGameTree *tree, SgfNode *node)
   if (tree->current_node != node) {
     GAME_TREE_DO_NOTIFY (tree, SGF_ABOUT_TO_CHANGE_CURRENT_NODE);
 
-    do_switch_to_given_node (tree, node);
+    sgf_utils_do_switch_to_given_node (tree, node);
 
     GAME_TREE_DO_NOTIFY (tree, SGF_CURRENT_NODE_CHANGED);
   }
@@ -488,9 +401,8 @@ sgf_utils_append_variation (SgfGameTree *tree, int color, ...)
   }
 
   sgf_utils_begin_action (tree);
-  apply_undo_history_entry (tree,
-			    create_new_node_undo_history_entry (new_node,
-								tree));
+  sgf_utils_apply_undo_history_entry
+    (tree, sgf_new_node_undo_history_entry_new (new_node));
   sgf_utils_end_action (tree);
 }
 
@@ -515,7 +427,7 @@ sgf_utils_apply_setup_changes (SgfGameTree *tree,
   node = tree->current_node;
   if (node->move_color == SETUP_NODE) {
     if (node->parent)
-      ascend_nodes (tree, 1);
+      sgf_utils_ascend_nodes (tree, 1);
     else
       board_undo (tree->board, 1);
   }
@@ -547,15 +459,11 @@ sgf_utils_apply_setup_changes (SgfGameTree *tree,
     tree->undo_history = NULL;
   }
   else if (node->move_color != new_move_color) {
-    SgfChangeNodeMoveColorOperationEntry *operation_data
-      = utils_malloc (sizeof (SgfChangeNodeMoveColorOperationEntry));
+    SgfUndoHistoryEntry *entry
+      = sgf_change_node_move_color_undo_history_entry_new (node,
+							   new_move_color);
 
-    operation_data->entry.operation_index
-      = SGF_OPERATION_CHANGE_NODE_MOVE_COLOR;
-    operation_data->node       = node;
-    operation_data->move_color = new_move_color;
-
-    apply_undo_history_entry (tree, (SgfUndoHistoryEntry *) operation_data);
+    sgf_utils_apply_undo_history_entry (tree, entry);
   }
 
   anything_changed |= (sgf_utils_set_list_of_point_property
@@ -569,12 +477,12 @@ sgf_utils_apply_setup_changes (SgfGameTree *tree,
 
   if (created_new_node) {
     tree->undo_history = undo_history;
-    apply_undo_history_entry (tree,
-			      create_new_node_undo_history_entry (node, tree));
+    sgf_utils_apply_undo_history_entry
+      (tree, sgf_new_node_undo_history_entry_new (node));
   }
   else {
     if (node->parent)
-      descend_nodes (tree, 1);
+      sgf_utils_descend_nodes (tree, 1);
     else
       do_enter_tree (tree, node);
   }
@@ -665,8 +573,8 @@ sgf_utils_set_none_property (SgfNode *node, SgfGameTree *tree, SgfType type)
 
   sgf_utils_begin_action (tree);
 
-  entry = create_new_property_undo_history_entry (tree, node, link, type);
-  apply_undo_history_entry (tree, entry);
+  entry = sgf_new_property_undo_history_entry_new (tree, node, link, type);
+  sgf_utils_apply_undo_history_entry (tree, entry);
 
   sgf_utils_end_action (tree);
 
@@ -691,16 +599,16 @@ sgf_utils_set_number_property (SgfNode *node, SgfGameTree *tree, SgfType type,
     if ((*link)->value.number == number)
       return 0;
 
-    entry = create_change_property_undo_history_entry (node, *link);
+    entry = sgf_change_property_undo_history_entry_new (node, *link);
     ((SgfChangePropertyOperationEntry *) entry)->value.number = number;
   }
   else {
-    entry = create_new_property_undo_history_entry (tree, node, link, type);
+    entry = sgf_new_property_undo_history_entry_new (tree, node, link, type);
     ((SgfPropertyOperationEntry *) entry)->property->value.number = number;
   }
 
   sgf_utils_begin_action (tree);
-  apply_undo_history_entry (tree, entry);
+  sgf_utils_apply_undo_history_entry (tree, entry);
   sgf_utils_end_action (tree);
 
   return 1;
@@ -721,33 +629,24 @@ sgf_utils_set_real_property (SgfNode *node, SgfGameTree *tree, SgfType type,
   if (sgf_node_find_property (node, type, &link)) {
 #if SGF_REAL_VALUES_ALLOCATED_SEPARATELY
 
-    SgfChangeRealPropertyOperationEntry *operation_data;
-
     if (* (*link)->value.real == value)
       return 0;
 
-    operation_data
-      = utils_malloc (sizeof (SgfChangeRealPropertyOperationEntry));
-
-    operation_data->entry.operation_index = SGF_OPERATION_CHANGE_REAL_PROPERTY;
-    operation_data->node		  = node;
-    operation_data->property		  = *link;
-    operation_data->value		  = value;
-
-    entry = (SgfUndoHistoryEntry *) operation_data;
+    entry = sgf_change_real_property_undo_history_entry_new (node, *link,
+							     value);
 
 #else /* not SGF_REAL_VALUES_ALLOCATED_SEPARATELY */
 
     if ((*link)->value.real == value)
       return 0;
 
-    entry = create_change_property_undo_history_entry (node, *link);
+    entry = sgf_change_property_undo_history_entry_new (node, *link);
     ((SgfChangePropertyOperationEntry *) entry)->value.real = value;
 
 #endif /* not SGF_REAL_VALUES_ALLOCATED_SEPARATELY */
   }
   else {
-    entry = create_new_property_undo_history_entry (tree, node, link, type);
+    entry = sgf_new_property_undo_history_entry_new (tree, node, link, type);
 
 #if SGF_REAL_VALUES_ALLOCATED_SEPARATELY
     ((SgfPropertyOperationEntry *) entry)->property->value.real
@@ -758,7 +657,7 @@ sgf_utils_set_real_property (SgfNode *node, SgfGameTree *tree, SgfType type,
   }
 
   sgf_utils_begin_action (tree);
-  apply_undo_history_entry (tree, entry);
+  sgf_utils_apply_undo_history_entry (tree, entry);
   sgf_utils_end_action (tree);
 
   return 1;
@@ -853,28 +752,17 @@ sgf_utils_find_time_control_data (const SgfGameTree *tree)
 void
 sgf_utils_delete_current_node (SgfGameTree *tree)
 {
-  SgfNodeOperationEntry *operation_data
-    = utils_malloc (sizeof (SgfNodeOperationEntry));
+  SgfUndoHistoryEntry *entry;
 
   assert (tree);
   assert (tree->current_node);
   assert (tree->current_node->parent);
   assert (tree->board_state);
 
-  operation_data->entry.operation_index = SGF_OPERATION_DELETE_NODE;
-  operation_data->node			= tree->current_node;
-
-  /* This field is used after node deletion.  So, we should set it so
-   * it is _not_ equal to `tree->current_node', which is being
-   * deleted.  Use a neighbor node instead.
-   */
-  operation_data->parent_current_variation
-    = (tree->current_node->next
-       ? tree->current_node->next
-       : sgf_node_get_previous_node (tree->current_node));
+  entry = sgf_delete_node_undo_history_entry_new (tree->current_node);
 
   sgf_utils_begin_action (tree);
-  apply_undo_history_entry (tree, (SgfUndoHistoryEntry *) operation_data);
+  sgf_utils_apply_undo_history_entry (tree, entry);
   sgf_utils_end_action (tree);
 }
 
@@ -882,8 +770,7 @@ sgf_utils_delete_current_node (SgfGameTree *tree)
 void
 sgf_utils_delete_current_node_children (SgfGameTree *tree)
 {
-  SgfNodeOperationEntry *operation_data
-    = utils_malloc (sizeof (SgfNodeOperationEntry));
+  SgfUndoHistoryEntry *entry;
 
   assert (tree);
   assert (tree->current_node);
@@ -893,13 +780,10 @@ sgf_utils_delete_current_node_children (SgfGameTree *tree)
   if (!tree->current_node->child)
     return;
 
-  operation_data->entry.operation_index = SGF_OPERATION_DELETE_NODE_CHILDREN;
-  operation_data->node			= tree->current_node->child;
-  operation_data->parent_current_variation
-    = tree->current_node->current_variation;
+  entry = sgf_delete_node_children_undo_history_entry_new (tree->current_node);
 
   sgf_utils_begin_action (tree);
-  apply_undo_history_entry (tree, (SgfUndoHistoryEntry *) operation_data);
+  sgf_utils_apply_undo_history_entry (tree, entry);
   sgf_utils_end_action (tree);
 }
 
@@ -914,115 +798,16 @@ sgf_utils_delete_property (SgfNode *node, SgfGameTree *tree, SgfType type)
 
   if (sgf_node_find_property (node, type, &link)) {
     SgfUndoHistoryEntry *entry
-      = create_delete_property_undo_history_entry (node, *link);
+      = sgf_delete_property_undo_history_entry_new (node, *link);
 
     sgf_utils_begin_action (tree);
-    apply_undo_history_entry (tree, entry);
+    sgf_utils_apply_undo_history_entry (tree, entry);
     sgf_utils_end_action (tree);
 
     return 1;
   }
 
   return 0;
-}
-
-
-/* Designate a beginning of an undoable action.  Must always be paired
- * by a call to sgf_utils_end_action().  Such actions can and do nest
- * and only the topmost-level invocation of sgf_utils_begin_action()
- * and sgf_utils_end_action() constitute a user-visible action.
- *
- * This allows to easily construct composite actions.  By convention,
- * all functions in this file that alter undo history must set up an
- * action, so that the top-level code can avoid this if it only needs
- * a ``single-primitive action.''
- */
-void
-sgf_utils_begin_action (SgfGameTree *tree)
-{
-  assert (tree);
-
-  if (tree->undo_operation_level++ == 0)
-    begin_undoing_or_redoing (tree);
-}
-
-
-/* Finish an undoable action.  See sgf_utils_begin_action() for more
- * information.
- */
-void
-sgf_utils_end_action (SgfGameTree *tree)
-{
-  assert (tree);
-
-  tree->undo_operation_level--;
-  assert (tree->undo_operation_level >= 0);
-
-  if (tree->undo_operation_level == 0) {
-    if (tree->undo_history && tree->undo_history->last_entry)
-      tree->undo_history->last_entry->is_last_in_action = 1;
-
-    end_undoing_or_redoing (tree);
-  }
-}
-
-
-void
-sgf_utils_undo (SgfGameTree *tree)
-{
-  SgfUndoHistoryEntry *entry;
-
-  assert (tree);
-  assert (tree->board_state);
-  assert (tree->undo_operation_level == 0);
-
-  if (!sgf_utils_can_undo (tree))
-    return;
-
-  begin_undoing_or_redoing (tree);
-
-  entry = tree->undo_history->last_applied_entry;
-
-  do {
-    sgf_undo_operations[entry->operation_index].undo (entry, tree);
-    entry = entry->previous;
-  } while (entry && !entry->is_last_in_action);
-
-  tree->undo_history->last_applied_entry = entry;
-  end_undoing_or_redoing (tree);
-}
-
-
-void
-sgf_utils_redo (SgfGameTree *tree)
-{
-  SgfUndoHistory *history;
-  SgfUndoHistoryEntry *entry;
-
-  assert (tree);
-  assert (tree->board_state);
-  assert (tree->undo_operation_level == 0);
-
-  if (!sgf_utils_can_redo (tree))
-    return;
-
-  history = tree->undo_history;
-  entry	  = (history->last_applied_entry
-	     ? history->last_applied_entry->next : history->first_entry);
-
-  begin_undoing_or_redoing (tree);
-
-  while (1) {
-    sgf_undo_operations[entry->operation_index].redo (entry, tree);
-    if (entry->is_last_in_action)
-      break;
-
-    entry = entry->next;
-    assert (entry);
-  }
-
-  history->last_applied_entry = entry;
-  end_undoing_or_redoing (tree);
 }
 
 
@@ -1290,68 +1075,6 @@ sgf_utils_normalize_text (const char *text, int is_simple_text)
 
 
 
-SgfUndoHistory *
-sgf_undo_history_new (void)
-{
-  SgfUndoHistory *history = utils_malloc (sizeof (SgfUndoHistory));
-
-  history->first_entry		  = NULL;
-  history->last_entry		  = NULL;
-  history->last_applied_entry	  = NULL;
-  history->unmodified_state_entry = NULL;
-
-  return history;
-}
-
-
-void
-sgf_undo_history_delete (SgfUndoHistory *history, SgfGameTree *tree)
-{
-  SgfUndoHistoryEntry *this_entry;
-  int is_applied;
-
-  assert (history);
-  assert (tree);
-
-  for (this_entry = history->first_entry, is_applied = 1; this_entry;) {
-    SgfUndoHistoryEntry *next_entry = this_entry->next;
-
-    if (this_entry->previous == history->last_applied_entry)
-      is_applied = 0;
-
-    delete_undo_history_entry (this_entry, is_applied, tree);
-    this_entry = next_entry;
-  }
-
-  utils_free (history);
-}
-
-
-/* Delete undo history, but don't free any data.  This function is
- * used by sgf_game_tree_delete() when memory pools are enabled: no
- * point in deleting data in pieces when node and property pools are
- * going to be flushed.
- */
-void
-sgf_undo_history_delete_dont_free_data (SgfUndoHistory *history)
-{
-  SgfUndoHistoryEntry *this_entry;
-
-  assert (history);
-
-  for (this_entry = history->first_entry; this_entry;) {
-    SgfUndoHistoryEntry *next_entry = this_entry->next;
-
-    utils_free (this_entry);
-    this_entry = next_entry;
-  }
-
-  utils_free (history);
-}
-
-
-
-
 static void
 do_enter_tree (SgfGameTree *tree, SgfNode *down_to)
 {
@@ -1380,20 +1103,20 @@ do_enter_tree (SgfGameTree *tree, SgfNode *down_to)
     num_nodes++;
   }
 
-  /* Use a fake SGF node so that descend_nodes() has something to
-   * descend from.
+  /* Use a fake SGF node so that sgf_utils_descend_nodes() has
+   * something to descend from.
    */
   root_predecessor.child	     = tree->root;
   root_predecessor.current_variation = tree->root;
   tree->current_node		     = &root_predecessor;
   tree->current_node_depth	     = -1;
 
-  descend_nodes (tree, num_nodes);
+  sgf_utils_descend_nodes (tree, num_nodes);
 }
 
 
-inline static void
-do_switch_to_given_node (SgfGameTree *tree, SgfNode *node)
+inline void
+sgf_utils_do_switch_to_given_node (SgfGameTree *tree, SgfNode *node)
 {
   SgfNode *path_scan;
 
@@ -1409,8 +1132,8 @@ do_switch_to_given_node (SgfGameTree *tree, SgfNode *node)
  * properties, whichever are present, are played on tree's associated
  * board and `board_state' is updated as needed.
  */
-static void
-descend_nodes (SgfGameTree *tree, int num_nodes)
+void
+sgf_utils_descend_nodes (SgfGameTree *tree, int num_nodes)
 {
   SgfBoardState *const board_state = tree->board_state;
   SgfNode *node = tree->current_node;
@@ -1499,8 +1222,8 @@ descend_nodes (SgfGameTree *tree, int num_nodes)
 }
 
 
-static void
-ascend_nodes (SgfGameTree *tree, int num_nodes)
+void
+sgf_utils_ascend_nodes (SgfGameTree *tree, int num_nodes)
 {
   SgfBoardState *const board_state = tree->board_state;
   SgfNode *node = tree->current_node;
@@ -1657,8 +1380,6 @@ determine_final_color_to_play (SgfGameTree *tree)
 
 
 
-/* Undo history functions. */
-
 
 static int
 do_set_pointer_property (SgfNode *node, SgfGameTree *tree, SgfType type,
@@ -1680,25 +1401,25 @@ do_set_pointer_property (SgfNode *node, SgfGameTree *tree, SgfType type,
 	return 0;
       }
 
-      entry = create_change_property_undo_history_entry (node, *link);
+      entry = sgf_change_property_undo_history_entry_new (node, *link);
 
       ((SgfChangePropertyOperationEntry *) entry)->value.memory_block
 	= new_value;
     }
     else
-      entry = create_delete_property_undo_history_entry (node, *link);
+      entry = sgf_delete_property_undo_history_entry_new (node, *link);
   }
   else {
     if (!new_value)
       return 0;
 
-    entry = create_new_property_undo_history_entry (tree, node, link, type);
+    entry = sgf_new_property_undo_history_entry_new (tree, node, link, type);
     ((SgfPropertyOperationEntry *) entry)->property->value.memory_block
       = new_value;
   }
 
   sgf_utils_begin_action (tree);
-  apply_undo_history_entry (tree, entry);
+  sgf_utils_apply_undo_history_entry (tree, entry);
   sgf_utils_end_action (tree);
 
   return 1;
@@ -1712,546 +1433,6 @@ strings_are_equal (const void *first_string, const void *second_string)
 	  == 0);
 }
 
-
-static SgfUndoHistoryEntry *
-create_new_node_undo_history_entry (SgfNode *new_node, SgfGameTree *tree)
-{
-  SgfNodeOperationEntry *operation_data
-    = utils_malloc (sizeof (SgfNodeOperationEntry));
-
-  operation_data->entry.operation_index = SGF_OPERATION_NEW_NODE;
-  operation_data->node			= new_node;
-  operation_data->parent_current_variation
-    = tree->current_node->current_variation;
-
-  return (SgfUndoHistoryEntry *) operation_data;
-}
-
-
-static SgfUndoHistoryEntry *
-create_new_property_undo_history_entry (SgfGameTree *tree, SgfNode *node,
-					SgfProperty **link, SgfType type)
-{
-  SgfPropertyOperationEntry *operation_data
-    = utils_malloc (sizeof (SgfPropertyOperationEntry));
-
-  operation_data->entry.operation_index = SGF_OPERATION_NEW_PROPERTY;
-  operation_data->node			= node;
-  operation_data->property		= sgf_property_new (tree, type, *link);
-
-  return (SgfUndoHistoryEntry *) operation_data;
-}
-
-
-static SgfUndoHistoryEntry *
-create_delete_property_undo_history_entry (SgfNode *node,
-					   SgfProperty *property)
-{
-  SgfPropertyOperationEntry *operation_data
-    = utils_malloc (sizeof (SgfPropertyOperationEntry));
-
-  operation_data->entry.operation_index = SGF_OPERATION_DELETE_PROPERTY;
-  operation_data->node			= node;
-  operation_data->property		= property;
-
-  return (SgfUndoHistoryEntry *) operation_data;
-}
-
-
-static SgfUndoHistoryEntry *
-create_change_property_undo_history_entry (SgfNode *node,
-					   SgfProperty *property)
-{
-  SgfChangePropertyOperationEntry *operation_data
-    = utils_malloc (sizeof (SgfChangePropertyOperationEntry));
-
-  operation_data->entry.operation_index = SGF_OPERATION_CHANGE_PROPERTY;
-  operation_data->node			= node;
-  operation_data->property		= property;
-
-  return (SgfUndoHistoryEntry *) operation_data;
-}
-
-
-inline static void
-delete_undo_history_entry (SgfUndoHistoryEntry *entry, int is_applied,
-			   SgfGameTree *tree)
-{
-  if (sgf_undo_operations[entry->operation_index].free_data) {
-    sgf_undo_operations[entry->operation_index].free_data (entry, is_applied,
-							   tree);
-  }
-
-  utils_free (entry);
-}
-
-
-static void
-begin_undoing_or_redoing (SgfGameTree *tree)
-{
-  tree->node_to_switch_to = NULL;
-  tree->is_modifying_map  = 0;
-  tree->is_modifying_tree = 0;
-
-  if (tree->undo_history) {
-    tree->tree_was_modified = (tree->undo_history->last_applied_entry
-			       != tree->undo_history->unmodified_state_entry);
-  }
-
-  tree->collection_was_modified
-    = sgf_collection_is_modified (tree->collection);
-}
-
-
-static void
-set_is_modifying_map (SgfGameTree *tree)
-{
-  if (!tree->is_modifying_map) {
-    GAME_TREE_DO_NOTIFY (tree, SGF_ABOUT_TO_MODIFY_MAP);
-    tree->is_modifying_map = 1;
-  }
-}
-
-
-static void
-set_is_modifying_tree (SgfGameTree *tree)
-{
-  if (!tree->is_modifying_tree) {
-    GAME_TREE_DO_NOTIFY (tree, SGF_ABOUT_TO_MODIFY_TREE);
-    tree->is_modifying_tree = 1;
-  }
-}
-
-
-static void
-end_undoing_or_redoing (SgfGameTree *tree)
-{
-  SgfNode *node_to_switch_to = tree->node_to_switch_to;
-
-  if (node_to_switch_to) {
-    GAME_TREE_DO_NOTIFY (tree, SGF_ABOUT_TO_CHANGE_CURRENT_NODE);
-
-    if (tree->current_node->parent == node_to_switch_to) {
-      /* A common case, optimize it. */
-      ascend_nodes (tree, 1);
-    }
-    else
-      do_switch_to_given_node (tree, node_to_switch_to);
-
-    GAME_TREE_DO_NOTIFY (tree, SGF_CURRENT_NODE_CHANGED);
-  }
-
-  if (tree->is_modifying_tree)
-    GAME_TREE_DO_NOTIFY (tree, SGF_TREE_MODIFIED);
-  if (tree->is_modifying_map)
-    GAME_TREE_DO_NOTIFY (tree, SGF_MAP_MODIFIED);
-
-  if (tree->undo_history) {
-    if (tree->tree_was_modified
-	&& (tree->undo_history->last_applied_entry
-	    == tree->undo_history->unmodified_state_entry))
-      tree->collection->num_modified_undo_histories--;
-    else if (!tree->tree_was_modified
-	     && (tree->undo_history->last_applied_entry
-		 != tree->undo_history->unmodified_state_entry))
-      tree->collection->num_modified_undo_histories++;
-  }
-
-  if (sgf_collection_is_modified (tree->collection)
-      != tree->collection_was_modified)
-    COLLECTION_DO_NOTIFY (tree->collection);
-}
-
-
-static void
-apply_undo_history_entry (SgfGameTree *tree, SgfUndoHistoryEntry *entry)
-{
-  SgfUndoHistory *history = tree->undo_history;
-
-  if (history) {
-    SgfUndoHistoryEntry *this_entry;
-
-    for (this_entry = (history->last_applied_entry
-		       ? history->last_applied_entry->next
-		       : history->first_entry);
-	 this_entry;) {
-      SgfUndoHistoryEntry *next_entry = this_entry->next;
-
-      delete_undo_history_entry (this_entry, 0, tree);
-      this_entry = next_entry;
-    }
-
-    if (history->last_applied_entry) {
-      history->last_applied_entry->next = entry;
-      entry->previous			= history->last_applied_entry;
-    }
-    else {
-      history->first_entry = entry;
-      entry->previous	   = NULL;
-    }
-
-    history->last_entry		= entry;
-    history->last_applied_entry = entry;
-    entry->next			= NULL;
-    entry->is_last_in_action	= 0;
-  }
-
-  /* Perform the operation. */
-  sgf_undo_operations[entry->operation_index].redo (entry, tree);
-
-  if (!history) {
-    delete_undo_history_entry (entry, 1, tree);
-
-    tree->collection->is_irreversibly_modified = 1;
-  }
-}
-
-
-void
-sgf_operation_add_node (SgfUndoHistoryEntry *entry, SgfGameTree *tree)
-{
-  SgfNode *node	  = ((SgfNodeOperationEntry *) entry)->node;
-
-  set_is_modifying_map (tree);
-  set_is_modifying_tree (tree);
-
-  tree->node_to_switch_to = node;
-
-  * find_node_link (node->parent, node->next) = node;
-  sgf_game_tree_invalidate_map (tree, node->parent);
-}
-
-
-void
-sgf_operation_delete_node (SgfUndoHistoryEntry *entry, SgfGameTree *tree)
-{
-  SgfNode *node	  = ((SgfNodeOperationEntry *) entry)->node;
-  SgfNode *parent = node->parent;
-
-  set_is_modifying_map (tree);
-  set_is_modifying_tree (tree);
-
-  tree->node_to_switch_to = parent;
-
-  * find_node_link (parent, node) = node->next;
-  parent->current_variation = (((SgfNodeOperationEntry *) entry)
-			       ->parent_current_variation);
-
-  sgf_game_tree_invalidate_map (tree, parent);
-}
-
-
-void
-sgf_operation_new_node_free_data (SgfUndoHistoryEntry *entry, int is_applied,
-				  SgfGameTree *tree)
-{
-  if (!is_applied)
-    sgf_node_delete (((SgfNodeOperationEntry *) entry)->node, tree);
-}
-
-
-void
-sgf_operation_delete_node_free_data (SgfUndoHistoryEntry *entry,
-				     int is_applied, SgfGameTree *tree)
-{
-  if (is_applied)
-    sgf_node_delete (((SgfNodeOperationEntry *) entry)->node, tree);
-}
-
-
-void
-sgf_operation_delete_node_children_undo (SgfUndoHistoryEntry *entry,
-					 SgfGameTree *tree)
-{
-  SgfNode *first_child = ((SgfNodeOperationEntry *) entry)->node;
-  SgfNode *parent      = first_child->parent;
-
-  set_is_modifying_map (tree);
-  set_is_modifying_tree (tree);
-
-  tree->node_to_switch_to = parent;
-
-  parent->child = first_child;
-  parent->current_variation
-    = ((SgfNodeOperationEntry *) entry)->parent_current_variation;
-
-  sgf_game_tree_invalidate_map (tree, parent);
-}
-
-
-void
-sgf_operation_delete_node_children_redo (SgfUndoHistoryEntry *entry,
-					 SgfGameTree *tree)
-{
-  SgfNode *parent = ((SgfNodeOperationEntry *) entry)->node->parent;
-
-  set_is_modifying_map (tree);
-  set_is_modifying_tree (tree);
-
-  tree->node_to_switch_to = parent;
-
-  parent->child		    = NULL;
-  parent->current_variation = NULL;
-
-  sgf_game_tree_invalidate_map (tree, parent);
-}
-
-
-void
-sgf_operation_delete_node_children_free_data (SgfUndoHistoryEntry *entry,
-					      int is_applied,
-					      SgfGameTree *tree)
-{
-  if (is_applied) {
-    SgfNode *this_node = ((SgfNodeOperationEntry *) entry)->node;
-
-    do {
-      SgfNode *next_node = this_node->next;
-
-      sgf_node_delete (this_node, tree);
-      this_node = next_node;
-    } while (this_node);
-  }
-}
-
-
-/* Works as both undo and redo handler.  Since we just swap move
- * colors between the node and the undo history entry, it will always
- * do the right thing.
- */
-void
-sgf_operation_change_node_move_color_do_change (SgfUndoHistoryEntry *entry,
-						SgfGameTree *tree)
-{
-  SgfNode *node = ((SgfChangeNodeMoveColorOperationEntry *) entry)->node;
-  int *move_color
-    = & ((SgfChangeNodeMoveColorOperationEntry *) entry)->move_color;
-  int temp_move_color;
-
-  UNUSED (tree);
-
-  temp_move_color  = node->move_color;
-  node->move_color = *move_color;
-  *move_color	   = temp_move_color;
-}
-
-
-void
-sgf_operation_add_property (SgfUndoHistoryEntry *entry, SgfGameTree *tree)
-{
-  SgfNode     *node	= ((SgfPropertyOperationEntry *) entry)->node;
-  SgfProperty *property = ((SgfPropertyOperationEntry *) entry)->property;
-
-  tree->node_to_switch_to = node;
-
-  * find_property_link (node, property->next) = property;
-}
-
-
-void
-sgf_operation_delete_property (SgfUndoHistoryEntry *entry, SgfGameTree *tree)
-{
-  SgfNode     *node	= ((SgfPropertyOperationEntry *) entry)->node;
-  SgfProperty *property = ((SgfPropertyOperationEntry *) entry)->property;
-
-  tree->node_to_switch_to = node;
-
-  * find_property_link (node, property) = property->next;
-}
-
-
-void
-sgf_operation_new_property_free_data (SgfUndoHistoryEntry *entry,
-				      int is_applied, SgfGameTree *tree)
-{
-  if (!is_applied) {
-    sgf_property_delete (((SgfPropertyOperationEntry *) entry)->property,
-			 tree);
-  }
-}
-
-
-void
-sgf_operation_delete_property_free_data (SgfUndoHistoryEntry *entry,
-					 int is_applied, SgfGameTree *tree)
-{
-  if (is_applied) {
-    sgf_property_delete (((SgfPropertyOperationEntry *) entry)->property,
-			 tree);
-  }
-}
-
-
-/* Works as both undo and redo handler.  Since we just swap values
- * between the property and the undo history entry, it will always do
- * the right thing.
- */
-void
-sgf_operation_change_property_do_change (SgfUndoHistoryEntry *entry,
-					 SgfGameTree *tree)
-{
-  SgfChangePropertyOperationEntry *const change_entry
-    = (SgfChangePropertyOperationEntry *) entry;
-  SgfNode     *node	= change_entry->node;
-  SgfProperty *property = change_entry->property;
-  SgfValue    *value	= &change_entry->value;
-
-  tree->node_to_switch_to = node;
-
-  switch (property_info[property->type].value_type) {
-  case SGF_NUMBER:
-  case SGF_DOUBLE:
-  case SGF_COLOR:
-    {
-      int temp_number = property->value.number;
-
-      property->value.number = value->number;
-      value->number	     = temp_number;
-    }
-
-    break;
-
-  case SGF_SIMPLE_TEXT:
-  case SGF_FAKE_SIMPLE_TEXT:
-  case SGF_TEXT:
-    {
-      char *temp_text = property->value.text;
-
-      property->value.text = value->text;
-      value->text	   = temp_text;
-    }
-
-    break;
-
-  case SGF_TYPE_UNKNOWN:
-    {
-      StringList *temp_unknown_value_list = property->value.unknown_value_list;
-
-      property->value.unknown_value_list = value->unknown_value_list;
-      value->unknown_value_list		 = temp_unknown_value_list;
-    }
-
-    break;
-
-  case SGF_LIST_OF_POINT:
-  case SGF_ELIST_OF_POINT:
-    {
-      BoardPositionList *temp_position_list = property->value.position_list;
-
-      property->value.position_list = value->position_list;
-      value->position_list	    = temp_position_list;
-    }
-
-    break;
-
-  case SGF_LIST_OF_VECTOR:
-    {
-      SgfVectorList *temp_vector_list = property->value.vector_list;
-
-      property->value.vector_list = value->vector_list;
-      value->vector_list	  = temp_vector_list;
-    }
-
-    break;
-
-  case SGF_LIST_OF_LABEL:
-    {
-      SgfLabelList *temp_label_list = property->value.label_list;
-
-      property->value.label_list = value->label_list;
-      value->label_list		 = temp_label_list;
-    }
-
-    break;
-
-  case SGF_FIGURE_DESCRIPTION:
-    {
-      SgfFigureDescription *temp_figure = property->value.figure;
-
-      property->value.figure = value->figure;
-      value->figure	     = temp_figure;
-    }
-
-    break;
-
-  case SGF_REAL:
-  case SGF_NONE:
-  case SGF_NOT_STORED:
-    assert (0);
-  };
-}
-
-
-void
-sgf_operation_change_property_free_data (SgfUndoHistoryEntry *entry,
-					 int is_applied, SgfGameTree *tree)
-{
-  SgfProperty *property
-    = ((SgfChangePropertyOperationEntry *) entry)->property;
-  SgfValue *value = & ((SgfChangePropertyOperationEntry *) entry)->value;
-
-  UNUSED (tree);
-  UNUSED (is_applied);
-
-  /* We free the value unconditionally: if the entry has been undone,
-   * it contains the new value, else---the original.
-   */
-  sgf_property_free_value (property_info[property->type].value_type, value);
-}
-
-
-#if SGF_REAL_VALUES_ALLOCATED_SEPARATELY
-
-/* Works as both undo and redo handler.  Since we just swap values
- * between the property and the undo history entry, it will always do
- * the right thing.
- */
-void
-sgf_operation_change_real_property_do_change (SgfUndoHistoryEntry *entry,
-					      SgfGameTree *tree)
-{
-  SgfChangeRealPropertyOperationEntry *change_entry
-    = (SgfChangeRealPropertyOperationEntry *) entry;
-  SgfNode     *node	= change_entry->node;
-  SgfProperty *property = change_entry->property;
-  double temp_value;
-
-  tree->node_to_switch_to = node;
-
-  temp_value		= *property->value.real;
-  *property->value.real = change_entry->value;
-  change_entry->value	= temp_value;
-}
-
-#endif
-
-
-inline static SgfNode **
-find_node_link (SgfNode *parent, const SgfNode *next)
-{
-  SgfNode **link = &parent->child;
-
-  while (*link != next) {
-    assert (*link);
-    link = & (*link)->next;
-  }
-
-  return link;
-}
-
-
-inline static SgfProperty **
-find_property_link (SgfNode *node, const SgfProperty *next)
-{
-  SgfProperty **link = &node->properties;
-
-  while (*link != next) {
-    assert (*link);
-    link = & (*link)->next;
-  }
-
-  return link;
-}
 
 
 /*
