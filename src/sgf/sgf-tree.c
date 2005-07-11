@@ -170,6 +170,8 @@ sgf_game_tree_new (void)
   tree->board_state	      = NULL;
 
   tree->undo_history	      = NULL;
+  tree->undo_history_list     = NULL;
+
   tree->undo_operation_level  = 0;
 
   tree->char_set	      = NULL;
@@ -238,6 +240,8 @@ sgf_game_tree_new_with_root (Game game, int board_width, int board_height,
 void
 sgf_game_tree_delete (SgfGameTree *tree)
 {
+  SgfUndoHistory *undo_history;
+
   assert (tree);
 
   if (tree->notification_callback)
@@ -245,8 +249,13 @@ sgf_game_tree_delete (SgfGameTree *tree)
 
   sgf_game_tree_invalidate_map (tree, NULL);
 
-  if (tree->undo_history)
-    sgf_undo_history_delete_dont_free_data (tree->undo_history);
+  undo_history = tree->undo_history_list;
+  while (undo_history) {
+    SgfUndoHistory *next_undo_history = undo_history->next;
+
+    sgf_undo_history_delete_dont_free_data (undo_history);
+    undo_history = next_undo_history;
+  }
 
 #if ENABLE_MEMORY_POOLS
 
@@ -371,7 +380,7 @@ sgf_game_tree_duplicate_with_nodes (const SgfGameTree *tree)
 }
 
 
-/* Get the ``first'' node in the `tree' in traversing sense.  This
+/* Get the ``first'' node in the `tree' in traversing sense.  This is
  * always the root of the tree, but the caller should not know this.
  *
  * Trees are traversed forward in this order:
