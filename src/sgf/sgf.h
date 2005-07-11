@@ -113,6 +113,9 @@ typedef struct _SgfBoardState		SgfBoardState;
 typedef struct _SgfUndoHistoryEntry	SgfUndoHistoryEntry;
 typedef struct _SgfUndoHistory		SgfUndoHistory;
 
+typedef void (* SgfUndoHistoryNotificationCallback)
+  (SgfUndoHistory *undo_history, void *user_data);
+
 typedef struct _SgfGameTreeMapData	SgfGameTreeMapData;
 typedef struct _SgfGameTreeMapLine	SgfGameTreeMapLine;
 typedef struct _SgfGameTree		SgfGameTree;
@@ -312,6 +315,11 @@ struct _SgfUndoHistory {
   SgfUndoHistoryEntry	 *last_entry;
   SgfUndoHistoryEntry	 *last_applied_entry;
   SgfUndoHistoryEntry	 *unmodified_state_entry;
+
+  SgfUndoHistory	 *next;
+
+  SgfUndoHistoryNotificationCallback  notification_callback;
+  void			 *user_data;
 };
 
 
@@ -349,17 +357,24 @@ struct _SgfGameTree {
   Board			 *board;
   SgfBoardState		 *board_state;
 
+  /* The currently active undo history. */
   SgfUndoHistory	 *undo_history;
+
+  /* Head of the undo history list for this tree. */
+  SgfUndoHistory	 *undo_history_list;
 
   /* These fields are related to the undo history, but are used even
    * if there is no active history.
    */
   int			  undo_operation_level;
   SgfNode		 *node_to_switch_to;
+
   unsigned int		  is_modifying_map  : 1;
   unsigned int		  is_modifying_tree : 1;
   unsigned int		  tree_was_modified : 1;
   unsigned int		  collection_was_modified : 1;
+  unsigned int		  could_undo : 1;
+  unsigned int		  could_redo : 1;
 
   int			  file_format;
   char			 *char_set;
@@ -836,21 +851,6 @@ int	      sgf_utils_delete_property (SgfNode *node, SgfGameTree *tree,
 					 SgfType type);
 
 
-#define sgf_utils_can_undo(tree)					\
-  ((tree)->undo_history && (tree)->undo_history->last_applied_entry)
-
-#define sgf_utils_can_redo(tree)					\
-  ((tree)->undo_history							\
-   && ((tree)->undo_history->last_applied_entry				\
-       != (tree)->undo_history->last_entry))
-
-void	      sgf_utils_begin_action (SgfGameTree *tree);
-void	      sgf_utils_end_action (SgfGameTree *tree);
-
-void	      sgf_utils_undo (SgfGameTree *tree);
-void	      sgf_utils_redo (SgfGameTree *tree);
-
-
 void	      sgf_utils_set_node_is_collapsed (SgfGameTree *tree,
 					       SgfNode *node,
 					       int is_collapsed);
@@ -871,10 +871,32 @@ void	      sgf_utils_add_free_handicap_stones
 char *	      sgf_utils_normalize_text (const char *text, int is_simple_text);
 
 
-SgfUndoHistory *
-	      sgf_undo_history_new (void);
-void	      sgf_undo_history_delete (SgfUndoHistory *history,
-				       SgfGameTree *associated_tree);
+
+/* `sgf-undo.c' global functions. */
+
+SgfUndoHistory *  sgf_undo_history_new (SgfGameTree *tree);
+void		  sgf_undo_history_delete (SgfUndoHistory *history,
+					   SgfGameTree *associated_tree);
+
+void		  sgf_undo_history_set_notification_callback
+		    (SgfUndoHistory *history,
+		     SgfUndoHistoryNotificationCallback notification_callback,
+		     void *user_data);
+
+void		  sgf_utils_begin_action (SgfGameTree *tree);
+void		  sgf_utils_end_action (SgfGameTree *tree);
+
+
+#define sgf_utils_can_undo(tree)					\
+  ((tree)->undo_history && (tree)->undo_history->last_applied_entry)
+
+#define sgf_utils_can_redo(tree)					\
+  ((tree)->undo_history							\
+   && ((tree)->undo_history->last_applied_entry				\
+       != (tree)->undo_history->last_entry))
+
+void		  sgf_utils_undo (SgfGameTree *tree);
+void		  sgf_utils_redo (SgfGameTree *tree);
 
 
 

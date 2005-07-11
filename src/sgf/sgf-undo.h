@@ -49,6 +49,54 @@ struct _SgfUndoHistoryEntry {
 };
 
 
+typedef struct _SgfNodeOperationEntry		SgfNodeOperationEntry;
+typedef struct _SgfChangeNodeMoveColorOperationEntry
+		SgfChangeNodeMoveColorOperationEntry;
+
+typedef struct _SgfPropertyOperationEntry	SgfPropertyOperationEntry;
+typedef struct _SgfChangePropertyOperationEntry
+		SgfChangePropertyOperationEntry;
+typedef struct _SgfChangeRealPropertyOperationEntry
+		SgfChangeRealPropertyOperationEntry;
+
+struct _SgfNodeOperationEntry {
+  SgfUndoHistoryEntry	entry;
+
+  SgfNode	       *node;
+  SgfNode	       *parent_current_variation;
+};
+
+struct _SgfChangeNodeMoveColorOperationEntry {
+  SgfUndoHistoryEntry	entry;
+
+  SgfNode	       *node;
+  int			move_color;
+};
+
+struct _SgfPropertyOperationEntry {
+  SgfUndoHistoryEntry	entry;
+
+  SgfNode	       *node;
+  SgfProperty	       *property;
+};
+
+struct _SgfChangePropertyOperationEntry {
+  SgfUndoHistoryEntry	entry;
+
+  SgfNode	       *node;
+  SgfProperty	       *property;
+  SgfValue		value;
+};
+
+struct _SgfChangeRealPropertyOperationEntry {
+  SgfUndoHistoryEntry	entry;
+
+  SgfNode	       *node;
+  SgfProperty	       *property;
+  double		value;
+};
+
+
 /* Undo operations. */
 extern const SgfUndoOperationInfo    sgf_undo_operations[];
 
@@ -98,6 +146,29 @@ DECLARE_FREE_DATA_FUNCTION (sgf_operation_change_property_free_data);
 DECLARE_UNDO_OR_REDO_FUNCTION (sgf_operation_change_real_property_do_change);
 
 #endif
+
+
+void		       sgf_utils_apply_undo_history_entry
+			 (SgfGameTree *tree, SgfUndoHistoryEntry *entry);
+
+
+SgfUndoHistoryEntry *  sgf_new_node_undo_history_entry_new (SgfNode *new_node);
+SgfUndoHistoryEntry *  sgf_delete_node_undo_history_entry_new (SgfNode *node);
+SgfUndoHistoryEntry *  sgf_delete_node_children_undo_history_entry_new
+			 (SgfNode *node);
+SgfUndoHistoryEntry *  sgf_change_node_move_color_undo_history_entry_new
+			 (SgfNode *node, int new_move_color);
+
+SgfUndoHistoryEntry *  sgf_new_property_undo_history_entry_new
+			 (SgfGameTree *tree, SgfNode *node, SgfProperty **link,
+			  SgfType type);
+SgfUndoHistoryEntry *  sgf_delete_property_undo_history_entry_new
+			 (SgfNode *node, SgfProperty *property);
+SgfUndoHistoryEntry *  sgf_change_property_undo_history_entry_new
+			 (SgfNode *node, SgfProperty *property);
+SgfUndoHistoryEntry *  sgf_change_real_property_undo_history_entry_new
+			 (SgfNode *node, SgfProperty *property,
+			  double new_value);
 
 
 #endif /* QUARRY_SGF_UNDO_H */
