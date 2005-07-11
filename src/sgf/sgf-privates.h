@@ -46,6 +46,13 @@
 				     (tree)->user_data);		\
   } while (0)
 
+#define UNDO_HISTORY_DO_NOTIFY(history)					\
+  do {									\
+    if ((history)->notification_callback)				\
+      (history)->notification_callback ((history),			\
+					(history)->user_data);		\
+  } while (0)
+
 
 typedef struct _SgfPropertyInfo	SgfPropertyInfo;
 
@@ -70,6 +77,12 @@ extern const SgfPropertyInfo	property_info[];
 /* Defined in `sgf-tree.c' and is only used from `sgf-utils.c'. */
 void		sgf_property_free_value (SgfValueType value_type,
 					 SgfValue *value);
+
+/* Defined in `sgf-utils.c', but also used from `sgf-undo.c'. */
+inline void	sgf_utils_do_switch_to_given_node (SgfGameTree *tree,
+						   SgfNode *node);
+void		sgf_utils_descend_nodes (SgfGameTree *tree, int num_nodes);
+void		sgf_utils_ascend_nodes (SgfGameTree *tree, int num_nodes);
 
 
 #endif /* QUARRY_SGF_PRIVATES_H */
