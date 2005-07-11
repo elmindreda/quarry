@@ -41,6 +41,7 @@
 #include "gtk-file-dialog.h"
 #include "gtk-game-info-dialog.h"
 #include "gtk-goban.h"
+#include "gtk-go-to-named-node-dialog.h"
 #include "gtk-gtp-client-interface.h"
 #include "gtk-help.h"
 #include "gtk-named-vbox.h"
@@ -150,6 +151,8 @@ static void	 leave_game_mode (GtkGobanWindow *goban_window);
 
 static void	 collection_modification_state_changed
 		   (SgfCollection *sgf_collection, void *user_data);
+static void	 undo_or_redo_availability_changed
+		   (SgfUndoHistory *undo_history, void *user_data);
 
 static void	 gtk_goban_window_save (GtkGobanWindow *goban_window,
 					guint callback_action);
@@ -198,6 +201,10 @@ static void	 recenter_sgf_tree_view (GtkGobanWindow *goban_window);
 
 static void	 show_sgf_tree_view_automatically
 		   (GtkGobanWindow *goban_window, const SgfNode *sgf_node);
+
+#ifdef GTK_TYPE_GO_TO_NAMED_NODE_DIALOG
+static void	 show_go_to_named_node_dialog (GtkGobanWindow *goban_window);
+#endif
 
 static void	 show_about_dialog (void);
 static void	 show_help_contents (void);
@@ -701,6 +708,13 @@ gtk_goban_window_init (GtkGobanWindow *goban_window)
     { N_("/Go/Ne_xt Variation"),	"<alt>Down",
       navigate_goban,			GOBAN_NAVIGATE_NEXT_VARIATION,
       "<StockItem>",			GTK_STOCK_GO_DOWN },
+
+#ifdef GTK_TYPE_GO_TO_NAMED_NODE_DIALOG
+    { N_("/Go/"), NULL, NULL, 0, "<Separator>" },
+    { N_("/Go/_Go to Named Node..."),	NULL,
+      show_go_to_named_node_dialog,	0,
+      "<StockItem>",			GTK_STOCK_JUMP_TO },
+#endif
 
 
     { N_("/_Help"), NULL, NULL, 0, "<Branch>" },
@@ -1290,8 +1304,14 @@ gtk_goban_window_enter_game_record_mode (GtkGobanWindow *goban_window)
 {
   assert (GTK_IS_GOBAN_WINDOW (goban_window));
 
-  if (!goban_window->current_tree->undo_history)
-    goban_window->current_tree->undo_history = sgf_undo_history_new ();
+  if (!goban_window->current_tree->undo_history) {
+    goban_window->current_tree->undo_history
+      = sgf_undo_history_new (goban_window->current_tree);
+
+    sgf_undo_history_set_notification_callback
+      (goban_window->current_tree->undo_history,
+       undo_or_redo_availability_changed, goban_window);
+  }
 }
 
 
@@ -1447,7 +1467,7 @@ static void
 collection_modification_state_changed (SgfCollection *sgf_collection,
 				       void *user_data)
 {
-  GtkGobanWindow *goban_window = (GtkGobanWindow *) user_data;
+  GtkGobanWindow *goban_window = GTK_GOBAN_WINDOW (user_data);
   int is_modified = sgf_collection_is_modified (sgf_collection);
 
   gtk_utils_set_menu_items_sensitive (goban_window->item_factory,
@@ -1457,6 +1477,31 @@ collection_modification_state_changed (SgfCollection *sgf_collection,
 					   &toolbar_save, NULL);
 
   update_window_title (goban_window);
+}
+
+
+static void
+undo_or_redo_availability_changed (SgfUndoHistory *undo_history,
+				   void *user_data)
+{
+  GtkGobanWindow *goban_window = GTK_GOBAN_WINDOW (user_data);
+
+  gboolean can_undo = sgf_utils_can_undo (goban_window->current_tree);
+  gboolean can_redo = sgf_utils_can_redo (goban_window->current_tree);
+
+  UNUSED (undo_history);
+
+  gtk_utils_set_menu_items_sensitive (goban_window->item_factory, can_undo,
+				      "/Edit/Undo", NULL);
+  gtk_utils_set_toolbar_buttons_sensitive (goban_window->editing_toolbar,
+					   can_undo,
+					   &editing_toolbar_undo, NULL);
+
+  gtk_utils_set_menu_items_sensitive (goban_window->item_factory, can_redo,
+				      "/Edit/Redo", NULL);
+  gtk_utils_set_toolbar_buttons_sensitive (goban_window->editing_toolbar,
+					   can_redo,
+					   &editing_toolbar_redo, NULL);
 }
 
 
@@ -2673,6 +2718,41 @@ show_sgf_tree_view_automatically (GtkGobanWindow *goban_window,
 }
 
 
+#ifdef GTK_TYPE_GO_TO_NAMED_NODE_DIALOG
+
+
+static void
+show_go_to_named_node_dialog (GtkGobanWindow *goban_window)
+{
+  GtkWidget *dialog
+    = gtk_go_to_named_node_dialog_new (goban_window->current_tree);
+
+  if (dialog == NULL) {
+    dialog = gtk_utils_create_message_dialog (NULL, GTK_STOCK_DIALOG_INFO,
+					      (GTK_UTILS_BUTTONS_OK
+					       | GTK_UTILS_DONT_SHOW
+					       | GTK_UTILS_NON_MODAL_WINDOW),
+					      _("Sorry, there are no named "
+						"nodes in this game tree."),
+					      NULL);
+  }
+
+  gtk_window_set_transient_for (GTK_WINDOW (dialog),
+				GTK_WINDOW (goban_window));
+
+  if (gtk_dialog_run (GTK_DIALOG (dialog)) == GTK_RESPONSE_OK
+      && GTK_IS_GO_TO_NAMED_NODE_DIALOG (dialog)) {
+    switch_to_given_node (goban_window,
+			  GTK_GO_TO_NAMED_NODE_DIALOG (dialog)->selected_node);
+  }
+
+  gtk_widget_destroy (dialog);
+}
+
+
+#endif /* GTK_TYPE_GO_TO_NAMED_NODE_DIALOG */
+
+
 static void
 show_about_dialog (void)
 {
@@ -3000,6 +3080,7 @@ set_current_tree (GtkGobanWindow *goban_window, SgfGameTree *sgf_tree)
 
   update_game_information (goban_window);
   update_children_for_new_node (goban_window);
+  undo_or_redo_availability_changed (NULL, goban_window);
 
   gtk_sgf_tree_view_set_sgf_tree (goban_window->sgf_tree_view, sgf_tree);
 
@@ -3210,6 +3291,8 @@ set_goban_signal_handlers (GtkGobanWindow *goban_window,
 			    pointer_moved_handler, goban_window);
   g_signal_connect_swapped (goban_window->goban, "goban-clicked",
 			    goban_clicked_handler, goban_window);
+
+  gtk_goban_force_feedback_poll (goban_window->goban);
 }
 
 
@@ -4282,9 +4365,6 @@ update_commands_sensitivity (const GtkGobanWindow *goban_window)
   const SgfGameTree *current_tree = goban_window->current_tree;
   const SgfNode *current_node	  = current_tree->current_node;
 
-  gboolean can_undo = sgf_utils_can_undo (current_tree);
-  gboolean can_redo = sgf_utils_can_redo (current_tree);
-
   gboolean pass_sensitive   = (goban_window->board->game == GAME_GO
 			       && USER_CAN_PLAY_MOVES (goban_window)
 			       && !IS_IN_SPECIAL_MODE (goban_window));
@@ -4304,18 +4384,6 @@ update_commands_sensitivity (const GtkGobanWindow *goban_window)
 				       && !IS_IN_SPECIAL_MODE (goban_window));
 
   /* "Edit" submenu. */
-  gtk_utils_set_menu_items_sensitive (goban_window->item_factory, can_undo,
-				      "/Edit/Undo", NULL);
-  gtk_utils_set_toolbar_buttons_sensitive (goban_window->editing_toolbar,
-					   can_undo,
-					   &editing_toolbar_undo, NULL);
-
-  gtk_utils_set_menu_items_sensitive (goban_window->item_factory, can_redo,
-				      "/Edit/Redo", NULL);
-  gtk_utils_set_toolbar_buttons_sensitive (goban_window->editing_toolbar,
-					   can_redo,
-					   &editing_toolbar_redo, NULL);
-
   gtk_utils_set_menu_items_sensitive (goban_window->item_factory,
 				      (!goban_window->in_game_mode
 				       && current_node->parent != NULL),
