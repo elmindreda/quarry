@@ -76,6 +76,7 @@ libguigtk_a_SOURCES =			\
 	gtk-goban.c			\
 	gtk-goban-base.c		\
 	gtk-goban-window.c		\
+	gtk-go-to-named-node-dialog.c	\
 	gtk-gtp-client-interface.c	\
 	gtk-help.c			\
 	gtk-named-vbox.c		\
@@ -107,6 +108,7 @@ libguigtk_a_SOURCES =			\
 	gtk-goban.h			\
 	gtk-goban-base.h		\
 	gtk-goban-window.h		\
+	gtk-go-to-named-node-dialog.h	\
 	gtk-gtp-client-interface.h	\
 	gtk-help.h			\
 	gtk-named-vbox.h		\

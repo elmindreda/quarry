@@ -227,6 +227,7 @@ libguigtk_a_SOURCES = \
 	gtk-goban.c			\
 	gtk-goban-base.c		\
 	gtk-goban-window.c		\
+	gtk-go-to-named-node-dialog.c	\
 	gtk-gtp-client-interface.c	\
 	gtk-help.c			\
 	gtk-named-vbox.c		\
@@ -258,6 +259,7 @@ libguigtk_a_SOURCES = \
 	gtk-goban.h			\
 	gtk-goban-base.h		\
 	gtk-goban-window.h		\
+	gtk-go-to-named-node-dialog.h	\
 	gtk-gtp-client-interface.h	\
 	gtk-help.h			\
 	gtk-named-vbox.h		\
@@ -326,9 +328,10 @@ am_libguigtk_a_OBJECTS = gtk-assistant.$(OBJEXT) gtk-clock.$(OBJEXT) \
 	gtk-freezable-spin-button.$(OBJEXT) \
 	gtk-game-info-dialog.$(OBJEXT) gtk-games.$(OBJEXT) \
 	gtk-goban.$(OBJEXT) gtk-goban-base.$(OBJEXT) \
-	gtk-goban-window.$(OBJEXT) gtk-gtp-client-interface.$(OBJEXT) \
-	gtk-help.$(OBJEXT) gtk-named-vbox.$(OBJEXT) \
-	gtk-new-game-dialog.$(OBJEXT) \
+	gtk-goban-window.$(OBJEXT) \
+	gtk-go-to-named-node-dialog.$(OBJEXT) \
+	gtk-gtp-client-interface.$(OBJEXT) gtk-help.$(OBJEXT) \
+	gtk-named-vbox.$(OBJEXT) gtk-new-game-dialog.$(OBJEXT) \
 	gtk-new-game-record-dialog.$(OBJEXT) \
 	gtk-parser-interface.$(OBJEXT) gtk-preferences.$(OBJEXT) \
 	gtk-progress-dialog.$(OBJEXT) gtk-qbox.$(OBJEXT) \
@@ -356,6 +359,7 @@ am__depfiles_maybe = depfiles
 @AMDEP_TRUE@	./$(DEPDIR)/gtk-freezable-spin-button.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/gtk-game-info-dialog.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/gtk-games.Po \
+@AMDEP_TRUE@	./$(DEPDIR)/gtk-go-to-named-node-dialog.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/gtk-goban-base.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/gtk-goban-window.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/gtk-goban.Po \
@@ -422,6 +426,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gtk-freezable-spin-button.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gtk-game-info-dialog.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gtk-games.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gtk-go-to-named-node-dialog.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gtk-goban-base.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gtk-goban-window.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gtk-goban.Po@am__quote@
