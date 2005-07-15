@@ -1,0 +1,81 @@
+		      LANGUAGE IS NOT ONLY WORDS
+
+Please, consider the next paragraph a request and not a requirement.
+
+Different language means not only different words and grammatical
+rules.  It can have different rules of capitalization, punctuation and
+typography.  I encourage you to use capitalization natural for your
+language, appropriate quotes (« » or “ ” or „ “ or some else?), put
+spaces before colons if your typography, like French, requires this,
+and so on.  Of course, this not only applies to Quarry, but every
+translation or writing you do in your language.
+
+
+		      CONTEXT-BASED TRANSLATION
+
+Quarry uses a feature known as `context-based translation'.  Sometimes
+multiple places in the program need strings that are the same in
+English, but not necessarily the same in other languages.  There are
+many good reasons for this.  For instance, a word can be polysemantic
+in English and different meanings can have different corresponding
+words in other languages.  Another reason is morphology.  Many
+languages are packed with genders, grammatical cases and conjugations
+(think of single/plural form in English, but with more cases.)  A
+single word in them can be written in many different forms depending
+on grammatical context.
+
+In such cases we prepend the string to be translated with context
+information, which is just a short string, briefly describing the
+context in which the string will be used.  Note that you MUST NOT
+translate the context information: it is only for your information, to
+help you decide how to translate the message itself.
+
+Context information is separated from the message with a bar ('|')
+character.  When translating such message, discard everything before
+the bar and the bar itself and translate only the message after the
+bar.  For instance, consider this entries from `ru.po':
+
+      msgid "handicap|Not set"
+      msgstr "Не указан"
+
+      msgid "komi|Not set"
+      msgstr "Не указано"
+
+In this case the translations differ because words `handicap' and
+`komi' have different genders in Russian and this influences the form
+of the verb `указывать', a rough translation of `set'.  Note also how
+the context information is omitted from the translations.
+
+If you come across a message that is used more than once in Quarry and
+has to be translated into your language in different ways, don't
+hesitate to ask for adding of context information in the source code
+at <quarry-dev@gna.org>.
+
+
+		       HOW IT WORKS INTERNALLY
+
+This is not needed for translation of messages, but in case you are
+curious.  Internally, all strings meant for context-based translation
+are passed through Q_() macro, which is actually just a shortcut for
+utils_gettext_with_context() function.  The function invokes gettext()
+and analyzes the result.  If it is different from the string to be
+translated, we are done, since the translator is supposed to remove
+context information.  If it is the same, then either there is no
+appropriate translation or user's locale doesn't require translation.
+In this case utils_gettext_with_context() simply skips context
+information by advancing the pointer to string until it finds the bar
+character.  Actually, this explanation is longer than the code of the
+function, so you can just look at it in `src/utils/utils.c'.
+
+The idea of context-based translation was taken from GLib, where it
+came from gettext documentation (sgettext() function in
+documentation.)  We use a custom function, because not all Quarry
+modules use GLib and because GLib's analog only appeared in version
+2.4, while we currently support everything starting with 2.0.
+Besides, the idea and the function are really simple.
+
+
+
+Local Variables:
+coding: utf-8
+End:
