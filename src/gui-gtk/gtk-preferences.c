@@ -303,6 +303,7 @@ static GtkWidget	 *move_gtp_engine_down;
 static GtkWidget	 *gtp_engine_info;
 static GtkLabel		 *gtp_engine_name;
 static GtkLabel		 *gtp_engine_version;
+static GtkLabel		 *gtp_engine_supported_games_label;
 static GtkLabel		 *gtp_engine_supported_games;
 static GtkLabel		 *gtp_engine_command_line;
 static GtkLabel		 *gtp_engine_additional_info;
@@ -448,13 +449,13 @@ gtk_preferences_dialog_present (gpointer page_to_select)
       GTK_STOCK_SELECT_COLOR,	N_("<b>Board Appearance</b>"),
       NULL,			NULL },
     { create_go_board_appearance_page,
-      NULL,			N_("Go"),
+      NULL,			NULL,
       GTK_STOCK_SELECT_COLOR,	N_("Go Board Appearance") },
     { create_amazons_board_appearance_page,
-      NULL,			N_("Amazons"),
+      NULL,			NULL,
       GTK_STOCK_SELECT_COLOR,	N_("Amazons Board Appearance") },
     { create_othello_board_appearance_page,
-      NULL,			N_("Othello"),
+      NULL,			NULL,
       GTK_STOCK_SELECT_COLOR,	N_("Othello Board Appearance") }
   };
 
@@ -483,6 +484,7 @@ gtk_preferences_dialog_present (gpointer page_to_select)
     GtkWidget *hbox;
     GtkTreeIter category_parent;
     int page_index;
+    int game_index;
 
     preferences_dialog = GTK_WINDOW (dialog);
     gtk_control_center_window_created (preferences_dialog);
@@ -534,13 +536,14 @@ gtk_preferences_dialog_present (gpointer page_to_select)
 		      G_CALLBACK (gtk_preferences_dialog_change_page),
 		      notebook);
 
-    for (k = 0, page_index = 0;
+    for (k = 0, page_index = 0, game_index = 0;
 	 k < (sizeof preferences_dialog_categories
 	      / sizeof (PreferencesDialogCategory));
 	 k++) {
       GtkTreeIter iterator;
       const PreferencesDialogCategory *category_data
 	= preferences_dialog_categories + k;
+      const gchar *tree_title;
       int this_page_index;
 
       if (category_data->create_page) {
@@ -560,12 +563,19 @@ gtk_preferences_dialog_present (gpointer page_to_select)
 	this_page_index = -1;
       }
 
+      if (category_data->tree_title)
+	tree_title = _(category_data->tree_title);
+      else {
+	tree_title
+	  = gtk_games_get_capitalized_name (index_to_game[game_index++]);
+      }
+
       gtk_tree_store_set (categories, &iterator,
 			  CATEGORIES_PAGE_INDEX, this_page_index,
 #if GTK_2_2_OR_LATER
 			  CATEGORIES_ICON, category_data->tree_icon_stock_id,
 #endif
-			  CATEGORIES_TEXT, _(category_data->tree_title), -1);
+			  CATEGORIES_TEXT, tree_title, -1);
     }
 
     gtk_tree_view_expand_all (category_tree_view);
@@ -850,8 +860,9 @@ create_gtp_engines_page (void)
 					info_label, GTK_UTILS_PACK_DEFAULT,
 					NULL);
 
-  label
-    = gtk_utils_create_left_aligned_label (_("Supported game(s):"));
+  label = gtk_utils_create_left_aligned_label (_("Supported game:"));
+  gtp_engine_supported_games_label = GTK_LABEL (label);
+
   info_label		     = gtk_utils_create_left_aligned_label (NULL);
   gtp_engine_supported_games = GTK_LABEL (info_label);
   gtk_label_set_selectable (gtp_engine_supported_games, TRUE);
@@ -1023,8 +1034,9 @@ create_game_tree_page (void)
 static GtkWidget *
 create_saving_sgf_page (void)
 {
-  static const gchar *radio_labels[2] = { N_("Always use UTF-8 (recommended)"),
-					  N_("Preserve original encoding") };
+  static const gchar *radio_labels[2]
+    = { N_("Always use _UTF-8 (recommended)"),
+	N_("Preserve _original encoding") };
   static const gchar *hint
     = N_("Note that many characters cannot be represented in non-UTF-8 "
 	 "encodings and thus some information may be lost if you use them. "
@@ -1534,13 +1546,35 @@ gtk_preferences_dialog_update_gtp_engine_info (GtkTreeSelection *selection)
   GtkTreeIter iterator;
   GtpEngineListItem *engine_data = NULL;
   char *supported_games = NULL;
+  gint num_supported_games = 0;
 
   if (gtk_tree_selection_get_selected (selection, &gtp_engines_tree_model,
 				       &iterator)) {
+    StringListItem *item;
+
     gtk_tree_model_get (gtp_engines_tree_model, &iterator,
 			ENGINES_DATA, &engine_data, -1);
-    supported_games = string_list_implode (&engine_data->supported_games,
-					   ", ");
+
+    for (item = engine_data->supported_games.first; item;
+	 item = item->next, num_supported_games++) {
+      Game game = game_from_game_name (item->text, 1);
+
+      if (supported_games)
+	supported_games = utils_cat_string (supported_games, ", ");
+
+      if (game != GAME_INVALID) {
+	if (supported_games) {
+	  supported_games = utils_cat_string (supported_games,
+					      _(game_info[game].name));
+	}
+	else {
+	  supported_games
+	    = utils_duplicate_string (gtk_games_get_capitalized_name (game));
+	}
+      }
+      else
+	supported_games = utils_cat_string (supported_games, item->text);
+    }
   }
 
   gtk_widget_set_sensitive (modify_gtp_engine, engine_data != NULL);
@@ -1561,7 +1595,12 @@ gtk_preferences_dialog_update_gtp_engine_info (GtkTreeSelection *selection)
 		      (engine_data ? engine_data->name : NULL));
   gtk_label_set_text (gtp_engine_version,
 		      (engine_data ? engine_data->version : NULL));
+
+  gtk_label_set_text (gtp_engine_supported_games_label,
+		      (num_supported_games <= 1
+		       ? _("Supported game:") : _("Supported games:")));
   gtk_label_set_text (gtp_engine_supported_games, supported_games);
+
   gtk_label_set_text (gtp_engine_command_line,
 		      (engine_data ? engine_data->command_line : NULL));
   gtk_label_set_text (gtp_engine_additional_info,
