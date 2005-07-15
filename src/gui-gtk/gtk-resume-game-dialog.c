@@ -115,7 +115,7 @@ analyze_game_to_be_resumed (SgfCollection *sgf_collection,
 				     _("The game stored in file `%s' (%s) "
 				       "is not supported by Quarry."),
 				     filename_in_utf8,
-				     game_info[sgf_tree->game].name);
+				     _(game_info[sgf_tree->game].name));
     g_free (filename_in_utf8);
 
     sgf_collection_delete (sgf_collection);
@@ -228,8 +228,8 @@ gtk_resume_game_dialog_present (SgfCollection *sgf_collection,
   game_information_box = GTK_BOX (game_information_vbox);
 
   field_name_label  = gtk_utils_create_left_aligned_label (_("Game:"));
-  field_value_label
-    = gtk_utils_create_left_aligned_label (game_info[sgf_tree->game].name);
+  field_value_label = (gtk_utils_create_left_aligned_label
+		       (gtk_games_get_capitalized_name (sgf_tree->game)));
 
   hbox1 = gtk_utils_pack_in_box (GTK_TYPE_HBOX, QUARRY_SPACING,
 				 field_name_label, GTK_UTILS_FILL,
@@ -255,18 +255,19 @@ gtk_resume_game_dialog_present (SgfCollection *sgf_collection,
 				  NULL);
 
     field_name_label  = gtk_utils_create_left_aligned_label (_("Handicap:"));
-    field_value_label = gtk_utils_create_left_aligned_label (handicap
-							     ? handicap
-							     : _("Not set"));
+    field_value_label
+      = gtk_utils_create_left_aligned_label (handicap
+					     ? handicap
+					     : Q_("handicap|Not set"));
 
     hbox1 = gtk_utils_pack_in_box (GTK_TYPE_HBOX, QUARRY_SPACING,
 				   field_name_label, GTK_UTILS_FILL,
 				   field_value_label, GTK_UTILS_FILL, NULL);
 
     field_name_label  = gtk_utils_create_left_aligned_label (_("Komi:"));
-    field_value_label = gtk_utils_create_left_aligned_label (komi
-							     ? komi
-							     : _("Not set"));
+    field_value_label
+      = gtk_utils_create_left_aligned_label (komi
+					     ? komi : Q_("komi|Not set"));
 
     hbox2 = gtk_utils_pack_in_box (GTK_TYPE_HBOX, QUARRY_SPACING,
 				   field_name_label, GTK_UTILS_FILL,
