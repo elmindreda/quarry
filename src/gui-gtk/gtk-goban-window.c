@@ -353,6 +353,8 @@ static void	 player_is_out_of_time (GtkClock *clock,
 static void	 undo_operation (GtkGobanWindow *goban_window);
 static void	 redo_operation (GtkGobanWindow *goban_window);
 
+static void	 append_empty_variation (GtkGobanWindow *goban_window);
+
 static void	 delete_current_node (GtkGobanWindow *goban_window);
 static void	 delete_current_node_children (GtkGobanWindow *goban_window);
 
@@ -575,6 +577,7 @@ gtk_goban_window_init (GtkGobanWindow *goban_window)
       "<Item>" },
     { N_("/Edit/"), NULL, NULL, 0, "<Separator>" },
 
+
     { N_("/Edit/_Tools"), NULL, NULL, 0, "<Branch>" },
     { N_("/Edit/Tools/_Move Tool"),	"<ctrl>M",
       activate_move_tool,		0,
@@ -604,6 +607,11 @@ gtk_goban_window_init (GtkGobanWindow *goban_window)
     { N_("/Edit/Tools/Scori_ng Tool"),	NULL,
       activate_scoring_tool,		0,
       "/Edit/Tools/Selected Markup" },
+
+
+    { N_("/Edit/Add _Empty Node"),	NULL,
+      append_empty_variation,		0,
+      "<Item>" },
     { N_("/Edit/"), NULL, NULL, 0, "<Separator>" },
 
 
@@ -738,7 +746,7 @@ gtk_goban_window_init (GtkGobanWindow *goban_window)
     { N_("/Selected Markup"),	"<ctrl>5",	NULL, 0, "<Item>" },
     { "/", NULL, NULL, 0, "<Separator>" },
 
-    { N_("/Scori_ng Tool"),	NULL,		NULL, 0, "<Item>" },
+    { N_("/Scoring Tool"),	NULL,		NULL, 0, "<Item>" },
   };
 
   GtkWidget *goban;
@@ -831,13 +839,13 @@ gtk_goban_window_init (GtkGobanWindow *goban_window)
 			 GTK_JUSTIFY_CENTER);
 
   /* Game action buttons: "Pass" and "Resign". */
-  goban_window->pass_button = gtk_button_new_with_label ("Pass");
+  goban_window->pass_button = gtk_button_new_with_label (_("Pass"));
   GTK_WIDGET_UNSET_FLAGS (goban_window->pass_button, GTK_CAN_FOCUS);
 
   g_signal_connect_swapped (goban_window->pass_button, "clicked",
 			    G_CALLBACK (play_pass_move), goban_window);
 
-  goban_window->resign_button = gtk_button_new_with_label ("Resign");
+  goban_window->resign_button = gtk_button_new_with_label (_("Resign"));
   GTK_WIDGET_UNSET_FLAGS (goban_window->resign_button, GTK_CAN_FOCUS);
 
   g_signal_connect_swapped (goban_window->resign_button, "clicked",
@@ -1285,7 +1293,8 @@ gtk_goban_window_finalize (GObject *object)
 static void
 force_minimal_width (GtkWidget *widget, GtkRequisition *requisition)
 {
-  /* Different languages might have longer words. */
+  /* TRANSLATORS: Width of this string in default font is used to
+     determine the minimal width of the right board window side. */
   static const gchar *string = N_("A good width for the right side to have.");
 
   PangoLayout *layout = gtk_widget_create_pango_layout (widget, _(string));
@@ -1345,8 +1354,12 @@ gtk_goban_window_enter_game_mode (GtkGobanWindow *goban_window,
     goban_window->num_handicap_stones_placed = 0;
 
     if (!black_player) {
-      gchar *hint = g_strdup_printf (_("Please set up %d (or less)\n"
-				       "stones of free handicap"),
+      /* TRANSLATORS: It can never be 1 stone, always at least 2. */
+      gchar *hint = g_strdup_printf (ngettext ("Please set up %d (or less)\n"
+					       "stone of free handicap",
+					       "Please set up %d (or less)\n"
+					       "stones of free handicap",
+					       handicap),
 				     handicap);
 
       gtk_widget_set_sensitive (goban_window->done_button, FALSE);
@@ -1686,9 +1699,9 @@ show_find_dialog (GtkGobanWindow *goban_window)
       = gtk_dialog_new_with_buttons (_("Find"), GTK_WINDOW (goban_window),
 				     GTK_DIALOG_DESTROY_WITH_PARENT,
 				     GTK_STOCK_CLOSE, GTK_RESPONSE_CANCEL,
-				     QUARRY_STOCK_PREVIOUS,
+				     QUARRY_STOCK_FIND_PREVIOUS,
 				     GTK_GOBAN_WINDOW_FIND_PREVIOUS,
-				     QUARRY_STOCK_NEXT,
+				     QUARRY_STOCK_FIND_NEXT,
 				     GTK_GOBAN_WINDOW_FIND_NEXT, NULL);
     GtkWidget *entry;
     GtkWidget *label;
@@ -2732,9 +2745,9 @@ show_go_to_named_node_dialog (GtkGobanWindow *goban_window)
 					      (GTK_UTILS_BUTTONS_OK
 					       | GTK_UTILS_DONT_SHOW
 					       | GTK_UTILS_NON_MODAL_WINDOW),
+					      NULL,
 					      _("Sorry, there are no named "
-						"nodes in this game tree."),
-					      NULL);
+						"nodes in this game tree."));
   }
 
   gtk_window_set_transient_for (GTK_WINDOW (dialog),
@@ -4269,9 +4282,13 @@ update_move_information (const GtkGobanWindow *goban_window)
 			goban_window->board->move_number);
     }
 
-    length += sgf_utils_format_node_move (goban_window->current_tree,
-					  move_node, buffer + length,
-					  _("B "), _("W "), _("pass"));
+    length += (sgf_utils_format_node_move
+	       (goban_window->current_tree, move_node, buffer + length,
+		/* TRANSLATORS: This is an abbreviation of `Black'. */
+		_("B "),
+		/* TRANSLATORS: This is an abbreviation of `White'. */
+		_("W "),
+		_("pass")));
   }
   else
     length = sprintf (buffer, _("Game beginning"));
@@ -4365,25 +4382,31 @@ update_commands_sensitivity (const GtkGobanWindow *goban_window)
   const SgfGameTree *current_tree = goban_window->current_tree;
   const SgfNode *current_node	  = current_tree->current_node;
 
-  gboolean pass_sensitive   = (goban_window->board->game == GAME_GO
-			       && USER_CAN_PLAY_MOVES (goban_window)
-			       && !IS_IN_SPECIAL_MODE (goban_window));
-  gboolean resign_sensitive = (goban_window->in_game_mode
-			       && IS_DISPLAYING_GAME_NODE (goban_window)
-			       && USER_CAN_PLAY_MOVES (goban_window)
-			       && !IS_IN_SPECIAL_MODE (goban_window));
-  gboolean previous_node_sensitive  = (current_node->parent != NULL
-				       && !IS_IN_SPECIAL_MODE (goban_window));
-  gboolean next_node_sensitive	    = (current_node->child != NULL
-				       && !IS_IN_SPECIAL_MODE (goban_window));
-  gboolean previous_variation_sensitive
-    = (current_node->parent != NULL
-       && current_node->parent->child != current_node
-       && !IS_IN_SPECIAL_MODE (goban_window));
-  gboolean next_variation_sensitive = (current_node->next != NULL
-				       && !IS_IN_SPECIAL_MODE (goban_window));
+  gboolean is_in_special_mode = IS_IN_SPECIAL_MODE (goban_window);
+  gboolean pass_sensitive     = (goban_window->board->game == GAME_GO
+				 && USER_CAN_PLAY_MOVES (goban_window)
+				 && !is_in_special_mode);
+  gboolean resign_sensitive   = (goban_window->in_game_mode
+				 && IS_DISPLAYING_GAME_NODE (goban_window)
+				 && USER_CAN_PLAY_MOVES (goban_window)
+				 && !is_in_special_mode);
+  gboolean previous_node_sensitive	= (current_node->parent != NULL
+					   && !is_in_special_mode);
+  gboolean next_node_sensitive		= (current_node->child != NULL
+					   && !is_in_special_mode);
+  gboolean previous_variation_sensitive = (current_node->parent != NULL
+					   && (current_node->parent->child
+					       != current_node)
+					   && !is_in_special_mode);
+  gboolean next_variation_sensitive	= (current_node->next != NULL
+					   && !is_in_special_mode);
 
   /* "Edit" submenu. */
+  gtk_utils_set_menu_items_sensitive (goban_window->item_factory,
+				      (USER_CAN_PLAY_MOVES (goban_window)
+				       && !is_in_special_mode),
+				      "/Edit/Add Empty Node", NULL);
+
   gtk_utils_set_menu_items_sensitive (goban_window->item_factory,
 				      (!goban_window->in_game_mode
 				       && current_node->parent != NULL),
@@ -4397,6 +4420,14 @@ update_commands_sensitivity (const GtkGobanWindow *goban_window)
 				      (!goban_window->in_game_mode
 				       && current_node->child != NULL),
 				      "/Edit/Delete Node's Children", NULL);
+
+  gtk_utils_set_menu_items_sensitive (goban_window->item_factory,
+				      !is_in_special_mode,
+				      "/Edit/Find", "/Edit/Find Next",
+				      "/Edit/Find Previous", NULL);
+  gtk_utils_set_toolbar_buttons_sensitive (goban_window->main_toolbar,
+					   !is_in_special_mode,
+					   &toolbar_find, NULL);
 
   /* "Edit/Tools" submenu. */
 
@@ -4434,7 +4465,7 @@ update_commands_sensitivity (const GtkGobanWindow *goban_window)
 
   gtk_utils_set_menu_items_sensitive (goban_window->item_factory,
 				      (goban_window->in_game_mode
-				       && !IS_IN_SPECIAL_MODE (goban_window)),
+				       && !is_in_special_mode),
 				      "/Play/Adjourn Game", NULL);
 
   /* "Go" submenu. */
@@ -4474,6 +4505,10 @@ update_commands_sensitivity (const GtkGobanWindow *goban_window)
 					   next_variation_sensitive,
 					   &navigation_toolbar_next_variation,
 					   NULL);
+
+  gtk_utils_set_menu_items_sensitive (goban_window->item_factory,
+				      !is_in_special_mode,
+				      "/Go/Go to Named Node...", NULL);
 }
 
 
@@ -5315,6 +5350,14 @@ redo_operation (GtkGobanWindow *goban_window)
 
 
 static void
+append_empty_variation (GtkGobanWindow *goban_window)
+{
+  sgf_utils_append_variation (goban_window->current_tree, EMPTY);
+  update_children_for_new_node (goban_window);
+}
+
+
+static void
 delete_current_node (GtkGobanWindow *goban_window)
 {
   sgf_utils_delete_current_node (goban_window->current_tree);
@@ -5384,7 +5427,7 @@ activate_scoring_tool (GtkGobanWindow *goban_window, guint callback_action,
       const BoardPositionList *white_territory
 	= sgf_node_get_list_of_point_property_value (current_node,
 						     SGF_WHITE_TERRITORY);
-	
+
       assert (!goban_window->dead_stones);
 
       goban_window->dead_stones = g_malloc (BOARD_GRID_SIZE * sizeof (char));
