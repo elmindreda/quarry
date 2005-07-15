@@ -1317,36 +1317,54 @@ go_score_game (Board *board, const char *dead_stones, double komi,
 
   if (detailed_score) {
     *detailed_score
-      = utils_printf (("White: %d territory + %d capture(s) %c %.*f komi"
-		       " = %.*f\n"
-		       "Black: %d territory + %d capture(s) = %.1f\n\n"),
-		      num_territory_positions[WHITE_INDEX],
-		      num_prisoners[WHITE_INDEX],
-		      (komi >= 0.0 ? '+' : '-'),
-		      ((int) floor (komi * 100.0 + 0.5) % 10 == 0 ? 1 : 2),
-		      fabs (komi),
-		      ((int) floor (white_score * 100.0 + 0.5) % 10 == 0
-		       ? 1 : 2),
-		      white_score,
-		      num_territory_positions[BLACK_INDEX],
-		      num_prisoners[BLACK_INDEX],
-		      (double) black_score);
+      = utils_printf (ngettext ("White: %d territory", "White: %d territory",
+				num_territory_positions[WHITE_INDEX]),
+		      num_territory_positions[WHITE_INDEX]);
+    *detailed_score
+      = utils_cat_printf (*detailed_score,
+			  ngettext (" + %d capture", " + %d captures",
+				    num_prisoners[WHITE_INDEX]),
+			  num_prisoners[WHITE_INDEX]);
+    *detailed_score
+      = utils_cat_printf (*detailed_score,
+			  /* TRANSLATORS: e.g. `` + 6.5 komi = 87.5''. */
+			  _(" %c %.*f komi = %.*f\n"),
+			  (komi >= 0.0 ? '+' : '-'),
+			  ((int) floor (komi * 100.0 + 0.5) % 10 == 0 ? 1 : 2),
+			  fabs (komi),
+			  ((int) floor (white_score * 100.0 + 0.5) % 10 == 0
+			   ? 1 : 2),
+			  white_score);
+
+    *detailed_score
+      = utils_cat_printf (*detailed_score,
+			  ngettext ("Black: %d territory",
+				    "Black: %d territory",
+				    num_territory_positions[BLACK_INDEX]),
+			  num_territory_positions[BLACK_INDEX]);
+    *detailed_score
+      = utils_cat_printf (*detailed_score,
+			  ngettext (" + %d capture", " + %d captures",
+				    num_prisoners[BLACK_INDEX]),
+			  num_prisoners[BLACK_INDEX]);
+    *detailed_score = utils_cat_printf (*detailed_score, " = %.1f\n\n",
+					(double) black_score);
 
     if ((double) black_score != white_score) {
-      char *string_to_free = *detailed_score;
-
       *detailed_score
-	= utils_printf ("%s%s wins by %.*f", *detailed_score,
-			((double) black_score > white_score
-			 ? "Black" : "White"),
-			((int) floor ((black_score - white_score) * 100.0
-				      + 0.5)
-			 % 10 == 0 ? 1 : 2),
-			fabs (black_score - white_score));
-      utils_free (string_to_free);
+	= utils_cat_printf (*detailed_score,
+			    ((double) black_score > white_score
+			     ? _("Black wins by %.*f")
+			     : _("White wins by %.*f")),
+			    ((int) floor ((black_score - white_score) * 100.0
+					  + 0.5)
+			     % 10 == 0 ? 1 : 2),
+			    fabs (black_score - white_score));
     }
-    else
-      *detailed_score = utils_cat_string (*detailed_score, "The game is draw");
+    else {
+      *detailed_score = utils_cat_string (*detailed_score,
+					  _("The game is draw"));
+    }
   }
 
   if (black_territory) {
