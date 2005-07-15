@@ -123,7 +123,7 @@ gtk_assistant_init (GtkAssistant *assistant)
 						    GTK_STOCK_GO_BACK,
 						    ASSISTANT_RESPONSE_BACK);
   assistant->next_button   = gtk_dialog_add_button (&assistant->dialog,
-						    QUARRY_STOCK_NEXT,
+						    GTK_STOCK_GO_FORWARD,
 						    ASSISTANT_RESPONSE_NEXT);
   assistant->finish_button = gtk_dialog_add_button (&assistant->dialog,
 						    GTK_STOCK_OK,
