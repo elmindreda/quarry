@@ -101,6 +101,11 @@ void		utils_free_program_name_strings (void);
 char *		utils_printf (const char *format_string, ...);
 char *		utils_vprintf (const char *format_string, va_list arguments);
 
+char *		utils_cat_printf (char *string, const char *format_string,
+				  ...);
+char *		utils_cat_vprintf (char *string, const char *format_string,
+				   va_list arguments);
+
 char *		utils_cprintf (const char *format_string, ...);
 char *		utils_vcprintf (const char *format_string, va_list arguments);
 int		utils_ncprintf (char *buffer, int buffer_size,
@@ -114,6 +119,9 @@ char *		utils_special_vprintf (const char *format_string,
 
 
 char *		utils_fgets (FILE *file, int *length);
+
+
+const char *	utils_gettext_with_context (const char *msgid);
 
 
 int		utils_compare_ints (const void *first_int,

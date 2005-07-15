@@ -3,6 +3,7 @@
  *                                                                 *
  * Copyright (C) 2003 Paul Pogonyshev.                             *
  * Copyright (C) 2004 Paul Pogonyshev and Martin Holters.          *
+ * Copyright (C) 2005 Paul Pogonyshev.                             *
  *                                                                 *
  * This program is free software; you can redistribute it and/or   *
  * modify it under the terms of the GNU General Public License as  *
@@ -433,7 +434,7 @@ utils_printf (const char *format_string, ...)
   va_list arguments;
 
   va_start (arguments, format_string);
-  string = utils_vprintf (format_string, arguments);
+  string = utils_cat_vprintf (NULL, format_string, arguments);
   va_end (arguments);
 
   return string;
@@ -444,8 +445,36 @@ utils_printf (const char *format_string, ...)
 char *
 utils_vprintf (const char *format_string, va_list arguments)
 {
+  return utils_cat_vprintf (NULL, format_string, arguments);
+}
+
+
+/* Call sprintf() with given `format_string' and arguments and
+ * concatenate its result to given `string'.  If `string' is NULL,
+ * works just as utils_printf().  The current locale is taken into
+ * account.
+ */
+char *
+utils_cat_printf (char *string, const char *format_string, ...)
+{
+  va_list arguments;
+
+  va_start (arguments, format_string);
+  string = utils_cat_vprintf (string, format_string, arguments);
+  va_end (arguments);
+
+  return string;
+}
+
+
+/* Same as utils_cat_printf(), but `arguments' are passed as
+ * `va_list'.
+ */
+char *
+utils_cat_vprintf (char *string, const char *format_string, va_list arguments)
+{
   char buffer[0x1000];
-  char *string = NULL;
+  int head_length;
   int length;
   va_list arguments_copy;
 
@@ -454,22 +483,27 @@ utils_vprintf (const char *format_string, va_list arguments)
   va_end (arguments_copy);
 
   if (-1 < length && length < (int) sizeof buffer)
-    return utils_duplicate_as_string (buffer, length);
+    return utils_cat_as_string (string, buffer, length);
 
-  length = (length > -1 ? length + 1 : 2 * sizeof buffer);
+  head_length = (string ? strlen (string) : 0);
+  length      = (length > -1 ? length + 1 : 2 * sizeof buffer);
 
   while (1) {
     int required_length;
 
-    string = utils_realloc (string, length);
+    string = utils_realloc (string, head_length + length);
 
     QUARRY_VA_COPY (arguments_copy, arguments);
-    required_length = vsnprintf (string, length, format_string,
+    required_length = vsnprintf (string + head_length, length, format_string,
 				 arguments_copy);
     va_end (arguments_copy);
 
-    if (-1 < required_length && required_length < length)
-      return string;
+    if (-1 < required_length && required_length < length) {
+      if (required_length < length)
+	return utils_realloc (string, head_length + required_length + 1);
+      else
+	return string;
+    }
 
     length = (required_length > -1 ? required_length + 1 : 2 * length);
   }
@@ -572,7 +606,7 @@ utils_ncprintf (char *buffer, int buffer_size, const char *format_string, ...)
   do {						\
     if (buffer == buffer_end) {			\
       *buffer = 0;				\
-      buffer = NULL;				\
+      buffer  = NULL;				\
     }						\
   } while (0)
 
@@ -946,7 +980,6 @@ utils_special_vprintf (const char *format_string, va_list arguments)
 	      string = utils_cat_string (string, substitution);
 
 	    chunk_beginning++;
-
 	    break;
 	  }
 	}
@@ -993,6 +1026,31 @@ utils_fgets (FILE *file, int *length)
   }
 
   return string;
+}
+
+
+
+/* Translate `msgid' using gettext() and strip context information if
+ * needed.  If gettext() performs actual translation (i.e. returns
+ * something different than `msgid'), this function does nothing
+ * extra.  Else it strips context (part before a bar character,
+ * inclusive) from `msgid' and returns the rest.  When there is no bar
+ * character in the string (i.e., no context), `msgid' is returned
+ * unchanged.
+ */
+const char *
+utils_gettext_with_context (const char *msgid)
+{
+  const char *msgstr = gettext (msgid);
+
+  if (msgstr == msgid) {
+    const char *context_end = strchr (msgstr, '|');
+
+    if (context_end)
+      msgstr = context_end + 1;
+  }
+
+  return msgstr;
 }
 
 

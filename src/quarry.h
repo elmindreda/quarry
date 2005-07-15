@@ -93,6 +93,13 @@
 #define _(string)		gettext (string)
 #define N_(string)		gettext_noop (string)
 
+/* Function utils_gettext_with_context() is similar to GLib's
+ * g_strip_context(), but also contains the call to gettext() itself.
+ * Since the Q_() macro has the same signature, as GLib's variant, we
+ * use the same name.
+ */
+#define Q_(string)		utils_gettext_with_context (string)
+
 
 /* Determine if given byte (`character') starts an UTF-8 character,
  * probably a multi-byte one.
