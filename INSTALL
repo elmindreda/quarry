@@ -64,6 +64,14 @@ requirement is that it is placed outside the source directory.
 directory of the distribution (where this file is placed), not to
 `src/'.
 
+However, if you configure Quarry for building in a separate directory,
+you will not be able to update `po/quarry.pot' file.  It depends on
+some files generated in build process and deficiencies in gettext's
+infrastructure prevent `make' from finding the files outside the
+source directory.  This is not much of a problem as updating
+`po/quarry.pot' should only be done by project maintainer, so unless
+you are about forking Quarry, this should be of no concern to you.
+
 
 			INSTALLATION PROBLEMS
 
