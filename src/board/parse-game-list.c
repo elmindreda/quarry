@@ -1,7 +1,7 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *\
  * This file is part of Quarry.                                    *
  *                                                                 *
- * Copyright (C) 2003, 2004 Paul Pogonyshev.                       *
+ * Copyright (C) 2003, 2004, 2005 Paul Pogonyshev.                 *
  *                                                                 *
  * This program is free software; you can redistribute it and/or   *
  * modify it under the terms of the GNU General Public License as  *
@@ -26,6 +26,12 @@
 
 #include <stdio.h>
 #include <string.h>
+
+
+#define CAPITALIZATION_HINT						\
+  "  /* TRANSLATORS: Use your language's natural capitalization for the\n" \
+  "     name of the game.  I.e. it doesn't have to start with a capital\n" \
+  "     letter. */\n"
 
 
 static int	game_list_parse_game1 (char **line);
@@ -94,13 +100,22 @@ game_list_parse_game2 (StringBuffer *c_file_arrays,
 
   if (looking_at ("UNSUPPORTED", line)) {
     /* A special, but very common case. */
-    string_buffer_cat_strings (c_file_arrays,
-			       "  { ", game_full_name,
-			       (", 0, EMPTY, NULL,\n    NULL,\n    NULL, 0,\n"
-				"    NULL, NULL,\n    NULL, NULL, NULL,\n"
-				"    NULL, NULL,\n    NULL, NULL,\n"
-				"    NULL, NULL,\n    0, 0.0 }"),
-			       NULL);
+    if (strcmp (game_full_name, "NULL") != 0) {
+      string_buffer_cprintf (c_file_arrays,
+			     ("  /* TRANSLATORS: Not important currently. */\n"
+			      CAPITALIZATION_HINT
+			      "  { N_(%s), "),
+			     game_full_name);
+    }
+    else
+      string_buffer_cat_string (c_file_arrays, "  { NULL, ");
+
+    string_buffer_cat_string (c_file_arrays,
+			      ("0, EMPTY, NULL,\n"
+			       "    NULL,\n    NULL, 0,\n    NULL, NULL,\n"
+			       "    NULL, NULL, NULL,\n    NULL, NULL,\n"
+			       "    NULL, NULL,\n    NULL, NULL,\n"
+			       "    0, 0.0 }"));
 
     return 0;
   }
@@ -156,7 +171,8 @@ game_list_parse_game2 (StringBuffer *c_file_arrays,
 	       "relative number of moves per game");
 
   string_buffer_cprintf (c_file_arrays,
-			 ("  { %s, %s, %s, %s,\n    %s,\n    \"%s\", %d,\n"
+			 (CAPITALIZATION_HINT
+			  "  { N_(%s), %s, %s, %s,\n    %s,\n    \"%s\", %d,\n"
 			  "    %s, %s,\n    %s, %s, %s,\n    %s, %s,\n"
 			  "    %s, %s,\n    %s, %s,\n    sizeof (%s), %s }"),
 			 game_full_name, default_board_size,
