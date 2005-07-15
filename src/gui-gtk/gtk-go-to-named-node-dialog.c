@@ -51,6 +51,7 @@ static void	 gtk_go_to_named_node_dialog_init
 		   (GtkGoToNamedNodeDialog *dialog);
 
 static void	 gtk_go_to_named_node_dialog_finalize (GObject *object);
+static void	 free_node_list (const char *node_name, GSList *node_list);
 
 static void	 entered_node_name_changed (GtkEntry *node_name_entry,
 					    GtkGoToNamedNodeDialog *dialog);
@@ -209,6 +210,9 @@ gtk_go_to_named_node_dialog_new (SgfGameTree *sgf_tree)
 
   assert (sgf_tree);
 
+  /* Note: cannot use value destructor here, because we build values
+   * ``incrementally'' with g_tree_replace() below.
+   */
   completion_tree = g_tree_new ((GCompareFunc) strcmp);
 
   for (sgf_node = sgf_game_tree_traverse_forward (sgf_tree);
@@ -221,7 +225,7 @@ gtk_go_to_named_node_dialog_new (SgfGameTree *sgf_tree)
       GSList *node_list;
 
       node_list = g_tree_lookup (completion_tree, node_name);
-      g_tree_replace (completion_tree, node_name,
+      g_tree_replace (completion_tree, (gpointer) node_name,
 		      g_slist_append (node_list, sgf_node));
 
       gtk_list_store_append (completions, &iterator);
@@ -256,9 +260,22 @@ gtk_go_to_named_node_dialog_new (SgfGameTree *sgf_tree)
 static void
 gtk_go_to_named_node_dialog_finalize (GObject *object)
 {
-  g_tree_destroy (GTK_GO_TO_NAMED_NODE_DIALOG (object)->completion_tree);
+  GTree *completion_tree
+    = GTK_GO_TO_NAMED_NODE_DIALOG (object)->completion_tree;
+
+  g_tree_foreach (completion_tree, (GTraverseFunc) free_node_list, NULL);
+  g_tree_destroy (completion_tree);
 
   G_OBJECT_CLASS (parent_class)->finalize (object);
+}
+
+
+static void
+free_node_list (const char *node_name, GSList *node_list)
+{
+  UNUSED (node_name);
+
+  g_slist_free (node_list);
 }
 
 
