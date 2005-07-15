@@ -2,5 +2,6 @@
 Makefile
 gtk-configuration.c
 gtk-configuration.h
+gtk-configuration.stamp
 quarry-marshal.c
 quarry-marshal.h

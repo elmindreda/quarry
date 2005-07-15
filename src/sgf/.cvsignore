@@ -4,6 +4,11 @@ parse-sgf-list
 sgf-diff
 sgf-errors.c
 sgf-errors.h
+sgf-errors.stamp
 sgf-properties.c
 sgf-properties.h
+sgf-properties.stamp
 sgf-test
+sgf-undo-operations.c
+sgf-undo-operations.h
+sgf-undo-operations.stamp

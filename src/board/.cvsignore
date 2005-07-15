@@ -2,4 +2,5 @@
 Makefile
 games.c
 games.h
+games.stamp
 parse-game-list
