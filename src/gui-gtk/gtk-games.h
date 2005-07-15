@@ -66,6 +66,8 @@ extern const Game    index_to_game[NUM_SUPPORTED_GAMES];
   (game_info[index_to_game[game_index]].name)
 
 
+const gchar *	 gtk_games_get_capitalized_name (Game game);
+
 gboolean	 gtk_games_engine_supports_game
 		   (GtpEngineListItem *engine_data, GtkGameIndex game_index);
 

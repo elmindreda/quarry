@@ -291,7 +291,7 @@ gtk_new_game_dialog_init (GtkNewGameDialog *dialog)
 				       "new-game-dialog-game-and-players");
   gtk_widget_show_all (game_and_players_page);
 
-  if (game_index != -1) {
+  if (game_index != GTK_GAME_UNSUPPORTED) {
     gtk_toggle_button_set_active (dialog->game_radio_buttons[game_index],
 				  TRUE);
   }
