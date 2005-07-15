@@ -42,8 +42,14 @@ if test "$GCC" = "yes"; then
   # headers, so they are excluded.  `-Wwrite-strings' is excluded,
   # because certain GTK+ structures lack `const' attribute for `gchar
   # *' fields.
+  #
+  # `-Wcast-qual' is removed, because certain GTK+/GLib structures
+  # have `gchar *' fields, which we sometimes need to assign results
+  # of gettext() and friends.  Also, GLib data structures operate with
+  # `gpointer's and `-Wcast-qual' generates warnings on adding
+  # constant strings to them.
 
-  QUARRY_WARNINGS_GTK='-Wall -Waggregate-return -Wcast-align -Wcast-qual -Wmissing-declarations -Wmissing-prototypes -Wnested-externs -Wpointer-arith -Wredundant-decls -Wunused-parameter'
+  QUARRY_WARNINGS_GTK='-Wall -Waggregate-return -Wcast-align -Wmissing-declarations -Wmissing-prototypes -Wnested-externs -Wpointer-arith -Wredundant-decls -Wunused-parameter'
 
 else
   QUARRY_WARNINGS=''
