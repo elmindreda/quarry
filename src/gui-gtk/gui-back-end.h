@@ -35,6 +35,7 @@ int		gui_back_end_main_open_files (int num_files, char **filenames);
  * from `src/' directory.
  */
 void		gui_back_end_register_object_to_finalize (void *object);
+void		gui_back_end_register_pointer_to_free (void *pointer);
 
 
 extern const char  *user_real_name;

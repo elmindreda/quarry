@@ -45,11 +45,12 @@ static void	 run_main_loop (void);
 static gboolean	 run_cleanup_tasks (gpointer data);
 
 
-const char     *user_real_name;
+const char	  *user_real_name;
 
-static gchar   *configuration_file;
+static gchar	  *configuration_file;
 
-static GSList  *objects_to_finalize = NULL;
+static GPtrArray  *objects_to_finalize = NULL;
+static GPtrArray  *pointers_to_free    = NULL;
 
 
 
@@ -103,7 +104,22 @@ gui_back_end_register_object_to_finalize (void *object)
 {
   assert (G_IS_OBJECT (object));
 
-  objects_to_finalize = g_slist_prepend (objects_to_finalize, object);
+  if (!objects_to_finalize)
+    objects_to_finalize = g_ptr_array_new ();
+
+  g_ptr_array_add (objects_to_finalize, object);
+}
+
+
+void
+gui_back_end_register_pointer_to_free (void *pointer)
+{
+  if (pointer) {
+    if (!pointers_to_free)
+      pointers_to_free = g_ptr_array_new ();
+
+    g_ptr_array_add (pointers_to_free, pointer);
+  }
 }
 
 
@@ -273,8 +289,15 @@ run_main_loop (void)
   g_async_queue_unref (thread_events_queue);
 #endif
 
-  g_slist_foreach (objects_to_finalize, (GFunc) g_object_unref, NULL);
-  g_slist_free (objects_to_finalize);
+  if (objects_to_finalize) {
+    g_ptr_array_foreach (objects_to_finalize, (GFunc) g_object_unref, NULL);
+    g_ptr_array_free (objects_to_finalize, TRUE);
+  }
+
+  if (pointers_to_free) {
+    g_ptr_array_foreach (pointers_to_free, (GFunc) g_free, NULL);
+    g_ptr_array_free (pointers_to_free, TRUE);
+  }
 
   configuration_write_to_file (gtk_configuration_sections,
 			       NUM_GTK_CONFIGURATION_SECTIONS,
