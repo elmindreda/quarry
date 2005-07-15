@@ -1,7 +1,7 @@
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 # This file is part of Quarry                                     #
 #                                                                 #
-# Copyright (C) 2003, 2004 Paul Pogonyshev.                       #
+# Copyright (C) 2003, 2004, 2005 Paul Pogonyshev.                 #
 #                                                                 #
 # This program is free software; you can redistribute it and/or   #
 # modify it under the terms of the GNU General Public License as  #
@@ -36,6 +36,7 @@ games  Game game_info {
 
   #> Dummy entry, to fill zero index.
   NULL		GAME_DUMMY		UNSUPPORTED
+		= GAME_INVALID
 
 		+ FIRST_GAME
 

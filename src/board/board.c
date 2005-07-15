@@ -774,6 +774,24 @@ board_position_list_mark_on_grid (const BoardPositionList *list,
 
 
 
+Game
+game_from_game_name (const char *game_name, int case_sensitive)
+{
+  Game game;
+
+  assert (game_name);
+
+  for (game = FIRST_GAME; game <= LAST_GAME; game++) {
+    if (case_sensitive
+	? strcmp (game_name, game_info[game].name) == 0
+	: strcasecmp (game_name, game_info[game].name) == 0)
+      return game;
+  }
+
+  return GAME_INVALID;
+}
+
+
 int
 game_format_point (Game game, int board_width, int board_height,
 		   char *buffer, int x, int y)

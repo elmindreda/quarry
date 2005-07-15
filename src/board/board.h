@@ -261,6 +261,9 @@ void		     board_position_list_mark_on_grid
 #define SUGGESTED_POSITION_LIST_BUFFER_SIZE	(4 * BOARD_MAX_POSITIONS)
 
 
+Game		game_from_game_name (const char *game_name,
+				     int case_sensitive);
+
 int		game_format_point (Game game,
 				   int board_width, int board_height,
 				   char *buffer, int x, int y);
