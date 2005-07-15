@@ -1,3 +1,13 @@
+2005-07-15  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* INSTALL: Mention that `po/quarry.pot' can be updated only when
+	configured with `builddir' equal to `srcdir'.
+
+	* configure.ac (QUARRY_WARNINGS_GTK): Remove `-Wcast-qual' which
+	became a source of annoying warnings recently.
+
+	* README-TRANSLATORS: New file.
+
 2005-06-27  Paul Pogonyshev  <pogonyshev@gmx.net>
 
 	* configure.ac: Check size of `int', `double' and `void *' types.

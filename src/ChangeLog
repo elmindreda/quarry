@@ -1,3 +1,85 @@
+2005-07-15  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* gui-gtk/gtk-goban-window.c: Add some comments for translators.
+	(gtk_goban_window_init): Add "Add Empty Node" item to "Edit" menu.
+	Remove accidental mnemonic from toolbar editing tool menu.  Pass
+	"Pass" and "Resign" strings through gettext().
+	(gtk_goban_window_enter_game_mode): Pass "Please set up..."
+	message through ngettext(): not all languages have the same forms
+	for all integers greater than 1.
+	(show_go_to_named_node_dialog): Fix
+	gtk_utils_create_message_dialog() invocation arguments order.
+	(update_commands_sensitivity): Sensitize/desensitize new menu item
+	as appropriate.  Make search and "Go to Named Node" commands
+	insensitive in special modes.
+	(append_empty_variation): New function.
+
+	* gui-gtk/gtk-go-to-named-node-dialog.c
+	(gtk_go_to_named_node_dialog_new): Explicitly cast `node_name' to
+	`gpointer' to suppress warning.
+	(gtk_go_to_named_node_dialog_finalize): Arrange for calling new
+	free_node_list() function on each `completion_tree' node.
+	(free_node_list): New function.
+
+	* gui-gtk/quarry-stock.c: Add context information to the renamed
+	stock items' strings.
+	(quarry_stock_init): Use Q_() instead of _() to handle context.
+
+	* gui-gtk/quarry-stock.h (QUARRY_STOCK_FIND_NEXT): Rename from
+	`QUARRY_STOCK_NEXT'.
+	(QUARRY_STOCK_FIND_PREVIOUS): Rename from `QUARRY_STOCK_PREVIOUS'.
+
+	* gui-gtk/gtk-assistant.c (gtk_assistant_init): Use
+	`GTK_STOCK_GO_FORWARD' instead of `QUARRY_STOCK_NEXT' (as
+	suggested by HIG.)
+
+	* gui-gtk/gtk-preferences.c (gtk_preferences_dialog_present):
+	Generate game name labels in category tree with
+	gtk_games_get_capitalized_name().
+	(create_gtp_engines_page): Prepare "Supported game(s):" label for
+	using `game'/`games' as appropriate.
+	(create_saving_sgf_page): Add accidentally missing mnemonics.
+	(gtk_preferences_dialog_update_gtp_engine_info): Translate game
+	names and capitalize the first.  Set `game'/`games' as described
+	above.
+
+	* gui-gtk/gtk-resume-game-dialog.c (analyze_game_to_be_resumed):
+	Pass name of unsupported game through gettext.
+	(gtk_resume_game_dialog_present): Use
+	gtk_games_get_capitalized_name() for retreiving game name.  Add
+	context information to "Not set" strings.
+
+	* gui-gtk/gtk-games.c (gtk_games_get_capitalized_name): New
+	function.
+	(gtk_games_name_to_index): Use new function game_from_game_name()
+	and return GTK_GAME_UNSUPPORTED, not -1 if the game is not
+	supported.
+
+	* gui-gtk/gui-back-end.c
+	(gui_back_end_register_object_to_finalize): Use GPtrArray instead
+	of GSList for `objects_to_finalize'.
+	(gui_back_end_register_pointer_to_free): New function.
+	(run_main_loop): Free the registered pointers and GPtrArray's.
+
+	* board/board.c (game_from_game_name): New function, essentially
+	move code of gtk_games_name_to_index() here.
+
+	* board/games.list: Add `GAME_INVALID' identifier.
+
+	* board/go.c (go_score_game): Chop the text into pieces to allow
+	proper translation.  Use gettext and utils_cat_printf().
+
+	* quarry.h (Q_): New macro.
+
+	* utils/utils.c (utils_cat_printf): New function.
+	(utils_cat_vprintf): New function, essentially move code of
+	utils_vprintf() here.
+	(utils_gettext_with_context): New function.
+
+	* board/parse-game-list.c (CAPITALIZATION_HINT): New macro.
+	(game_list_parse_game2): Mark game names in output up for
+	`xgettext' harvesting.  Add comments for translators.
+
 2005-07-11  Paul Pogonyshev  <pogonyshev@gmx.net>
 
 	* gui-gtk/gtk-goban-window.c (gtk_goban_window_init): Add "Go to

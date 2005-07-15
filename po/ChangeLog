@@ -1,3 +1,10 @@
+2005-07-15  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* POTFILES.in: Add `src/gui-gtk/gtk-go-to-named-node-dialog.c',
+	`src/board/games.c' and `src/board/go.c'.
+
+	* Makevars (XGETTEXT_OPTIONS): Add `--keyword=Q_'.
+
 2005-06-30  Paul Pogonyshev  <pogonyshev@gmx.net>
 
 	* Rules-quot: Remove file.
