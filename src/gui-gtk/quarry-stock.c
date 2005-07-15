@@ -1,7 +1,7 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *\
  * This file is part of Quarry.                                    *
  *                                                                 *
- * Copyright (C) 2003, 2004 Paul Pogonyshev.                       *
+ * Copyright (C) 2003, 2004, 2005 Paul Pogonyshev.                 *
  *                                                                 *
  * This program is free software; you can redistribute it and/or   *
  * modify it under the terms of the GNU General Public License as  *
@@ -21,6 +21,8 @@
 
 
 #include "quarry-stock.h"
+
+#include "utils.h"
 
 #include <gtk/gtk.h>
 
@@ -44,10 +46,10 @@ static const IconMap quarry_icon_map[] = {
   { QUARRY_STOCK_MODIFY,	    GTK_STOCK_PROPERTIES },
   { QUARRY_STOCK_MOVE_UP,	    GTK_STOCK_GO_UP	 },
   { QUARRY_STOCK_MOVE_DOWN,	    GTK_STOCK_GO_DOWN	 },
-  { QUARRY_STOCK_NEXT,		    GTK_STOCK_GO_FORWARD },
+  { QUARRY_STOCK_FIND_NEXT,	    GTK_STOCK_GO_FORWARD },
   { QUARRY_STOCK_OVERWRITE,	    GTK_STOCK_SAVE	 },
   { QUARRY_STOCK_PLAY,		    GTK_STOCK_OK	 },
-  { QUARRY_STOCK_PREVIOUS,	    GTK_STOCK_GO_BACK	 }
+  { QUARRY_STOCK_FIND_PREVIOUS,	    GTK_STOCK_GO_BACK	 }
 };
 
 static GtkStockItem quarry_stock_items[] = {
@@ -61,10 +63,10 @@ static GtkStockItem quarry_stock_items[] = {
   { QUARRY_STOCK_MODIFY,	    N_("_Modify"),	      0, 0, NULL },
   { QUARRY_STOCK_MOVE_UP,	    N_("Move _Up"),	      0, 0, NULL },
   { QUARRY_STOCK_MOVE_DOWN,	    N_("Move _Down"),	      0, 0, NULL },
-  { QUARRY_STOCK_NEXT,		    N_("_Next"),	      0, 0, NULL },
+  { QUARRY_STOCK_FIND_NEXT,	    N_("find|_Next"),	      0, 0, NULL },
   { QUARRY_STOCK_OVERWRITE,	    N_("_Overwrite"),	      0, 0, NULL },
   { QUARRY_STOCK_PLAY,		    N_("_Play"),	      0, 0, NULL },
-  { QUARRY_STOCK_PREVIOUS,	    N_("_Previous"),	      0, 0, NULL }
+  { QUARRY_STOCK_FIND_PREVIOUS,	    N_("find|_Previous"),     0, 0, NULL }
 };
 
 
@@ -84,12 +86,14 @@ quarry_stock_init (void)
 
   gtk_icon_factory_add_default (icon_factory);
 
-#if ENABLE_NLS
   /* Gettextize labels first. */
   for (k = 0; k < (int) (sizeof quarry_stock_items / sizeof (GtkStockItem));
-       k++)
-    quarry_stock_items[k].label = _(quarry_stock_items[k].label);
-#endif
+       k++) {
+    /* Most labels don't have contexts, but that's not a problem:
+     * utils_gettext_with_context() will do the right thing.
+     */
+    quarry_stock_items[k].label = (gchar *) Q_(quarry_stock_items[k].label);
+  }
 
   gtk_stock_add_static (quarry_stock_items,
 			sizeof quarry_stock_items / sizeof (GtkStockItem));

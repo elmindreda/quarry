@@ -1,7 +1,7 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *\
  * This file is part of Quarry.                                    *
  *                                                                 *
- * Copyright (C) 2003, 2004 Paul Pogonyshev.                       *
+ * Copyright (C) 2003, 2004, 2005 Paul Pogonyshev.                 *
  *                                                                 *
  * This program is free software; you can redistribute it and/or   *
  * modify it under the terms of the GNU General Public License as  *
@@ -41,10 +41,10 @@
 #define QUARRY_STOCK_MODIFY		"quarry-modify"
 #define QUARRY_STOCK_MOVE_UP		"quarry-move-up"
 #define QUARRY_STOCK_MOVE_DOWN		"quarry-move-down"
-#define QUARRY_STOCK_NEXT		"quarry-next"
+#define QUARRY_STOCK_FIND_NEXT		"quarry-find-next"
 #define QUARRY_STOCK_OVERWRITE		"quarry-overwrite"
 #define QUARRY_STOCK_PLAY		"quarry-play"
-#define QUARRY_STOCK_PREVIOUS		"quarry-previous"
+#define QUARRY_STOCK_FIND_PREVIOUS	"quarry-find-previous"
 
 
 /* Backward-compatible wrappers around evolving GTK+ stock.  Fallbacks
