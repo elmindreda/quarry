@@ -22,6 +22,7 @@ AH_TEMPLATE(VERSION, [The version of the distribution.])
 AC_PROG_CC
 AC_PROG_RANLIB
 
+
 AC_SUBST(QUARRY_WARNINGS)
 AC_SUBST(QUARRY_WARNINGS_GTK)
 
@@ -56,30 +57,6 @@ else
   QUARRY_WARNINGS_GTK=''
 fi
 
-# Optionally disable deprecated GTK+ code (for maintainers---to check
-# if some code should be replaced with newer).
-AC_ARG_ENABLE(gtk-deprecated,
-	      AC_HELP_STRING([--disable-gtk-deprecated],
-			     [disable deprecated GTK+ features (for maintainers; don't use for normal builds)]))
-
-AC_SUBST(QUARRY_GTK_DEPRECATED_FLAGS)
-
-if test "$enable_gtk_deprecated" = "no"; then
-
-  QUARRY_GTK_DEPRECATED_FLAGS='-D G_DISABLE_DEPRECATED -D GDK_DISABLE_DEPRECATED -D GDK_PIXBUF_DISABLE_DEPRECATED -D GTK_DISABLE_DEPRECATED'
-
-else
-  QUARRY_GTK_DEPRECATED_FLAGS=''
-fi
-
-# Optionally enable automatic building and installation of standalone
-# SGF utilities (only `sgf-diff' at the moment).  Even if not enabled,
-# the utilities can still be built manually.
-AC_ARG_ENABLE(sgf-utils,
-	      AC_HELP_STRING([--enable-sgf-utils],
-			     [enable automatic building and installation of standalone SGF utilities]))
-
-AM_CONDITIONAL(BUILD_SGF_UTILS, test "$enable_sgf_utils" = "yes")
 
 # Checks for header files.
 AC_HEADER_STDC
@@ -100,8 +77,10 @@ AC_FUNC_VPRINTF
 AC_FUNC_MEMCMP
 AC_CHECK_FUNCS(memrchr)
 
+
 # Require math library.
 AC_SEARCH_LIBS(floor, m)
+
 
 # Find iconv().  It is usually sitting in GNU C library, but may
 # sometimes be in a separate `libiconv' library.
@@ -112,6 +91,7 @@ AC_SEARCH_LIBS(iconv, iconv)
 
 # Turn on GNU gettext support.
 AM_GNU_GETTEXT([external])
+
 
 # Check for ScrollKeeper.
 AC_CHECK_PROG(have_scrollkeeper, scrollkeeper-config, yes, no)
@@ -138,9 +118,46 @@ AC_SUBST(QUARRY_GTHREAD_LIBS)
 # `src/gui-gtk/Makefile.am').
 AC_SUBST(GLIB_GENMARSHAL, [`$PKG_CONFIG --variable=glib_genmarshal glib-2.0`])
 
+
+# Optionally enable automatic building and installation of standalone
+# SGF utilities (only `sgf-diff' at the moment).  Even if not enabled,
+# the utilities can still be built manually.
+AC_ARG_ENABLE(sgf-utils,
+	      AC_HELP_STRING([--enable-sgf-utils],
+			     [enable automatic building and installation of standalone SGF utilities]))
+
+AM_CONDITIONAL(BUILD_SGF_UTILS, test "$enable_sgf_utils" = "yes")
+
+
+# Optionally disable deprecated GTK+ code (for maintainers---to check
+# if some code should be replaced with newer).
+AC_ARG_ENABLE(gtk-deprecated,
+	      AC_HELP_STRING([--disable-gtk-deprecated],
+			     [disable deprecated GTK+ features (for maintainers; don't use for normal builds)]))
+
+AC_SUBST(QUARRY_GTK_DEPRECATED_FLAGS)
+
+if test "$enable_gtk_deprecated" = "no"; then
+
+  QUARRY_GTK_DEPRECATED_FLAGS='-D G_DISABLE_DEPRECATED -D GDK_DISABLE_DEPRECATED -D GDK_PIXBUF_DISABLE_DEPRECATED -D GTK_DISABLE_DEPRECATED'
+
+else
+  QUARRY_GTK_DEPRECATED_FLAGS=''
+fi
+
+
+if test "$have_scrollkeeper" = "yes"; then
+  AC_ARG_ENABLE(scrollkeeper-update,
+		AC_HELP_STRING([--disable-scrollkeeper-update],
+			       [don't update ScrollKeeper database (for packagers)]))
+  AM_CONDITIONAL(DO_SCROLLKEEPER_UPDATE, test "$enable_scrollkeeper_update" != "no")
+fi
+
+
 # Write `Makefile's.
 AC_CONFIG_FILES(Makefile
 		data/Makefile
+		data/quarry.desktop
 		data/markup-themes/Makefile
 		data/textures/Makefile
 		help/Makefile

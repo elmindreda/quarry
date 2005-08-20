@@ -311,7 +311,7 @@ ac_includes_default="\
 # include <unistd.h>
 #endif"
 
-ac_subst_vars='SHELL PATH_SEPARATOR PACKAGE_NAME PACKAGE_TARNAME PACKAGE_VERSION PACKAGE_STRING PACKAGE_BUGREPORT exec_prefix prefix program_transform_name bindir sbindir libexecdir datadir sysconfdir sharedstatedir localstatedir libdir includedir oldincludedir infodir mandir build_alias host_alias target_alias DEFS ECHO_C ECHO_N ECHO_T LIBS INSTALL_PROGRAM INSTALL_SCRIPT INSTALL_DATA CYGPATH_W PACKAGE VERSION ACLOCAL AUTOCONF AUTOMAKE AUTOHEADER MAKEINFO AMTAR install_sh STRIP ac_ct_STRIP INSTALL_STRIP_PROGRAM AWK SET_MAKE am__leading_dot MAINTAINER_MODE_TRUE MAINTAINER_MODE_FALSE MAINT CC CFLAGS LDFLAGS CPPFLAGS ac_ct_CC EXEEXT OBJEXT DEPDIR am__include am__quote AMDEP_TRUE AMDEP_FALSE AMDEPBACKSLASH CCDEPMODE am__fastdepCC_TRUE am__fastdepCC_FALSE RANLIB ac_ct_RANLIB QUARRY_WARNINGS QUARRY_WARNINGS_GTK QUARRY_GTK_DEPRECATED_FLAGS BUILD_SGF_UTILS_TRUE BUILD_SGF_UTILS_FALSE CPP EGREP LIBOBJS MKINSTALLDIRS USE_NLS MSGFMT GMSGFMT XGETTEXT MSGMERGE build build_cpu build_vendor build_os host host_cpu host_vendor host_os LIBICONV LTLIBICONV INTLLIBS LIBINTL LTLIBINTL POSUB have_scrollkeeper HAVE_SCROLLKEEPER_TRUE HAVE_SCROLLKEEPER_FALSE PKG_CONFIG QUARRY_GTK_CFLAGS QUARRY_GTK_LIBS QUARRY_GTHREAD_CFLAGS QUARRY_GTHREAD_LIBS GLIB_GENMARSHAL LTLIBOBJS'
+ac_subst_vars='SHELL PATH_SEPARATOR PACKAGE_NAME PACKAGE_TARNAME PACKAGE_VERSION PACKAGE_STRING PACKAGE_BUGREPORT exec_prefix prefix program_transform_name bindir sbindir libexecdir datadir sysconfdir sharedstatedir localstatedir libdir includedir oldincludedir infodir mandir build_alias host_alias target_alias DEFS ECHO_C ECHO_N ECHO_T LIBS INSTALL_PROGRAM INSTALL_SCRIPT INSTALL_DATA CYGPATH_W PACKAGE VERSION ACLOCAL AUTOCONF AUTOMAKE AUTOHEADER MAKEINFO AMTAR install_sh STRIP ac_ct_STRIP INSTALL_STRIP_PROGRAM AWK SET_MAKE am__leading_dot MAINTAINER_MODE_TRUE MAINTAINER_MODE_FALSE MAINT CC CFLAGS LDFLAGS CPPFLAGS ac_ct_CC EXEEXT OBJEXT DEPDIR am__include am__quote AMDEP_TRUE AMDEP_FALSE AMDEPBACKSLASH CCDEPMODE am__fastdepCC_TRUE am__fastdepCC_FALSE RANLIB ac_ct_RANLIB QUARRY_WARNINGS QUARRY_WARNINGS_GTK CPP EGREP LIBOBJS MKINSTALLDIRS USE_NLS MSGFMT GMSGFMT XGETTEXT MSGMERGE build build_cpu build_vendor build_os host host_cpu host_vendor host_os LIBICONV LTLIBICONV INTLLIBS LIBINTL LTLIBINTL POSUB have_scrollkeeper HAVE_SCROLLKEEPER_TRUE HAVE_SCROLLKEEPER_FALSE PKG_CONFIG QUARRY_GTK_CFLAGS QUARRY_GTK_LIBS QUARRY_GTHREAD_CFLAGS QUARRY_GTHREAD_LIBS GLIB_GENMARSHAL BUILD_SGF_UTILS_TRUE BUILD_SGF_UTILS_FALSE QUARRY_GTK_DEPRECATED_FLAGS DO_SCROLLKEEPER_UPDATE_TRUE DO_SCROLLKEEPER_UPDATE_FALSE LTLIBOBJS'
 ac_subst_files=''
 
 # Initialize some variables set by options.
@@ -857,13 +857,15 @@ Optional Features:
                           (and sometimes confusing) to the casual installer
   --disable-dependency-tracking Speeds up one-time builds
   --enable-dependency-tracking  Do not reject slow dependency extractors
+  --disable-nls           do not use Native Language Support
+  --disable-rpath         do not hardcode runtime library paths
+  --enable-sgf-utils      enable automatic building and installation of
+                          standalone SGF utilities
   --disable-gtk-deprecated
                           disable deprecated GTK+ features (for maintainers;
                           don't use for normal builds)
-  --enable-sgf-utils      enable automatic building and installation of
-                          standalone SGF utilities
-  --disable-nls           do not use Native Language Support
-  --disable-rpath         do not hardcode runtime library paths
+  --disable-scrollkeeper-update
+                          don't update ScrollKeeper database (for packagers)
 
 Optional Packages:
   --with-PACKAGE[=ARG]    use PACKAGE [ARG=yes]
@@ -2955,6 +2957,7 @@ fi
 
 
 
+
 if test "$GCC" = "yes"; then
   # I would like to use `-W' too, but, unfortunately, it generates a
   # few warnings which I cannot stand.  I find it cleaner to write
@@ -2984,43 +2987,6 @@ if test "$GCC" = "yes"; then
 else
   QUARRY_WARNINGS=''
   QUARRY_WARNINGS_GTK=''
-fi
-
-# Optionally disable deprecated GTK+ code (for maintainers---to check
-# if some code should be replaced with newer).
-# Check whether --enable-gtk-deprecated or --disable-gtk-deprecated was given.
-if test "${enable_gtk_deprecated+set}" = set; then
-  enableval="$enable_gtk_deprecated"
-
-fi;
-
-
-
-if test "$enable_gtk_deprecated" = "no"; then
-
-  QUARRY_GTK_DEPRECATED_FLAGS='-D G_DISABLE_DEPRECATED -D GDK_DISABLE_DEPRECATED -D GDK_PIXBUF_DISABLE_DEPRECATED -D GTK_DISABLE_DEPRECATED'
-
-else
-  QUARRY_GTK_DEPRECATED_FLAGS=''
-fi
-
-# Optionally enable automatic building and installation of standalone
-# SGF utilities (only `sgf-diff' at the moment).  Even if not enabled,
-# the utilities can still be built manually.
-# Check whether --enable-sgf-utils or --disable-sgf-utils was given.
-if test "${enable_sgf_utils+set}" = set; then
-  enableval="$enable_sgf_utils"
-
-fi;
-
-
-
-if test "$enable_sgf_utils" = "yes"; then
-  BUILD_SGF_UTILS_TRUE=
-  BUILD_SGF_UTILS_FALSE='#'
-else
-  BUILD_SGF_UTILS_TRUE='#'
-  BUILD_SGF_UTILS_FALSE=
 fi
 
 
@@ -5563,6 +5529,7 @@ fi
 done
 
 
+
 # Require math library.
 echo "$as_me:$LINENO: checking for library containing floor" >&5
 echo $ECHO_N "checking for library containing floor... $ECHO_C" >&6
@@ -5689,6 +5656,7 @@ if test "$ac_cv_search_floor" != no; then
   test "$ac_cv_search_floor" = "none required" || LIBS="$ac_cv_search_floor $LIBS"
 
 fi
+
 
 
 # Find iconv().  It is usually sitting in GNU C library, but may
@@ -7605,6 +7573,7 @@ _ACEOF
 
 
 
+
 # Check for ScrollKeeper.
 # Extract the first word of "scrollkeeper-config", so it can be a program name with args.
 set dummy scrollkeeper-config; ac_word=$2
@@ -7870,8 +7839,68 @@ echo "${ECHO_T}$QUARRY_GTHREAD_LIBS" >&6
 GLIB_GENMARSHAL=`$PKG_CONFIG --variable=glib_genmarshal glib-2.0`
 
 
+
+# Optionally enable automatic building and installation of standalone
+# SGF utilities (only `sgf-diff' at the moment).  Even if not enabled,
+# the utilities can still be built manually.
+# Check whether --enable-sgf-utils or --disable-sgf-utils was given.
+if test "${enable_sgf_utils+set}" = set; then
+  enableval="$enable_sgf_utils"
+
+fi;
+
+
+
+if test "$enable_sgf_utils" = "yes"; then
+  BUILD_SGF_UTILS_TRUE=
+  BUILD_SGF_UTILS_FALSE='#'
+else
+  BUILD_SGF_UTILS_TRUE='#'
+  BUILD_SGF_UTILS_FALSE=
+fi
+
+
+
+# Optionally disable deprecated GTK+ code (for maintainers---to check
+# if some code should be replaced with newer).
+# Check whether --enable-gtk-deprecated or --disable-gtk-deprecated was given.
+if test "${enable_gtk_deprecated+set}" = set; then
+  enableval="$enable_gtk_deprecated"
+
+fi;
+
+
+
+if test "$enable_gtk_deprecated" = "no"; then
+
+  QUARRY_GTK_DEPRECATED_FLAGS='-D G_DISABLE_DEPRECATED -D GDK_DISABLE_DEPRECATED -D GDK_PIXBUF_DISABLE_DEPRECATED -D GTK_DISABLE_DEPRECATED'
+
+else
+  QUARRY_GTK_DEPRECATED_FLAGS=''
+fi
+
+
+if test "$have_scrollkeeper" = "yes"; then
+  # Check whether --enable-scrollkeeper-update or --disable-scrollkeeper-update was given.
+if test "${enable_scrollkeeper_update+set}" = set; then
+  enableval="$enable_scrollkeeper_update"
+
+fi;
+
+
+if test "$enable_scrollkeeper_update" != "no"; then
+  DO_SCROLLKEEPER_UPDATE_TRUE=
+  DO_SCROLLKEEPER_UPDATE_FALSE='#'
+else
+  DO_SCROLLKEEPER_UPDATE_TRUE='#'
+  DO_SCROLLKEEPER_UPDATE_FALSE=
+fi
+
+fi
+
+
 # Write `Makefile's.
-                                                                                                                                            ac_config_files="$ac_config_files Makefile data/Makefile data/markup-themes/Makefile data/textures/Makefile help/Makefile help/C/Makefile po/Makefile.in src/Makefile src/board/Makefile src/gtp/Makefile src/gui-gtk/Makefile src/gui-utils/Makefile src/sgf/Makefile src/utils/Makefile"
+                                                                                                                                                      ac_config_files="$ac_config_files Makefile data/Makefile data/quarry.desktop data/markup-themes/Makefile data/textures/Makefile help/Makefile help/C/Makefile po/Makefile.in src/Makefile src/board/Makefile src/gtp/Makefile src/gui-gtk/Makefile src/gui-utils/Makefile src/sgf/Makefile src/utils/Makefile"
 
 
 # The end.
@@ -7987,6 +8016,13 @@ echo "$as_me: error: conditional \"am__fastdepCC\" was never defined.
 Usually this means the macro was only invoked conditionally." >&2;}
    { (exit 1); exit 1; }; }
 fi
+if test -z "${HAVE_SCROLLKEEPER_TRUE}" && test -z "${HAVE_SCROLLKEEPER_FALSE}"; then
+  { { echo "$as_me:$LINENO: error: conditional \"HAVE_SCROLLKEEPER\" was never defined.
+Usually this means the macro was only invoked conditionally." >&5
+echo "$as_me: error: conditional \"HAVE_SCROLLKEEPER\" was never defined.
+Usually this means the macro was only invoked conditionally." >&2;}
+   { (exit 1); exit 1; }; }
+fi
 if test -z "${BUILD_SGF_UTILS_TRUE}" && test -z "${BUILD_SGF_UTILS_FALSE}"; then
   { { echo "$as_me:$LINENO: error: conditional \"BUILD_SGF_UTILS\" was never defined.
 Usually this means the macro was only invoked conditionally." >&5
@@ -7994,10 +8030,10 @@ echo "$as_me: error: conditional \"BUILD_SGF_UTILS\" was never defined.
 Usually this means the macro was only invoked conditionally." >&2;}
    { (exit 1); exit 1; }; }
 fi
-if test -z "${HAVE_SCROLLKEEPER_TRUE}" && test -z "${HAVE_SCROLLKEEPER_FALSE}"; then
-  { { echo "$as_me:$LINENO: error: conditional \"HAVE_SCROLLKEEPER\" was never defined.
+if test -z "${DO_SCROLLKEEPER_UPDATE_TRUE}" && test -z "${DO_SCROLLKEEPER_UPDATE_FALSE}"; then
+  { { echo "$as_me:$LINENO: error: conditional \"DO_SCROLLKEEPER_UPDATE\" was never defined.
 Usually this means the macro was only invoked conditionally." >&5
-echo "$as_me: error: conditional \"HAVE_SCROLLKEEPER\" was never defined.
+echo "$as_me: error: conditional \"DO_SCROLLKEEPER_UPDATE\" was never defined.
 Usually this means the macro was only invoked conditionally." >&2;}
    { (exit 1); exit 1; }; }
 fi
@@ -8454,6 +8490,7 @@ do
   # Handling of arguments.
   "Makefile" ) CONFIG_FILES="$CONFIG_FILES Makefile" ;;
   "data/Makefile" ) CONFIG_FILES="$CONFIG_FILES data/Makefile" ;;
+  "data/quarry.desktop" ) CONFIG_FILES="$CONFIG_FILES data/quarry.desktop" ;;
   "data/markup-themes/Makefile" ) CONFIG_FILES="$CONFIG_FILES data/markup-themes/Makefile" ;;
   "data/textures/Makefile" ) CONFIG_FILES="$CONFIG_FILES data/textures/Makefile" ;;
   "help/Makefile" ) CONFIG_FILES="$CONFIG_FILES help/Makefile" ;;
@@ -8596,9 +8633,6 @@ s,@RANLIB@,$RANLIB,;t t
 s,@ac_ct_RANLIB@,$ac_ct_RANLIB,;t t
 s,@QUARRY_WARNINGS@,$QUARRY_WARNINGS,;t t
 s,@QUARRY_WARNINGS_GTK@,$QUARRY_WARNINGS_GTK,;t t
-s,@QUARRY_GTK_DEPRECATED_FLAGS@,$QUARRY_GTK_DEPRECATED_FLAGS,;t t
-s,@BUILD_SGF_UTILS_TRUE@,$BUILD_SGF_UTILS_TRUE,;t t
-s,@BUILD_SGF_UTILS_FALSE@,$BUILD_SGF_UTILS_FALSE,;t t
 s,@CPP@,$CPP,;t t
 s,@EGREP@,$EGREP,;t t
 s,@LIBOBJS@,$LIBOBJS,;t t
@@ -8631,6 +8665,11 @@ s,@QUARRY_GTK_LIBS@,$QUARRY_GTK_LIBS,;t t
 s,@QUARRY_GTHREAD_CFLAGS@,$QUARRY_GTHREAD_CFLAGS,;t t
 s,@QUARRY_GTHREAD_LIBS@,$QUARRY_GTHREAD_LIBS,;t t
 s,@GLIB_GENMARSHAL@,$GLIB_GENMARSHAL,;t t
+s,@BUILD_SGF_UTILS_TRUE@,$BUILD_SGF_UTILS_TRUE,;t t
+s,@BUILD_SGF_UTILS_FALSE@,$BUILD_SGF_UTILS_FALSE,;t t
+s,@QUARRY_GTK_DEPRECATED_FLAGS@,$QUARRY_GTK_DEPRECATED_FLAGS,;t t
+s,@DO_SCROLLKEEPER_UPDATE_TRUE@,$DO_SCROLLKEEPER_UPDATE_TRUE,;t t
+s,@DO_SCROLLKEEPER_UPDATE_FALSE@,$DO_SCROLLKEEPER_UPDATE_FALSE,;t t
 s,@LTLIBOBJS@,$LTLIBOBJS,;t t
 CEOF
 

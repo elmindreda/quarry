@@ -56,6 +56,8 @@ CPPFLAGS = @CPPFLAGS@
 CYGPATH_W = @CYGPATH_W@
 DEFS = @DEFS@
 DEPDIR = @DEPDIR@
+DO_SCROLLKEEPER_UPDATE_FALSE = @DO_SCROLLKEEPER_UPDATE_FALSE@
+DO_SCROLLKEEPER_UPDATE_TRUE = @DO_SCROLLKEEPER_UPDATE_TRUE@
 ECHO_C = @ECHO_C@
 ECHO_N = @ECHO_N@
 ECHO_T = @ECHO_T@
@@ -361,7 +363,7 @@ distdir: $(DISTFILES)
 	esac
 	$(am__remove_distdir)
 	mkdir $(distdir)
-	$(mkinstalldirs) $(distdir)/aux $(distdir)/po
+	$(mkinstalldirs) $(distdir)/aux $(distdir)/data $(distdir)/po
 	@srcdirstrip=`echo "$(srcdir)" | sed 's|.|.|g'`; \
 	topsrcdirstrip=`echo "$(top_srcdir)" | sed 's|.|.|g'`; \
 	list='$(DISTFILES)'; for file in $$list; do \

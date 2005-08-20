@@ -67,11 +67,11 @@
 # This file contains the build instructions for installing OMF files.  It is
 # generally called from the makefiles for particular formats of documentation.
 #
-# Note that you must configure your package with --localstatedir=/var/lib
+# Note that you must configure your package with --localstatedir=/var
 # so that the scrollkeeper-update command below will update the database
 # in the standard scrollkeeper directory.
 #
-# If it is impossible to configure with --localstatedir=/var/lib, then
+# If it is impossible to configure with --localstatedir=/var, then
 # modify the definition of scrollkeeper_localstate_dir so that
 # it points to the correct location. Note that you must still use 
 # $(localstatedir) in this or when people build RPMs it will update
@@ -82,12 +82,18 @@
 #       and the makefiles for these formats should also include this file.
 #
 # About this file:
-#	This file was taken from scrollkeeper_example2, a package illustrating
-#	how to install documentation and OMF files for use with ScrollKeeper
-#	0.3.x and 0.4.x.  For more information, see:
+#	This file was derived from scrollkeeper_example2, a package
+#	illustrating how to install documentation and OMF files for use with
+#	ScrollKeeper 0.3.x and 0.4.x.  For more information, see:
 #		http://scrollkeeper.sourceforge.net/	
-# 	Version: 0.1.2 (last updated: March 20, 2002)
+# 	Version: 0.1.3 (last updated: March 20, 2002)
 #
+
+# 2005-08-28  Paul Pogonyshev
+#
+#	Don't run `scrollkeeper-update' if
+#	`--disable-scrollkeeper-update' option was passed to
+#	`configure' script (at request from Michel Salim.)
 
 srcdir = @srcdir@
 top_srcdir = @top_srcdir@
@@ -129,6 +135,8 @@ CPPFLAGS = @CPPFLAGS@
 CYGPATH_W = @CYGPATH_W@
 DEFS = @DEFS@
 DEPDIR = @DEPDIR@
+DO_SCROLLKEEPER_UPDATE_FALSE = @DO_SCROLLKEEPER_UPDATE_FALSE@
+DO_SCROLLKEEPER_UPDATE_TRUE = @DO_SCROLLKEEPER_UPDATE_TRUE@
 ECHO_C = @ECHO_C@
 ECHO_N = @ECHO_N@
 ECHO_T = @ECHO_T@
@@ -225,12 +233,12 @@ lang = C
 omffile = quarry-C.omf
 entities = fdl.xml legal.xml
 
-# ************* Begin of section some packagers may need to modify  **************
+# **********  Begin of section some packagers may need to modify  **********
 # This variable (docdir) specifies where the documents should be installed.
 # This default value should work for most packages.
 docdir = $(datadir)/@PACKAGE@/help/$(lang)
 
-# **************  You should not have to edit below this line  *******************
+# **********  You should not have to edit below this line  **********
 xml_files = $(entities) $(docname).xml $(docname).html
 
 EXTRA_DIST = $(xml_files) $(omffile)
@@ -238,6 +246,12 @@ CLEANFILES = omf_timestamp
 
 @HAVE_SCROLLKEEPER_TRUE@omf_dest_dir = $(datadir)/omf/@PACKAGE@
 @HAVE_SCROLLKEEPER_TRUE@scrollkeeper_localstate_dir = $(localstatedir)/scrollkeeper
+@DO_SCROLLKEEPER_UPDATE_FALSE@@HAVE_SCROLLKEEPER_TRUE@do_scrollkeeper_update = false
+
+
+# At some point, it may be wise to change to something like this:
+# scrollkeeper_localstate_dir = @SCROLLKEEPER_STATEDIR@
+@DO_SCROLLKEEPER_UPDATE_TRUE@@HAVE_SCROLLKEEPER_TRUE@do_scrollkeeper_update = true
 
 DISTCLEANFILES = *~
 subdir = help/C
@@ -332,7 +346,7 @@ maintainer-clean-generic:
 	@echo "it deletes files that may require special tools to rebuild."
 clean: clean-am
 
-clean-am: clean-generic mostlyclean-am
+clean-am: clean-generic clean-local mostlyclean-am
 
 distclean: distclean-am
 	-rm -f Makefile
@@ -376,14 +390,15 @@ ps-am:
 
 uninstall-am: uninstall-info-am uninstall-local
 
-.PHONY: all all-am check check-am clean clean-generic distclean \
-	distclean-generic distdir dvi dvi-am info info-am install \
-	install-am install-data install-data-am install-data-local \
-	install-exec install-exec-am install-info install-info-am \
-	install-man install-strip installcheck installcheck-am \
-	installdirs maintainer-clean maintainer-clean-generic \
-	mostlyclean mostlyclean-generic pdf pdf-am ps ps-am uninstall \
-	uninstall-am uninstall-info-am uninstall-local
+.PHONY: all all-am check check-am clean clean-generic clean-local \
+	distclean distclean-generic distdir dvi dvi-am info info-am \
+	install install-am install-data install-data-am \
+	install-data-local install-exec install-exec-am install-info \
+	install-info-am install-man install-strip installcheck \
+	installcheck-am installdirs maintainer-clean \
+	maintainer-clean-generic mostlyclean mostlyclean-generic pdf \
+	pdf-am ps ps-am uninstall uninstall-am uninstall-info-am \
+	uninstall-local
 
 
 @HAVE_SCROLLKEEPER_TRUE@omf: omf_timestamp
@@ -391,7 +406,7 @@ uninstall-am: uninstall-info-am uninstall-local
 @HAVE_SCROLLKEEPER_TRUE@omf_timestamp: $(omffile)
 @HAVE_SCROLLKEEPER_TRUE@	-for file in $(omffile); do \
 @HAVE_SCROLLKEEPER_TRUE@	  scrollkeeper-preinstall $(docdir)/$(docname).xml $(srcdir)/$$file $$file.out; \
-@HAVE_SCROLLKEEPER_TRUE@	done
+@HAVE_SCROLLKEEPER_TRUE@	done; \
 @HAVE_SCROLLKEEPER_TRUE@	touch omf_timestamp
 
 @HAVE_SCROLLKEEPER_TRUE@install-data-hook-omf:
@@ -399,15 +414,24 @@ uninstall-am: uninstall-info-am uninstall-local
 @HAVE_SCROLLKEEPER_TRUE@	for file in $(omffile); do \
 @HAVE_SCROLLKEEPER_TRUE@		$(INSTALL_DATA) $$file.out $(DESTDIR)$(omf_dest_dir)/$$file; \
 @HAVE_SCROLLKEEPER_TRUE@	done
-@HAVE_SCROLLKEEPER_TRUE@	-scrollkeeper-update -p $(scrollkeeper_localstate_dir) -o $(DESTDIR)$(omf_dest_dir)
+@HAVE_SCROLLKEEPER_TRUE@	-if test "$do_scrollkeeper_update" = "true"; then \
+@HAVE_SCROLLKEEPER_TRUE@	  scrollkeeper-update -p $(DESTDIR)$(scrollkeeper_localstate_dir) -o $(DESTDIR)$(omf_dest_dir) \
+@HAVE_SCROLLKEEPER_TRUE@	fi
 
 @HAVE_SCROLLKEEPER_TRUE@uninstall-local-omf:
 @HAVE_SCROLLKEEPER_TRUE@	-for file in $(srcdir)/*.omf; do \
 @HAVE_SCROLLKEEPER_TRUE@		basefile=`basename $$file`; \
-@HAVE_SCROLLKEEPER_TRUE@		rm -f $(omf_dest_dir)/$$basefile; \
+@HAVE_SCROLLKEEPER_TRUE@		rm -f $(DESTDIR)$(omf_dest_dir)/$$basefile; \
 @HAVE_SCROLLKEEPER_TRUE@	done
-@HAVE_SCROLLKEEPER_TRUE@	-rmdir $(omf_dest_dir)
-@HAVE_SCROLLKEEPER_TRUE@	-scrollkeeper-update -p $(scrollkeeper_localstate_dir)
+@HAVE_SCROLLKEEPER_TRUE@	-rmdir $(DESTDIR)$(omf_dest_dir)
+@HAVE_SCROLLKEEPER_TRUE@	-if test "$do_scrollkeeper_update" = "true"; then \
+@HAVE_SCROLLKEEPER_TRUE@	  -scrollkeeper-update -p $(DESTDIR)$(scrollkeeper_localstate_dir) \
+@HAVE_SCROLLKEEPER_TRUE@	fi
+
+@HAVE_SCROLLKEEPER_TRUE@clean-local-omf:
+@HAVE_SCROLLKEEPER_TRUE@	-for file in $(omffile); do \
+@HAVE_SCROLLKEEPER_TRUE@		rm -f $$file.out; \
+@HAVE_SCROLLKEEPER_TRUE@	done
 
 @HAVE_SCROLLKEEPER_TRUE@all: omf
 
@@ -446,7 +470,7 @@ app-dist-hook:
 @HAVE_SCROLLKEEPER_TRUE@	-if test "$(figdir)"; then \
 @HAVE_SCROLLKEEPER_TRUE@	  for file in $(srcdir)/$(figdir)/*.png; do \
 @HAVE_SCROLLKEEPER_TRUE@	    basefile=`echo $$file | sed -e  's,^.*/,,'`; \
-@HAVE_SCROLLKEEPER_TRUE@	    rm -f $(docdir)/$(figdir)/$$basefile; \
+@HAVE_SCROLLKEEPER_TRUE@	    rm -f $(DESTDIR)$(docdir)/$(figdir)/$$basefile; \
 @HAVE_SCROLLKEEPER_TRUE@	  done; \
 @HAVE_SCROLLKEEPER_TRUE@	  rmdir $(DESTDIR)$(docdir)/$(figdir); \
 @HAVE_SCROLLKEEPER_TRUE@	fi
@@ -454,6 +478,8 @@ app-dist-hook:
 @HAVE_SCROLLKEEPER_TRUE@	  rm -f $(DESTDIR)$(docdir)/$$file; \
 @HAVE_SCROLLKEEPER_TRUE@	done
 @HAVE_SCROLLKEEPER_TRUE@	-rmdir $(DESTDIR)$(docdir)
+
+@HAVE_SCROLLKEEPER_TRUE@clean-local: clean-local-doc clean-local-omf
 
 @HAVE_SCROLLKEEPER_FALSE@install-data-local:
 @HAVE_SCROLLKEEPER_FALSE@	$(mkinstalldirs) $(DESTDIR)$(docdir)
@@ -474,12 +500,20 @@ app-dist-hook:
 @HAVE_SCROLLKEEPER_FALSE@	-if test "$(figdir)"; then \
 @HAVE_SCROLLKEEPER_FALSE@	  for file in $(srcdir)/$(figdir)/*.png; do \
 @HAVE_SCROLLKEEPER_FALSE@	    basefile=`echo $$file | sed -e  's,^.*/,,'`; \
-@HAVE_SCROLLKEEPER_FALSE@	    rm -f $(docdir)/$(figdir)/$$basefile; \
+@HAVE_SCROLLKEEPER_FALSE@	    rm -f $(DESTDIR)$(docdir)/$(figdir)/$$basefile; \
 @HAVE_SCROLLKEEPER_FALSE@	  done; \
 @HAVE_SCROLLKEEPER_FALSE@	  rmdir $(DESTDIR)$(docdir)/$(figdir); \
 @HAVE_SCROLLKEEPER_FALSE@	fi
 @HAVE_SCROLLKEEPER_FALSE@	-rm -f $(DESTDIR)$(docdir)/$(docname).html;
 @HAVE_SCROLLKEEPER_FALSE@	-rmdir $(DESTDIR)$(docdir)
+
+@HAVE_SCROLLKEEPER_FALSE@clean-local: clean-local-doc
+
+# for non-srcdir builds, remove the copied entities.
+clean-local-doc:
+	if test $(srcdir) != .; then \
+	  rm -f $(entities); \
+	fi
 
 dist-hook: app-dist-hook
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
