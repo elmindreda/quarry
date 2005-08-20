@@ -1,0 +1,12 @@
+[Desktop Entry]
+Encoding=UTF-8
+Name=Quarry
+GenericName=Board Game GUI
+Comment=A multi-purpose board game GUI for Go, Amazons and Othello
+Exec=quarry
+#Icon=
+Terminal=false
+Type=Application
+Version=@VERSION@
+Categories=Application;GTK;GNOME;Game;BoardGame;
+StartupNotify=true

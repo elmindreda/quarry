@@ -4,13 +4,21 @@ SUBDIRS =		\
 	markup-themes	\
 	textures
 
+
 FILES =		\
 	gtkrc
 
-filesdir = $(datadir)/quarry
-files_DATA = $(FILES)
+filesdir     = $(datadir)/quarry
+files_DATA   = $(FILES)
 
 
-EXTRA_DIST = $(FILES)
+DESKTOP_FILE = quarry.desktop
+
+desktopdir   = $(prefix)/share/applications
+desktop_DATA = $(DESKTOP_FILE)
+
+
+EXTRA_DIST = $(FILES) $(DESKTOP_FILE:.desktop=.desktop.in)
+
 
 DISTCLEANFILES = *~
