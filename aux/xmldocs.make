@@ -44,16 +44,17 @@
 #	Install and distribute `$(docname).html' too.
 
 
-# ************* Begin of section some packagers may need to modify  **************
+# **********  Begin of section some packagers may need to modify  **********
 # This variable (docdir) specifies where the documents should be installed.
 # This default value should work for most packages.
 docdir = $(datadir)/@PACKAGE@/help/$(lang)
 
-# **************  You should not have to edit below this line  *******************
+# **********  You should not have to edit below this line  **********
 xml_files = $(entities) $(docname).xml $(docname).html
 
 EXTRA_DIST = $(xml_files) $(omffile)
 CLEANFILES = omf_timestamp
+
 
 if HAVE_SCROLLKEEPER
 
@@ -66,7 +67,8 @@ $(docname).xml: $(entities)
 	cd $(srcdir);   \
 	cp $(entities) $$ourdir
 
-endif
+endif  # HAVE_SCROLLKEEPER
+
 
 app-dist-hook:
 	if test "$(figdir)"; then \
@@ -77,7 +79,9 @@ app-dist-hook:
 	  done \
 	fi
 
+
 if HAVE_SCROLLKEEPER
+
 
 install-data-local: omf
 	$(mkinstalldirs) $(DESTDIR)$(docdir)
@@ -100,7 +104,7 @@ uninstall-local-doc:
 	-if test "$(figdir)"; then \
 	  for file in $(srcdir)/$(figdir)/*.png; do \
 	    basefile=`echo $$file | sed -e  's,^.*/,,'`; \
-	    rm -f $(docdir)/$(figdir)/$$basefile; \
+	    rm -f $(DESTDIR)$(docdir)/$(figdir)/$$basefile; \
 	  done; \
 	  rmdir $(DESTDIR)$(docdir)/$(figdir); \
 	fi
@@ -109,7 +113,11 @@ uninstall-local-doc:
 	done
 	-rmdir $(DESTDIR)$(docdir)
 
-else
+clean-local: clean-local-doc clean-local-omf
+
+
+else  # not HAVE_SCROLLKEEPER
+
 
 install-data-local:
 	$(mkinstalldirs) $(DESTDIR)$(docdir)
@@ -130,11 +138,21 @@ uninstall-local-doc:
 	-if test "$(figdir)"; then \
 	  for file in $(srcdir)/$(figdir)/*.png; do \
 	    basefile=`echo $$file | sed -e  's,^.*/,,'`; \
-	    rm -f $(docdir)/$(figdir)/$$basefile; \
+	    rm -f $(DESTDIR)$(docdir)/$(figdir)/$$basefile; \
 	  done; \
 	  rmdir $(DESTDIR)$(docdir)/$(figdir); \
 	fi
 	-rm -f $(DESTDIR)$(docdir)/$(docname).html;
 	-rmdir $(DESTDIR)$(docdir)
 
-endif
+clean-local: clean-local-doc
+
+
+endif  # not HAVE_SCROLLKEEPER
+
+
+# for non-srcdir builds, remove the copied entities.
+clean-local-doc:
+	if test $(srcdir) != .; then \
+	  rm -f $(entities); \
+	fi
