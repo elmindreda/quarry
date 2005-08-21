@@ -60,8 +60,8 @@ install-data-hook-omf:
 	for file in $(omffile); do \
 		$(INSTALL_DATA) $$file.out $(DESTDIR)$(omf_dest_dir)/$$file; \
 	done
-	-if test "$do_scrollkeeper_update" = "true"; then \
-	  scrollkeeper-update -p $(DESTDIR)$(scrollkeeper_localstate_dir) -o $(DESTDIR)$(omf_dest_dir) \
+	-if test "$(do_scrollkeeper_update)" = "true"; then \
+	  scrollkeeper-update -p $(DESTDIR)$(scrollkeeper_localstate_dir) -o $(DESTDIR)$(omf_dest_dir); \
 	fi
 
 uninstall-local-omf:
@@ -70,8 +70,8 @@ uninstall-local-omf:
 		rm -f $(DESTDIR)$(omf_dest_dir)/$$basefile; \
 	done
 	-rmdir $(DESTDIR)$(omf_dest_dir)
-	-if test "$do_scrollkeeper_update" = "true"; then \
-	  -scrollkeeper-update -p $(DESTDIR)$(scrollkeeper_localstate_dir) \
+	-if test "$(do_scrollkeeper_update)" = "true"; then \
+	  -scrollkeeper-update -p $(DESTDIR)$(scrollkeeper_localstate_dir); \
 	fi
 
 clean-local-omf:

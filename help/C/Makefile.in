@@ -414,8 +414,8 @@ uninstall-am: uninstall-info-am uninstall-local
 @HAVE_SCROLLKEEPER_TRUE@	for file in $(omffile); do \
 @HAVE_SCROLLKEEPER_TRUE@		$(INSTALL_DATA) $$file.out $(DESTDIR)$(omf_dest_dir)/$$file; \
 @HAVE_SCROLLKEEPER_TRUE@	done
-@HAVE_SCROLLKEEPER_TRUE@	-if test "$do_scrollkeeper_update" = "true"; then \
-@HAVE_SCROLLKEEPER_TRUE@	  scrollkeeper-update -p $(DESTDIR)$(scrollkeeper_localstate_dir) -o $(DESTDIR)$(omf_dest_dir) \
+@HAVE_SCROLLKEEPER_TRUE@	-if test "$(do_scrollkeeper_update)" = "true"; then \
+@HAVE_SCROLLKEEPER_TRUE@	  scrollkeeper-update -p $(DESTDIR)$(scrollkeeper_localstate_dir) -o $(DESTDIR)$(omf_dest_dir); \
 @HAVE_SCROLLKEEPER_TRUE@	fi
 
 @HAVE_SCROLLKEEPER_TRUE@uninstall-local-omf:
@@ -424,8 +424,8 @@ uninstall-am: uninstall-info-am uninstall-local
 @HAVE_SCROLLKEEPER_TRUE@		rm -f $(DESTDIR)$(omf_dest_dir)/$$basefile; \
 @HAVE_SCROLLKEEPER_TRUE@	done
 @HAVE_SCROLLKEEPER_TRUE@	-rmdir $(DESTDIR)$(omf_dest_dir)
-@HAVE_SCROLLKEEPER_TRUE@	-if test "$do_scrollkeeper_update" = "true"; then \
-@HAVE_SCROLLKEEPER_TRUE@	  -scrollkeeper-update -p $(DESTDIR)$(scrollkeeper_localstate_dir) \
+@HAVE_SCROLLKEEPER_TRUE@	-if test "$(do_scrollkeeper_update)" = "true"; then \
+@HAVE_SCROLLKEEPER_TRUE@	  -scrollkeeper-update -p $(DESTDIR)$(scrollkeeper_localstate_dir); \
 @HAVE_SCROLLKEEPER_TRUE@	fi
 
 @HAVE_SCROLLKEEPER_TRUE@clean-local-omf:
