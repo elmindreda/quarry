@@ -1,3 +1,19 @@
+2005-08-21  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* aux/omf.make: Fix last change.
+
+2005-08-20  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* aux/omf.make: Update to latest version from `gnome-common'
+	module.  Honor the new `--disable-scrollkeeper-update' option.
+
+	* aux/xmldocs.make: Merge in changes from `gnome-common' module.
+
+	* configure.ac: Generate `data/quarry.desktop'.  Add
+	`--disable-scrollkeeper-update' option at request from Michel
+	Salim.  Rearrange some options for better grouping in `configure
+	--help' output.
+
 2005-07-15  Paul Pogonyshev  <pogonyshev@gmx.net>
 
 	* INSTALL: Mention that `po/quarry.pot' can be updated only when
