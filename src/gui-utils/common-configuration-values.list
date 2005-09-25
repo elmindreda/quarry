@@ -96,7 +96,7 @@ values  - amazons_board_appearance_values {
 
   "Markup opacity"		board_appearance.markup_opacity			real
 
-  "Markup color on white"	board_appearance.markup_colors[1]		color
-  "Markup color on black"	board_appearance.markup_colors[2]		color
+  "Markup color on white"	board_appearance.markup_colors[2]		color
+  "Markup color on black"	board_appearance.markup_colors[1]		color
   "Markup color on other"	board_appearance.markup_colors[0]		color
 }
