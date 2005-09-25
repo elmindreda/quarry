@@ -352,7 +352,7 @@ gtk_game_info_dialog_init (GtkGameInfoDialog *dialog)
 						      GTK_POLICY_AUTOMATIC);
 
   label = gtk_utils_create_mnemonic_label (_("Comment / _description:"),
-					   scrolled_window);
+					   text_view);
 
   vbox = gtk_utils_pack_in_box (GTK_TYPE_VBOX, QUARRY_SPACING_SMALL,
 				label, GTK_UTILS_FILL,
