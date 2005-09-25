@@ -52,7 +52,7 @@ struct _GtkNamedVBox {
   GtkVBox	   vbox;
 
   GtkWidget	  *label;
-  guint		   left_padding;
+  int		   left_padding;
 
   GtkRequisition   vbox_requisition;
 };

@@ -509,14 +509,14 @@ struct _BufferedWriter {
 
   iconv_t	iconv_handle;
 
-  int		column;
+  size_t	column;
 
   int		successful;
 };
 
 
 int		buffered_writer_init (BufferedWriter *writer,
-				      const char *filename, int buffer_size);
+				      const char *filename, size_t buffer_size);
 int		buffered_writer_dispose (BufferedWriter *writer);
 
 #define buffered_writer_set_iconv_handle(writer, handle)	\
@@ -532,7 +532,7 @@ void		buffered_writer_cat_string (BufferedWriter *writer,
 void		buffered_writer_cat_strings (BufferedWriter *writer, ...);
 
 void		buffered_writer_cat_as_string (BufferedWriter *writer,
-					       const char *buffer, int length);
+					       const char *buffer, size_t length);
 void		buffered_writer_cat_as_strings (BufferedWriter *writer, ...);
 
 void		buffered_writer_printf (BufferedWriter *writer,

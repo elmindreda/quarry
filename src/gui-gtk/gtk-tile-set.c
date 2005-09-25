@@ -77,8 +77,8 @@ static void *	    gtk_sgf_markup_tile_set_create
 static void	    gtk_sgf_markup_tile_set_delete
 		      (GtkSgfMarkupTileSet *tile_set);
 
-static GdkPixbuf *  scale_and_paint_svg_image (char *buffer,
-					       const char *buffer_end,
+static GdkPixbuf *  scale_and_paint_svg_image (guchar *buffer,
+					       const guchar *buffer_end,
 					       gint tile_size, gdouble scale,
 					       QuarryColor color,
 					       gdouble opacity);
@@ -186,18 +186,18 @@ gtk_main_tile_set_create (const GtkMainTileSetKey *key)
 			  &tile_set->stones_y_offset);
   }
 
-  pixel_data = duplicate_and_adjust_alpha (3, 4, tile_size,
+  pixel_data = duplicate_and_adjust_alpha (3, 4, tile_size, tile_size,
 					   black_pixel_data, row_stride);
   tile_set->tiles[BLACK_25_TRANSPARENT]
     = create_pixbuf_from_pixel_data (tile_size, pixel_data, row_stride);
 
-  pixel_data = duplicate_and_adjust_alpha (3, 4, tile_size,
+  pixel_data = duplicate_and_adjust_alpha (3, 4, tile_size, tile_size,
 					   white_pixel_data, row_stride);
   tile_set->tiles[WHITE_25_TRANSPARENT]
     = create_pixbuf_from_pixel_data (tile_size, pixel_data, row_stride);
 
   black_50_transparent_pixel_data
-    = duplicate_and_adjust_alpha (1, 2, tile_size,
+    = duplicate_and_adjust_alpha (1, 2, tile_size, tile_size,
 				  black_pixel_data, row_stride);
   tile_set->tiles[BLACK_50_TRANSPARENT]
     = create_pixbuf_from_pixel_data (tile_size,
@@ -205,7 +205,7 @@ gtk_main_tile_set_create (const GtkMainTileSetKey *key)
 				     row_stride);
 
   white_50_transparent_pixel_data
-    = duplicate_and_adjust_alpha (1, 2, tile_size,
+    = duplicate_and_adjust_alpha (1, 2, tile_size, tile_size,
 				  white_pixel_data, row_stride);
   tile_set->tiles[WHITE_50_TRANSPARENT]
     = create_pixbuf_from_pixel_data (tile_size,
@@ -358,7 +358,7 @@ gtk_sgf_markup_tile_set_create (const GtkSgfMarkupTileSetKey *key)
 
     if (file && fseek (file, 0, SEEK_END) != -1) {
       int file_size = ftell (file);
-      char *buffer = g_malloc (file_size);
+      guchar *buffer = g_malloc (file_size);
 
       rewind (file);
       if (fread (buffer, file_size, 1, file) != 1)
@@ -388,14 +388,14 @@ gtk_sgf_markup_tile_set_create (const GtkSgfMarkupTileSetKey *key)
 	  row_stride = gdk_pixbuf_get_rowstride (tile);
 
 	  transparent_pixel_data
-	    = duplicate_and_adjust_alpha (3, 4, tile_size,
+	    = duplicate_and_adjust_alpha (3, 4, tile_size, tile_size,
 					  pixel_data, row_stride);
 	  tile_set->tiles[SGF_MARKUP_25_TRANSPARENT + k][i]
 	    = create_pixbuf_from_pixel_data (tile_size, transparent_pixel_data,
 					     row_stride);
 
 	  transparent_pixel_data
-	    = duplicate_and_adjust_alpha (1, 2, tile_size,
+	    = duplicate_and_adjust_alpha (1, 2, tile_size, tile_size,
 					  pixel_data, row_stride);
 	  tile_set->tiles[SGF_MARKUP_50_TRANSPARENT + k][i]
 	    = create_pixbuf_from_pixel_data (tile_size, transparent_pixel_data,
@@ -448,16 +448,16 @@ gtk_sgf_markup_tile_set_delete (GtkSgfMarkupTileSet *tile_set)
 
 
 static GdkPixbuf *
-scale_and_paint_svg_image (char *buffer, const char *buffer_end,
+scale_and_paint_svg_image (guchar *buffer, const guchar *buffer_end,
 			   gint tile_size,
 			   gdouble scale, QuarryColor color, gdouble opacity)
 {
   GdkPixbuf *pixbuf;
-  const char *written_up_to;
-  char *scan;
+  const guchar *written_up_to;
+  guchar *scan;
   RsvgHandle *rsvg_handle = rsvg_handle_new ();
   char color_string[8];
-  char *scale_string = utils_cprintf (" scale(%.f)", scale);
+  char *scale_string   = utils_cprintf (" scale(%.f)", scale);
   char *opacity_string = utils_cprintf ("%.f", opacity);
 
   sprintf (color_string, "#%02x%02x%02x", color.red, color.green, color.blue);
@@ -476,7 +476,7 @@ scale_and_paint_svg_image (char *buffer, const char *buffer_end,
 
       scan += 12;
       while (1) {
-	const char *keyword;
+	const guchar *keyword;
 
 	while (scan < buffer_end
 	       && (*scan == ' ' || *scan == '\t'
@@ -496,7 +496,7 @@ scale_and_paint_svg_image (char *buffer, const char *buffer_end,
 	    blend_this_tag = 1;
 	  else {
 	    string_list_add_from_buffer (&color_properties,
-					 keyword, scan - keyword);
+					 (char *) keyword, scan - keyword);
 	  }
 	}
 	else
@@ -511,7 +511,7 @@ scale_and_paint_svg_image (char *buffer, const char *buffer_end,
 	scan++;
 
       while (1) {
-	const char *property_name;
+	const guchar *property_name;
 
 	while (scan < buffer_end
 	       && (*scan == ' ' || *scan == '\t'
@@ -536,7 +536,7 @@ scale_and_paint_svg_image (char *buffer, const char *buffer_end,
 			       scan - written_up_to, NULL);
 	    written_up_to = scan;
 
-	    rsvg_handle_write (rsvg_handle, scale_string,
+	    rsvg_handle_write (rsvg_handle, (guchar *) scale_string,
 			       strlen (scale_string), NULL);
 
 	    scale_this_tag = 0;
@@ -551,7 +551,7 @@ scale_and_paint_svg_image (char *buffer, const char *buffer_end,
 	      scan++;
 	    written_up_to = scan;
 
-	    rsvg_handle_write (rsvg_handle, opacity_string,
+	    rsvg_handle_write (rsvg_handle, (guchar *) opacity_string,
 			       strlen (opacity_string), NULL);
 
 	    blend_this_tag = 0;
@@ -561,7 +561,7 @@ scale_and_paint_svg_image (char *buffer, const char *buffer_end,
 
 	    *scan = 0;
 	    color_property = string_list_find (&color_properties,
-					       property_name);
+					       (char *) property_name);
 	    *scan = '=';
 	    scan += 2;
 
@@ -571,7 +571,8 @@ scale_and_paint_svg_image (char *buffer, const char *buffer_end,
 	      rsvg_handle_write (rsvg_handle, written_up_to,
 				 scan - written_up_to, NULL);
 
-	      rsvg_handle_write (rsvg_handle, color_string, 7, NULL);
+	      rsvg_handle_write (rsvg_handle, (guchar *) color_string, 7,
+				 NULL);
 
 	      while (scan < buffer_end && *scan != '"')
 		scan++;
@@ -596,7 +597,7 @@ scale_and_paint_svg_image (char *buffer, const char *buffer_end,
 	      char *scale_full_string = g_strdup_printf (" transform=\"%s\"",
 							 scale_string + 1);
 
-	      rsvg_handle_write (rsvg_handle, scale_full_string,
+	      rsvg_handle_write (rsvg_handle, (guchar *) scale_full_string,
 				 strlen (scale_full_string), NULL);
 
 	      g_free (scale_full_string);
@@ -606,7 +607,7 @@ scale_and_paint_svg_image (char *buffer, const char *buffer_end,
 	      char *opacity_full_string = g_strdup_printf (" opacity=\"%s\"",
 							   opacity_string);
 
-	      rsvg_handle_write (rsvg_handle, opacity_full_string,
+	      rsvg_handle_write (rsvg_handle, (guchar *) opacity_full_string,
 				 strlen (opacity_full_string), NULL);
 
 	      g_free (opacity_full_string);

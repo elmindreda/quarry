@@ -1204,7 +1204,7 @@ sgf_utils_descend_nodes (SgfGameTree *tree, int num_nodes)
 
     if (node->move_color != SETUP_NODE) {
       sgf_node_get_number_property_value (node, SGF_MOVE_NUMBER,
-					  &tree->board->move_number);
+					  (int *) &tree->board->move_number);
     }
   } while (--num_nodes != 0);
 

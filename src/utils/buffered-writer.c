@@ -1,7 +1,7 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *\
  * This file is part of Quarry.                                    *
  *                                                                 *
- * Copyright (C) 2003, 2004 Paul Pogonyshev.                       *
+ * Copyright (C) 2003, 2004, 2005 Paul Pogonyshev.                 *
  *                                                                 *
  * This program is free software; you can redistribute it and/or   *
  * modify it under the terms of the GNU General Public License as  *
@@ -25,7 +25,7 @@
  * - Allows on-the-fly re-encoding of incoming text.  Moreover,
  *   required encoding can change arbitrary between writes to the
  *   buffer (use buffered_writer_set_iconv_handle() macro to change
- *   it).  Incoming text must come in UTF-8.
+ *   it).  Incoming text must be in UTF-8.
  *
  * - Tracks current column in the output stream, thus making output
  *   formatting easier for higher level code.
@@ -50,12 +50,12 @@
 
 static void	flush_buffer (BufferedWriter *writer);
 static void	update_column (BufferedWriter *writer,
-			       const char *buffer, int length);
+			       const char *buffer, size_t length);
 
 
 int
 buffered_writer_init (BufferedWriter *writer,
-		      const char *filename, int buffer_size)
+		      const char *filename, size_t buffer_size)
 {
   assert (writer);
   assert (buffer_size > MB_LEN_MAX);
@@ -110,9 +110,9 @@ buffered_writer_add_character (BufferedWriter *writer, char character)
   if (!writer->iconv_handle)
     *writer->buffer_pointer++ = character;
   else {
-    char *input_text = &character;
-    int input_bytes_left = 1;
-    int output_bytes_left = writer->buffer_end - writer->buffer_pointer;
+    char   *input_text	      = &character;
+    size_t  input_bytes_left  = 1;
+    size_t  output_bytes_left = writer->buffer_end - writer->buffer_pointer;
 
     iconv (writer->iconv_handle,
 	   &input_text, &input_bytes_left,
@@ -145,10 +145,10 @@ buffered_writer_add_newline (BufferedWriter *writer)
   if (!writer->iconv_handle)
     *writer->buffer_pointer++ = '\n';
   else {
-    char input_character = '\n';
-    char *input_text = &input_character;
-    int input_bytes_left = 1;
-    int output_bytes_left = writer->buffer_end - writer->buffer_pointer;
+    char    input_character   = '\n';
+    char   *input_text	      = &input_character;
+    size_t  input_bytes_left  = 1;
+    size_t  output_bytes_left = writer->buffer_end - writer->buffer_pointer;
 
     iconv (writer->iconv_handle,
 	   &input_text, &input_bytes_left,
@@ -194,7 +194,7 @@ buffered_writer_cat_strings (BufferedWriter *writer, ...)
 
 void
 buffered_writer_cat_as_string (BufferedWriter *writer,
-			       const char *buffer, int length)
+			       const char *buffer, size_t length)
 {
   assert (writer);
   assert (buffer);
@@ -203,8 +203,8 @@ buffered_writer_cat_as_string (BufferedWriter *writer,
 
   if (!writer->iconv_handle) {
     while (length > 0) {
-      int chunk_size = MIN (length,
-			    writer->buffer_end - writer->buffer_pointer);
+      size_t chunk_size = MIN (length,
+			       writer->buffer_end - writer->buffer_pointer);
 
       memcpy (writer->buffer_pointer, buffer, chunk_size);
 
@@ -218,7 +218,7 @@ buffered_writer_cat_as_string (BufferedWriter *writer,
   }
   else {
     while (length > 0) {
-      int output_bytes_left = writer->buffer_end - writer->buffer_pointer;
+      size_t output_bytes_left = writer->buffer_end - writer->buffer_pointer;
 
       /* Dumb <iconv.h> doesn't apply `const' to input buffer?!  This
        * is nasty, but a warning for nothing is even worse.
@@ -243,7 +243,7 @@ buffered_writer_cat_as_strings (BufferedWriter *writer, ...)
   va_start (arguments, writer);
 
   while ((buffer = va_arg (arguments, const char *)) != NULL)
-    buffered_writer_cat_as_string (writer, buffer, va_arg (arguments, int));
+    buffered_writer_cat_as_string (writer, buffer, va_arg (arguments, size_t));
 
   va_end (arguments);
 }
@@ -265,7 +265,7 @@ buffered_writer_vprintf (BufferedWriter *writer,
 			 const char *format_string, va_list arguments)
 {
   va_list arguments_copy;
-  int characters_written;
+  size_t characters_written;
   char *string;
 
   assert (writer);
@@ -323,7 +323,7 @@ buffered_writer_vcprintf (BufferedWriter *writer,
   if (!writer->iconv_handle
       && (writer->buffer_end - writer->buffer_pointer
 	  >= strlen (format_string))) {
-    int characters_written;
+    size_t characters_written;
     va_list arguments_copy;
 
     /* No encoding conversion is requested.  Try to print the string
@@ -363,7 +363,7 @@ flush_buffer (BufferedWriter *writer)
 
 
 static void
-update_column (BufferedWriter *writer, const char *buffer, int length)
+update_column (BufferedWriter *writer, const char *buffer, size_t length)
 {
   const char *last_line;
   const char *buffer_end = buffer + length;
@@ -380,7 +380,7 @@ update_column (BufferedWriter *writer, const char *buffer, int length)
 
 #else
 
-  int k;
+  size_t k;
 
   for (k = length; --k >= 0; k++) {
     if (buffer[k] == '\n') {

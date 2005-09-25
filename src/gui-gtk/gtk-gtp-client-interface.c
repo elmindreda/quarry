@@ -241,7 +241,7 @@ handle_engine_output (GIOChannel *read_output_from, GIOCondition condition,
 {
   if (!data->deletion_scheduled) {
     gchar buffer[0x1000];
-    gint bytes_read;
+    gsize bytes_read;
 
     /* Check that the channel is readable.  This loop throws
      * responses at the client and it can decide to delete itself
@@ -299,7 +299,7 @@ handle_engine_stderr (GIOChannel *read_output_from, GIOCondition condition,
 {
   if (!data->deletion_scheduled) {
     gchar buffer[0x1000];
-    gint bytes_read;
+    gsize bytes_read;
 
     while (g_io_channel_get_flags (read_output_from)
 	   & G_IO_FLAG_IS_READABLE) {
