@@ -1,3 +1,54 @@
+2005-09-25  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* gui-gtk/gtk-tile-set.c (scale_and_paint_svg_image): Change a lot
+	of types and use explicit casting to suppress all GCC 4.0
+	warnings.
+
+	* gui-gtk/gtk-named-vbox.h (_GtkNamedVBox): Change type of
+	`left_padding' field to `int' to avoid GCC 4.0 warning.
+
+	* gui-gtk/gtk-gtp-client-interface.c (handle_engine_output):
+	Change type of `bytes_read' to `gsize' to silence GCC 4.0 warning.
+	(handle_engine_stderr): Likewise.
+
+	* gui-utils/tile-renderer.c (duplicate_and_adjust_alpha): Change
+	type of `new_pixel_data' and `scan' to `unsigned char *' to deal
+	with GCC 4.0 warnings.
+	(saturate_and_set_alpha): Likewise.
+	(combine_pixels_diagonally): Likewise.
+
+	* sgf/sgf-utils.c (sgf_utils_descend_nodes): Explicitly cast an
+	argument of sgf_node_get_number_property_value() to `int *' to
+	prevent GCC 4.0 warning.
+
+	* utils/buffered-writer.c (buffered_writer_add_character): Change
+	type of `buffer_size' and some local variables to
+	`size_t'.  (Dealing with GCC 4.0 warnings.)
+	(buffered_writer_add_newline): Likewise for local variables.
+	(buffered_writer_cat_as_string): Likewise for `length' and local
+	variables.
+	(buffered_writer_cat_as_strings): Likewise for length arguments
+	from variadic argument list.
+	(buffered_writer_vprintf): Likewise for a local variable.
+	(buffered_writer_vcprintf): Likewise.
+	(update_column): Likewise for `length' and a local variable.
+
+2005-07-17  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* gui-utils/tile-renderer.c (duplicate_and_adjust_alpha): Replace
+	`image_size' argument with `width' and `height'.
+	(saturate_and_set_alpha): New function.
+
+2005-07-16  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* gui-gtk/gtk-game-info-dialog.c (gtk_game_info_dialog_init): Fix:
+	set mnemonic widget for "Comment / Description" label to be the
+	text view, not its scrollable parent.
+
+	* gui-utils/common-configuration-values.list
+	(amazons_board_appearance_values): Fix two wrong `markup_colors'
+	indices.
+
 2005-07-15  Paul Pogonyshev  <pogonyshev@gmx.net>
 
 	* gui-gtk/gtk-goban-window.c: Add some comments for translators.
