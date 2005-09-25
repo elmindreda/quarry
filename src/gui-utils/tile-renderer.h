@@ -1,7 +1,7 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *\
  * This file is part of Quarry.                                    *
  *                                                                 *
- * Copyright (C) 2003, 2004 Paul Pogonyshev.                       *
+ * Copyright (C) 2003, 2004, 2005 Paul Pogonyshev.                 *
  *                                                                 *
  * This program is free software; you can redistribute it and/or   *
  * modify it under the terms of the GNU General Public License as  *
@@ -97,9 +97,14 @@ void		 render_othello_disks (int cell_size,
 
 
 unsigned char *	 duplicate_and_adjust_alpha (int alpha_up, int alpha_down,
-					     int image_size,
+					     int width, int height,
 					     unsigned char *pixel_data,
 					     int row_stride);
+unsigned char *	 saturate_and_set_alpha (QuarryColor color,
+					 int alpha_up, int alpha_down,
+					 int width, int height,
+					 unsigned char *pixel_data,
+					 int row_stride);
 
 unsigned char *	 combine_pixels_diagonally (int image_size,
 					    unsigned char *first_pixel_data,

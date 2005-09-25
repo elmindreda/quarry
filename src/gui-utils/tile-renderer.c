@@ -1,7 +1,7 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *\
  * This file is part of Quarry.                                    *
  *                                                                 *
- * Copyright (C) 2003, 2004 Paul Pogonyshev.                       *
+ * Copyright (C) 2003, 2004, 2005 Paul Pogonyshev.                 *
  *                                                                 *
  * This program is free software; you can redistribute it and/or   *
  * modify it under the terms of the GNU General Public License as  *
@@ -403,21 +403,22 @@ render_othello_disks (int cell_size, const OthelloDisksParameters *parameters,
  * can only be used to make a more transparent copy of the pixels.
  */
 unsigned char *
-duplicate_and_adjust_alpha (int alpha_up, int alpha_down, int image_size,
+duplicate_and_adjust_alpha (int alpha_up, int alpha_down,
+			    int width, int height,
 			    unsigned char *pixel_data, int row_stride)
 {
-  char *new_pixel_data = utils_malloc (image_size * row_stride);
-  char *scan;
+  unsigned char *new_pixel_data = utils_malloc (height * row_stride);
+  unsigned char *scan;
   int x;
   int y;
 
   assert (0 < alpha_up && alpha_up < alpha_down);
-  assert (image_size > 0);
+  assert (width > 0 && height > 0);
   assert (pixel_data);
-  assert (row_stride >= 4 * image_size);
+  assert (row_stride >= 4 * width);
 
-  for (scan = new_pixel_data, y = 0; y < image_size; y++) {
-    for (x = 0; x < image_size; x++) {
+  for (scan = new_pixel_data, y = 0; y < height; y++) {
+    for (x = 0; x < width; x++) {
       /* Simply copy color values. */
       *scan++ = *pixel_data++;
       *scan++ = *pixel_data++;
@@ -427,8 +428,58 @@ duplicate_and_adjust_alpha (int alpha_up, int alpha_down, int image_size,
       *scan++ = (alpha_up * ((int) *pixel_data++)) / alpha_down;
     }
 
-    pixel_data += row_stride - 4 * image_size;
-    scan += row_stride - 4 * image_size;
+    pixel_data += row_stride - 4 * width;
+    scan       += row_stride - 4 * width;
+  }
+
+  return new_pixel_data;
+}
+
+
+/* Make a colored copy of given monochrome pixel data, possibly making
+ * the copy more transparent in process.  The input should contain
+ * only shades of gray.  All pixels in the output have the same
+ * `color' and varying opacity with black in input converted to fully
+ * transparent pixels and white---to fully opaque.  In addition,
+ * opacity may be scaled down as in duplicate_and_adjust_alpha(), but
+ * saturate_and_set_alpha() allows `alpha_up' equal to `alpha_down'.
+ *
+ * This function's main purpose is to replace background in
+ * prerendered text with transparency, something that cannot be done
+ * easily with X at present.
+ */
+unsigned char *
+saturate_and_set_alpha (QuarryColor color, int alpha_up, int alpha_down,
+			int width, int height,
+			unsigned char *pixel_data, int row_stride)
+{
+  unsigned char *new_pixel_data = utils_malloc (height * row_stride);
+  unsigned char *scan;
+  int x;
+  int y;
+
+  assert (0 < alpha_up && alpha_up <= alpha_down);
+  assert (width > 0 && height > 0);
+  assert (pixel_data);
+  assert (row_stride >= 4 * width);
+
+  for (scan = new_pixel_data, y = 0; y < height; y++) {
+    for (x = 0; x < width; x++) {
+      /* Fill the color bytes. */
+      *scan++ = color.red;
+      *scan++ = color.green;
+      *scan++ = color.blue;
+
+      /* Set and scale alpha channel.  We actually only use the Red
+       * channel in input for this, but the caller shouldn't assume
+       * this behavior.
+       */
+      *scan++	  = (alpha_up * ((int) *pixel_data)) / alpha_down;
+      pixel_data += 4;
+    }
+
+    pixel_data += row_stride - 4 * width;
+    scan       += row_stride - 4 * width;
   }
 
   return new_pixel_data;
@@ -444,8 +495,8 @@ combine_pixels_diagonally (int image_size,
 			   unsigned char *second_pixel_data,
 			   int row_stride)
 {
-  char *new_pixel_data = utils_malloc (image_size * row_stride);
-  char *scan;
+  unsigned char *new_pixel_data = utils_malloc (image_size * row_stride);
+  unsigned char *scan;
   int y;
 
   assert (image_size > 0);
