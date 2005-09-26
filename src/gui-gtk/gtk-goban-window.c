@@ -30,11 +30,14 @@
  *	  window menu and the menu available from the editing toolbar
  *	  is hackish and ugly.  Should be possible to improve when we
  *	  drop support for pre-2.4 GTK+.
+ *
+ * FIXME: This file should be split up, it is too large.
  */
 
 
 #include "gtk-goban-window.h"
 
+#include "gtk-add-or-edit-label-dialog.h"
 #include "gtk-clock.h"
 #include "gtk-configuration.h"
 #include "gtk-control-center.h"
@@ -121,6 +124,13 @@ enum {
   GTK_GOBAN_WINDOW_SAVE = 1,
   GTK_GOBAN_WINDOW_SAVE_AS,
   GTK_GOBAN_WINDOW_ADJOURN
+};
+
+
+enum {
+  GTK_GOBAN_WINDOW_NON_LABELS_MODE,
+  GTK_GOBAN_WINDOW_TEXT_LABELS_MODE,
+  GTK_GOBAN_WINDOW_NUMERIC_LABELS_MODE
 };
 
 
@@ -276,6 +286,12 @@ static void	 markup_mode_goban_clicked (GtkGobanWindow *goban_window,
 					    GtkGobanClickData *data);
 
 static GtkGobanPointerFeedback
+		 label_mode_pointer_moved (GtkGobanWindow *goban_window,
+					   GtkGobanPointerData *data);
+static void	 label_mode_goban_clicked (GtkGobanWindow *goban_window,
+					   GtkGobanClickData *data);
+
+static GtkGobanPointerFeedback
 		 free_handicap_mode_pointer_moved
 		   (GtkGobanWindow *goban_window, GtkGobanPointerData *data);
 static void	 free_handicap_mode_goban_clicked
@@ -370,6 +386,9 @@ static void	 activate_scoring_tool (GtkGobanWindow *goban_window,
 static void	 activate_markup_tool (GtkGobanWindow *goban_window,
 				       gint sgf_markup_type,
 				       GtkCheckMenuItem *menu_item);
+static void	 activate_label_tool (GtkGobanWindow *goban_window,
+				      gint labels_mode,
+				      GtkCheckMenuItem *menu_item);
 
 
 static GtkUtilsToolbarEntry toolbar_open = {
@@ -604,9 +623,17 @@ gtk_goban_window_init (GtkGobanWindow *goban_window)
       "/Edit/Tools/Triangle Markup" },
     { N_("/Edit/Tools/"), NULL, NULL, 0, "<Separator>" },
 
+    { N_("/Edit/Tools/_Label Tool"),	"<ctrl>6",
+      activate_label_tool,		GTK_GOBAN_WINDOW_TEXT_LABELS_MODE,
+      "/Edit/Tools/Selected Markup" },
+    { N_("/Edit/Tools/_Number Tool"),	"<ctrl>7",
+      activate_label_tool,		GTK_GOBAN_WINDOW_NUMERIC_LABELS_MODE,
+      "/Edit/Tools/Label Tool" },
+    { N_("/Edit/Tools/"), NULL, NULL, 0, "<Separator>" },
+
     { N_("/Edit/Tools/Scori_ng Tool"),	NULL,
       activate_scoring_tool,		0,
-      "/Edit/Tools/Selected Markup" },
+      "/Edit/Tools/Number Tool" },
 
 
     { N_("/Edit/Add _Empty Node"),	NULL,
@@ -744,6 +771,10 @@ gtk_goban_window_init (GtkGobanWindow *goban_window)
     { N_("/Square Markup"),	"<ctrl>3",	NULL, 0, "<Item>" },
     { N_("/Triangle Markup"),	"<ctrl>4",	NULL, 0, "<Item>" },
     { N_("/Selected Markup"),	"<ctrl>5",	NULL, 0, "<Item>" },
+    { "/", NULL, NULL, 0, "<Separator>" },
+
+    { N_("/Label Tool"),	"<ctrl>6",	NULL, 0, "<Item>" },
+    { N_("/Number Tool"),	"<ctrl>7",	NULL, 0, "<Item>" },
     { "/", NULL, NULL, 0, "<Separator>" },
 
     { N_("/Scoring Tool"),	NULL,		NULL, 0, "<Item>" },
@@ -1173,7 +1204,7 @@ gtk_goban_window_init (GtkGobanWindow *goban_window)
 
   gtk_window_maximize (GTK_WINDOW (goban_window));
 
-  goban_window->board = NULL;
+  goban_window->board			   = NULL;
 
   goban_window->in_game_mode		   = FALSE;
   goban_window->pending_free_handicap	   = 0;
@@ -1182,18 +1213,21 @@ gtk_goban_window_init (GtkGobanWindow *goban_window)
   goban_window->time_controls[BLACK_INDEX] = NULL;
   goban_window->time_controls[WHITE_INDEX] = NULL;
 
-  goban_window->drawn_position_list = NULL;
+  goban_window->drawn_position_list	   = NULL;
 
-  goban_window->filename       = NULL;
-  goban_window->save_as_dialog = NULL;
+  goban_window->next_sgf_label		   = NULL;
+  goban_window->labels_mode		   = GTK_GOBAN_WINDOW_NON_LABELS_MODE;
 
-  goban_window->last_displayed_node = NULL;
-  goban_window->last_game_info_node = NULL;
+  goban_window->filename		   = NULL;
+  goban_window->save_as_dialog		   = NULL;
 
-  goban_window->find_dialog  = NULL;
-  goban_window->text_to_find = NULL;
+  goban_window->last_displayed_node	   = NULL;
+  goban_window->last_game_info_node	   = NULL;
 
-  goban_window->game_info_dialog = NULL;
+  goban_window->find_dialog		   = NULL;
+  goban_window->text_to_find		   = NULL;
+
+  goban_window->game_info_dialog	   = NULL;
 }
 
 
@@ -3156,6 +3190,8 @@ reenter_current_node (GtkGobanWindow *goban_window)
 static void
 about_to_change_node (GtkGobanWindow *goban_window)
 {
+  g_signal_emit (goban_window->goban, click_canceled_signal_id, 0);
+
   if (goban_window->in_game_mode && IS_DISPLAYING_GAME_NODE (goban_window)) {
     /* Goban window is going to display something other than the game
      * position node.
@@ -3689,6 +3725,164 @@ markup_mode_goban_clicked (GtkGobanWindow *goban_window,
 
 
 static GtkGobanPointerFeedback
+label_mode_pointer_moved (GtkGobanWindow *goban_window,
+			  GtkGobanPointerData *data)
+{
+  /* FIXME: Make configurable.  E.g. some people may prefer upper-case
+   *	    labels or a different alphabet.
+   */
+  static const gchar *labels = "abcdefghijklmnopqrstuvwxyz";
+
+  if (data->button == 0 && !goban_window->next_sgf_label) {
+    const SgfNode *current_node = goban_window->current_tree->current_node;
+    const SgfLabelList *label_list
+      = sgf_node_get_list_of_label_property_value (current_node, SGF_LABEL);
+    int k;
+
+    switch (goban_window->labels_mode) {
+    case GTK_GOBAN_WINDOW_TEXT_LABELS_MODE:
+      for (k = 0; k < strlen (labels); k++) {
+	goban_window->next_sgf_label = utils_duplicate_as_string (labels + k,
+								  1);
+	if (!label_list
+	    || !sgf_label_list_contains_label (label_list,
+					       goban_window->next_sgf_label))
+	  break;
+
+	utils_free (goban_window->next_sgf_label);
+	goban_window->next_sgf_label = NULL;
+      }
+
+      break;
+
+    case GTK_GOBAN_WINDOW_NUMERIC_LABELS_MODE:
+      for (k = 1; ; k++) {
+	goban_window->next_sgf_label = utils_printf ("%d", k);
+	if (!label_list
+	    || !sgf_label_list_contains_label (label_list,
+					       goban_window->next_sgf_label))
+	  break;
+
+	utils_free (goban_window->next_sgf_label);
+	goban_window->next_sgf_label = NULL;
+      }
+
+      break;
+
+    default:
+      assert (0);
+    }
+  }
+
+  if ((data->button == 1 && (data->modifiers & GDK_SHIFT_MASK))
+      || data->button == 3)
+    return GOBAN_FEEDBACK_NONE;
+
+  if (data->button == 0 || data->button == 1) {
+    const gchar *label	     = goban_window->next_sgf_label;
+    int		 ghost_level = (data->button == 0
+				? LABEL_50_TRANSPARENT : LABEL_25_TRANSPARENT);
+    const SgfNode *current_node = goban_window->current_tree->current_node;
+    const SgfLabelList *label_list
+      = sgf_node_get_list_of_label_property_value (current_node, SGF_LABEL);
+
+    if (label_list) {
+      BoardPoint  point		 = { data->x, data->y };
+      const char *existing_label = sgf_label_list_get_label (label_list,
+							     point);
+
+      if (existing_label) {
+	label	    = existing_label;
+	ghost_level = (data->button == 0
+		       ? LABEL_25_TRANSPARENT : LABEL_50_TRANSPARENT);
+      }
+    }
+
+    if (label) {
+      gtk_goban_set_label_feedback (goban_window->goban, data->x, data->y,
+				    label, ghost_level);
+    }
+    else {
+      gtk_goban_set_label_feedback (goban_window->goban,
+				    NULL_X, NULL_Y, NULL, 0);
+    }
+  }
+
+  return GOBAN_FEEDBACK_NONE;
+}
+
+
+static void
+label_mode_goban_clicked (GtkGobanWindow *goban_window,
+			  GtkGobanClickData *data)
+{
+  SgfNode *current_node = goban_window->current_tree->current_node;
+  const SgfLabelList *old_label_list;
+  const char *existing_label = NULL;
+  BoardPoint point = { data->x, data->y };
+  SgfLabelList *new_label_list;
+
+  if (data->button != 1 && data->button != 3)
+    return;
+
+  old_label_list = sgf_node_get_list_of_label_property_value (current_node,
+							      SGF_LABEL);
+  if (old_label_list)
+    existing_label = sgf_label_list_get_label (old_label_list, point);
+
+  if (data->button == 1 && !(data->modifiers & GDK_SHIFT_MASK)) {
+    if (!existing_label) {
+      new_label_list = sgf_label_list_set_label (old_label_list, point,
+						 goban_window->next_sgf_label);
+      goban_window->next_sgf_label = NULL;
+    }
+    else
+      new_label_list = sgf_label_list_set_label (old_label_list, point, NULL);
+  }
+  else {
+    GtkWidget *dialog = gtk_add_or_edit_label_dialog_new ();
+
+    if (existing_label) {
+      gtk_add_or_edit_label_dialog_set_label_text
+	(GTK_ADD_OR_EDIT_LABEL_DIALOG (dialog), existing_label);
+      gtk_window_set_title (GTK_WINDOW (dialog), _("Edit Board Label"));
+    }
+    else
+      gtk_window_set_title (GTK_WINDOW (dialog), _("Add Board Label"));
+
+    gtk_window_set_transient_for (GTK_WINDOW (dialog),
+				  GTK_WINDOW (goban_window));
+
+    if (gtk_dialog_run (GTK_DIALOG (dialog)) == GTK_RESPONSE_OK) {
+      const gchar *new_label_text
+	= (gtk_add_or_edit_label_dialog_get_label_text
+	   (GTK_ADD_OR_EDIT_LABEL_DIALOG (dialog)));
+
+      if (! *new_label_text)
+	new_label_text = NULL;
+
+      new_label_list
+	= sgf_label_list_set_label (old_label_list, point,
+				    utils_duplicate_string (new_label_text));
+
+      gtk_widget_destroy (dialog);
+    }
+    else {
+      gtk_widget_destroy (dialog);
+      return;
+    }
+  }
+
+  if (sgf_utils_set_list_of_label_property (current_node,
+					    goban_window->current_tree,
+					    SGF_LABEL, new_label_list)) {
+    goban_window->last_displayed_node = NULL;
+    update_children_for_new_node (goban_window);
+  }
+}
+
+
+static GtkGobanPointerFeedback
 free_handicap_mode_pointer_moved (GtkGobanWindow *goban_window,
 				  GtkGobanPointerData *data)
 {
@@ -4003,6 +4197,10 @@ update_children_for_new_node (GtkGobanWindow *goban_window)
     fetch_comment_and_node_name (goban_window, FALSE);
 
   reset_amazons_move_data (goban_window);
+
+  /* FIXME: Probably not the right place for it. */
+  utils_free (goban_window->next_sgf_label);
+  goban_window->next_sgf_label = NULL;
 
   if (!goban_window->last_displayed_node
       || current_node->parent != goban_window->last_displayed_node->parent) {
@@ -4437,6 +4635,7 @@ update_commands_sensitivity (const GtkGobanWindow *goban_window)
 				       || !goban_window->dead_stones),
 				      "/Edit/Tools/Move Tool", NULL);
 
+  /* Only desensitize when playing a game. */
   gtk_utils_set_menu_items_sensitive (goban_window->item_factory,
 				      !goban_window->in_game_mode,
 				      "/Edit/Tools/Setup Tool",
@@ -4444,9 +4643,11 @@ update_commands_sensitivity (const GtkGobanWindow *goban_window)
 				      "/Edit/Tools/Circle Markup",
 				      "/Edit/Tools/Square Markup",
 				      "/Edit/Tools/Triangle Markup",
-				      "/Edit/Tools/Selected Markup", NULL);
+				      "/Edit/Tools/Selected Markup",
+				      "/Edit/Tools/Label Tool",
+				      "/Edit/Tools/Number Tool", NULL);
 
-  /* Only desensitize when playing a game. */
+  /* Only desensitize when playing a game and not scoring already. */
   gtk_utils_set_menu_items_sensitive (goban_window->item_factory,
 				      (!goban_window->in_game_mode
 				       || goban_window->dead_stones),
@@ -5473,6 +5674,37 @@ activate_markup_tool (GtkGobanWindow *goban_window, gint sgf_markup_type,
     set_goban_signal_handlers (goban_window,
 			       G_CALLBACK (markup_mode_pointer_moved),
 			       G_CALLBACK (markup_mode_goban_clicked));
+  }
+}
+
+
+static void
+activate_label_tool (GtkGobanWindow *goban_window, gint labels_mode,
+		     GtkCheckMenuItem *menu_item)
+{
+  if (gtk_check_menu_item_get_active (menu_item)) {
+    if (labels_mode != goban_window->labels_mode) {
+      utils_free (goban_window->next_sgf_label);
+      goban_window->next_sgf_label = NULL;
+
+      goban_window->labels_mode = labels_mode;
+
+      synchronize_tools_menus (goban_window);
+
+      set_goban_signal_handlers (goban_window,
+				 G_CALLBACK (label_mode_pointer_moved),
+				 G_CALLBACK (label_mode_goban_clicked));
+    }
+  }
+  else {
+    /* Switching to a different tool, cancel label mode. */
+    utils_free (goban_window->next_sgf_label);
+    goban_window->next_sgf_label = NULL;
+
+    gtk_goban_set_label_feedback (goban_window->goban,
+				  NULL_X, NULL_Y, NULL, 0);
+
+    goban_window->labels_mode = GTK_GOBAN_WINDOW_NON_LABELS_MODE;
   }
 }
 

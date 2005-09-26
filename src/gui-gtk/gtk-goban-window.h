@@ -117,6 +117,8 @@ struct _GtkGobanWindow {
   int			   drawing_mode;
 
   int			   sgf_markup_type;
+  gchar			  *next_sgf_label;
+  gint			   labels_mode;
 
   int			   black_variations[BOARD_GRID_SIZE];
   int			   white_variations[BOARD_GRID_SIZE];
@@ -124,8 +126,8 @@ struct _GtkGobanWindow {
 
   char			  *dead_stones;
   BoardPositionList	  *dead_stones_list;
-  int			  scoring_engine_player;
-  gboolean		  engine_scoring_cancelled;
+  int			   scoring_engine_player;
+  gboolean		   engine_scoring_cancelled;
 
   SgfCollection		  *sgf_collection;
   SgfGameTree		  *current_tree;
