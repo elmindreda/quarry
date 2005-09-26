@@ -62,6 +62,11 @@
   ((first_point).x == (second_point).x			\
    && (first_point).y == (second_point).y)
 
+#define POINTS_LESS_THAN(first_point, second_point)	\
+  ((first_point).y < (second_point).y			\
+   || ((first_point).y == (second_point).y		\
+       && (first_point).x < (second_point).x))
+
 
 typedef struct _BoardPoint	BoardPoint;
 
