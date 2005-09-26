@@ -73,6 +73,7 @@ struct _GtkGobanClickData {
   gint		      button;
 };
 
+
 typedef enum {
   GOBAN_FEEDBACK_NONE,
 
@@ -214,6 +215,13 @@ enum {
 };
 
 
+enum {
+  LABEL_25_TRANSPARENT,
+  LABEL_50_TRANSPARENT,
+  NUM_LABEL_GHOST_LEVELS
+};
+
+
 #define NUM_OVERLAYS		4
 #define FEEDBACK_OVERLAY	(NUM_OVERLAYS - 1)
 
@@ -260,10 +268,18 @@ struct _GtkGoban {
   GtkMainTileSet	*small_tile_set;
   GObject		*checkerboard_pattern_object;
 
+  gchar			*label_feedback_text;
+  GdkPixbuf		*label_text_pixbuf;
+  GdkPixbuf		*label_ghost_pixbufs[NUM_LABEL_GHOST_LEVELS]
+					    [NUM_SGF_MARKUP_BACKGROUNDS];
+
   int			 pointer_x;
   int			 pointer_y;
   int			 feedback_tile;
   int			 non_empty_feedback;
+
+  int			 label_feedback_pos;
+  int			 label_feedback_ghost_level;
 
   GdkModifierType	 modifiers;
   unsigned int		 button_pressed;
@@ -302,7 +318,11 @@ void		gtk_goban_update (GtkGoban *goban,
 				  const char sgf_markup[BOARD_GRID_SIZE],
 				  const SgfLabelList *sgf_label_list,
 				  int last_move_x, int last_move_y);
+
 void		gtk_goban_force_feedback_poll (GtkGoban *goban);
+void		gtk_goban_set_label_feedback (GtkGoban *goban, int x, int y,
+					      const char *label_text,
+					      int ghost_level);
 
 void		gtk_goban_disable_anti_slip_mode (GtkGoban *goban);
 

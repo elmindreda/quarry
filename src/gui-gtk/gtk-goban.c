@@ -20,12 +20,15 @@
 \* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 
-#include "gtk-configuration.h"
 #include "gtk-goban.h"
+
+#include "gtk-configuration.h"
 #include "gtk-goban-base.h"
+#include "gtk-preferences.h"
 #include "gtk-tile-set.h"
 #include "gtk-utils.h"
 #include "quarry-marshal.h"
+#include "tile-renderer.h"
 #include "sgf.h"
 #include "board.h"
 #include "game-info.h"
@@ -48,6 +51,9 @@
 				 | GDK_BUTTON1_MASK	\
 				 | GDK_BUTTON3_MASK)
 
+#define VERTICAL_LINE_GAP(goban)		\
+  (4 + (10 * (goban)->character_height) / 9)
+
 
 enum {
   NO_CHECKERBOARD_PATTERN,
@@ -68,74 +74,85 @@ struct _GtkGobanMargins {
 };
 
 
-static void	 gtk_goban_class_init (GtkGobanClass *class);
-static void	 gtk_goban_init (GtkGoban *goban);
-static void	 gtk_goban_realize (GtkWidget *widget);
+static void	    gtk_goban_class_init (GtkGobanClass *class);
+static void	    gtk_goban_init (GtkGoban *goban);
+static void	    gtk_goban_realize (GtkWidget *widget);
 
-static void	 gtk_goban_size_request (GtkWidget *widget,
-					 GtkRequisition *requisition);
-static void	 gtk_goban_size_allocate (GtkWidget *widget,
-					  GtkAllocation *allocation);
+static void	    gtk_goban_size_request (GtkWidget *widget,
+					    GtkRequisition *requisition);
+static void	    gtk_goban_size_allocate (GtkWidget *widget,
+					     GtkAllocation *allocation);
 
-static gboolean	 gtk_goban_expose (GtkWidget *widget,
-				   GdkEventExpose *event);
-inline static void
-		 draw_vertical_line_with_gaps (GtkGoban *goban,
-					       GdkWindow *window, GdkGC *gc,
-					       int x, gint window_x,
-					       gint extra_length);
-inline static void
-		 draw_horizontal_line_with_gaps (GtkGoban *goban,
-						 GdkWindow *window, GdkGC *gc,
-						 int y, gint window_y,
-						 gint extra_length);
+static gboolean	    gtk_goban_expose (GtkWidget *widget,
+				      GdkEventExpose *event);
+inline static void  draw_vertical_line_with_gaps (GtkGoban *goban,
+						  GdkWindow *window,
+						  GdkGC *gc,
+						  int x, gint window_x,
+						  gint extra_length);
+inline static void  draw_horizontal_line_with_gaps (GtkGoban *goban,
+						    GdkWindow *window,
+						    GdkGC *gc,
+						    int y, gint window_y,
+						    gint extra_length);
 
-static gboolean	 gtk_goban_button_press_event (GtkWidget *widget,
-					       GdkEventButton *event);
-static gboolean	 gtk_goban_button_release_event (GtkWidget *widget,
-						 GdkEventButton *event);
-static gboolean	 gtk_goban_motion_notify_event (GtkWidget *widget,
-						GdkEventMotion *event);
-static gboolean	 gtk_goban_enter_notify_event (GtkWidget *widget,
-					       GdkEventCrossing *event);
-static gboolean	 gtk_goban_leave_notify_event (GtkWidget *widget,
-					       GdkEventCrossing *event);
-static gboolean	 gtk_goban_scroll_event (GtkWidget *widget,
-					 GdkEventScroll *event);
+static void	    render_label (GtkGoban *goban, GdkDrawable *drawable,
+				  GdkGC *gc, PangoLayout **layout,
+				  const char *label_text,
+				  gint x, gint y, GdkColor *color);
 
-static gboolean	 gtk_goban_key_press_event (GtkWidget *widget,
-					    GdkEventKey *event);
-static gboolean	 gtk_goban_key_release_event (GtkWidget *widget,
-					      GdkEventKey *event);
+static gboolean	    gtk_goban_button_press_event (GtkWidget *widget,
+						  GdkEventButton *event);
+static gboolean	    gtk_goban_button_release_event (GtkWidget *widget,
+						    GdkEventButton *event);
+static gboolean	    gtk_goban_motion_notify_event (GtkWidget *widget,
+						   GdkEventMotion *event);
+static gboolean	    gtk_goban_enter_notify_event (GtkWidget *widget,
+						  GdkEventCrossing *event);
+static gboolean	    gtk_goban_leave_notify_event (GtkWidget *widget,
+						  GdkEventCrossing *event);
+static gboolean	    gtk_goban_scroll_event (GtkWidget *widget,
+					    GdkEventScroll *event);
 
-static gboolean	 gtk_goban_focus_in_or_out_event (GtkWidget *widget,
-						  GdkEventFocus *event);
+static gboolean	    gtk_goban_key_press_event (GtkWidget *widget,
+					       GdkEventKey *event);
+static gboolean	    gtk_goban_key_release_event (GtkWidget *widget,
+						 GdkEventKey *event);
 
-static void	 gtk_goban_allocate_screen_resources
-		   (GtkGobanBase *goban_base);
-static void	 gtk_goban_free_screen_resources (GtkGobanBase *goban_base);
+static gboolean	    gtk_goban_focus_in_or_out_event (GtkWidget *widget,
+						     GdkEventFocus *event);
 
-static void	 gtk_goban_click_canceled (GtkGoban *goban);
+static void	    gtk_goban_allocate_screen_resources
+		      (GtkGobanBase *goban_base);
+static void	    gtk_goban_free_screen_resources (GtkGobanBase *goban_base);
 
-static void	 gtk_goban_finalize (GObject *object);
+static void	    gtk_goban_click_canceled (GtkGoban *goban);
 
-static void	 emit_pointer_moved (GtkGoban *goban, int x, int y,
-				     GdkModifierType modifiers);
+static void	    gtk_goban_finalize (GObject *object);
 
-static void	 set_feedback_data (GtkGoban *goban, int x, int y,
-				    BoardPositionList *position_list,
-				    GtkGobanPointerFeedback feedback);
+static void	    emit_pointer_moved (GtkGoban *goban, int x, int y,
+					GdkModifierType modifiers);
 
-static void	 set_overlay_data (GtkGoban *goban, int overlay_index,
-				   BoardPositionList *position_list,
-				   int tile, int goban_markup_tile,
-				   int sgf_markup_tile);
+static void	    set_feedback_data (GtkGoban *goban, int x, int y,
+				       BoardPositionList *position_list,
+				       GtkGobanPointerFeedback feedback);
 
-static void	 compute_goban_margins (const GtkGoban *goban,
-					GtkGobanMargins *margins);
-static void	 widget_coordinates_to_board (const GtkGoban *goban,
-					      int window_x, int window_y,
-					      int *board_x, int *board_y);
+static void	    set_overlay_data (GtkGoban *goban, int overlay_index,
+				      BoardPositionList *position_list,
+				      int tile, int goban_markup_tile,
+				      int sgf_markup_tile);
+
+static void	    compute_goban_margins (const GtkGoban *goban,
+					   GtkGobanMargins *margins);
+static void	    widget_coordinates_to_board (const GtkGoban *goban,
+						 int window_x, int window_y,
+						 int *board_x, int *board_y);
+
+static void	    create_label_text_pixbuf (GtkGoban *goban);
+static GdkPixbuf *  get_or_create_label_feedback_pixbuf (GtkGoban *goban,
+							 gint background);
+static void	    free_label_feedback_data (GtkGoban *goban,
+					      gboolean including_label_text);
 
 
 static GtkGobanBaseClass  *parent_class;
@@ -271,6 +288,7 @@ static void
 gtk_goban_init (GtkGoban *goban)
 {
   int k;
+  int i;
 
   GTK_WIDGET_SET_FLAGS (GTK_WIDGET (goban), GTK_CAN_FOCUS);
 
@@ -281,6 +299,14 @@ gtk_goban_init (GtkGoban *goban)
 
   goban->checkerboard_pattern_object = NULL;
 
+  goban->label_feedback_text = NULL;
+
+  goban->label_text_pixbuf = NULL;
+  for (k = 0; k < NUM_SGF_MARKUP_BACKGROUNDS; k++) {
+    for (i = 0; i < NUM_LABEL_GHOST_LEVELS; i++)
+      goban->label_ghost_pixbufs[i][k] = NULL;
+  }
+
   goban->last_move_pos = NULL_POSITION;
 
   for (k = 0; k < NUM_OVERLAYS; k++) {
@@ -289,6 +315,7 @@ gtk_goban_init (GtkGoban *goban)
   }
 
   set_feedback_data (goban, NULL_X, NULL_Y, NULL, GOBAN_FEEDBACK_NONE);
+  goban->label_feedback_pos = NULL_POSITION;
 }
 
 
@@ -498,7 +525,7 @@ gtk_goban_expose (GtkWidget *widget, GdkEventExpose *event)
   gint upper_limit;
   GdkRectangle row_rectangle;
   GdkRectangle cell_rectangle;
-  PangoLayout *layout = NULL;
+  PangoLayout *label_layout = NULL;
 
   GtkGoban *goban = GTK_GOBAN (widget);
   int cell_size = goban->base.cell_size;
@@ -615,13 +642,15 @@ gtk_goban_expose (GtkWidget *widget, GdkEventExpose *event)
       || clip_right_margin > goban->right_margin
       || clip_top_margin < goban->top_margin
       || clip_bottom_margin > goban->bottom_margin) {
+    PangoLayout *coordinate_layout = gtk_widget_create_pango_layout (widget,
+								     NULL);
     const char *horizontal_coordinates
       = game_info[goban->base.game].horizontal_coordinates;
 
-    layout = gtk_widget_create_pango_layout (widget, NULL);
-    pango_layout_set_font_description (layout, goban->base.font_description);
-    pango_layout_set_alignment (layout, PANGO_ALIGN_CENTER);
-    pango_layout_set_width (layout, 2 * cell_size);
+    pango_layout_set_font_description (coordinate_layout,
+				       goban->base.font_description);
+    pango_layout_set_alignment (coordinate_layout, PANGO_ALIGN_CENTER);
+    pango_layout_set_width (coordinate_layout, 2 * cell_size);
 
     /* Left and right label columns. */
     if (clip_left_margin < goban->left_margin
@@ -639,20 +668,20 @@ gtk_goban_expose (GtkWidget *widget, GdkEventExpose *event)
 	sprintf (buffer, "%d",
 		 (game_info[goban->base.game].reversed_vertical_coordinates
 		  ? goban->height - k : k + 1));
-	pango_layout_set_text (layout, buffer, -1);
+	pango_layout_set_text (coordinate_layout, buffer, -1);
 
 	if (clip_left_margin < goban->left_margin) {
 	  gdk_draw_layout (widget->window, gc,
 			   goban->coordinates_x_left,
 			   goban->coordinates_y_side + k * cell_size,
-			   layout);
+			   coordinate_layout);
 	}
 
 	if (clip_right_margin > goban->right_margin) {
 	  gdk_draw_layout (widget->window, gc,
 			   goban->coordinates_x_right,
 			   goban->coordinates_y_side + k * cell_size,
-			   layout);
+			   coordinate_layout);
 	}
       }
     }
@@ -670,23 +699,26 @@ gtk_goban_expose (GtkWidget *widget, GdkEventExpose *event)
 			       / cell_size)));
 
       for (k = lower_limit; k < upper_limit; k++) {
-	pango_layout_set_text (layout, horizontal_coordinates + k, 1);
+	pango_layout_set_text (coordinate_layout,
+			       horizontal_coordinates + k, 1);
 
 	if (clip_top_margin < goban->top_margin) {
 	  gdk_draw_layout (widget->window, gc,
 			   goban->first_cell_center_x + k * cell_size,
 			   goban->coordinates_y_top,
-			   layout);
+			   coordinate_layout);
 	}
 
 	if (clip_bottom_margin > goban->bottom_margin) {
 	  gdk_draw_layout (widget->window, gc,
 			   goban->first_cell_center_x + k * cell_size,
 			   goban->coordinates_y_bottom,
-			   layout);
+			   coordinate_layout);
 	}
       }
     }
+
+    g_object_unref (coordinate_layout);
   }
 
   /* FIXME: Not clipped now.  Needs a rewrite anyway. */
@@ -851,29 +883,57 @@ gtk_goban_expose (GtkWidget *widget, GdkEventExpose *event)
 	    gdk_draw_pixbuf (window, gc, pixbuf, 0, 0,
 			     margins.sgf_markup_left_margin + x * cell_size,
 			     margins.sgf_markup_top_margin + y * cell_size,
-			     -1, -1,
-			     GDK_RGB_DITHER_NORMAL, 0, 0);
+			     -1, -1, GDK_RGB_DITHER_NORMAL, 0, 0);
 	  }
 
-	  if (goban->sgf_labels[pos]) {
-	    if (!layout) {
-	      layout = gtk_widget_create_pango_layout (widget, NULL);
-	      pango_layout_set_font_description (layout,
-						 goban->base.font_description);
-	      pango_layout_set_alignment (layout, PANGO_ALIGN_CENTER);
-	      pango_layout_set_width (layout, cell_size - 2);
+	  if (goban->sgf_labels[pos] || pos == goban->label_feedback_pos) {
+	    gint background;
+
+	    if (IS_STONE (goban->grid[pos]))
+	      background = goban->grid[pos];
+	    else {
+	      switch (markup_tile) {
+	      case BLACK_OPAQUE:
+	      case BLACK_25_TRANSPARENT:
+	      case BLACK_50_TRANSPARENT:
+		background = BLACK;
+		break;
+
+	      case WHITE_OPAQUE:
+	      case WHITE_25_TRANSPARENT:
+	      case WHITE_50_TRANSPARENT:
+		background = WHITE;
+		break;
+
+	      default:
+		background = EMPTY;
+	      }
 	    }
 
-	    pango_layout_set_text (layout, goban->sgf_labels[pos], -1);
-	    gdk_draw_layout (widget->window,
-			     (goban->grid[pos] != BLACK
-			      ? widget->style->black_gc
-			      : widget->style->white_gc),
-			     goban->first_cell_center_x + x * cell_size,
-			     (goban->first_cell_center_y
-			      - goban->character_height / 2
-			      + y * cell_size),
-			     layout);
+	    if (pos == goban->label_feedback_pos) {
+	      GdkPixbuf *pixbuf
+		= get_or_create_label_feedback_pixbuf (goban, background);
+
+	      gdk_draw_pixbuf (window, gc, pixbuf, 0, 0,
+			       (goban->first_cell_center_x + x * cell_size
+				- gdk_pixbuf_get_width (pixbuf) / 2),
+			       (goban->first_cell_center_y + y * cell_size
+				- gdk_pixbuf_get_height (pixbuf) / 2),
+			       -1, -1, GDK_RGB_DITHER_NORMAL, 0, 0);
+	    }
+	    else {
+	      BoardAppearance *board_appearance
+		= game_to_board_appearance_structure (goban->base.game);
+	      GdkColor color;
+
+	      gtk_utils_set_gdk_color
+		(&color, board_appearance->markup_colors[background]);
+	      render_label (goban, widget->window, gc, &label_layout,
+			    goban->sgf_labels[pos],
+			    goban->first_cell_center_x + x * cell_size,
+			    goban->first_cell_center_y + y * cell_size,
+			    &color);
+	    }
 	  }
 	}
       }
@@ -882,8 +942,8 @@ gtk_goban_expose (GtkWidget *widget, GdkEventExpose *event)
     gdk_region_destroy (row_region);
   }
 
-  if (layout)
-    g_object_unref (layout);
+  if (label_layout)
+    g_object_unref (label_layout);
 
   return FALSE;
 }
@@ -896,14 +956,15 @@ inline static void
 draw_vertical_line_with_gaps (GtkGoban *goban, GdkWindow *window, GdkGC *gc,
 			      int x, gint window_x, gint extra_length)
 {
-  gint gap_half = 2 + (goban->character_height * 5) / 9;
+  gint gap_half = VERTICAL_LINE_GAP (goban) / 2;
   gint top = goban->top_margin - extra_length;
   int y;
   gint window_y;
 
   for (y = 0, window_y = goban->first_cell_center_y; y < goban->height;
        y++, window_y += goban->base.cell_size) {
-    if (goban->sgf_labels[POSITION (x, y)]) {
+    if (goban->sgf_labels[POSITION (x, y)]
+	|| goban->label_feedback_pos == POSITION (x, y)) {
       if (window_y - gap_half > top) {
 	gdk_draw_line (window, gc,
 		       window_x, top, window_x, window_y - gap_half);
@@ -933,7 +994,8 @@ draw_horizontal_line_with_gaps (GtkGoban *goban, GdkWindow *window, GdkGC *gc,
 
   for (x = 0, window_x = goban->first_cell_center_x; x < goban->width;
        x++, window_x += goban->base.cell_size) {
-    if (goban->sgf_labels[POSITION (x, y)]) {
+    if (goban->sgf_labels[POSITION (x, y)]
+	|| goban->label_feedback_pos == POSITION (x, y)) {
       if (window_x - gap_half > left) {
 	gdk_draw_line (window, gc,
 		       left, window_y, window_x - gap_half, window_y);
@@ -948,6 +1010,25 @@ draw_horizontal_line_with_gaps (GtkGoban *goban, GdkWindow *window, GdkGC *gc,
 		   left, window_y,
 		   goban->right_margin + extra_length, window_y);
   }
+}
+
+
+static void
+render_label (GtkGoban *goban, GdkDrawable *drawable, GdkGC *gc,
+	      PangoLayout **layout, const char *label_text,
+	      gint x, gint y, GdkColor *color)
+{
+  if (! *layout) {
+    *layout = gtk_widget_create_pango_layout (GTK_WIDGET (goban), NULL);
+    pango_layout_set_font_description (*layout, goban->base.font_description);
+    pango_layout_set_alignment (*layout, PANGO_ALIGN_CENTER);
+    pango_layout_set_width (*layout, goban->base.cell_size - 2);
+  }
+
+  pango_layout_set_text (*layout, label_text, -1);
+  gdk_draw_layout_with_colors (drawable, gc,
+			       x, y - goban->character_height / 2, *layout,
+			       color, NULL);
 }
 
 
@@ -1066,6 +1147,7 @@ gtk_goban_leave_notify_event (GtkWidget *widget, GdkEventCrossing *event)
     g_signal_emit (goban, goban_signals[CLICK_CANCELED], 0);
 
   set_feedback_data (goban, NULL_X, NULL_Y, NULL, GOBAN_FEEDBACK_NONE);
+  gtk_goban_set_label_feedback (goban, NULL_X, NULL_Y, NULL, 0);
 
   return FALSE;
 }
@@ -1281,6 +1363,8 @@ gtk_goban_finalize (GObject *object)
   if (goban->checkerboard_pattern_object)
     g_object_unref (goban->checkerboard_pattern_object);
 
+  free_label_feedback_data (goban, TRUE);
+
   G_OBJECT_CLASS (parent_class)->finalize (object);
 }
 
@@ -1371,7 +1455,7 @@ gtk_goban_update (GtkGoban *goban,
     /* NOTE: Keep in sync with draw_vertical_line_with_gaps().  Or
      *	     maybe define a macro.
      */
-    rectangle_sgf_label.height	= 6 + (10 * goban->character_height) / 9;
+    rectangle_sgf_label.height	= VERTICAL_LINE_GAP (goban);
 
     compute_goban_margins (goban, &margins);
 
@@ -1425,7 +1509,7 @@ gtk_goban_update (GtkGoban *goban,
 		 || strcmp (goban->sgf_labels[pos], label_text) != 0)
 	      : label_text != NULL) {
 	    rectangle_sgf_label.x = (goban->first_cell_center_x
-				     - cell_size / 2
+				     - rectangle_sgf_label.width / 2
 				     + x * cell_size);
 	    rectangle_sgf_label.y = (goban->first_cell_center_y
 				     - rectangle_sgf_label.height / 2
@@ -1478,6 +1562,71 @@ gtk_goban_force_feedback_poll (GtkGoban *goban)
 {
   emit_pointer_moved (goban, goban->pointer_x, goban->pointer_y,
 		      goban->modifiers);
+}
+
+
+void
+gtk_goban_set_label_feedback (GtkGoban *goban, int x, int y,
+			      const char *label_text, int ghost_level)
+{
+  int positions_to_invalidate[2] = { NULL_POSITION, NULL_POSITION };
+  gboolean free_data = TRUE;
+
+  assert (GTK_IS_GOBAN (goban));
+  assert (0 <= ghost_level && ghost_level < NUM_LABEL_GHOST_LEVELS);
+
+  if (ON_SIZED_GRID (goban->width, goban->height, x, y)) {
+    assert (label_text && *label_text);
+
+    if (goban->label_feedback_pos != POSITION (x, y)) {
+      positions_to_invalidate[0] = goban->label_feedback_pos;
+      positions_to_invalidate[1] = POSITION (x, y);
+      goban->label_feedback_pos  = POSITION (x, y);
+    }
+    else if (goban->label_feedback_ghost_level != ghost_level
+	     || !goban->label_feedback_text
+	     || strcmp (goban->label_feedback_text, label_text) != 0)
+      positions_to_invalidate[0] = goban->label_feedback_pos;
+    else
+      free_data = FALSE;
+
+    goban->label_feedback_ghost_level = ghost_level;
+  }
+  else {
+    assert (x == NULL_X && y == NULL_Y && !label_text);
+
+    positions_to_invalidate[0] = goban->label_feedback_pos;
+    goban->label_feedback_pos  = NULL_POSITION;
+  }
+
+  if (free_data)
+    free_label_feedback_data (goban, TRUE);
+
+  if (label_text && !goban->label_feedback_text) {
+    goban->label_feedback_text = g_strdup (label_text);
+
+    if (GTK_WIDGET_REALIZED (goban))
+      create_label_text_pixbuf (goban);
+  }
+
+  if (GTK_WIDGET_REALIZED (goban)) {
+    gint cell_size = goban->base.cell_size;
+    GdkRectangle rectangle;
+    int k;
+
+    rectangle.width  = cell_size - 2;
+    rectangle.height = VERTICAL_LINE_GAP (goban);
+
+    for (k = 0; k < 2 && positions_to_invalidate[k]; k++) {
+      rectangle.x = (goban->first_cell_center_x - rectangle.width / 2
+		     + POSITION_X (positions_to_invalidate[k]) * cell_size);
+      rectangle.y = (goban->first_cell_center_y - rectangle.height / 2
+		     + POSITION_Y (positions_to_invalidate[k]) * cell_size);
+
+      gdk_window_invalidate_rect (GTK_WIDGET (goban)->window, &rectangle,
+				  FALSE);
+    }
+  }
 }
 
 
@@ -1633,8 +1782,10 @@ emit_pointer_moved (GtkGoban *goban, int x, int y, GdkModifierType modifiers)
 			 feedback);
     }
   }
-  else
+  else {
     set_feedback_data (goban, NULL_X, NULL_Y, NULL, GOBAN_FEEDBACK_NONE);
+    gtk_goban_set_label_feedback (goban, NULL_X, NULL_Y, NULL, 0);
+  }
 
   goban->modifiers = modifiers;
 }
@@ -2069,6 +2220,94 @@ widget_coordinates_to_board (const GtkGoban *goban, int window_x, int window_y,
 
   *board_x = NULL_X;
   *board_y = NULL_Y;
+}
+
+
+
+static void
+create_label_text_pixbuf (GtkGoban *goban)
+{
+  GtkWidget *widget = GTK_WIDGET (goban);
+  gint width  = goban->base.cell_size - 2;
+  gint height = VERTICAL_LINE_GAP (goban);
+  GdkDrawable *drawable = GDK_DRAWABLE (gdk_pixmap_new (widget->window,
+							width, height, -1));
+  PangoLayout *layout = NULL;
+
+  gdk_draw_rectangle (drawable, widget->style->black_gc, TRUE,
+		      0, 0, width, height);
+  render_label (goban, drawable, GTK_WIDGET (goban)->style->white_gc, &layout,
+		goban->label_feedback_text, width / 2, height / 2, NULL);
+
+  goban->label_text_pixbuf
+    = gdk_pixbuf_get_from_drawable (gdk_pixbuf_new (GDK_COLORSPACE_RGB,
+						    TRUE, 8, width, height),
+				    drawable, NULL, 0, 0, 0, 0, width, height);
+  g_object_unref (drawable);
+}
+
+
+static GdkPixbuf *
+get_or_create_label_feedback_pixbuf (GtkGoban *goban, gint background)
+{
+  gint ghost_level = goban->label_feedback_ghost_level;
+
+  if (!goban->label_ghost_pixbufs[ghost_level][background]) {
+    gint    width      = gdk_pixbuf_get_width (goban->label_text_pixbuf);
+    gint    height     = gdk_pixbuf_get_height (goban->label_text_pixbuf);
+    guchar *pixel_data = gdk_pixbuf_get_pixels (goban->label_text_pixbuf);
+    gint    row_stride = gdk_pixbuf_get_rowstride (goban->label_text_pixbuf);
+
+    BoardAppearance *board_appearance
+      = game_to_board_appearance_structure (goban->base.game);
+    QuarryColor color = board_appearance->markup_colors[background];
+    unsigned char *saturated_pixels;
+
+    if (ghost_level == LABEL_25_TRANSPARENT) {
+      saturated_pixels = saturate_and_set_alpha (color, 3, 4, width, height,
+						 pixel_data, row_stride);
+    }
+    else if (ghost_level == LABEL_50_TRANSPARENT) {
+      saturated_pixels = saturate_and_set_alpha (color, 1, 2, width, height,
+						 pixel_data, row_stride);
+    }
+    else
+      assert (0);
+
+    goban->label_ghost_pixbufs[ghost_level][background]
+      = gdk_pixbuf_new_from_data (saturated_pixels, GDK_COLORSPACE_RGB,
+				  TRUE, 8, width, height, row_stride,
+				  (GdkPixbufDestroyNotify) utils_free, NULL);
+  }
+
+  return goban->label_ghost_pixbufs[ghost_level][background];
+}
+
+
+static void
+free_label_feedback_data (GtkGoban *goban, gboolean including_label_text)
+{
+  int k;
+  int i;
+
+  if (including_label_text) {
+    g_free (goban->label_feedback_text);
+    goban->label_feedback_text = NULL;
+
+    if (goban->label_text_pixbuf) {
+      g_object_unref (goban->label_text_pixbuf);
+      goban->label_text_pixbuf = NULL;
+    }
+  }
+
+  for (k = 0; k < NUM_SGF_MARKUP_BACKGROUNDS; k++) {
+    for (i = 0; i < NUM_LABEL_GHOST_LEVELS; i++) {
+      if (goban->label_ghost_pixbufs[i][k]) {
+	g_object_unref (goban->label_ghost_pixbufs[i][k]);
+	goban->label_ghost_pixbufs[i][k] = NULL;
+      }
+    }
+  }
 }
 
 
