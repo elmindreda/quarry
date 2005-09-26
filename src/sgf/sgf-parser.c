@@ -1480,7 +1480,7 @@ do_parse_simple_text (SgfParsingData *data, char extra_stop_character)
   data->temp_buffer = data->buffer;
 
   /* Skip leading whitespace. */
-  do {
+  while (1) {
     next_token (data);
     if (data->token == '\\') {
       next_character (data);
@@ -1490,7 +1490,9 @@ do_parse_simple_text (SgfParsingData *data, char extra_stop_character)
       *data->temp_buffer++ = data->token;
       next_character (data);
     }
-  } while (0);
+
+    break;
+  }
 
   if (data->temp_buffer != data->buffer
       || (data->token != ']' && data->token != extra_stop_character
