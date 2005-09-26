@@ -101,10 +101,6 @@ struct _SgfChangeRealPropertyOperationEntry {
 extern const SgfUndoOperationInfo    sgf_undo_operations[];
 
 
-void		sgf_undo_history_delete_dont_free_data
-		  (SgfUndoHistory *history);
-
-
 #define DECLARE_UNDO_OR_REDO_FUNCTION(name)				\
   void		name (SgfUndoHistoryEntry *entry, SgfGameTree *tree);
 

@@ -132,32 +132,6 @@ sgf_undo_history_set_notification_callback
 }
 
 
-/* Delete undo history, but don't free any data.  This function is
- * private to the SGF module and is used by sgf_game_tree_delete()
- * when memory pools are enabled: no point in deleting data in pieces
- * when node and property pools are going to be flushed.
- *
- * This function also doesn't detach the history from tree's list as
- * the tree is going to be deleted anyway.
- */
-void
-sgf_undo_history_delete_dont_free_data (SgfUndoHistory *history)
-{
-  SgfUndoHistoryEntry *this_entry;
-
-  assert (history);
-
-  for (this_entry = history->first_entry; this_entry;) {
-    SgfUndoHistoryEntry *next_entry = this_entry->next;
-
-    utils_free (this_entry);
-    this_entry = next_entry;
-  }
-
-  utils_free (history);
-}
-
-
 /* Designate a beginning of an undoable action.  Must always be paired
  * by a call to sgf_utils_end_action().  Such actions can and do nest
  * and only the topmost-level invocation of sgf_utils_begin_action()
