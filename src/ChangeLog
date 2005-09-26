@@ -1,3 +1,57 @@
+2005-09-26  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* sgf/sgf-parser.c (do_parse_simple_text): Fix leading whitespace
+	skipping (`continue' won't work in `do ... while (0)' loop.)
+
+	* gui-gtk/gtk-goban-window.c (gtk_goban_window_init): Add "Label
+	Tool" and "Number Tool" items to "Edit" and editing tools menus.
+	Initialize new `next_sgf_label' and `labels_mode' fields.
+	(about_to_change_node): Emit `click-canceled' signal on window's
+	goban.
+	(label_mode_pointer_moved, label_mode_goban_clicked): New
+	functions.
+	(update_children_for_new_node): Reset `next_sgf_label'.
+	(update_commands_sensitivity): Handle sensitivity of new menu
+	items.
+	(activate_label_tool): New function.
+
+	* gui-gtk/gtk-add-or-edit-label-dialog.c: New file.
+	* gui-gtk/gtk-add-or-edit-label-dialog.h: New file.
+
+	* gui-gtk/gtk-goban.c (VERTICAL_LINE_GAP): New macro, broke out of
+	draw_vertical_line_with_gaps() and gtk_goban_update().
+	(gtk_goban_init): Reset various new fields related to label
+	feedback.
+	(gtk_goban_expose): Add code for rendering semi-transparent label
+	feedback using new get_or_create_label_feedback_pixbuf().  Use
+	markup colors also for labels instead of black/white (via new
+	render_label().)  Alter label color based on SGF markup too:
+	improves label readability.
+	(draw_vertical_line_with_gaps): Also make gaps for label feedback.
+	(draw_horizontal_line_with_gaps): Likewise.
+	(gtk_goban_button_press_event): New function.
+	(gtk_goban_leave_notify_event): Reset label feedback too.
+	(gtk_goban_finalize): Call new free_label_feedback_data().
+	(gtk_goban_set_label_feedback): New function.
+	(emit_pointer_moved): When resetting feedback overlay, reset label
+	feedback too.
+	(create_label_text_pixbuf, get_or_create_label_feedback_pixbuf)
+	(free_label_feedback_data): New functions.
+
+	* sgf/sgf-tree.c (sgf_game_tree_delete): Use
+	sgf_undo_history_delete() instead of removed.
+	sgf_undo_history_delete_dont_free_data()
+	(sgf_label_list_get_label, sgf_label_list_set_label)
+	(sgf_label_list_contains_label, compare_sgf_labels): New
+	functions.
+
+	* sgf/sgf-undo.c (sgf_undo_history_delete_dont_free_data): Remove
+	function: data in `SgfChangePropertyOperationEntry' isn't linked
+	from property pool and it's not worth it to have special-case code
+	for this.
+
+	* board/board.h (POINTS_LESS_THAN): New macro.
+
 2005-09-25  Paul Pogonyshev  <pogonyshev@gmx.net>
 
 	* gui-gtk/gtk-tile-set.c (scale_and_paint_svg_image): Change a lot
