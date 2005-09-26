@@ -64,6 +64,7 @@ quarry-marshal.$(OBJEXT) : quarry-marshal.c quarry-marshal.h
 
 
 libguigtk_a_SOURCES =			\
+	gtk-add-or-edit-label-dialog.c	\
 	gtk-assistant.c			\
 	gtk-clock.c			\
 	gtk-color-button.c		\
@@ -96,6 +97,7 @@ libguigtk_a_SOURCES =			\
 	gui-back-end.c			\
 	quarry-stock.c			\
 					\
+	gtk-add-or-edit-label-dialog.h	\
 	gtk-assistant.h			\
 	gtk-clock.h			\
 	gtk-color-button.h		\

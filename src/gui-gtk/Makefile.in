@@ -217,6 +217,7 @@ PARSE_LIST_BUILD_RULE = \
 
 
 libguigtk_a_SOURCES = \
+	gtk-add-or-edit-label-dialog.c	\
 	gtk-assistant.c			\
 	gtk-clock.c			\
 	gtk-color-button.c		\
@@ -249,6 +250,7 @@ libguigtk_a_SOURCES = \
 	gui-back-end.c			\
 	quarry-stock.c			\
 					\
+	gtk-add-or-edit-label-dialog.h	\
 	gtk-assistant.h			\
 	gtk-clock.h			\
 	gtk-color-button.h		\
@@ -324,7 +326,8 @@ LIBRARIES = $(noinst_LIBRARIES)
 libguigtk_a_AR = $(AR) cru
 libguigtk_a_DEPENDENCIES = $(top_builddir)/src/gui-utils/libguiutils.a
 am__objects_1 =
-am_libguigtk_a_OBJECTS = gtk-assistant.$(OBJEXT) gtk-clock.$(OBJEXT) \
+am_libguigtk_a_OBJECTS = gtk-add-or-edit-label-dialog.$(OBJEXT) \
+	gtk-assistant.$(OBJEXT) gtk-clock.$(OBJEXT) \
 	gtk-color-button.$(OBJEXT) gtk-control-center.$(OBJEXT) \
 	gtk-file-dialog.$(OBJEXT) gtk-file-selector.$(OBJEXT) \
 	gtk-freezable-spin-button.$(OBJEXT) \
@@ -351,7 +354,8 @@ libguigtk_a_OBJECTS = $(am_libguigtk_a_OBJECTS) \
 DEFAULT_INCLUDES =  -I. -I$(srcdir) -I$(top_builddir)
 depcomp = $(SHELL) $(top_srcdir)/aux/depcomp
 am__depfiles_maybe = depfiles
-@AMDEP_TRUE@DEP_FILES = ./$(DEPDIR)/gtk-assistant.Po \
+@AMDEP_TRUE@DEP_FILES = ./$(DEPDIR)/gtk-add-or-edit-label-dialog.Po \
+@AMDEP_TRUE@	./$(DEPDIR)/gtk-assistant.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/gtk-clock.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/gtk-color-button.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/gtk-configuration.Po \
@@ -418,6 +422,7 @@ mostlyclean-compile:
 distclean-compile:
 	-rm -f *.tab.c
 
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gtk-add-or-edit-label-dialog.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gtk-assistant.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gtk-clock.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gtk-color-button.Po@am__quote@
