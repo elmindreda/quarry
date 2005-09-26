@@ -35,6 +35,9 @@
 
 inline static void  free_property_value (SgfProperty *property);
 
+static int	    compare_sgf_labels (const void *first_label,
+					const void *second_label);
+
 
 
 /* Dynamically allocate and initialize an SgfCollection structure with
@@ -253,7 +256,7 @@ sgf_game_tree_delete (SgfGameTree *tree)
   while (undo_history) {
     SgfUndoHistory *next_undo_history = undo_history->next;
 
-    sgf_undo_history_delete_dont_free_data (undo_history);
+    sgf_undo_history_delete (undo_history, tree);
     undo_history = next_undo_history;
   }
 
@@ -1573,7 +1576,7 @@ sgf_label_list_new (int num_labels, BoardPoint *points, char **labels)
 
   for (k = 0; k < num_labels; k++) {
     list->labels[k].point = points[k];
-    list->labels[k].text = labels[k];
+    list->labels[k].text  = labels[k];
   }
 
   return list;
@@ -1609,6 +1612,94 @@ sgf_label_list_delete (SgfLabelList *list)
 }
 
 
+const char *
+sgf_label_list_get_label (const SgfLabelList *list, BoardPoint point)
+{
+  assert (list);
+
+  if (list->num_labels > 0) {
+    if (list->num_labels > 1) {
+      SgfLabel  key   = { { point.x, point.y }, NULL };
+      SgfLabel *label = bsearch (&key, list->labels, list->num_labels,
+				 sizeof (SgfLabel), compare_sgf_labels);
+
+      if (label)
+	return label->text;
+    }
+    else {
+      if (POINTS_ARE_EQUAL (list->labels[0].point, point))
+	return list->labels[0].text;
+    }
+  }
+
+  return NULL;
+}
+
+
+/* FIXME: It is better to hack at existing lists rather than creating
+ *	  new ones all the times.  Tweak all
+ *	  sgf_node_get_list_of_*_property_value() to return non-const
+ *	  values and expand undo module to handle incremental list
+ *	  changes.
+ */
+SgfLabelList *
+sgf_label_list_set_label (const SgfLabelList *old_list, BoardPoint point,
+			  char *label_text)
+{
+  SgfLabelList *new_list;
+  int num_labels;
+  int i;
+  int j;
+
+  if (!old_list) {
+    if (label_text)
+      return sgf_label_list_new (1, &point, &label_text);
+    else
+      return NULL;
+  }
+
+  num_labels = old_list->num_labels;
+
+  if (label_text)
+    num_labels++;
+
+  if (sgf_label_list_get_label (old_list, point))
+    num_labels--;
+
+  new_list = sgf_label_list_new_empty (num_labels);
+
+  for (i = 0, j = 0;
+       (i < old_list->num_labels
+	&& POINTS_LESS_THAN (old_list->labels[i].point, point));
+       i++, j++) {
+    new_list->labels[j].point = old_list->labels[i].point;
+    new_list->labels[j].text
+      = utils_duplicate_string (old_list->labels[i].text);
+  }
+
+  if (i < old_list->num_labels
+      && POINTS_ARE_EQUAL (old_list->labels[i].point, point))
+    i++;
+
+  if (label_text) {
+    new_list->labels[j].point = point;
+    new_list->labels[j].text  = label_text;
+    j++;
+  }
+
+  while (j < num_labels) {
+    new_list->labels[j].point = old_list->labels[i].point;
+    new_list->labels[j].text
+      = utils_duplicate_string (old_list->labels[i].text);
+
+    i++;
+    j++;
+  }
+
+  return new_list;
+}
+
+
 SgfLabelList *
 sgf_label_list_duplicate (const SgfLabelList *list)
 {
@@ -1619,7 +1710,7 @@ sgf_label_list_duplicate (const SgfLabelList *list)
 
   for (k = 0; k < list->num_labels; k++) {
     list_copy->labels[k].point = list->labels[k].point;
-    list_copy->labels[k].text = utils_duplicate_string (list->labels[k].text);
+    list_copy->labels[k].text  = utils_duplicate_string (list->labels[k].text);
   }
 
   return list_copy;
@@ -1647,6 +1738,40 @@ sgf_label_lists_are_equal (const SgfLabelList *first_list,
   }
 
   return 1;
+}
+
+
+/* Determine if the `list' contains given `label' at some position. */
+int
+sgf_label_list_contains_label (const SgfLabelList *list, const char *label)
+{
+  int k;
+
+  assert (list);
+  assert (label);
+
+  for (k = 0; k < list->num_labels; k++) {
+    if (strcmp (list->labels[k].text, label) == 0)
+      return 1;
+  }
+
+  return 0;
+}
+
+
+static int
+compare_sgf_labels (const void *first_label, const void *second_label)
+{
+  const BoardPoint first_point	= ((const SgfLabel *) first_label)->point;
+  const BoardPoint second_point = ((const SgfLabel *) second_label)->point;
+
+  if (first_point.y < second_point.y)
+    return -1;
+  if (first_point.y > second_point.y)
+    return 1;
+
+  return (first_point.x < second_point.x
+	  ? -1 : (first_point.x > second_point.x ? 1 : 0));
 }
 
 

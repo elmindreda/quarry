@@ -661,8 +661,16 @@ void		 sgf_label_list_delete (SgfLabelList *list);
 
 SgfLabelList *	 sgf_label_list_duplicate (const SgfLabelList *list);
 
+const char *	 sgf_label_list_get_label (const SgfLabelList *list,
+					   BoardPoint point);
+
+SgfLabelList *	 sgf_label_list_set_label (const SgfLabelList *old_list,
+					   BoardPoint point, char *label_text);
+
 int		 sgf_label_lists_are_equal (const SgfLabelList *first_list,
 					    const SgfLabelList *second_list);
+int		 sgf_label_list_contains_label (const SgfLabelList *list,
+						const char *label);
 
 
 SgfFigureDescription *
