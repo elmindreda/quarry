@@ -115,7 +115,7 @@
     <title>Introduction</title>
     <para>
       The &app; application enables you to play the board games of Go, Amazons and
-      Othello.  You can play with computer programs or with another human, and save, view
+      Reversi.  You can play with computer programs or with another human, and save, view
       and edit game records.
     </para>
 
@@ -153,7 +153,7 @@
 
     <note>
       <para>
-	&app; itself can play neither Go, nor Amazons, nor Othello.  To have a computer
+	&app; itself can play neither Go, nor Amazons, nor Reversi.  To have a computer
 	opponent, you need to find a program (i.e. GNU Go mentioned above) that supports
 	GTP and <link linkend="register-game-playing-program">register it in &app;</link>.
       </para>
@@ -229,7 +229,7 @@
 	    <para>
 	      This button allows you to start a new game.  It will pop up the
 	      <link linkend="new-game-dialog">New Game dialog</link> where you can select
-	      the game (Go, Amazons or Othello), opponents and game-specific rules.
+	      the game (Go, Amazons or Reversi), opponents and game-specific rules.
 	    </para>
 	  </listitem>
 	</varlistentry>
@@ -404,7 +404,7 @@
 	and <guilabel>Game Rules</guilabel>.  When you open the dialog, the first page
 	appears.  When you click <guibutton>Next</guibutton> button, the second page is
 	displayed, which is specific for each of three games&mdash;Go, Amazons and
-	Othello.
+	Reversi.
       </para>
 
       <sect3 id="new-game-dialog-game-and-players">
@@ -441,7 +441,7 @@
 	    <listitem>
 	      <para>
 		Here you can select the game you want to play, either Go, Amazons or
-		Othello (also known as Reversi).  Note that most programs can play only
+		Reversi (also known as Othello).  Note that most programs can play only
 		one game.
 	      </para>
 	    </listitem>
@@ -462,7 +462,7 @@
 	      </para>
 
 	      <para>
-		Which player is to move first depends on the game.  In Go and Othello
+		Which player is to move first depends on the game.  In Go and Reversi
 		black moves first, while in Amazons white has the first turn.  You can
 		always change sides with the <guibutton>Swap</guibutton> button to the
 		right.
@@ -509,7 +509,7 @@
 	<title>Game Rules Page</title>
 	<para>
 	  On this page you can select the rules for the game.  The page has two parts.
-	  The upper part is different for each of Go, Amazons and Othello games and
+	  The upper part is different for each of Go, Amazons and Reversi games and
 	  contains game-specific rules.  The lower part contains time limit settings
 	  controls and is the same for all three games.  It is
 	  <link linkend="new-game-dialog-time-settings">described</link> last.
@@ -608,12 +608,12 @@
 	  </para>
 	</sect4>
 
-	<sect4 id="new-game-dialog-othello-rules">
-	  <title>Othello Rules</title>
+	<sect4 id="new-game-dialog-reversi-rules">
+	  <title>Reversi Rules</title>
 	  <para>
-	    Othello rules in &app; are limited to board size and
+	    Reversi rules in &app; are limited to board size and
 	    <link linkend="new-game-dialog-time-settings">time limit settings</link>
-	    described just below this section.  Standard board size for Othello is
+	    described just below this section.  Standard board size for Reversi is
 	    8&times;8; 10&times;10 board is not uncommon too.  In &app; you can select any
 	    even board size from 6&times;6 to 24&times;24 inclusive.
 	  </para>
@@ -726,7 +726,7 @@
       <para>
 	Board windows are the main part of &app;.  They are used to play games and view
 	and edit game records.  To the left in a window is the game board itself.  The
-	exact appearance of the board depends on the current game (Go, Amazons or Othello)
+	exact appearance of the board depends on the current game (Go, Amazons or Reversi)
 	and can be <link linkend="preferences-go-board-appearance">configured</link>.  On
 	the right side of the window there is information pane (to the top) and the
 	comment window.
@@ -806,7 +806,7 @@
 	  </listitem>
 
 	  <listitem>
-	    <link linkend="preferences-othello-board-appearance">Othello Board
+	    <link linkend="preferences-reversi-board-appearance">Reversi Board
 	      Appearance</link>
 	  </listitem>
 	</itemizedlist>
@@ -981,8 +981,8 @@
       </para>
     </sect2>
 
-    <sect2 id="preferences-othello-board-appearance">
-      <title>Othello Board Appearance</title>
+    <sect2 id="preferences-reversi-board-appearance">
+      <title>Reversi Board Appearance</title>
       <para>
 	Sorry, not documented yet...
       </para>

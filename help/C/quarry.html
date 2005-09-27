@@ -43,9 +43,9 @@
 	  <p>Paul Pogonyshev
 	    <tt>&lt;<a href="mailto:pogonyshev@gmx.net">pogonyshev@gmx.net</a>&gt;</tt>
 	  </p>
-	</td></tr></table></div></div><hr></div><div class="toc"><p><b>Table of Contents</b></p><dl><dt><a href="#introduction">Introduction</a></dt><dt><a href="#getting-started">Getting Started</a></dt><dd><dl><dt><a href="#start">To Start Quarry</a></dt><dt><a href="#when-start">When You Start Quarry</a></dt></dl></dd><dt><a href="#usage">Usage</a></dt><dd><dl><dt><a href="#new-game">To Start a New Game</a></dt><dt><a href="#open-game-record">To Open a Game Record</a></dt><dt><a href="#save-game-record">To Save a Game Record</a></dt><dt><a href="#register-game-playing-program">To Register a Game-Playing Program</a></dt></dl></dd><dt><a href="#windows-and-menus">Quarry Windows and Menus</a></dt><dd><dl><dt><a href="#new-game-dialog">New Game Dialog</a></dt><dt><a href="#board-windows">Board Windows</a></dt></dl></dd><dt><a href="#preferences">Settings</a></dt><dd><dl><dt><a href="#preferences-gtp-engines">GTP Engines</a></dt><dt><a href="#preferences-saving-game-records">Saving Game Records</a></dt><dt><a href="#preferences-go-board-appearance">Go Board Appearance</a></dt><dt><a href="#preferences-amazons-board-appearance">Amazons Board Appearance</a></dt><dt><a href="#preferences-othello-board-appearance">Othello Board Appearance</a></dt></dl></dd><dt>A. <a href="#fdl">GNU Free Documentation License</a></dt><dd><dl><dt><a href="#id2820103"></a></dt><dd><dl></dl></dd></dl></dd></dl></div><a class="indexterm" name="id2755720"></a><a class="indexterm" name="id2755733"></a><div class="sect1"><div class="titlepage"><div><h2 class="title" style="clear: both"><a name="introduction"></a>Introduction</h2></div></div><p>
+	</td></tr></table></div></div><hr></div><div class="toc"><p><b>Table of Contents</b></p><dl><dt><a href="#introduction">Introduction</a></dt><dt><a href="#getting-started">Getting Started</a></dt><dd><dl><dt><a href="#start">To Start Quarry</a></dt><dt><a href="#when-start">When You Start Quarry</a></dt></dl></dd><dt><a href="#usage">Usage</a></dt><dd><dl><dt><a href="#new-game">To Start a New Game</a></dt><dt><a href="#open-game-record">To Open a Game Record</a></dt><dt><a href="#save-game-record">To Save a Game Record</a></dt><dt><a href="#register-game-playing-program">To Register a Game-Playing Program</a></dt></dl></dd><dt><a href="#windows-and-menus">Quarry Windows and Menus</a></dt><dd><dl><dt><a href="#new-game-dialog">New Game Dialog</a></dt><dt><a href="#board-windows">Board Windows</a></dt></dl></dd><dt><a href="#preferences">Settings</a></dt><dd><dl><dt><a href="#preferences-gtp-engines">GTP Engines</a></dt><dt><a href="#preferences-saving-game-records">Saving Game Records</a></dt><dt><a href="#preferences-go-board-appearance">Go Board Appearance</a></dt><dt><a href="#preferences-amazons-board-appearance">Amazons Board Appearance</a></dt><dt><a href="#preferences-reversi-board-appearance">Reversi Board Appearance</a></dt></dl></dd><dt>A. <a href="#fdl">GNU Free Documentation License</a></dt><dd><dl><dt><a href="#id2820103"></a></dt><dd><dl></dl></dd></dl></dd></dl></div><a class="indexterm" name="id2755720"></a><a class="indexterm" name="id2755733"></a><div class="sect1"><div class="titlepage"><div><h2 class="title" style="clear: both"><a name="introduction"></a>Introduction</h2></div></div><p>
       The Quarry application enables you to play the board games of Go, Amazons and
-      Othello.  You can play with computer programs or with another human, and save, view
+      Reversi.  You can play with computer programs or with another human, and save, view
       and edit game records.
     </p><p>
       Quarry provides the following features:
@@ -63,7 +63,7 @@
 	  format.  Quarry has an extremely fast SGF parser, which is important if you have
 	  very large SGF files.
 	</p></li></ul></div><div class="note" style="margin-left: 0.5in; margin-right: 0.5in;"><h3 class="title">Note</h3><p>
-	Quarry itself can play neither Go, nor Amazons, nor Othello.  To have a computer
+	Quarry itself can play neither Go, nor Amazons, nor Reversi.  To have a computer
 	opponent, you need to find a program (i.e. GNU Go mentioned above) that supports
 	GTP and <a href="#register-game-playing-program" title="To Register a Game-Playing Program">register it in Quarry</a>.
       </p></div></div><div class="sect1"><div class="titlepage"><div><h2 class="title" style="clear: both"><a name="getting-started"></a>Getting Started</h2></div></div><div class="sect2"><div class="titlepage"><div><h3 class="title"><a name="start"></a>To Start Quarry</h3></div></div><p>
@@ -91,7 +91,7 @@
       </p><div class="variablelist"><dl><dt><span class="term">New Game button</span></dt><dd><p>
 	      This button allows you to start a new game.  It will pop up the
 	      <a href="#new-game-dialog" title="New Game Dialog">New Game dialog</a> where you can select
-	      the game (Go, Amazons or Othello), opponents and game-specific rules.
+	      the game (Go, Amazons or Reversi), opponents and game-specific rules.
 	    </p></dd><dt><span class="term">Open Game Record button</span></dt><dd><p>
 	      This button allows you to select a game record for viewing and/or editing.
 	      Opening a game record this way does the same as specifying its filename on
@@ -172,7 +172,7 @@
 	and Game Rules.  When you open the dialog, the first page
 	appears.  When you click Next button, the second page is
 	displayed, which is specific for each of three games&#8212;Go, Amazons and
-	Othello.
+	Reversi.
       </p><div class="sect3"><div class="titlepage"><div><h4 class="title"><a name="new-game-dialog-game-and-players"></a>Game &amp; Players Page</h4></div></div><p>
 	  On this page you can select one of three available games and the opponents.  You
 	  can make selections in arbitrary order&#8212;first choose the game and then the
@@ -192,7 +192,7 @@
 	  Game &amp; Players page conists of the following controls:
 	</p><div class="variablelist"><dl><dt><span class="term">Game section</span></dt><dd><p>
 		Here you can select the game you want to play, either Go, Amazons or
-		Othello (also known as Reversi).  Note that most programs can play only
+		Reversi (also known as Othello).  Note that most programs can play only
 		one game.
 	      </p></dd><dt><span class="term">White Player and Black Player
 	      sections</span></dt><dd><p>
@@ -204,7 +204,7 @@
 		Manage Engine List at the end of the dialog to
 		register the program in Quarry.
 	      </p><p>
-		Which player is to move first depends on the game.  In Go and Othello
+		Which player is to move first depends on the game.  In Go and Reversi
 		black moves first, while in Amazons white has the first turn.  You can
 		always change sides with the Swap button to the
 		right.
@@ -222,7 +222,7 @@
 		button to tweak game specific rules on the next page.
 	      </p></dd></dl></div></div><div class="sect3"><div class="titlepage"><div><h4 class="title"><a name="new-game-dialog-game-rules"></a>Game Rules Page</h4></div></div><p>
 	  On this page you can select the rules for the game.  The page has two parts.
-	  The upper part is different for each of Go, Amazons and Othello games and
+	  The upper part is different for each of Go, Amazons and Reversi games and
 	  contains game-specific rules.  The lower part contains time limit settings
 	  controls and is the same for all three games.  It is
 	  <a href="#new-game-dialog-time-settings" title="Time Limit Settings">described</a> last.
@@ -274,10 +274,10 @@
 	    <a href="#new-game-dialog-time-settings" title="Time Limit Settings">time limit settings</a>.
 	    Standard board size for Amazons is 10×10, but you can choose anything
 	    from 5×5 to 25×25 inclusive.
-	  </p></div><div class="sect4"><div class="titlepage"><div><h5 class="title"><a name="new-game-dialog-othello-rules"></a>Othello Rules</h5></div></div><p>
-	    Othello rules in Quarry are limited to board size and
+	  </p></div><div class="sect4"><div class="titlepage"><div><h5 class="title"><a name="new-game-dialog-reversi-rules"></a>Reversi Rules</h5></div></div><p>
+	    Reversi rules in Quarry are limited to board size and
 	    <a href="#new-game-dialog-time-settings" title="Time Limit Settings">time limit settings</a>
-	    described just below this section.  Standard board size for Othello is
+	    described just below this section.  Standard board size for Reversi is
 	    8×8; 10×10 board is not uncommon too.  In Quarry you can select any
 	    even board size from 6×6 to 24×24 inclusive.
 	  </p></div><div class="sect4"><div class="titlepage"><div><h5 class="title"><a name="new-game-dialog-time-settings"></a>Time Limit Settings</h5></div></div><p>
@@ -336,7 +336,7 @@
 		</p></dd></dl></div></div></div></div><div class="sect2"><div class="titlepage"><div><h3 class="title"><a name="board-windows"></a>Board Windows</h3></div></div><p>
 	Board windows are the main part of Quarry.  They are used to play games and view
 	and edit game records.  To the left in a window is the game board itself.  The
-	exact appearance of the board depends on the current game (Go, Amazons or Othello)
+	exact appearance of the board depends on the current game (Go, Amazons or Reversi)
 	and can be <a href="#preferences-go-board-appearance" title="Go Board Appearance">configured</a>.  On
 	the right side of the window there is information pane (to the top) and the
 	comment window.
@@ -363,7 +363,7 @@
 	Board Appearance
 
 	<div class="itemizedlist"><ul type="round"><li><a href="#preferences-go-board-appearance" title="Go Board Appearance">Go Board Appearance</a></li><li><a href="#preferences-amazons-board-appearance" title="Amazons Board Appearance">Amazons Board
-	      Appearance</a></li><li><a href="#preferences-othello-board-appearance" title="Othello Board Appearance">Othello Board
+	      Appearance</a></li><li><a href="#preferences-reversi-board-appearance" title="Reversi Board Appearance">Reversi Board
 	      Appearance</a></li></ul></div></li></ul></div><div class="sect2"><div class="titlepage"><div><h3 class="title"><a name="preferences-gtp-engines"></a>GTP Engines</h3></div></div><p>
 	At this page, all game-playing programs registered in Quarry are shown.  You can
 	register new programs and modify information in existing entries.
@@ -451,7 +451,7 @@
 	Sorry, not documented yet...
       </p></div><div class="sect2"><div class="titlepage"><div><h3 class="title"><a name="preferences-amazons-board-appearance"></a>Amazons Board Appearance</h3></div></div><p>
 	Sorry, not documented yet...
-      </p></div><div class="sect2"><div class="titlepage"><div><h3 class="title"><a name="preferences-othello-board-appearance"></a>Othello Board Appearance</h3></div></div><p>
+      </p></div><div class="sect2"><div class="titlepage"><div><h3 class="title"><a name="preferences-reversi-board-appearance"></a>Reversi Board Appearance</h3></div></div><p>
 	Sorry, not documented yet...
       </p></div></div><div class="appendix"><h2 class="title" style="clear: both"><a name="fdl"></a>A. GNU Free Documentation License</h2><h4><a name="id2820077"></a>Version 1.2, November 2002</h4><blockquote class="blockquote"><p>
       Copyright © 2000, 2001, 2002 Free Software Foundation, Inc. 51 Franklin St,
