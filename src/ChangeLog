@@ -1,3 +1,52 @@
+2005-09-27  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* (Globally: use "Reversi" instead of "Othello" everywhere to
+	avoid potential trademark problems as suggested by Michel
+	Alexandre Salim.)
+
+	* gui-utils/tile-renderer.c (render_reversi_disks): Rename from
+	render_othello_disks().
+
+	* gui-gtk/gtk-new-game-dialog.c (gtk_new_game_dialog_init): Adjust
+	a couple mnemonics because of letter 'O' becoming unused.
+
+	* gui-gtk/gtk-preferences.c
+	(create_reversi_board_appearance_page): Rename from
+	create_othello_board_appearance_page().
+
+	* gui-gtk/quarry-stock.c: Adjust mnemonic of `QUARRY_STOCK_CREATE'
+	item: 'R' is now taken by "Reversi".
+
+	* gtp/gtp-client.c (gtp_client_set_game): Add special case to
+	supply "Othello" as game name, per de facto GTP standard.
+	(store_supported_games_list): Likewise in opposite direction:
+	translate "Othello" to "Reversi".
+
+	* sgf/sgf-parser.c (do_parse_reversi_move): Rename from
+	do_parse_othello_move().
+
+	* sgf/sgf-writer.c (do_write_reversi_move): Rename from
+	do_write_othello_move().
+
+	* board/reversi.c: Rename from `othello.c'.
+	* board/reversi.h: Rename from `othello.h'.
+
+	* board/reversi.c (reversi_adjust_color_to_play): Rename from
+	othello_adjust_color_to_play().
+	(reversi_get_default_setup): Rename from
+	othello_get_default_setup().
+	(reversi_is_legal_move): Rename from othello_is_legal_move().
+	(reversi_play_move): Rename from othello_play_move().
+	(reversi_undo): Rename from othello_undo().
+	(reversi_apply_changes): Rename from othello_apply_changes().
+	(reversi_add_dummy_move_entry): Rename from
+	othello_add_dummy_move_entry().
+	(reversi_format_move): Rename from othello_format_move().
+	(reversi_parse_move): Rename from othello_parse_move().
+	(reversi_validate_board): Rename from othello_validate_board().
+	(reversi_dump_board): Rename from othello_dump_board().
+	(reversi_count_disks): Rename from othello_count_disks().
+
 2005-09-26  Paul Pogonyshev  <pogonyshev@gmx.net>
 
 	* sgf/sgf-parser.c (do_parse_simple_text): Fix leading whitespace
