@@ -2,7 +2,7 @@
 Encoding=UTF-8
 Name=Quarry
 GenericName=Board Game GUI
-Comment=A multi-purpose board game GUI for Go, Amazons and Othello
+Comment=A multi-purpose board game GUI for Go, Amazons and Reversi
 Exec=quarry
 #Icon=
 Terminal=false
