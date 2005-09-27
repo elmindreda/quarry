@@ -33,6 +33,12 @@
  * counters for...  (consider this a FIXME.)
  */
 
+/* To be consistent with de facto GTP standard set up with first
+ * versions of Quarry and Inge Wallin's (currently private) Reversi
+ * engine, we use "Othello", not "Reversi" as game name for GTP.  (See
+ * gtp_client_set_game() and store_supported_games_list().)
+ */
+
 
 #include "gtp-client.h"
 #include "board.h"
@@ -451,7 +457,9 @@ gtp_client_set_game (GtpClient *client,
 		(GtpClientResponseCallback) change_client_integer_parameter,
 		store_user_callback_data (response_callback, user_data,
 					  game, &client->game),
-		"set_game %s", game_info[game].name);
+		"set_game %s",
+		/* See note at the top of the file. */
+		(game != GAME_REVERSI ? game_info[game].name : "Othello"));
 }
 
 
@@ -861,7 +869,21 @@ static int
 store_supported_games_list (GtpClient *client, int successful)
 {
   if (successful) {
+    StringListItem *list_item;
+
     string_list_steal_items (&client->supported_games, &client->response);
+
+    for (list_item = client->supported_games.first; list_item;
+	 list_item = list_item->next) {
+      /* See note at the top of the file. */
+      if (strcmp (list_item->text, "Othello") == 0) {
+	utils_free (list_item->text);
+	list_item->text
+	  = utils_duplicate_string (game_info[GAME_REVERSI].name);
+
+	break;
+      }
+    }
 
     if (string_list_is_single_string (&client->supported_games)) {
       Game game;

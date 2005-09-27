@@ -226,7 +226,7 @@ clear_board_grid (Board *board)
 
 
 /* Normally color to play is alternating.  However, in some games
- * (i.e. Othello) there are situations where one of the players has to
+ * (i.e. Reversi) there are situations where one of the players has to
  * skip his move.  Also, changing board state by adding/removing
  * pieces can lead to situation where one of the players doesn't have
  * a legal move.  Then it's logical to let the other to take his turn.

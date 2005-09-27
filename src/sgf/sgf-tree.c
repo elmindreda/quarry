@@ -296,8 +296,8 @@ sgf_game_tree_set_game (SgfGameTree *tree, Game game)
 
   if (game == GAME_GO)
     node_size = sizeof (SgfNodeGo);
-  else if (game == GAME_OTHELLO)
-    node_size = sizeof (SgfNodeOthello);
+  else if (game == GAME_REVERSI)
+    node_size = sizeof (SgfNodeReversi);
   else if (game == GAME_AMAZONS)
     node_size = sizeof (SgfNodeAmazons);
   else

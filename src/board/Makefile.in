@@ -197,7 +197,7 @@ libboard_a_SOURCES = \
 	amazons.c		\
 	board.c			\
 	go.c			\
-	othello.c		\
+	reversi.c		\
 				\
 	amazons.h		\
 	board.h			\
@@ -205,7 +205,7 @@ libboard_a_SOURCES = \
 	board-internals.h	\
 	game-info.h		\
 	go.h			\
-	othello.h		\
+	reversi.h		\
 				\
 	$(LIST_FILES)
 
@@ -240,7 +240,7 @@ libboard_a_AR = $(AR) cru
 libboard_a_LIBADD =
 am__objects_1 =
 am_libboard_a_OBJECTS = amazons.$(OBJEXT) board.$(OBJEXT) go.$(OBJEXT) \
-	othello.$(OBJEXT) $(am__objects_1)
+	reversi.$(OBJEXT) $(am__objects_1)
 am__objects_2 = games.$(OBJEXT)
 am__objects_3 = $(am__objects_2) $(am__objects_1)
 nodist_libboard_a_OBJECTS = $(am__objects_3)
@@ -260,8 +260,8 @@ depcomp = $(SHELL) $(top_srcdir)/aux/depcomp
 am__depfiles_maybe = depfiles
 @AMDEP_TRUE@DEP_FILES = ./$(DEPDIR)/amazons.Po ./$(DEPDIR)/board.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/games.Po ./$(DEPDIR)/go.Po \
-@AMDEP_TRUE@	./$(DEPDIR)/othello.Po \
-@AMDEP_TRUE@	./$(DEPDIR)/parse-game-list.Po
+@AMDEP_TRUE@	./$(DEPDIR)/parse-game-list.Po \
+@AMDEP_TRUE@	./$(DEPDIR)/reversi.Po
 COMPILE = $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) \
 	$(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
 CCLD = $(CC)
@@ -307,8 +307,8 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/board.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/games.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/go.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/othello.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/parse-game-list.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/reversi.Po@am__quote@
 
 .c.o:
 @am__fastdepCC_TRUE@	if $(COMPILE) -MT $@ -MD -MP -MF "$(DEPDIR)/$*.Tpo" \

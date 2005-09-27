@@ -72,14 +72,14 @@ section_list  unnamed gtk_configuration_sections {
 		new_amazons_game_section_values
 		new_amazons_game_defaults
 
-  SECTION_NEW_OTHELLO_GAME	"New Othello Game Parameters"
+  SECTION_NEW_REVERSI_GAME	"New Reversi Game Parameters"
 		single
-		new		NewOthelloGameConfiguration
-				new_othello_game_configuration_dispose
+		new		NewReversiGameConfiguration
+				new_reversi_game_configuration_dispose
 
-		new_othello_game_configuration
-		new_othello_game_section_values
-		new_othello_game_defaults
+		new_reversi_game_configuration
+		new_reversi_game_section_values
+		new_reversi_game_defaults
 
   SECTION_FIND_DIALOG		"Find Dialog Parameters"
 		single
@@ -193,7 +193,7 @@ values  - new_amazons_game_section_values {
 }
 
 
-values  - new_othello_game_section_values {
+values  - new_reversi_game_section_values {
   "Board size"			board_size			int
 
   "Time control type"		time_control.type		int
@@ -309,7 +309,7 @@ defaults  - new_amazons_game_defaults {
 }
 
 
-defaults  - new_othello_game_defaults {
+defaults  - new_reversi_game_defaults {
   board_size				int		8
 
   time_control				structure	new

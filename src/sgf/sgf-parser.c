@@ -154,7 +154,7 @@ static char *	    convert_text_to_utf8 (SgfParsingData *data,
 static int	    do_parse_point (SgfParsingData *data, BoardPoint *point);
 
 static SgfError	    do_parse_go_move (SgfParsingData *data);
-static SgfError	    do_parse_othello_move (SgfParsingData *data);
+static SgfError	    do_parse_reversi_move (SgfParsingData *data);
 static SgfError	    do_parse_amazons_move (SgfParsingData *data);
 
 inline static int   do_parse_point_or_rectangle (SgfParsingData *data,
@@ -553,8 +553,8 @@ parse_root (SgfParsingData *data)
     if (data->use_board) {
       if (data->game == GAME_GO)
 	data->do_parse_move = do_parse_go_move;
-      else if (data->game == GAME_OTHELLO)
-	data->do_parse_move = do_parse_othello_move;
+      else if (data->game == GAME_REVERSI)
+	data->do_parse_move = do_parse_reversi_move;
       else if (data->game == GAME_AMAZONS)
 	data->do_parse_move = do_parse_amazons_move;
       else
@@ -1712,7 +1712,7 @@ do_parse_point (SgfParsingData *data, BoardPoint *point)
       }
 
       if (point->x < data->board_width && y <= data->board->height) {
-	point->y = (data->game != GAME_OTHELLO
+	point->y = (data->game != GAME_REVERSI
 		    ? data->board->height - y : y - 1);
 	if (!data->times_error_reported[SGF_WARNING_NON_SGF_POINT_NOTATION]
 	    && !data->non_sgf_point_error_position.line) {
@@ -1768,7 +1768,7 @@ do_parse_go_move (SgfParsingData *data)
 
 
 static SgfError
-do_parse_othello_move (SgfParsingData *data)
+do_parse_reversi_move (SgfParsingData *data)
 {
   if (data->token != ']') {
     BufferPositionStorage storage;

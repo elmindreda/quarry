@@ -25,7 +25,7 @@
 
 @c_include "game-info.h"
 @c_include "go.h"
-@c_include "othello.h"
+@c_include "reversi.h"
 @c_include "amazons.h"
 
 @c_include <stdlib.h>
@@ -59,22 +59,23 @@ games  Game game_info {
 		GoMoveStackEntry	0.8
 
 
-  #> GM[2], Othello.
-  "Othello"	GAME_OTHELLO		8
-		black			othello_adjust_color_to_play
+  #> GM[2], Othello (which we call Reversi to avoid potential
+  #> trademark problems.)
+  "Reversi"	GAME_REVERSI		8
+		black			reversi_adjust_color_to_play
 		NULL
 
 		ABCDEFGHIJKLMNOPQRSTUVWXY	normal
 
-		othello_get_default_setup
+		reversi_get_default_setup
 
 		NULL
-		othello_is_legal_move	othello_play_move	othello_undo
-		othello_apply_changes	othello_add_dummy_move_entry
-		othello_format_move	othello_parse_move
-		othello_validate_board	othello_dump_board
+		reversi_is_legal_move	reversi_play_move	reversi_undo
+		reversi_apply_changes	reversi_add_dummy_move_entry
+		reversi_format_move	reversi_parse_move
+		reversi_validate_board	reversi_dump_board
 
-		OthelloMoveStackEntry	0.95
+		ReversiMoveStackEntry	0.95
 
 
   #> GM[3], chess.

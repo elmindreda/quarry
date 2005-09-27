@@ -2804,7 +2804,7 @@ static void
 show_about_dialog (void)
 {
   static const char *description_string
-    = N_("A GUI program for Go, Amazons and Othello board games");
+    = N_("A GUI program for Go, Amazons and Reversi board games");
   static const char *copyright_string
     = N_("Copyright \xc2\xa9 2003, 2004, 2005 Paul Pogonyshev and others");
 
@@ -4434,11 +4434,11 @@ update_game_specific_information (const GtkGobanWindow *goban_window)
 			   board->data.go.prisoners[WHITE_INDEX]);
     }
   }
-  else if (board->game == GAME_OTHELLO) {
+  else if (board->game == GAME_REVERSI) {
     int num_black_disks;
     int num_white_disks;
 
-    othello_count_disks (board, &num_black_disks, &num_white_disks);
+    reversi_count_disks (board, &num_black_disks, &num_white_disks);
     black_string = g_strdup_printf (ngettext ("%d disk", "%d disks",
 					      num_black_disks),
 				    num_black_disks);
@@ -5282,12 +5282,12 @@ move_has_been_played (GtkGobanWindow *goban_window)
 
       break;
 
-    case GAME_OTHELLO:
+    case GAME_REVERSI:
       {
 	int num_black_disks;
 	int num_white_disks;
 
-	othello_count_disks (board, &num_black_disks, &num_white_disks);
+	reversi_count_disks (board, &num_black_disks, &num_white_disks);
 	sgf_node_add_score_result (game_info_node, goban_window->current_tree,
 				   num_black_disks - num_white_disks, 1);
       }

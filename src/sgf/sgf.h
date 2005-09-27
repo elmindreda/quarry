@@ -105,7 +105,7 @@ typedef struct _SgfProperty		SgfProperty;
 typedef struct _SgfNode			SgfNode;
 typedef struct _SgfNodeGeneric		SgfNodeGeneric;
 typedef struct _SgfNodeGeneric		SgfNodeGo;
-typedef struct _SgfNodeGeneric		SgfNodeOthello;
+typedef struct _SgfNodeGeneric		SgfNodeReversi;
 typedef struct _SgfNodeAmazons		SgfNodeAmazons;
 
 typedef struct _SgfBoardState		SgfBoardState;

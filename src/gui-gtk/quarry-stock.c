@@ -57,7 +57,7 @@ static GtkStockItem quarry_stock_items[] = {
   { QUARRY_STOCK_OPEN_GAME_RECORD,  N_("_Open Game Record"),  0, 0, NULL },
 
   { QUARRY_STOCK_BROWSE,	    N_("_Browse..."),	      0, 0, NULL },
-  { QUARRY_STOCK_CREATE,	    N_("C_reate"),	      0, 0, NULL },
+  { QUARRY_STOCK_CREATE,	    N_("Crea_te"),	      0, 0, NULL },
   { QUARRY_STOCK_DONE,		    N_("_Done"),	      0, 0, NULL },
   { QUARRY_STOCK_GO_TO_NODE,	    N_("_Go to Node"),	      0, 0, NULL },
   { QUARRY_STOCK_MODIFY,	    N_("_Modify"),	      0, 0, NULL },

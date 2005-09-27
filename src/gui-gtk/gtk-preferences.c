@@ -152,7 +152,7 @@ static GtkWidget *  create_game_tree_page (void);
 static GtkWidget *  create_saving_sgf_page (void);
 static GtkWidget *  create_go_board_appearance_page (void);
 static GtkWidget *  create_amazons_board_appearance_page (void);
-static GtkWidget *  create_othello_board_appearance_page (void);
+static GtkWidget *  create_reversi_board_appearance_page (void);
 
 static GtkWidget *  create_background_table (GtkGameIndex game_index,
 					     gint num_table_rows);
@@ -454,9 +454,9 @@ gtk_preferences_dialog_present (gpointer page_to_select)
     { create_amazons_board_appearance_page,
       NULL,			NULL,
       GTK_STOCK_SELECT_COLOR,	N_("Amazons Board Appearance") },
-    { create_othello_board_appearance_page,
+    { create_reversi_board_appearance_page,
       NULL,			NULL,
-      GTK_STOCK_SELECT_COLOR,	N_("Othello Board Appearance") }
+      GTK_STOCK_SELECT_COLOR,	N_("Reversi Board Appearance") }
   };
 
   int k;
@@ -1146,7 +1146,7 @@ create_amazons_board_appearance_page (void)
 
 
 static GtkWidget *
-create_othello_board_appearance_page (void)
+create_reversi_board_appearance_page (void)
 {
   static const gchar *labels[4] = {
     N_("_Relative to disk size"),
@@ -1155,8 +1155,8 @@ create_othello_board_appearance_page (void)
     N_("On _empty fields:")
   };
 
-  GtkWidget *background_table = create_background_table (GTK_GAME_OTHELLO, 3);
-  GtkWidget *markup_box = create_markup_box (GTK_GAME_OTHELLO, labels);
+  GtkWidget *background_table = create_background_table (GTK_GAME_REVERSI, 3);
+  GtkWidget *markup_box = create_markup_box (GTK_GAME_REVERSI, labels);
 
   return create_board_appearance_notebook_page (background_table, markup_box);
 }
@@ -1510,8 +1510,8 @@ gtk_preferences_dialog_response (GtkWindow *window, gint response_id)
       gtk_help_display ("preferences-amazons-board-appearance");
       break;
 
-    case PREFERENCES_PAGE_OTHELLO_BOARD_APPEARANCE:
-      gtk_help_display ("preferences-othello-board-appearance");
+    case PREFERENCES_PAGE_REVERSI_BOARD_APPEARANCE:
+      gtk_help_display ("preferences-reversi-board-appearance");
       break;
     }
   }
@@ -2263,9 +2263,9 @@ update_board_appearance (GtkWidget *widget, gpointer value_storage)
   else if ((gpointer) &amazons_board_appearance <= value_storage
 	   && value_storage < ((gpointer) (&amazons_board_appearance + 1)))
     game = GAME_AMAZONS;
-  else if ((gpointer) &othello_board_appearance <= value_storage
-	   && value_storage < (gpointer) (&othello_board_appearance + 1))
-    game = GAME_OTHELLO;
+  else if ((gpointer) &reversi_board_appearance <= value_storage
+	   && value_storage < (gpointer) (&reversi_board_appearance + 1))
+    game = GAME_REVERSI;
   else
     assert (0);
 
@@ -2384,8 +2384,8 @@ game_to_board_appearance_structure (Game game)
   if (game == GAME_AMAZONS)
     return &amazons_board_appearance.board_appearance;
 
-  if (game == GAME_OTHELLO)
-    return &othello_board_appearance;
+  if (game == GAME_REVERSI)
+    return &reversi_board_appearance;
 
   assert (0);
 }
@@ -2400,8 +2400,8 @@ game_index_to_board_appearance_structure (GtkGameIndex game_index)
   if (game_index == GTK_GAME_AMAZONS)
     return &amazons_board_appearance.board_appearance;
 
-  if (game_index == GTK_GAME_OTHELLO)
-    return &othello_board_appearance;
+  if (game_index == GTK_GAME_REVERSI)
+    return &reversi_board_appearance;
 
   assert (0);
 }

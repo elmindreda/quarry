@@ -1,7 +1,7 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *\
  * This file is part of Quarry.                                    *
  *                                                                 *
- * Copyright (C) 2003, 2004 Paul Pogonyshev.                       *
+ * Copyright (C) 2003, 2004, 2005 Paul Pogonyshev.                 *
  *                                                                 *
  * This program is free software; you can redistribute it and/or   *
  * modify it under the terms of the GNU General Public License as  *
@@ -20,7 +20,7 @@
 \* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 
-#include "othello.h"
+#include "reversi.h"
 #include "board-internals.h"
 
 #include <stdio.h>
@@ -36,16 +36,16 @@ static inline int  is_legal_move (const char grid[BOARD_FULL_GRID_SIZE],
 
 
 int
-othello_adjust_color_to_play (const Board *board, BoardRuleSet rule_set,
+reversi_adjust_color_to_play (const Board *board, BoardRuleSet rule_set,
 			      int color)
 {
   int pos;
   int check_color = color;
 
-  if (rule_set == OTHELLO_RULE_SET_SGF)
+  if (rule_set == REVERSI_RULE_SET_SGF)
     return color;
 
-  assert (rule_set < NUM_OTHELLO_RULE_SETS);
+  assert (rule_set < NUM_REVERSI_RULE_SETS);
 
   do {
     for (pos = POSITION (0, 0); ON_GRID (board->grid, pos);
@@ -64,7 +64,7 @@ othello_adjust_color_to_play (const Board *board, BoardRuleSet rule_set,
 }
 
 
-/* Get the default setup for Othello (only defined for even-sized
+/* Get the default setup for Reversi (only defined for even-sized
  * boards):
  *
  *	....
@@ -73,7 +73,7 @@ othello_adjust_color_to_play (const Board *board, BoardRuleSet rule_set,
  *	....
  */
 int
-othello_get_default_setup (int width, int height,
+reversi_get_default_setup (int width, int height,
 			   BoardPositionList **black_stones,
 			   BoardPositionList **white_stones)
 {
@@ -94,17 +94,17 @@ othello_get_default_setup (int width, int height,
 
 /* Determine if a move is legal according to specified rule set. */
 int
-othello_is_legal_move (const Board *board, BoardRuleSet rule_set,
+reversi_is_legal_move (const Board *board, BoardRuleSet rule_set,
 		       int color, va_list move)
 {
   int x = va_arg (move, int);
   int y = va_arg (move, int);
   int pos = POSITION (x, y);
 
-  assert (rule_set < NUM_OTHELLO_RULE_SETS);
+  assert (rule_set < NUM_REVERSI_RULE_SETS);
   assert (ON_BOARD (board, x, y));
 
-  if (rule_set != OTHELLO_RULE_SET_SGF) {
+  if (rule_set != REVERSI_RULE_SET_SGF) {
     if (board->grid[pos] == EMPTY)
       return is_legal_move (board->grid, rule_set, color, pos);
 
@@ -142,7 +142,7 @@ is_legal_move (const char grid[BOARD_FULL_GRID_SIZE], BoardRuleSet rule_set,
 
 
 void
-othello_play_move (Board *board, int color, va_list move)
+reversi_play_move (Board *board, int color, va_list move)
 {
   char *grid = board->grid;
   int k;
@@ -150,8 +150,8 @@ othello_play_move (Board *board, int color, va_list move)
   int x = va_arg (move, int);
   int y = va_arg (move, int);
   int pos = POSITION (x, y);
-  OthelloMoveStackEntry *stack_entry
-    = ALLOCATE_OTHELLO_MOVE_STACK_ENTRY (board);
+  ReversiMoveStackEntry *stack_entry
+    = ALLOCATE_REVERSI_MOVE_STACK_ENTRY (board);
 
   assert (ON_BOARD (board, x, y));
 
@@ -186,9 +186,9 @@ othello_play_move (Board *board, int color, va_list move)
 
 
 void
-othello_undo (Board *board)
+reversi_undo (Board *board)
 {
-  OthelloMoveStackEntry *stack_entry = POP_OTHELLO_MOVE_STACK_ENTRY (board);
+  ReversiMoveStackEntry *stack_entry = POP_REVERSI_MOVE_STACK_ENTRY (board);
 
   if (stack_entry->position != NULL_POSITION) {
     int k;
@@ -217,10 +217,10 @@ othello_undo (Board *board)
 
 
 void
-othello_apply_changes (Board *board, int num_changes)
+reversi_apply_changes (Board *board, int num_changes)
 {
-  OthelloMoveStackEntry *stack_entry
-    = ALLOCATE_OTHELLO_MOVE_STACK_ENTRY (board);
+  ReversiMoveStackEntry *stack_entry
+    = ALLOCATE_REVERSI_MOVE_STACK_ENTRY (board);
 
   stack_entry->position	   = NULL_POSITION;
   stack_entry->num.changes = num_changes;
@@ -229,44 +229,44 @@ othello_apply_changes (Board *board, int num_changes)
 
 
 void
-othello_add_dummy_move_entry (Board *board)
+reversi_add_dummy_move_entry (Board *board)
 {
-  othello_apply_changes (board, 0);
+  reversi_apply_changes (board, 0);
 }
 
 
 int
-othello_format_move (int board_width, int board_height,
+reversi_format_move (int board_width, int board_height,
 		     char *buffer, va_list move)
 {
   int x = va_arg (move, int);
   int y = va_arg (move, int);
 
-  return game_format_point (GAME_OTHELLO, board_width, board_height,
+  return game_format_point (GAME_REVERSI, board_width, board_height,
 			    buffer, x, y);
 }
 
 
 int
-othello_parse_move (int board_width, int board_height, const char *move_string,
+reversi_parse_move (int board_width, int board_height, const char *move_string,
 		    int *x, int *y, BoardAbstractMoveData *move_data)
 {
   UNUSED (move_data);
 
-  return game_parse_point (GAME_OTHELLO, board_width, board_height,
+  return game_parse_point (GAME_REVERSI, board_width, board_height,
 			   move_string, x, y);
 }
 
 
 void
-othello_validate_board (const Board *board)
+reversi_validate_board (const Board *board)
 {
   UNUSED (board);
 }
 
 
 void
-othello_dump_board (const Board *board)
+reversi_dump_board (const Board *board)
 {
   static const char contents[] = {'.', '@', 'O', '?'};
   static const char coordinates[] =
@@ -291,16 +291,16 @@ othello_dump_board (const Board *board)
 
 
 
-/* Othello-specific function. */
+/* Reversi-specific function. */
 
 void
-othello_count_disks (const Board *board,
+reversi_count_disks (const Board *board,
 		     int *num_black_disks, int *num_white_disks)
 {
   int pos;
 
   assert (board);
-  assert (board->game == GAME_OTHELLO);
+  assert (board->game == GAME_REVERSI);
   assert (num_black_disks && num_white_disks);
 
   *num_black_disks = 0;

@@ -23,7 +23,7 @@ libboard_a_SOURCES =		\
 	amazons.c		\
 	board.c			\
 	go.c			\
-	othello.c		\
+	reversi.c		\
 				\
 	amazons.h		\
 	board.h			\
@@ -31,7 +31,7 @@ libboard_a_SOURCES =		\
 	board-internals.h	\
 	game-info.h		\
 	go.h			\
-	othello.h		\
+	reversi.h		\
 				\
 	$(LIST_FILES)
 

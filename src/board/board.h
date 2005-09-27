@@ -128,18 +128,18 @@ union _BoardAbstractMoveData {
 
 typedef enum {
   FIRST_RULE_SET,
-  RULE_SET_SGF = FIRST_RULE_SET,
+  RULE_SET_SGF		   = FIRST_RULE_SET,
   RULE_SET_DEFAULT,
 
-  GO_RULE_SET_SGF = RULE_SET_SGF,
-  GO_RULE_SET_DEFAULT = RULE_SET_DEFAULT,
+  GO_RULE_SET_SGF	   = RULE_SET_SGF,
+  GO_RULE_SET_DEFAULT	   = RULE_SET_DEFAULT,
   NUM_GO_RULE_SETS,
 
-  OTHELLO_RULE_SET_SGF = RULE_SET_SGF,
-  OTHELLO_RULE_SET_DEFAULT = RULE_SET_DEFAULT,
-  NUM_OTHELLO_RULE_SETS,
+  REVERSI_RULE_SET_SGF	   = RULE_SET_SGF,
+  REVERSI_RULE_SET_DEFAULT = RULE_SET_DEFAULT,
+  NUM_REVERSI_RULE_SETS,
 
-  AMAZONS_RULE_SET_SGF = RULE_SET_SGF,
+  AMAZONS_RULE_SET_SGF	   = RULE_SET_SGF,
   AMAZONS_RULE_SET_DEFAULT = RULE_SET_DEFAULT,
   NUM_AMAZONS_RULE_SETS
 } BoardRuleSet;
@@ -377,8 +377,8 @@ void		     go_guess_dead_stones
 
 
 
-/* Othello-specific function. */
-void		     othello_count_disks (const Board *board,
+/* Reversi-specific function. */
+void		     reversi_count_disks (const Board *board,
 					  int *num_black_disks,
 					  int *num_white_disks);
 

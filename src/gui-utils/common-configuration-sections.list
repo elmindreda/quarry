@@ -66,10 +66,10 @@
 		amazons_board_appearance_defaults
 
 
-  SECTION_OTHELLO_BOARD_APPEARANCE "Othello Board Appearance"
+  SECTION_REVERSI_BOARD_APPEARANCE "Reversi Board Appearance"
 		single
 		new		BoardAppearance		board_appearance_dispose
 
-		othello_board_appearance
+		reversi_board_appearance
 		board_appearance_values
-		othello_board_appearance_defaults
+		reversi_board_appearance_defaults

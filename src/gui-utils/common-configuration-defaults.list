@@ -101,7 +101,7 @@ defaults  - amazons_board_appearance_defaults {
 }
 
 
-defaults  - othello_board_appearance_defaults {
+defaults  - reversi_board_appearance_defaults {
   use_background_texture	boolean		false
   background_texture		string		NULL
   background_color		color		#087834

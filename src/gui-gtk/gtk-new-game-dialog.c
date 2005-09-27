@@ -171,8 +171,8 @@ gtk_new_game_dialog_init (GtkNewGameDialog *dialog)
   /* Create identical set of controls for each of the players. */
   for (k = 0; k < NUM_COLORS; k++) {
     static const char *radio_labels[NUM_COLORS][2]
-      = { { N_("Hu_man"), N_("Compu_ter") },
-	  { N_("H_uman"), N_("Com_puter") } };
+      = { { N_("Hu_man"), N_("Com_puter") },
+	  { N_("H_uman"), N_("C_omputer") } };
 
     GtkWidget *entry;
     const GtpEngineListItem *engine_data
@@ -333,10 +333,10 @@ gtk_new_game_dialog_init (GtkNewGameDialog *dialog)
 	= &new_amazons_game_configuration.time_control;
       initial_board_size = new_amazons_game_configuration.board_size;
     }
-    else if (k == GTK_GAME_OTHELLO) {
+    else if (k == GTK_GAME_REVERSI) {
       time_control_configuration
-	= &new_othello_game_configuration.time_control;
-      initial_board_size = new_othello_game_configuration.board_size;
+	= &new_reversi_game_configuration.time_control;
+      initial_board_size = new_reversi_game_configuration.board_size;
     }
 
     /* "Game Rules" named vertical box. */
@@ -773,8 +773,8 @@ get_game_rules_help_link_id (GtkNewGameDialog *dialog)
   case GTK_GAME_AMAZONS:
     return "new-game-dialog-amazons-rules";
 
-  case GTK_GAME_OTHELLO:
-    return "new-game-dialog-othello-rules";
+  case GTK_GAME_REVERSI:
+    return "new-game-dialog-reversi-rules";
 
   default:
     assert (0);
@@ -894,10 +894,10 @@ begin_game (GtkEnginesInstantiationStatus status, gpointer user_data)
 
     time_control_configuration = &new_amazons_game_configuration.time_control;
   }
-  else if (game == GAME_OTHELLO) {
-    new_othello_game_configuration.board_size	= board_size;
+  else if (game == GAME_REVERSI) {
+    new_reversi_game_configuration.board_size	= board_size;
 
-    time_control_configuration = &new_othello_game_configuration.time_control;
+    time_control_configuration = &new_reversi_game_configuration.time_control;
   }
 
   time_control_configuration->type

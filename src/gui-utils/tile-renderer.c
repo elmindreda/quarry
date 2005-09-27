@@ -44,7 +44,7 @@ const GoStonesParameters	go_stones_defaults = {
       { 255, 240, 220 } } }
 };
 
-const OthelloDisksParameters	othello_disks_defaults = {
+const ReversiDisksParameters	reversi_disks_defaults = {
   0.91, 0.3, 0.25,
   { -0.3, -0.4, 80 },
   { { 0.05, 0.55, 0.4, 8.0,
@@ -219,7 +219,7 @@ render_go_stones (int cell_size, const GoStonesParameters *parameters,
 
 
 void
-render_othello_disks (int cell_size, const OthelloDisksParameters *parameters,
+render_reversi_disks (int cell_size, const ReversiDisksParameters *parameters,
 		      unsigned char *black_pixel_data, int black_row_stride,
 		      unsigned char *white_pixel_data, int white_row_stride,
 		      int *disks_x_offset, int *disks_y_offset)

@@ -34,17 +34,17 @@
 const gchar *game_labels[NUM_SUPPORTED_GAMES] = {
   N_("_Go"),
   N_("_Amazons"),
-  N_("_Othello")
+  N_("_Reversi")
 };
 
 const gchar *game_rules_labels[NUM_SUPPORTED_GAMES] = {
   N_("Go Rules"),
   N_("Amazons Rules"),
-  N_("Othello Rules"),
+  N_("Reversi Rules"),
 };
 
 const Game index_to_game[NUM_SUPPORTED_GAMES] = {
-  GAME_GO, GAME_AMAZONS, GAME_OTHELLO
+  GAME_GO, GAME_AMAZONS, GAME_REVERSI
 };
 
 
@@ -108,8 +108,8 @@ gtk_games_get_game_index (Game game)
   case GAME_AMAZONS:
     return GTK_GAME_AMAZONS;
 
-  case GAME_OTHELLO:
-    return GTK_GAME_OTHELLO;
+  case GAME_REVERSI:
+    return GTK_GAME_REVERSI;
 
   default:
     return GTK_GAME_UNSUPPORTED;
@@ -139,7 +139,7 @@ gtk_games_create_board_size_adjustment (GtkGameIndex game_index,
 				GTK_MIN_BOARD_SIZE, GTK_MAX_BOARD_SIZE,
 				1, 2, 0));
 
-  case GTK_GAME_OTHELLO:
+  case GTK_GAME_REVERSI:
     return ((GtkAdjustment *)
 	    gtk_adjustment_new (initial_value,
 				ROUND_UP (GTK_MIN_BOARD_SIZE, 2),

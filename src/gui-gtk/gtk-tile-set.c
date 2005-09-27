@@ -172,14 +172,14 @@ gtk_main_tile_set_create (const GtkMainTileSetKey *key)
   assert (gdk_pixbuf_get_rowstride (tile_set->tiles[WHITE_OPAQUE])
 	  == row_stride);
 
-  if (key->game != GAME_OTHELLO) {
+  if (key->game != GAME_REVERSI) {
     render_go_stones (tile_size, &go_stones_defaults,
 		      black_pixel_data, row_stride,
 		      white_pixel_data, row_stride,
 		      &tile_set->stones_x_offset, &tile_set->stones_y_offset);
   }
   else {
-    render_othello_disks (tile_size, &othello_disks_defaults,
+    render_reversi_disks (tile_size, &reversi_disks_defaults,
 			  black_pixel_data, row_stride,
 			  white_pixel_data, row_stride,
 			  &tile_set->stones_x_offset,

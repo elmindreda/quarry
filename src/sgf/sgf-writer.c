@@ -44,7 +44,7 @@ static void	    do_write_point_or_rectangle (SgfWritingData *data,
 						 BoardPoint right_bottom);
 
 static void	    do_write_go_move (SgfWritingData *data, SgfNode *node);
-static void	    do_write_othello_move (SgfWritingData *data,
+static void	    do_write_reversi_move (SgfWritingData *data,
 					   SgfNode *node);
 static void	    do_write_amazons_move (SgfWritingData *data,
 					   SgfNode *node);
@@ -141,8 +141,8 @@ write_game_tree (SgfWritingData *data, SgfGameTree *tree, int force_utf8)
 
   if (data->tree->game == GAME_GO)
     data->do_write_move = do_write_go_move;
-  else if (data->tree->game == GAME_OTHELLO)
-    data->do_write_move = do_write_othello_move;
+  else if (data->tree->game == GAME_REVERSI)
+    data->do_write_move = do_write_reversi_move;
   else if (data->tree->game == GAME_AMAZONS)
     data->do_write_move = do_write_amazons_move;
   else
@@ -286,7 +286,7 @@ do_write_go_move (SgfWritingData *data, SgfNode *node)
 
 
 static void
-do_write_othello_move (SgfWritingData *data, SgfNode *node)
+do_write_reversi_move (SgfWritingData *data, SgfNode *node)
 {
   do_write_point (data, node->move_point);
 }
