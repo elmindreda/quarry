@@ -1,18 +1,17 @@
 			     ABOUT QUARRY
 
 Quarry is a universal board game interface program.  At present it
-supports three games: Go, Amazons and Othello.  It is intended to be
+supports three games: Go, Amazons and Reversi.  It is intended to be
 useful for both users and developers of game engines (i.e. programs
 that play board games).
 
-Currently, Quarry is in early stages of development.  It's uses are
-currently limited to playing against a computer program (e.g. GNU Go)
-and browsing SGF game records.  You are most welcome to have a try
-with it.  I'm sure you will like at least the way it looks.
+At present, Quarry is slowly approaching first stable release.  It's
+uses are currently limited to playing against a computer program
+(e.g. GNU Go) and browsing and editing SGF game records.
 
 Latest Quarry versions can be found at the homepage:
 
-       http://home.gna.org/quarry/
+		     http://home.gna.org/quarry/
 
 
 			     INSTALLATION
@@ -36,7 +35,7 @@ manual to your language in directories other than `C'.)
 Please use bug tracker at the Gna! project page for bug submissions.
 Point your browser to
 
-	https://gna.org/bugs/?group=quarry
+		  https://gna.org/bugs/?group=quarry
 
 Before submitting a bug, please update to latest CVS version of Quarry
 and verify that the bug is still present.  Don't forget to check if
@@ -75,8 +74,8 @@ authors (see file AUTHORS) except as noted below.  See each specific
 file for details.
 
 All files are licensed under the GNU General Public License version 2
-or (at your option) any later version except except as noted below.
-GNU GPL version 2 can be found in the file COPYING.
+or (at your option) any later version except as noted below.  GNU GPL
+version 2 can be found in the file COPYING.
 
 All files named `quarry.xml' and `quarry.html' in `help/*' directories
 are licensed under GNU Free Documentation License, version 1.2 or any
