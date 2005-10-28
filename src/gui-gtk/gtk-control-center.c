@@ -22,6 +22,7 @@
 
 #include "gtk-control-center.h"
 
+#include "gtk-goban-window.h"
 #include "gtk-new-game-dialog.h"
 #include "gtk-new-game-record-dialog.h"
 #include "gtk-parser-interface.h"
@@ -157,6 +158,24 @@ gtk_control_center_lost_reason_to_live (void)
 void
 gtk_control_center_quit (void)
 {
+  while (1) {
+    GSList *element;
+
+    for (element = windows; element; element = element->next) {
+      if (GTK_IS_GOBAN_WINDOW (element->data)) {
+	if (gtk_goban_window_stops_closing (GTK_GOBAN_WINDOW (element->data)))
+	  return;
+	else {
+	  gtk_widget_destroy (GTK_WIDGET (element->data));
+	  break;
+	}
+      }
+    }
+
+    if (!element)
+      break;
+  }
+
   if (control_center)
     gtk_widget_destroy (GTK_WIDGET (control_center));
 
