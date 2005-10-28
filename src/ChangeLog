@@ -1,3 +1,48 @@
+2005-10-28  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* (Globally: remove periods at the end of message dialog primary
+	texts to conform with HIG.)
+
+	* gui-gtk/gtk-control-center.c (gtk_control_center_quit): Ask all
+	goban windows if they need saving first.
+
+	* gui-gtk/gtk-goban-window.c (gtk_goban_window_new): Don't set
+	no-file windows to be irreversibly modified.
+	(gtk_goban_window_stops_closing): New function.
+	(collection_modification_state_changed): Treat no-file windows
+	differently.  Track time of first modification.
+	(gtk_goban_window_close): New function.
+	(update_window_title): Treat no-file windows differently.
+
+	* gui-gtk/quarry-save-confirmation-dialog.c: New file, partially
+	inherit code from removed gtk_utils_create_message_dialog().
+	* gui-gtk/quarry-save-confirmation-dialog.h: New file.
+
+	* gui-gtk/quarry-message-dialog.c: New file.
+	* gui-gtk/quarry-message-dialog.h: New file.
+
+	* gui-gtk/gtk-utils.c (gtk_utils_show_and_forget_dialog): New
+	function.
+	(gtk_utils_create_message_dialog): Remove function, partially
+	inherited by new file `quarry-message-dialog.c'.
+
+2005-09-28  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* gui-gtk/gtk-preferences.c
+	(handle_drag_and_drop): Return early in no-op drag-and-drop to
+	avoid assertion failure in string_list_move().
+	(gtk_preferences_guess_engine_by_name): Improve for the case of
+	multiple versions of the same engine.
+
+	* gui-gtk/gtk-goban-window.c (leave_game_mode): Call
+	update_commands_sensitivity() since editing tools become
+	available.
+	(update_commands_sensitivity): Don't touch "Edit/Go to Named Node"
+	menu item if it is not present to begin with.
+
+	* gui-gtk/gui-back-end.c (run_main_loop): Use `for' loops instead
+	of g_ptr_array_foreach(), which is absent from old GLib versions.
+
 2005-09-27  Paul Pogonyshev  <pogonyshev@gmx.net>
 
 	* (Globally: use "Reversi" instead of "Othello" everywhere to
