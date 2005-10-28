@@ -131,6 +131,7 @@ struct _GtkGobanWindow {
 
   SgfCollection		  *sgf_collection;
   SgfGameTree		  *current_tree;
+  glong			   time_of_first_modification;
 
   /* NOTE: In file system encoding! */
   char			  *filename;
@@ -186,6 +187,8 @@ void		gtk_goban_window_enter_game_mode
 void		gtk_goban_window_resume_game
 		  (GtkGobanWindow *goban_window,
 		   GtpClient *black_player, GtpClient *white_player);
+
+gboolean	gtk_goban_window_stops_closing (GtkGobanWindow *goban_window);
 
 
 #endif /* QUARRY_GTK_GOBAN_WINDOW_H */

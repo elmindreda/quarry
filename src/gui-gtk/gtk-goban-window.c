@@ -59,6 +59,8 @@
 #include "gtk-sgf-tree-view.h"
 #include "gtk-utils.h"
 #include "quarry-marshal.h"
+#include "quarry-message-dialog.h"
+#include "quarry-save-confirmation-dialog.h"
 #include "quarry-stock.h"
 #include "gui-utils.h"
 #include "time-control.h"
@@ -171,6 +173,8 @@ static void	 save_file_as_response (GtkWidget *file_dialog,
 					gint response_id,
 					GtkGobanWindow *goban_window);
 static void	 game_has_been_adjourned (GtkGobanWindow *goban_window);
+
+static void	 gtk_goban_window_close (GtkGobanWindow *goban_window);
 
 static void	 show_find_dialog (GtkGobanWindow *goban_window);
 static void	 find_dialog_response (GtkGobanWindow *goban_window,
@@ -510,9 +514,13 @@ gtk_goban_window_class_init (GtkGobanWindowClass *class)
 {
   parent_class = g_type_class_peek_parent (class);
 
-  G_OBJECT_CLASS (class)->finalize = gtk_goban_window_finalize;
+  G_OBJECT_CLASS (class)->finalize	 = gtk_goban_window_finalize;
 
-  GTK_OBJECT_CLASS (class)->destroy = gtk_goban_window_destroy;
+  GTK_OBJECT_CLASS (class)->destroy	 = gtk_goban_window_destroy;
+
+  GTK_WIDGET_CLASS (class)->delete_event
+    = ((gboolean (*) (GtkWidget *, GdkEventAny *))
+       gtk_goban_window_stops_closing);
 
   /* Create the text tags and tag table we will be using in all
    * windows.  The tags will be used to highlight node name.
@@ -572,7 +580,7 @@ gtk_goban_window_init (GtkGobanWindow *goban_window)
     { N_("/File/"), NULL, NULL, 0, "<Separator>" },
 
     { N_("/File/_Close"),		"<ctrl>W",
-      gtk_widget_destroy,		0,
+      gtk_goban_window_close,		0,
       "<StockItem>",			GTK_STOCK_CLOSE },
     { N_("/File/_Quit"),		"<ctrl>Q",
       gtk_control_center_quit,		0,
@@ -1218,6 +1226,8 @@ gtk_goban_window_init (GtkGobanWindow *goban_window)
   goban_window->next_sgf_label		   = NULL;
   goban_window->labels_mode		   = GTK_GOBAN_WINDOW_NON_LABELS_MODE;
 
+  goban_window->time_of_first_modification = 0;
+
   goban_window->filename		   = NULL;
   goban_window->save_as_dialog		   = NULL;
 
@@ -1257,10 +1267,6 @@ gtk_goban_window_new (SgfCollection *sgf_collection, const char *filename)
     gtk_utils_set_toolbar_buttons_sensitive (goban_window->main_toolbar, FALSE,
 					     &toolbar_save, NULL);
   }
-  else {
-    /* Because there is no ``unmodified'' state for new files. */
-    sgf_collection->is_irreversibly_modified = 1;
-  }
 
   sgf_collection_set_notification_callback
     (sgf_collection, collection_modification_state_changed, goban_window);
@@ -1285,6 +1291,66 @@ gtk_goban_window_destroy (GtkObject *object)
   }
 
   GTK_OBJECT_CLASS (parent_class)->destroy (object);
+}
+
+
+gboolean
+gtk_goban_window_stops_closing (GtkGobanWindow *goban_window)
+{
+  assert (GTK_IS_GOBAN_WINDOW (goban_window));
+
+  if (sgf_collection_is_modified (goban_window->sgf_collection)) {
+    GtkWidget *question_dialog;
+    gint response_id;
+
+    if (goban_window->filename) {
+      gchar *filename_in_utf8 = g_filename_to_utf8 (goban_window->filename, -1,
+						    NULL, NULL, NULL);
+
+      question_dialog
+	= (quarry_save_confirmation_dialog_new
+	   (GTK_WINDOW (goban_window),
+	    goban_window->time_of_first_modification,
+	    _("Save changes to game record `%s' before closing?"),
+	    filename_in_utf8));
+      g_free (filename_in_utf8);
+    }
+    else {
+      question_dialog
+	= (quarry_save_confirmation_dialog_new
+	   (GTK_WINDOW (goban_window),
+	    goban_window->time_of_first_modification,
+	    _("Save changes to the untitled game record before closing?")));
+    }
+
+    response_id = gtk_dialog_run (GTK_DIALOG (question_dialog));
+    gtk_widget_destroy (question_dialog);
+
+    switch (response_id) {
+    case GTK_RESPONSE_NO:
+      /* So do nothing. */
+      break;
+
+    case GTK_RESPONSE_YES:
+      gtk_goban_window_save (goban_window, GTK_GOBAN_WINDOW_SAVE);
+
+      if (!goban_window->save_as_dialog)
+	break;
+
+      response_id = gtk_dialog_run (GTK_DIALOG (goban_window->save_as_dialog));
+      gtk_widget_destroy (goban_window->save_as_dialog);
+
+      if (response_id == GTK_RESPONSE_OK)
+	break;
+
+    default:
+    case GTK_RESPONSE_CANCEL:
+      /* Don't allow closing then. */
+      return TRUE;
+    }
+  }
+
+  return FALSE;
 }
 
 
@@ -1507,6 +1573,7 @@ leave_game_mode (GtkGobanWindow *goban_window)
   }
 
   gtk_goban_window_enter_game_record_mode (goban_window);
+  update_commands_sensitivity (goban_window);
 }
 
 
@@ -1515,12 +1582,21 @@ collection_modification_state_changed (SgfCollection *sgf_collection,
 				       void *user_data)
 {
   GtkGobanWindow *goban_window = GTK_GOBAN_WINDOW (user_data);
-  int is_modified = sgf_collection_is_modified (sgf_collection);
+  int is_modified	    = sgf_collection_is_modified (sgf_collection);
+  int is_modified_effective = (is_modified || !goban_window->filename);
+
+  if (is_modified && goban_window->time_of_first_modification == 0) {
+    GTimeVal current_time;
+
+    g_get_current_time (&current_time);
+    goban_window->time_of_first_modification = current_time.tv_sec;
+  }
 
   gtk_utils_set_menu_items_sensitive (goban_window->item_factory,
-				      is_modified, "/File/Save", NULL);
+				      is_modified_effective,
+				      "/File/Save", NULL);
   gtk_utils_set_toolbar_buttons_sensitive (goban_window->main_toolbar,
-					   is_modified,
+					   is_modified_effective,
 					   &toolbar_save, NULL);
 
   update_window_title (goban_window);
@@ -1561,6 +1637,7 @@ gtk_goban_window_save (GtkGobanWindow *goban_window, guint callback_action)
 		    sgf_configuration.force_utf8);
 
     sgf_collection_set_unmodified (goban_window->sgf_collection);
+    goban_window->time_of_first_modification = 0;
 
     if (callback_action == GTK_GOBAN_WINDOW_ADJOURN)
       game_has_been_adjourned (goban_window);
@@ -1679,12 +1756,15 @@ save_file_as_response (GtkWidget *file_dialog, gint response_id,
        * collection_modification_state_changed().
        */
       sgf_collection_set_unmodified (goban_window->sgf_collection);
+      goban_window->time_of_first_modification = 0;
     }
     else
       g_free (filename);
   }
 
-  if (response_id == GTK_RESPONSE_OK || response_id == GTK_RESPONSE_CANCEL)
+  if (gtk_main_level () == 1
+      && (response_id == GTK_RESPONSE_OK
+	  || response_id == GTK_RESPONSE_CANCEL))
     gtk_widget_destroy (file_dialog);
 }
 
@@ -1700,18 +1780,25 @@ game_has_been_adjourned (GtkGobanWindow *goban_window)
   gchar *filename_in_utf8 = g_filename_to_utf8 (goban_window->filename, -1,
 						NULL, NULL, NULL);
   gchar *message = g_strdup_printf (_("The game is adjourned and "
-				      "saved in file `%s'."),
+				      "saved in file `%s'"),
 				    filename_in_utf8);
+  GtkWidget *information_dialog
+    = quarry_message_dialog_new (NULL, GTK_BUTTONS_OK, GTK_STOCK_DIALOG_INFO,
+				 _(hint), message);
+
+  gtk_utils_show_and_forget_dialog (GTK_DIALOG (information_dialog));
 
   g_free (filename_in_utf8);
 
-  gtk_utils_create_message_dialog (NULL, GTK_STOCK_DIALOG_INFO,
-				   (GTK_UTILS_BUTTONS_OK
-				    | GTK_UTILS_DESTROY_ON_RESPONSE
-				    | GTK_UTILS_NON_MODAL_WINDOW),
-				   _(hint), message);
-
   gtk_widget_destroy (GTK_WIDGET (goban_window));
+}
+
+
+static void
+gtk_goban_window_close (GtkGobanWindow *goban_window)
+{
+  if (!gtk_goban_window_stops_closing (goban_window))
+    gtk_widget_destroy (GTK_WIDGET (goban_window));
 }
 
 
@@ -2775,13 +2862,11 @@ show_go_to_named_node_dialog (GtkGobanWindow *goban_window)
     = gtk_go_to_named_node_dialog_new (goban_window->current_tree);
 
   if (dialog == NULL) {
-    dialog = gtk_utils_create_message_dialog (NULL, GTK_STOCK_DIALOG_INFO,
-					      (GTK_UTILS_BUTTONS_OK
-					       | GTK_UTILS_DONT_SHOW
-					       | GTK_UTILS_NON_MODAL_WINDOW),
-					      NULL,
-					      _("Sorry, there are no named "
-						"nodes in this game tree."));
+    dialog = quarry_message_dialog_new (NULL, GTK_BUTTONS_OK,
+					GTK_STOCK_DIALOG_INFO,
+					NULL,
+					_("Sorry, there are no named "
+					  "nodes in this game tree"));
   }
 
   gtk_window_set_transient_for (GTK_WINDOW (dialog),
@@ -3249,16 +3334,16 @@ static void
 resign_game (GtkGobanWindow *goban_window)
 {
   GtkWidget *question_dialog
-    = gtk_utils_create_message_dialog (GTK_WINDOW (goban_window),
-				       GTK_STOCK_DIALOG_QUESTION,
-				       (GTK_UTILS_NO_BUTTONS
-					| GTK_UTILS_DONT_SHOW),
-				       NULL, _("Really resign this game?"));
+    = quarry_message_dialog_new (GTK_WINDOW (goban_window),
+				 GTK_BUTTONS_NONE, GTK_STOCK_DIALOG_QUESTION,
+				 NULL, _("Really resign this game?"));
+
   gtk_dialog_add_buttons (GTK_DIALOG (question_dialog),
 			  GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
 			  _("_Resign"), GTK_RESPONSE_OK, NULL);
   gtk_dialog_set_default_response (GTK_DIALOG (question_dialog),
 				   GTK_RESPONSE_OK);
+
   if (gtk_dialog_run (GTK_DIALOG (question_dialog)) == GTK_RESPONSE_OK)
     do_resign_game (goban_window);
 
@@ -4344,7 +4429,8 @@ update_window_title (GtkGobanWindow *goban_window)
       title = utils_duplicate_string (_("Unnamed Game"));
   }
 
-  if (sgf_collection_is_modified (goban_window->sgf_collection))
+  if (sgf_collection_is_modified (goban_window->sgf_collection)
+      || !goban_window->filename)
     title = utils_cat_strings (title, " [", _("modified"), "]", NULL);
 
   gtk_window_set_title (GTK_WINDOW (goban_window), title);
@@ -4707,9 +4793,11 @@ update_commands_sensitivity (const GtkGobanWindow *goban_window)
 					   &navigation_toolbar_next_variation,
 					   NULL);
 
+#ifdef GTK_TYPE_GO_TO_NAMED_NODE_DIALOG
   gtk_utils_set_menu_items_sensitive (goban_window->item_factory,
 				      !is_in_special_mode,
 				      "/Go/Go to Named Node...", NULL);
+#endif
 }
 
 
