@@ -30,6 +30,7 @@
 #include "gtk-parser-interface.h"
 #include "gtk-preferences.h"
 #include "gtk-utils.h"
+#include "quarry-message-dialog.h"
 #include "time-control.h"
 #include "sgf.h"
 #include "board.h"
@@ -107,16 +108,17 @@ analyze_game_to_be_resumed (SgfCollection *sgf_collection,
     string_list_delete (sgf_error_list);
 
   if (!GAME_IS_SUPPORTED (sgf_tree->game)) {
-    gtk_utils_create_message_dialog (NULL, GTK_STOCK_DIALOG_ERROR,
-				     (GTK_UTILS_BUTTONS_OK
-				      | GTK_UTILS_DESTROY_ON_RESPONSE
-				      | GTK_UTILS_NON_MODAL_WINDOW),
-				     NULL,
-				     _("The game stored in file `%s' (%s) "
-				       "is not supported by Quarry."),
-				     filename_in_utf8,
-				     _(game_info[sgf_tree->game].name));
+    GtkWidget *error_dialog
+      = quarry_message_dialog_new (NULL, GTK_BUTTONS_OK,
+				   GTK_STOCK_DIALOG_ERROR,
+				   NULL,
+				   _("The game stored in file `%s' (%s) "
+				     "is not supported by Quarry"),
+				   filename_in_utf8,
+				   _(game_info[sgf_tree->game].name));
+
     g_free (filename_in_utf8);
+    gtk_utils_show_and_forget_dialog (GTK_DIALOG (error_dialog));
 
     sgf_collection_delete (sgf_collection);
 
@@ -130,14 +132,12 @@ analyze_game_to_be_resumed (SgfCollection *sgf_collection,
       && game_result != SGF_RESULT_UNKNOWN) {
     GameRecordData *data = g_malloc (sizeof (GameRecordData));
     GtkWidget *error_dialog
-      = gtk_utils_create_message_dialog (NULL, GTK_STOCK_DIALOG_ERROR,
-					 (GTK_UTILS_NO_BUTTONS
-					  | GTK_UTILS_DONT_SHOW
-					  | GTK_UTILS_NON_MODAL_WINDOW),
-					 NULL,
-					 _("This game appears to have been "
-					   "finished. Open it for viewing "
-					   "and/or editing instead?"));
+      = quarry_message_dialog_new (NULL, GTK_BUTTONS_NONE,
+				   GTK_STOCK_DIALOG_ERROR,
+				   NULL,
+				   _("This game appears to have been "
+				     "finished. Open it for viewing "
+				     "and/or editing instead?"));
 
     g_free (filename_in_utf8);
 

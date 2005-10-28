@@ -38,6 +38,7 @@
 #include "gtk-goban-window.h"
 #include "gtk-thread-interface.h"
 #include "gtk-utils.h"
+#include "quarry-message-dialog.h"
 #include "sgf.h"
 #include "utils.h"
 
@@ -55,9 +56,9 @@
 #endif
 
 
-static const gchar *reading_error = N_("Error reading file `%s'.");
+static const gchar *reading_error = N_("Error reading file `%s'");
 static const gchar *not_sgf_file_error =
-  N_("File `%s' doesn't appear to be a valid SGF file.");
+  N_("File `%s' doesn't appear to be a valid SGF file");
 
 static const gchar *reading_error_hint =
   N_("Please check that the file exists "
@@ -283,32 +284,36 @@ analyze_parsed_data (void *result)
   else {
     GtkProgressDialog *progress_dialog
       = GTK_PROGRESS_DIALOG (data->progress_dialog);
-    GtkWidget *message_dialog;
+    GtkWidget *error_dialog;
     gchar *filename_in_utf8 = g_filename_to_utf8 (data->filename, -1,
 						  NULL, NULL, NULL);
 
     gtk_progress_dialog_recover_parent (progress_dialog);
 
-    message_dialog
-      = (gtk_utils_create_message_dialog
-	 (data->parent ? GTK_WINDOW (data->parent) : NULL,
-	  GTK_STOCK_DIALOG_ERROR,
-	  (GTK_UTILS_BUTTONS_OK | GTK_UTILS_DESTROY_ON_RESPONSE
-	   | (data->parent ? 0 : GTK_UTILS_NON_MODAL_WINDOW)),
-	  (data->result == SGF_ERROR_READING_FILE
-	   ? _(reading_error_hint) : _(not_sgf_file_error_hint)),
-	  (data->result == SGF_ERROR_READING_FILE
-	   ? _(reading_error) : _(not_sgf_file_error)),
-	  filename_in_utf8));
+    error_dialog
+      = quarry_message_dialog_new ((data->parent
+				    ? GTK_WINDOW (data->parent) : NULL),
+				   GTK_BUTTONS_OK, GTK_STOCK_DIALOG_ERROR,
+				   (data->result == SGF_ERROR_READING_FILE
+				    ? _(reading_error_hint)
+				    : _(not_sgf_file_error_hint)),
+				   (data->result == SGF_ERROR_READING_FILE
+				    ? _(reading_error) :
+				    _(not_sgf_file_error)),
+				   filename_in_utf8);
 
     g_free (filename_in_utf8);
 
-    if (!data->parent) {
-      gtk_control_center_window_created (GTK_WINDOW (message_dialog));
-      g_signal_connect (message_dialog, "destroy",
+    if (data->parent)
+      gtk_window_set_modal (GTK_WINDOW (error_dialog), TRUE);
+    else {
+      gtk_control_center_window_created (GTK_WINDOW (error_dialog));
+      g_signal_connect (error_dialog, "destroy",
 			G_CALLBACK (gtk_control_center_window_destroyed),
 			NULL);
     }
+
+    gtk_utils_show_and_forget_dialog (GTK_DIALOG (error_dialog));
   }
 
   g_object_unref (data->progress_dialog);
@@ -363,25 +368,28 @@ gtk_parse_sgf_file (const char *filename, GtkWindow *parent,
     gchar *filename_in_utf8 = g_filename_to_utf8 (absolute_filename, -1,
 						  NULL, NULL, NULL);
     GtkWidget *message_dialog
-      = (gtk_utils_create_message_dialog
-	 (parent ? GTK_WINDOW (parent) : NULL,
-	  GTK_STOCK_DIALOG_ERROR,
-	  (GTK_UTILS_BUTTONS_OK | GTK_UTILS_DESTROY_ON_RESPONSE
-	   | (parent ? 0 : GTK_UTILS_NON_MODAL_WINDOW)),
-	  (result == SGF_ERROR_READING_FILE
-	   ? _(reading_error_hint) : _(not_sgf_file_error_hint)),
-	  (result == SGF_ERROR_READING_FILE
-	   ? _(reading_error) : _(not_sgf_file_error)),
-	  filename_in_utf8));
+      = quarry_message_dialog_new (parent ? GTK_WINDOW (parent) : NULL,
+				   GTK_BUTTONS_OK, GTK_STOCK_DIALOG_ERROR,
+				   (result == SGF_ERROR_READING_FILE
+				    ? _(reading_error_hint)
+				    : _(not_sgf_file_error_hint)),
+				   (result == SGF_ERROR_READING_FILE
+				    ? _(reading_error)
+				    : _(not_sgf_file_error)),
+				   filename_in_utf8);
 
     g_free (filename_in_utf8);
 
-    if (!parent) {
+    if (parent)
+      gtk_window_set_modal (GTK_WINDOW (message_dialog), TRUE);
+    else {
       gtk_control_center_window_created (GTK_WINDOW (message_dialog));
       g_signal_connect (message_dialog, "destroy",
 			G_CALLBACK (gtk_control_center_window_destroyed),
 			NULL);
     }
+
+    gtk_utils_show_and_forget_dialog (GTK_DIALOG (message_dialog));
   }
 }
 

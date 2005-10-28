@@ -30,7 +30,7 @@
 
 #include "gtk-configuration.h"
 #include "gtk-control-center.h"
-#include "gtk-utils.h"
+#include "quarry-message-dialog.h"
 #include "quarry-stock.h"
 
 #include <assert.h>
@@ -294,13 +294,12 @@ check_if_overwriting_file (GtkWidget *dialog, const gchar *filename,
     gchar *filename_in_utf8 = g_filename_to_utf8 (filename, -1,
 						  NULL, NULL, NULL);
     GtkWidget *confirmation_dialog
-      = gtk_utils_create_message_dialog (GTK_WINDOW (dialog),
-					 GTK_STOCK_DIALOG_WARNING,
-					 (GTK_UTILS_NO_BUTTONS
-					  | GTK_UTILS_DONT_SHOW),
-					 _(hint),
-					 _(message_format_string),
-					 filename_in_utf8);
+      = quarry_message_dialog_new (GTK_WINDOW (dialog),
+				   GTK_BUTTONS_NONE,
+				   GTK_STOCK_DIALOG_WARNING,
+				   _(hint),
+				   _(message_format_string),
+				   filename_in_utf8);
 
     g_free (filename_in_utf8);
 
@@ -309,6 +308,7 @@ check_if_overwriting_file (GtkWidget *dialog, const gchar *filename,
 			    QUARRY_STOCK_OVERWRITE, GTK_RESPONSE_YES, NULL);
     gtk_dialog_set_default_response (GTK_DIALOG (confirmation_dialog),
 				     GTK_RESPONSE_CANCEL);
+    gtk_window_set_modal (GTK_WINDOW (confirmation_dialog), TRUE);
 
     g_signal_connect (confirmation_dialog, "response",
 		      G_CALLBACK (overwrite_confirmation), data);
