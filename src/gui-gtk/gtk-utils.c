@@ -144,7 +144,7 @@ gtk_utils_standardize_dialog (GtkDialog *dialog, GtkWidget *contents)
 {
   assert (GTK_IS_DIALOG (dialog));
   assert (GTK_IS_CONTAINER (contents));
-
+ 
   gtk_widget_set_name (GTK_WIDGET (dialog), "quarry-dialog");
 
   gtk_box_set_spacing (GTK_BOX (dialog->vbox), QUARRY_SPACING);
@@ -152,110 +152,13 @@ gtk_utils_standardize_dialog (GtkDialog *dialog, GtkWidget *contents)
 }
 
 
-GtkWidget *
-gtk_utils_create_message_dialog (GtkWindow *parent, const gchar *icon_stock_id,
-				 GtkUtilsMessageDialogFlags flags,
-				 const gchar *hint,
-				 const gchar *message_format_string, ...)
+void
+gtk_utils_show_and_forget_dialog (GtkDialog *dialog)
 {
-  GtkWidget *widget = gtk_dialog_new ();
-  GtkDialog *dialog = GTK_DIALOG (widget);
-  GtkWindow *window = GTK_WINDOW (dialog);
-  GtkUtilsMessageDialogFlags buttons = flags & GTK_UTILS_BUTTONS_MASK;
-  GtkWidget *icon;
-  GtkWidget *label;
-  GtkWidget *hbox;
-  gchar *message_text;
-  gchar *message_text_escaped;
-  gchar *label_text;
-  va_list arguments;
+  assert (GTK_IS_DIALOG (dialog));
 
-  assert (icon_stock_id);
-
-  gtk_window_set_title (window, "");
-  gtk_window_set_resizable (window, FALSE);
-  gtk_window_set_skip_pager_hint (window, TRUE);
-
-  /* Note: disabled because KDE window manager doesn't give focus to
-   * message dialog after this call (is it a bug or what?).
-   */
-#if 0
-  gtk_window_set_skip_taskbar_hint (window, TRUE);
-#endif
-
-  if (parent)
-    gtk_window_set_transient_for (window, GTK_WINDOW (parent));
-
-  if (!(flags & GTK_UTILS_NON_MODAL_WINDOW))
-    gtk_window_set_modal (window, TRUE);
-
-  gtk_dialog_set_has_separator (dialog, FALSE);
-
-  if (buttons == GTK_UTILS_BUTTONS_OK_CANCEL)
-    gtk_dialog_add_button (dialog, GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL);
-
-  if (buttons == GTK_UTILS_BUTTONS_OK
-      || buttons == GTK_UTILS_BUTTONS_OK_CANCEL) {
-    gtk_dialog_add_button (dialog, GTK_STOCK_OK, GTK_RESPONSE_OK);
-    gtk_dialog_set_default_response (dialog, GTK_RESPONSE_OK);
-  }
-
-  if (buttons == GTK_UTILS_BUTTONS_CLOSE) {
-    gtk_dialog_add_button (dialog, GTK_STOCK_CLOSE, GTK_RESPONSE_CLOSE);
-    gtk_dialog_set_default_response (dialog, GTK_RESPONSE_CLOSE);
-  }
-
-  icon = gtk_image_new_from_stock (icon_stock_id, GTK_ICON_SIZE_DIALOG);
-  gtk_misc_set_alignment (GTK_MISC (icon), 0.5, 0.0);
-
-  va_start (arguments, message_format_string);
-  message_text = g_strdup_vprintf (message_format_string, arguments);
-  va_end (arguments);
-
-  message_text_escaped = g_markup_escape_text (message_text, -1);
-  g_free (message_text);
-
-  if (hint && *hint) {
-    gchar *hint_escaped = g_markup_escape_text (hint, -1);
-
-    label_text = g_strdup_printf (("<span weight=\"bold\" size=\"larger\">%s"
-				   "</span>\n\n%s"),
-				  message_text_escaped, hint_escaped);
-    g_free (hint_escaped);
-  }
-  else {
-    label_text = g_strdup_printf (("<span weight=\"bold\" size=\"larger\">%s"
-				   "</span>"),
-				  message_text_escaped);
-  }
-
-  g_free (message_text_escaped);
-
-  label = gtk_label_new (NULL);
-  gtk_label_set_line_wrap (GTK_LABEL (label), TRUE);
-  gtk_label_set_selectable (GTK_LABEL (label), TRUE);
-  gtk_label_set_markup (GTK_LABEL (label), label_text);
-  gtk_misc_set_alignment (GTK_MISC (label), 0.0, 0.0);
-
-  g_free (label_text);
-
-  hbox = gtk_utils_pack_in_box (GTK_TYPE_HBOX, QUARRY_SPACING,
-				icon, GTK_UTILS_FILL,
-				label, GTK_UTILS_PACK_DEFAULT, NULL);
-  gtk_widget_show_all (hbox);
-
-  gtk_utils_standardize_dialog (dialog, hbox);
-  gtk_box_set_spacing (GTK_BOX (dialog->vbox), QUARRY_SPACING_VERY_BIG);
-
-  if (!(flags & GTK_UTILS_DONT_SHOW))
-    gtk_window_present (window);
-
-  if (flags & GTK_UTILS_DESTROY_ON_RESPONSE) {
-    g_signal_connect (dialog, "response",
-		      G_CALLBACK (gtk_widget_destroy), NULL);
-  }
-
-  return widget;
+  g_signal_connect (dialog, "response", G_CALLBACK (gtk_widget_destroy), NULL);
+  gtk_window_present (GTK_WINDOW (dialog));
 }
 
 
