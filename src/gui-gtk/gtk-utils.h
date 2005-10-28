@@ -118,19 +118,6 @@ struct _GtkUtilsBindingInfo {
 
 
 typedef enum {
-  GTK_UTILS_NO_BUTTONS = 0,
-  GTK_UTILS_BUTTONS_OK,
-  GTK_UTILS_BUTTONS_OK_CANCEL,
-  GTK_UTILS_BUTTONS_CLOSE,
-  GTK_UTILS_BUTTONS_MASK = 0xFF,
-
-  GTK_UTILS_DONT_SHOW		= 1 << 8,
-  GTK_UTILS_NON_MODAL_WINDOW	= 1 << 9,
-  GTK_UTILS_DESTROY_ON_RESPONSE = 1 << 10
-} GtkUtilsMessageDialogFlags;
-
-
-typedef enum {
   RETURN_ACTIVATES_DEFAULT,
   RETURN_ADVANCES_FOCUS,
   RETURN_DEFAULT_MODE
@@ -196,13 +183,11 @@ void		gtk_utils_workaround_set_default_response (GtkDialog *dialog,
 
 #endif
 
-
 void		gtk_utils_standardize_dialog (GtkDialog *dialog,
 					      GtkWidget *contents);
-GtkWidget *	gtk_utils_create_message_dialog
-		  (GtkWindow *parent, const gchar *icon_stock_id,
-		   GtkUtilsMessageDialogFlags flags,
-		   const gchar *hint, const gchar *message_format_string, ...);
+
+void		gtk_utils_show_and_forget_dialog (GtkDialog *dialog);
+
 void		gtk_utils_null_pointer_on_destroy
 		  (GtkWindow **window, gboolean ask_control_center);
 void		gtk_utils_workaround_focus_bug (GtkWindow *window);
