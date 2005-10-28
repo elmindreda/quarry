@@ -277,6 +277,8 @@ initialize_main_loop (void)
 static void
 run_main_loop (void)
 {
+  int k;
+
   g_timeout_add_full (G_PRIORITY_LOW, 10000, run_cleanup_tasks, NULL, NULL);
 
   gtk_main ();
@@ -290,12 +292,20 @@ run_main_loop (void)
 #endif
 
   if (objects_to_finalize) {
-    g_ptr_array_foreach (objects_to_finalize, (GFunc) g_object_unref, NULL);
+    /* FIXME: Use g_ptr_array_foreach() when we drop support for
+     * pre-2.4 GTK+.
+     */
+    for (k = 0; k < objects_to_finalize->len; k++)
+      g_object_unref (g_ptr_array_index (objects_to_finalize, k));
+
     g_ptr_array_free (objects_to_finalize, TRUE);
   }
 
   if (pointers_to_free) {
-    g_ptr_array_foreach (pointers_to_free, (GFunc) g_free, NULL);
+    /* FIXME: Likewise. */
+    for (k = 0; k < pointers_to_free->len; k++)
+      g_free (g_ptr_array_index (pointers_to_free, k));
+
     g_ptr_array_free (pointers_to_free, TRUE);
   }
 
