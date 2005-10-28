@@ -33,6 +33,7 @@
 #include "gtk-gtp-client-interface.h"
 #include "gtk-progress-dialog.h"
 #include "gtk-utils.h"
+#include "quarry-message-dialog.h"
 #include "quarry-stock.h"
 #include "markup-theme-configuration.h"
 #include "utils.h"
@@ -406,6 +407,11 @@ handle_drag_and_drop (GtkTreeModel *gtp_engines_tree_model,
 
     /* Restore tree path just in case GTK+ needs it. */
     gtk_tree_path_next (tree_path);
+
+    if (engine_data == notch) {
+      /* Nothing to do. */
+      return;
+    }
   }
 
   prepare_to_rebuild_menus ();
@@ -1997,15 +2003,18 @@ gtk_gtp_engine_dialog_response (GtkWindow *window, gint response_id,
 	gtp_client_setup_connection (data->client);
       }
       else {
-	gtk_utils_create_message_dialog (window, GTK_STOCK_DIALOG_ERROR,
-					 (GTK_UTILS_BUTTONS_OK
-					  | GTK_UTILS_DESTROY_ON_RESPONSE),
-					 _("Please make sure you typed "
-					   "engine's filename correctly and "
-					   "that you have permission to "
-					   "execute it."),
-					 error->message);
+	GtkWidget *error_dialog
+	  = quarry_message_dialog_new (window, GTK_BUTTONS_OK,
+				       GTK_STOCK_DIALOG_ERROR,
+				       _("Please make sure you typed "
+					 "engine's filename correctly and "
+					 "that you have permission to "
+					 "execute it."),
+				       error->message);
+
 	g_error_free (error);
+
+	gtk_utils_show_and_forget_dialog (GTK_DIALOG (error_dialog));
 
 	gtk_widget_grab_focus (GTK_WIDGET (data->command_line_entry));
       }
@@ -2151,13 +2160,14 @@ client_deleted (GtpClient *client, GError *shutdown_reason, void *user_data)
       gtk_widget_grab_focus (GTK_WIDGET (data->command_line_entry));
 
       if (shutdown_reason) {
-	gtk_utils_create_message_dialog (data->window, GTK_STOCK_DIALOG_ERROR,
-					 (GTK_UTILS_BUTTONS_OK
-					  | GTK_UTILS_DESTROY_ON_RESPONSE),
-					 _(hint),
-					 _("Lost connection to GTP Engine "
-					   "(%s)."),
-					 shutdown_reason->message);
+	GtkWidget *error_dialog
+	  = quarry_message_dialog_new (data->window, GTK_BUTTONS_OK,
+				       GTK_STOCK_DIALOG_ERROR,
+				       _(hint),
+				       _("Lost connection to GTP Engine (%s)"),
+				       shutdown_reason->message);
+
+	gtk_utils_show_and_forget_dialog (GTK_DIALOG (error_dialog));
       }
     }
   }
@@ -2505,6 +2515,8 @@ GtpEngineListItem *
 gtk_preferences_guess_engine_by_name (const gchar *name,
 				      GtkGameIndex game_index)
 {
+  GtpEngineListItem *best_guess = NULL;
+
   if (name) {
     GtpEngineListItem *engine_data;
 
@@ -2520,13 +2532,13 @@ gtk_preferences_guess_engine_by_name (const gchar *name,
 
 	if (strstr (name, engine_data->name)) {
 	  /* Engine base name is a substring of player name. */
-	  return engine_data;
+	  best_guess = engine_data;
 	}
       }
     }
   }
 
-  return NULL;
+  return best_guess;
 }
 
 
@@ -2949,19 +2961,19 @@ gtk_preferences_instantiate_selected_engine (GtkEngineChain *engine_chain,
 			   chain_engine_data);
     }
     else {
-      g_free (chain_engine_data);
+      GtkWidget *error_dialog
+	= quarry_message_dialog_new (engine_chain->parent_window,
+				     GTK_BUTTONS_OK, GTK_STOCK_DIALOG_ERROR,
+				     _("Perhaps engine's binary has been "
+				       "deleted or changed. You will probably "
+				       "need to alter engine's command line "
+				       "in the Preferences dialog."),
+				     error->message);
 
-      gtk_utils_create_message_dialog (engine_chain->parent_window,
-				       GTK_STOCK_DIALOG_ERROR,
-				       (GTK_UTILS_BUTTONS_OK
-					| GTK_UTILS_DESTROY_ON_RESPONSE),
-				       _("Perhaps engine's binary has been "
-					 "deleted or changed. You will "
-					 "probably need to alter engine's "
-					 "command line in preferences "
-					 "dialog."),
-				       error->message);
+      g_free (chain_engine_data);
       g_error_free (error);
+
+      gtk_utils_show_and_forget_dialog (GTK_DIALOG (error_dialog));
 
       engine_chain->have_error = TRUE;
     }
