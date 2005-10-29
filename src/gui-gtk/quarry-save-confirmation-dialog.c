@@ -87,7 +87,7 @@ static void
 quarry_save_confirmation_dialog_init (QuarrySaveConfirmationDialog *dialog)
 {
   gtk_dialog_add_buttons (GTK_DIALOG (dialog),
-			  "Close _without Saving", GTK_RESPONSE_NO,
+			  _("Close _without Saving"), GTK_RESPONSE_NO,
 			  GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
 			  GTK_STOCK_SAVE, GTK_RESPONSE_YES, NULL);
   gtk_dialog_set_default_response (GTK_DIALOG (dialog), GTK_RESPONSE_YES);
@@ -171,10 +171,10 @@ update_secondary_text (QuarrySaveConfirmationDialog *dialog)
   /* The ranges are taken from gedit code. */
   if (num_seconds_elapsed < 55) {
     secondary_text
-      = g_strdup_printf (ngettext (("If you don't save, changes from the last "
-				    "second will be lost permanently."),
-				   ("If you don't save, changes from the last "
-				    "%d seconds will be lost permanently."),
+      = g_strdup_printf (ngettext ("If you don't save, changes from the last "
+				   "second will be lost permanently.",
+				   "If you don't save, changes from the last "
+				   "%d seconds will be lost permanently.",
 				   num_seconds_elapsed),
 			 (gint) num_seconds_elapsed);
   }
@@ -185,21 +185,21 @@ update_secondary_text (QuarrySaveConfirmationDialog *dialog)
   else if (num_seconds_elapsed < 60 + 50) {
     /* TRANSLATORS: Cannot be one minute one second, actually. */
     secondary_text
-      = g_strdup_printf (ngettext (("If you don't save, changes from the last "
-				    "minute and one second will be lost "
-				    "permanently."),
-				   ("If you don't save, changes from the last "
-				    "minute and %d seconds will be lost "
-				    "permanently."),
+      = g_strdup_printf (ngettext ("If you don't save, changes from the last "
+				   "minute and one second will be lost "
+				   "permanently.",
+				   "If you don't save, changes from the last "
+				   "minute and %d seconds will be lost "
+				   "permanently.",
 				   num_seconds_elapsed - 60),
 			 (gint) (num_seconds_elapsed - 60));
   }
   else if (num_seconds_elapsed < 60 * 60) {
     secondary_text
-      = g_strdup_printf (ngettext (("If you don't save, changes from the last "
-				    "minute will be lost permanently."),
-				   ("If you don't save, changes from the last "
-				    "%d minutes will be lost permanently."),
+      = g_strdup_printf (ngettext ("If you don't save, changes from the last "
+				   "minute will be lost permanently.",
+				   "If you don't save, changes from the last "
+				   "%d minutes will be lost permanently.",
 				   num_seconds_elapsed / 60),
 			 (gint) (num_seconds_elapsed / 60));
   }
@@ -210,22 +210,22 @@ update_secondary_text (QuarrySaveConfirmationDialog *dialog)
 
     /* TRANSLATORS: Cannot be one hour one minute, actually. */
     secondary_text
-      = g_strdup_printf (ngettext (("If you don't save, changes from the last "
-				    "hour and one minute will be lost "
-				    "permanently."),
-				   ("If you don't save, changes from the last "
-				    "hour and %d minutes will be lost "
-				    "permanently."),
+      = g_strdup_printf (ngettext ("If you don't save, changes from the last "
+				   "hour and one minute will be lost "
+				   "permanently.",
+				   "If you don't save, changes from the last "
+				   "hour and %d minutes will be lost "
+				   "permanently.",
 				   minutes),
 			 minutes);
     
   }
   else {
     secondary_text
-      = g_strdup_printf (ngettext (("If you don't save, changes from the last "
-				    "hour will be lost permanently."),
-				   ("If you don't save, changes from the last "
-				    "%d hours will be lost permanently."),
+      = g_strdup_printf (ngettext ("If you don't save, changes from the last "
+				   "hour will be lost permanently.",
+				   "If you don't save, changes from the last "
+				   "%d hours will be lost permanently.",
 				   num_seconds_elapsed / (60 * 60)),
 			 (gint) (num_seconds_elapsed / (60 * 60)));
   }
@@ -236,6 +236,9 @@ update_secondary_text (QuarrySaveConfirmationDialog *dialog)
   if (dialog->timeout_source_id)
     g_source_remove (dialog->timeout_source_id);
 
+  /* FIXME: Try adding timeouts for the period the text will change
+   *	    after, not just one second.
+   */
   dialog->timeout_source_id
     = g_timeout_add (1 * 1000, (GSourceFunc) update_secondary_text, dialog);
 
