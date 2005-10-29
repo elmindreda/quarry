@@ -19,11 +19,6 @@
  * Boston, MA 02110-1301, USA.                                     *
 \* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-/* TODO: Save last created game record parameters in configuration.
- *	 Think of what to do with the handicap and komi, which can be
- *	 either numbers or empty strings.
- */
-
 
 #include "gtk-new-game-record-dialog.h"
 
@@ -116,6 +111,9 @@ gtk_new_game_record_dialog_init (GtkNewGameRecordDialog *dialog)
     = gtk_size_group_new (GTK_SIZE_GROUP_HORIZONTAL);
   GtkSizeGroup *spin_button_size_group
     = gtk_size_group_new (GTK_SIZE_GROUP_HORIZONTAL);
+
+  gint game_index
+    = gtk_games_name_to_index (new_game_record_configuration.game_name, FALSE);
   int k;
 
   gtk_window_set_title (GTK_WINDOW (dialog), _("New Game Record"));
@@ -138,13 +136,22 @@ gtk_new_game_record_dialog_init (GtkNewGameRecordDialog *dialog)
   for (k = 0; k < NUM_SUPPORTED_GAMES; k++) {
     GtkWidget *spin_button;
     GtkWidget *rules_named_vbox;
+    int default_board_size = 0;
 
     gtk_size_group_add_widget (height_size_group, radio_buttons[k]);
 
     g_signal_connect (radio_buttons[k], "toggled",
 		      G_CALLBACK (change_rules_notebook_page), rules_notebook);
 
-    dialog->board_sizes[k] = gtk_games_create_board_size_adjustment (k, 0);
+    if (k == GTK_GAME_GO)
+      default_board_size = new_go_game_record_configuration.board_size;
+    else if (k == GTK_GAME_AMAZONS)
+      default_board_size = new_amazons_game_record_configuration.board_size;
+    else if (k == GTK_GAME_REVERSI)
+      default_board_size = new_reversi_game_record_configuration.board_size;
+
+    dialog->board_sizes[k]
+      = gtk_games_create_board_size_adjustment (k, default_board_size);
 
     spin_button = gtk_utils_create_spin_button (dialog->board_sizes[k],
 						0.0, 0, TRUE);
@@ -162,9 +169,11 @@ gtk_new_game_record_dialog_init (GtkNewGameRecordDialog *dialog)
 
     if (k == GTK_GAME_GO) {
       GtkAdjustment *handicap_adjustment
-	= gtk_games_create_handicap_adjustment (0);
+	= (gtk_games_create_handicap_adjustment
+	   (new_go_game_record_configuration.handicap));
       GtkAdjustment *komi_adjustment
-	= gtk_games_create_komi_adjustmet (0.0);
+	= (gtk_games_create_komi_adjustmet
+	   (new_go_game_record_configuration.komi));
       GtkWidget *place_stones;
 
       spin_button
@@ -172,8 +181,11 @@ gtk_new_game_record_dialog_init (GtkNewGameRecordDialog *dialog)
 						  0.0, 0, TRUE);
       dialog->handicap_spin_button = GTK_FREEZABLE_SPIN_BUTTON (spin_button);
       gtk_utils_freeze_on_empty_input (dialog->handicap_spin_button);
-      gtk_freezable_spin_button_freeze
-	(GTK_FREEZABLE_SPIN_BUTTON (spin_button), "");
+
+      if (new_go_game_record_configuration.handicap_is_null) {
+	gtk_freezable_spin_button_freeze
+	  (GTK_FREEZABLE_SPIN_BUTTON (spin_button), "");
+      }
 
       gtk_size_group_add_widget (spin_button_size_group, spin_button);
 
@@ -181,7 +193,9 @@ gtk_new_game_record_dialog_init (GtkNewGameRecordDialog *dialog)
 
       place_stones = gtk_check_button_new_with_mnemonic (_("_Place stones"));
       dialog->place_stones = GTK_TOGGLE_BUTTON (place_stones);
-      gtk_toggle_button_set_active (dialog->place_stones, TRUE);
+
+      if (new_go_game_record_configuration.place_handicap_stones)
+	gtk_toggle_button_set_active (dialog->place_stones, TRUE);
 
       set_handicap_adjustment_limit (dialog->board_sizes[k],
 				     handicap_adjustment);
@@ -211,8 +225,11 @@ gtk_new_game_record_dialog_init (GtkNewGameRecordDialog *dialog)
 							    0.0, 1, FALSE);
       dialog->komi_spin_button = GTK_FREEZABLE_SPIN_BUTTON (spin_button);
       gtk_utils_freeze_on_empty_input (dialog->komi_spin_button);
-      gtk_freezable_spin_button_freeze
-	(GTK_FREEZABLE_SPIN_BUTTON (spin_button), "");
+
+      if (new_go_game_record_configuration.komi_is_null) {
+	gtk_freezable_spin_button_freeze
+	  (GTK_FREEZABLE_SPIN_BUTTON (spin_button), "");
+      }
 
       gtk_size_group_add_widget (spin_button_size_group, spin_button);
 
@@ -233,11 +250,21 @@ gtk_new_game_record_dialog_init (GtkNewGameRecordDialog *dialog)
 			      rules_named_vbox, NULL);
   }
 
+  /* Call it here when all signal callbacks and widgets are set up. */
+  if (game_index != GTK_GAME_UNSUPPORTED) {
+    gtk_widget_show_all (rules_notebook);
+    gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON
+				  (radio_buttons[game_index]),
+				  TRUE);
+  }
+
   hbox = gtk_utils_pack_in_box (GTK_TYPE_HBOX, QUARRY_SPACING_VERY_BIG,
 				game_named_vbox, GTK_UTILS_FILL,
 				rules_notebook, GTK_UTILS_PACK_DEFAULT, NULL);
 
-  entry = gtk_utils_create_entry (NULL, RETURN_ACTIVATES_DEFAULT);
+  entry = gtk_utils_create_entry ((new_game_record_configuration
+				   .player_names[WHITE_INDEX]),
+				  RETURN_ACTIVATES_DEFAULT);
   dialog->white_player = GTK_ENTRY (entry);
 
   label = gtk_utils_create_mnemonic_label (_("_White player:"), entry);
@@ -246,7 +273,9 @@ gtk_new_game_record_dialog_init (GtkNewGameRecordDialog *dialog)
 					     label, 0, entry,
 					     GTK_UTILS_PACK_DEFAULT, NULL);
 
-  entry = gtk_utils_create_entry (NULL, RETURN_ACTIVATES_DEFAULT);
+  entry = gtk_utils_create_entry ((new_game_record_configuration
+				   .player_names[BLACK_INDEX]),
+				  RETURN_ACTIVATES_DEFAULT);
   dialog->black_player = GTK_ENTRY (entry);
 
   label = gtk_utils_create_mnemonic_label (_("_Black player:"), entry);
@@ -255,7 +284,9 @@ gtk_new_game_record_dialog_init (GtkNewGameRecordDialog *dialog)
 					     label, 0, entry,
 					     GTK_UTILS_PACK_DEFAULT, NULL);
 
-  entry = gtk_utils_create_entry (NULL, RETURN_ACTIVATES_DEFAULT);
+  entry
+    = gtk_utils_create_entry (new_game_record_configuration.game_record_name,
+			      RETURN_ACTIVATES_DEFAULT);
   dialog->game_name = GTK_ENTRY (entry);
 
   label = gtk_utils_create_mnemonic_label (_("Game _name:"), entry);
@@ -321,58 +352,95 @@ gtk_new_game_record_dialog_response (GtkDialog *dialog, gint response_id)
     GtkNewGameRecordDialog *data = GTK_NEW_GAME_RECORD_DIALOG (dialog);
     gint game_index
       = gtk_utils_get_selected_radio_index (data->game_radio_button_group);
+    Game game = index_to_game[game_index];
     gint board_size = gtk_adjustment_get_value (data->board_sizes[game_index]);
-    const gchar *white_player = gtk_entry_get_text (data->white_player);
-    const gchar *black_player = gtk_entry_get_text (data->black_player);
-    const gchar *game_name    = gtk_entry_get_text (data->game_name);
+
+    const gchar *white_player	  = gtk_entry_get_text (data->white_player);
+    const gchar *black_player	  = gtk_entry_get_text (data->black_player);
+    const gchar *game_name	  = gtk_entry_get_text (data->game_name);
+    char *white_player_normalized = sgf_utils_normalize_text (white_player, 1);
+    char *black_player_normalized = sgf_utils_normalize_text (black_player, 1);
+    char *game_name_normalized	  = sgf_utils_normalize_text (game_name, 1);
+
     SgfGameTree *sgf_tree;
     SgfNode *root;
     SgfCollection *sgf_collection;
     GtkWidget *goban_window;
 
-    sgf_tree = sgf_game_tree_new_with_root (index_to_game[game_index],
-					    board_size, board_size, 1);
+    gint     handicap	    = -1;
+    gboolean place_handicap = TRUE;
+    gdouble  komi	    = 0.0;
+    gboolean komi_is_set    = FALSE;
+
+    sgf_tree = sgf_game_tree_new_with_root (game, board_size, board_size, 1);
     root     = sgf_tree->root;
 
-    if (white_player) {
+    if (white_player_normalized) {
       sgf_node_add_text_property (root, sgf_tree, SGF_PLAYER_WHITE,
-				  utils_duplicate_string (white_player), 0);
+				  white_player_normalized, 0);
     }
 
-    if (black_player) {
+    if (black_player_normalized) {
       sgf_node_add_text_property (root, sgf_tree, SGF_PLAYER_BLACK,
-				  utils_duplicate_string (black_player), 0);
+				  black_player_normalized, 0);
     }
 
-    if (game_name) {
+    if (game_name_normalized) {
       sgf_node_add_text_property (root, sgf_tree, SGF_GAME_NAME,
-				  utils_duplicate_string (game_name), 0);
+				  game_name_normalized, 0);
     }
 
-    if ((gtk_freezable_spin_button_get_freezing_string
-	 (data->handicap_spin_button))
-	== NULL) {
-      gint handicap = (gtk_spin_button_get_value
-		       (GTK_SPIN_BUTTON (data->handicap_spin_button)));
-      gint place_handicap
-	= (GTK_WIDGET_SENSITIVE (data->place_stones)
-	   && gtk_toggle_button_get_active (data->place_stones));
+    if (game == GAME_GO) {
+      place_handicap = (GTK_WIDGET_SENSITIVE (data->place_stones)
+			&& gtk_toggle_button_get_active (data->place_stones));
 
-      /* Don't bother user with handicap subtleties. */
-      if (handicap == 1)
-	handicap = 0;
+      if ((gtk_freezable_spin_button_get_freezing_string
+	   (data->handicap_spin_button))
+	  == NULL) {
+	handicap = (gtk_spin_button_get_value
+		    (GTK_SPIN_BUTTON (data->handicap_spin_button)));
 
-      sgf_utils_set_handicap (sgf_tree, handicap, place_handicap);
+	/* Don't bother user with handicap subtleties. */
+	if (handicap == 1)
+	  handicap = 0;
+
+	sgf_utils_set_handicap (sgf_tree, handicap, place_handicap);
+      }
+
+      if ((gtk_freezable_spin_button_get_freezing_string
+	   (data->komi_spin_button))
+	  == NULL) {
+	komi	    = gtk_spin_button_get_value (GTK_SPIN_BUTTON
+						 (data->komi_spin_button));
+	komi_is_set = TRUE;
+
+	sgf_node_add_text_property (root, sgf_tree, SGF_KOMI,
+				    utils_cprintf ("%.f", komi), 0);
+      }
     }
 
-    if (gtk_freezable_spin_button_get_freezing_string (data->komi_spin_button)
-	== NULL) {
-      gdouble komi = gtk_spin_button_get_value (GTK_SPIN_BUTTON
-						(data->komi_spin_button));
+    configuration_set_string_value (&new_game_record_configuration.game_name,
+				    game_info[game].name);
+    configuration_set_string_value
+      (&new_game_record_configuration.player_names[WHITE_INDEX], white_player);
+    configuration_set_string_value
+      (&new_game_record_configuration.player_names[BLACK_INDEX], black_player);
+    configuration_set_string_value
+      (&new_game_record_configuration.game_record_name, game_name);
 
-      sgf_node_add_text_property (root, sgf_tree, SGF_KOMI,
-				  utils_cprintf ("%.f", komi), 0);
+    if (game == GAME_GO) {
+      new_go_game_record_configuration.board_size	     = board_size;
+
+      new_go_game_record_configuration.handicap_is_null	     = (handicap < 0);
+      new_go_game_record_configuration.handicap		     = handicap;
+      new_go_game_record_configuration.place_handicap_stones = place_handicap;
+      new_go_game_record_configuration.komi		     = komi;
+      new_go_game_record_configuration.komi_is_null	     = !komi_is_set;
     }
+    else if (game == GAME_AMAZONS)
+      new_amazons_game_record_configuration.board_size = board_size;
+    else if (game == GAME_REVERSI)
+      new_reversi_game_record_configuration.board_size = board_size;
 
     sgf_collection = sgf_collection_new ();
     sgf_collection_add_game_tree (sgf_collection, sgf_tree);
