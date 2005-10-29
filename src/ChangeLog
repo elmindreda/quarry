@@ -1,3 +1,34 @@
+2005-10-29  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* gui-gtk/gtk-new-game-record-dialog.c
+	(gtk_new_game_record_dialog_init): Initialize widgets in
+	accordance to saved configuration values.
+	(gtk_new_game_record_dialog_response): Pass players' names and
+	game name through sgf_utils_normalize_text().  Save configuration
+	values as set up in the dialog this time.
+
+	* gui-gtk/gtk-new-game-dialog.c (begin_game): Pass players' and
+	engines' names through sgf_utils_normalize_text().
+
+	* gui-gtk/gtk-configuration.list: Add configuration parameters for
+	new game records.
+
+	* gui-utils/configuration.c (configuration_read_from_file): Handle
+	nullable configuration values.
+	(write_section): Likewise.
+
+	* gui-utils/parse-configuration.c (configuration_parse_values2):
+	Handle nullable configuration values.
+	(configuration_parse_defaults2): Likewise.
+	(look_at_field_type): Detect nullable configuration value types.
+	(add_field_declaration_if_needed): Handle nullable configuration
+	values.
+
+	* gui-gtk/quarry-save-confirmation-dialog.c
+	(quarry_save_confirmation_dialog_init): Pass "Close without
+	Saving" string through gettext.
+	(update_secondary_text): Remove parentheses that confused gettext.
+
 2005-10-28  Paul Pogonyshev  <pogonyshev@gmx.net>
 
 	* (Globally: remove periods at the end of message dialog primary
