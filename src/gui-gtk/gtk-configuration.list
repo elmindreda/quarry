@@ -81,6 +81,42 @@ section_list  unnamed gtk_configuration_sections {
 		new_reversi_game_section_values
 		new_reversi_game_defaults
 
+  SECTION_NEW_GAME_RECORD_DIALOG  "New Game Record Parameters"
+		single
+		new		NewGameRecordConfiguration
+				new_game_record_configuration_dispose
+
+		new_game_record_configuration
+		new_game_record_section_values
+		new_game_record_defaults
+
+  SECTION_NEW_GO_GAME_RECORD	"New Go Game Record Parameters"
+		single
+		new		NewGoGameRecordConfiguration
+				new_go_game_record_configuration_dispose
+
+		new_go_game_record_configuration
+		new_go_game_record_section_values
+		new_go_game_record_defaults
+
+  SECTION_NEW_AMAZONS_GAME_RECORD  "New Amazons Game Record Parameters"
+		single
+		new		NewAmazonsGameRecordConfiguration
+				new_amazons_game_record_configuration_dispose
+
+		new_amazons_game_record_configuration
+		new_amazons_game_record_section_values
+		new_amazons_game_record_defaults
+
+  SECTION_NEW_REVERSI_GAME_RECORD  "New Reversi Game Record Parameters"
+		single
+		new		NewReversiGameRecordConfiguration
+				new_reversi_game_record_configuration_dispose
+
+		new_reversi_game_record_configuration
+		new_reversi_game_record_section_values
+		new_reversi_game_record_defaults
+
   SECTION_FIND_DIALOG		"Find Dialog Parameters"
 		single
 		new		FindDialogConfiguration
@@ -207,6 +243,35 @@ values  - new_reversi_game_section_values {
 }
 
 
+values  - new_game_record_section_values {
+  "Game"			game_name			string
+
+  "White player name"		player_names[WHITE_INDEX]	string
+  "Black player name"		player_names[BLACK_INDEX]	string
+  "Game name"			game_record_name		string
+}
+
+
+values  - new_go_game_record_section_values {
+  "Board size"			board_size			int
+
+  "Handicap"			handicap			nullable int
+  "Place handicap stones"	place_handicap_stones		boolean
+
+  "Komi"			komi				nullable real
+}
+
+
+values  - new_amazons_game_record_section_values {
+  "Board size"			board_size			int
+}
+
+
+values  - new_reversi_game_record_section_values {
+  "Board size"			board_size			int
+}
+
+
 values  - find_dialog_section_values {
   "Latest search strings"	latest_search_strings		string_list
   "Case sensitive"		case_sensitive			boolean
@@ -324,6 +389,41 @@ defaults  - new_reversi_game_defaults {
     overtime_period_length		time		05:00
     moves_per_overtime			int		10
   end
+}
+
+
+defaults  - new_game_record_defaults {
+  game_name				string		"Go"
+
+  player_names				array		[NUM_COLORS]
+					string
+    # FIXME: Maybe should be `user_real_name' instead?  Or should be
+    #	     translated appropriately?
+    [BLACK_INDEX]					"Black"
+    [WHITE_INDEX]					"White"
+  end
+
+  game_record_name			string		NULL
+}
+
+
+defaults  - new_go_game_record_defaults {
+  board_size				int		19
+
+  handicap				nullable int	null
+  place_handicap_stones			boolean		true
+
+  komi					nullable real	6.5
+}
+
+
+defaults  - new_amazons_game_record_defaults {
+  board_size				int		10
+}
+
+
+defaults  - new_reversi_game_record_defaults {
+  board_size				int		8
 }
 
 
