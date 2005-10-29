@@ -847,18 +847,24 @@ begin_game (GtkEnginesInstantiationStatus status, gpointer user_data)
     GtpEngineListItem *engine_data =
       (gtk_preferences_get_engine_selector_selection
        (dialog->engine_selectors[k]));
+    char *player_name;
 
     player_is_computer[k]
       = GTK_WIDGET_IS_SENSITIVE (dialog->engine_selectors[k]);
     human_names[k] = gtk_entry_get_text (dialog->human_name_entries[k]);
     engine_screen_names[k] = (engine_data ? engine_data->screen_name : NULL);
 
-    sgf_node_add_text_property
-      (game_tree->root, game_tree,
-       (k == BLACK_INDEX ? SGF_PLAYER_BLACK : SGF_PLAYER_WHITE),
-       utils_duplicate_string (player_is_computer[k]
-			       ? engine_screen_names[k] : human_names[k]),
-       0);
+    player_name = sgf_utils_normalize_text ((player_is_computer[k]
+					     ? engine_screen_names[k]
+					     : human_names[k]),
+					    1);
+
+    if (player_name) {
+      sgf_node_add_text_property (game_tree->root, game_tree,
+				  (k == BLACK_INDEX
+				   ? SGF_PLAYER_BLACK : SGF_PLAYER_WHITE),
+				  player_name, 0);
+    }
   }
 
   if (game == GAME_GO) {
