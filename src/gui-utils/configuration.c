@@ -25,6 +25,8 @@
  * lines it does not understand and allows random junk at line ends.
  */
 
+/* FIXME: Clean it up, some functions have become overcomplicated. */
+
 
 #include "configuration.h"
 #include "utils.h"
@@ -154,188 +156,219 @@ configuration_read_from_file (const ConfigurationSection *sections,
 
 	    scan++;
 
-	    if (value->type != VALUE_TYPE_STRING_LIST) {
-	      char *string = parse_string (&scan, 0);
+	    if (value->type & VALUE_TYPE_IS_NULLABLE) {
+	      const char *null_scan = scan;
+	      int is_null = 0;
 
-	      if (string) {
-		if (value->type == VALUE_TYPE_STRING) {
-		  utils_free (* (char **) field);
-		  * (char **) field = string;
-		}
-		else {
-		  char *actual_contents = NULL;
-		  char *whitespace_scan;
-		  int enumeration_value = 0;
+	      while (*null_scan == ' ' || *null_scan == '\t')
+		null_scan++;
 
-		  for (actual_contents = string;
-		       *actual_contents == ' ' || *actual_contents == '\t';)
-		    actual_contents++;
+	      if (strncasecmp (null_scan, "null", 4) == 0) {
+		null_scan += 4;
+		while (*null_scan == ' ' || *null_scan == '\t')
+		  null_scan++;
 
-		  if (value->type == VALUE_TYPE_ENUMERATION) {
-		    const char *value_string;
-		    int actual_contents_length;
-
-		    /* Trim trailing whitespace. */
-		    for (whitespace_scan = (actual_contents
-					    + (strlen (actual_contents) - 1));
-			 (whitespace_scan >= actual_contents
-			  && (*whitespace_scan == ' '
-			      || *whitespace_scan == '\t'));)
-		      whitespace_scan--;
-
-		    *(whitespace_scan + 1) = 0;
-		    actual_contents_length = ((whitespace_scan + 1)
-					      - actual_contents);
-
-		    for (value_string = value->enumeration_values_as_strings,
-			   enumeration_value = 0;
-			 *value_string; enumeration_value++) {
-		      do {
-			int value_string_length = strlen (value_string);
-
-			if (actual_contents_length == value_string_length
-			    && (strcasecmp (actual_contents, value_string)
-				== 0)) {
-			  * (int *) field = enumeration_value;
-			  goto enumeration_value_found;
-			}
-
-			value_string += value_string_length + 1;
-		      } while (*value_string);
-
-		      value_string++;
-		    }
-		  }
-
-		  /* Find first whitespace character and break line at
-		   * its position.
+		if (!*null_scan || *null_scan == '\n' || *null_scan == '\r') {
+		  /* FIXME: Not exactly right since we don't always
+		   *	    assign a value below.
 		   */
-		  for (whitespace_scan = actual_contents;
-		       (*whitespace_scan != ' ' && *whitespace_scan != '\t'
-			&& *whitespace_scan != 0);)
-		    whitespace_scan++;
+		  is_null = 1;
+		}
+	      }
 
-		  *whitespace_scan = 0;
+	      /* FIXME: Not nice. */
+	      * ((int *) (field) - 1) = is_null;
+	    }
 
-		  switch (value->type) {
-		  case VALUE_TYPE_BOOLEAN:
-		  case VALUE_TYPE_BOOLEAN_WRITE_TRUE_ONLY:
-		    if (strcasecmp (actual_contents, "true") == 0
-			|| strcasecmp (actual_contents, "yes") == 0
-			|| strcmp (actual_contents, "1") == 0)
-		      * (int *) field = 1;
-		    else if (strcasecmp (actual_contents, "false") == 0
-			     || strcasecmp (actual_contents, "no") == 0
-			     || strcmp (actual_contents, "0") == 0)
-		      * (int *) field = 0;
+	    if (! (value->type & VALUE_TYPE_IS_NULLABLE
+		   && * ((int *) (field) - 1))) {
+	      if ((value->type & ~VALUE_TYPE_IS_NULLABLE)
+		  != VALUE_TYPE_STRING_LIST) {
+		char *string = parse_string (&scan, 0);
 
-		    break;
+		if (string) {
+		  if ((value->type & ~VALUE_TYPE_IS_NULLABLE)
+		      == VALUE_TYPE_STRING) {
+		    utils_free (* (char **) field);
+		    * (char **) field = string;
+		  }
+		  else {
+		    char *actual_contents = NULL;
+		    char *whitespace_scan;
+		    int enumeration_value = 0;
 
-		  case VALUE_TYPE_INT:
-		    parse_integer (actual_contents, (int *) field);
-		    break;
+		    for (actual_contents = string;
+			 *actual_contents == ' ' || *actual_contents == '\t';)
+		      actual_contents++;
 
-		  case VALUE_TYPE_ENUMERATION:
-		    {
-		      int numeric_value;
+		    if ((value->type & ~VALUE_TYPE_IS_NULLABLE)
+			== VALUE_TYPE_ENUMERATION) {
+		      const char *value_string;
+		      int actual_contents_length;
 
-		      /* A second attempt, try to parse as numeric
-		       * value.  Placed separately, because we have a
-		       * different `actual_contents' here, more suited
-		       * for numeric parsing.
-		       */
-		      if (parse_integer (actual_contents, &numeric_value)
-			  && 0 <= numeric_value
-			  && numeric_value < enumeration_value)
-			* (int *) field = numeric_value;
-		    }
+		      /* Trim trailing whitespace. */
+		      for (whitespace_scan
+			     = (actual_contents
+				+ (strlen (actual_contents) - 1));
+			   (whitespace_scan >= actual_contents
+			    && (*whitespace_scan == ' '
+				|| *whitespace_scan == '\t'));)
+			whitespace_scan--;
 
-		    break;
+		      *(whitespace_scan + 1) = 0;
+		      actual_contents_length = ((whitespace_scan + 1)
+						- actual_contents);
 
-		  case VALUE_TYPE_REAL:
-		    utils_parse_double (actual_contents, (double *) field);
-		    break;
+		      for (value_string = value->enumeration_values_as_strings,
+			     enumeration_value = 0;
+			   *value_string; enumeration_value++) {
+			do {
+			  int value_string_length = strlen (value_string);
 
-		  case VALUE_TYPE_COLOR:
-		    {
-		      int num_digits;
+			  if (actual_contents_length == value_string_length
+			      && (strcasecmp (actual_contents, value_string)
+				  == 0)) {
+			    * (int *) field = enumeration_value;
+			    goto enumeration_value_found;
+			  }
 
-		      if (*actual_contents == '#')
-			actual_contents++;
+			  value_string += value_string_length + 1;
+			} while (*value_string);
 
-		      for (num_digits = 0;
-			   ((('0' <= *actual_contents
-			      && *actual_contents <= '9')
-			     || ('a' <= *actual_contents
-				 && *actual_contents <= 'f')
-			     || ('A' <= *actual_contents
-				 && *actual_contents <= 'F'))
-			    && num_digits <= 6);
-			   num_digits++)
-			actual_contents++;
-
-		      if (num_digits == 6 || num_digits == 3) {
-			int red;
-			int green;
-			int blue;
-
-			if (num_digits == 6) {
-			  sscanf (actual_contents - 6, "%2x%2x%2x",
-				  &red, &green, &blue);
-			}
-			else {
-			  sscanf (actual_contents - 3, "%1x%1x%1x",
-				  &red, &green, &blue);
-			  red   *= 0x11;
-			  green *= 0x11;
-			  blue  *= 0x11;
-			}
-
-			((QuarryColor *) field)->red   = red;
-			((QuarryColor *) field)->green = green;
-			((QuarryColor *) field)->blue  = blue;
+			value_string++;
 		      }
 		    }
 
-		    break;
+		    /* Find first whitespace character and break line
+		     * at its position.
+		     */
+		    for (whitespace_scan = actual_contents;
+			 (*whitespace_scan != ' ' && *whitespace_scan != '\t'
+			  && *whitespace_scan != 0);)
+		      whitespace_scan++;
 
-		  case VALUE_TYPE_TIME:
-		    {
-		      int seconds = utils_parse_time (actual_contents);
+		    *whitespace_scan = 0;
 
-		      if (seconds >= 0)
-			* (int *) field = seconds;
+		    switch (value->type & ~VALUE_TYPE_IS_NULLABLE) {
+		    case VALUE_TYPE_BOOLEAN:
+		    case VALUE_TYPE_BOOLEAN_WRITE_TRUE_ONLY:
+		      if (strcasecmp (actual_contents, "true") == 0
+			  || strcasecmp (actual_contents, "yes") == 0
+			  || strcmp (actual_contents, "1") == 0)
+			* (int *) field = 1;
+		      else if (strcasecmp (actual_contents, "false") == 0
+			       || strcasecmp (actual_contents, "no") == 0
+			       || strcmp (actual_contents, "0") == 0)
+			* (int *) field = 0;
+
+		      break;
+
+		    case VALUE_TYPE_INT:
+		      parse_integer (actual_contents, (int *) field);
+		      break;
+
+		    case VALUE_TYPE_ENUMERATION:
+		      {
+			int numeric_value;
+
+			/* A second attempt, try to parse as numeric
+			 * value.  Placed separately, because we have
+			 * a different `actual_contents' here, more
+			 * suited for numeric parsing.
+			 */
+			if (parse_integer (actual_contents, &numeric_value)
+			    && 0 <= numeric_value
+			    && numeric_value < enumeration_value)
+			  * (int *) field = numeric_value;
+		      }
+
+		      break;
+
+		    case VALUE_TYPE_REAL:
+		      utils_parse_double (actual_contents, (double *) field);
+		      break;
+
+		    case VALUE_TYPE_COLOR:
+		      {
+			int num_digits;
+
+			if (*actual_contents == '#')
+			  actual_contents++;
+
+			for (num_digits = 0;
+			     ((('0' <= *actual_contents
+				&& *actual_contents <= '9')
+			       || ('a' <= *actual_contents
+				   && *actual_contents <= 'f')
+			       || ('A' <= *actual_contents
+				   && *actual_contents <= 'F'))
+			      && num_digits <= 6);
+			     num_digits++)
+			  actual_contents++;
+
+			if (num_digits == 6 || num_digits == 3) {
+			  int red;
+			  int green;
+			  int blue;
+
+			  if (num_digits == 6) {
+			    sscanf (actual_contents - 6, "%2x%2x%2x",
+				    &red, &green, &blue);
+			  }
+			  else {
+			    sscanf (actual_contents - 3, "%1x%1x%1x",
+				    &red, &green, &blue);
+			    red   *= 0x11;
+			    green *= 0x11;
+			    blue  *= 0x11;
+			  }
+
+			  ((QuarryColor *) field)->red   = red;
+			  ((QuarryColor *) field)->green = green;
+			  ((QuarryColor *) field)->blue  = blue;
+			}
+		      }
+
+		      break;
+
+		    case VALUE_TYPE_TIME:
+		      {
+			int seconds = utils_parse_time (actual_contents);
+
+			if (seconds >= 0)
+			  * (int *) field = seconds;
+		      }
+
+		      break;
+
+		    default:
+		      assert (0);
 		    }
 
-		    break;
+		  enumeration_value_found:
 
-		  default:
-		    assert (0);
+		    utils_free (string);
 		  }
-
-		enumeration_value_found:
-
-		  utils_free (string);
 		}
 	      }
-	    }
-	    else {
-	      int first_value = 1;
+	      else {
+		int first_value = 1;
 
-	      do {
-		char *string = parse_string (&scan, ',');
+		do {
+		  char *string = parse_string (&scan, ',');
 
-		if (string) {
-		  if (first_value) {
-		    string_list_empty (field);
-		    first_value = 0;
+		  if (string) {
+		    if (first_value) {
+		      string_list_empty (field);
+		      first_value = 0;
+		    }
+
+		    string_list_add_ready (field, string);
 		  }
-
-		  string_list_add_ready (field, string);
-		}
-		else
-		  break;
-	      } while (*scan++ == ',');
+		  else
+		    break;
+		} while (*scan++ == ',');
+	      }
 	    }
 	  }
 	}
@@ -514,12 +547,22 @@ write_section (BufferedWriter *writer, const ConfigurationSection *section,
   for (k = 0, value = section->values; k < section->num_values; k++, value++) {
     const void *field = (((const char *) section_structure)
 			 + value->field_offset);
+    ConfigurationValueType value_type = value->type;
+    int is_null = 0;
 
-    if ((value->type == VALUE_TYPE_STRING && ! * (char *const *) field)
-	|| (value->type == VALUE_TYPE_STRING_LIST
-	    && string_list_is_empty ((const StringList *) field))
-	|| (value->type == VALUE_TYPE_BOOLEAN_WRITE_TRUE_ONLY
-	    && ! * (const int *) field))
+    if (value_type & VALUE_TYPE_IS_NULLABLE) {
+      /* FIXME: Not nice. */
+      is_null	  = (* (((const int *) field) - 1));
+      value_type &= ~VALUE_TYPE_IS_NULLABLE;
+    }
+
+    if (!is_null
+	&& ((value_type == VALUE_TYPE_STRING
+	     && ! * (char *const *) field)
+	    || (value_type == VALUE_TYPE_STRING_LIST
+		&& string_list_is_empty ((const StringList *) field))
+	    || (value_type == VALUE_TYPE_BOOLEAN_WRITE_TRUE_ONLY
+		&& ! * (const int *) field)))
       continue;
 
     buffered_writer_cat_string (writer, value->name);
@@ -534,84 +577,88 @@ write_section (BufferedWriter *writer, const ConfigurationSection *section,
 
     buffered_writer_cat_string (writer, "= ");
 
-    switch (value->type) {
-    case VALUE_TYPE_STRING:
-      write_string (writer, * (char *const *) field);
-      break;
+    if (is_null)
+      buffered_writer_cat_string (writer, "null");
+    else {
+      switch (value_type) {
+      case VALUE_TYPE_STRING:
+	write_string (writer, * (char *const *) field);
+	break;
 
-    case VALUE_TYPE_STRING_LIST:
-      {
-	StringListItem *item;
+      case VALUE_TYPE_STRING_LIST:
+	{
+	  StringListItem *item;
 
-	for (item = ((const StringList *) field)->first; item;
-	     item = item->next) {
-	  write_string (writer, item->text);
-	  if (item->next)
-	    buffered_writer_cat_string (writer, ", ");
-	}
-      }
-
-      break;
-
-    case VALUE_TYPE_BOOLEAN:
-    case VALUE_TYPE_BOOLEAN_WRITE_TRUE_ONLY:
-      buffered_writer_cat_string (writer,
-				  * (const int *) field ? "true" : "false");
-      break;
-
-    case VALUE_TYPE_INT:
-      buffered_writer_cprintf (writer, "%d", * (const int *) field);
-      break;
-
-    case VALUE_TYPE_ENUMERATION:
-      {
-	const char *value_string;
-	int enumeration_value;
-
-	for (value_string = value->enumeration_values_as_strings,
-	       enumeration_value = * (const int *) field;
-	     enumeration_value--; ) {
-	  do
-	    value_string += strlen (value_string) + 1;
-	  while (*value_string);
-
-	  value_string++;
+	  for (item = ((const StringList *) field)->first; item;
+	       item = item->next) {
+	    write_string (writer, item->text);
+	    if (item->next)
+	      buffered_writer_cat_string (writer, ", ");
+	  }
 	}
 
-	write_string (writer, value_string);
+	break;
+
+      case VALUE_TYPE_BOOLEAN:
+      case VALUE_TYPE_BOOLEAN_WRITE_TRUE_ONLY:
+	buffered_writer_cat_string (writer,
+				    * (const int *) field ? "true" : "false");
+	break;
+
+      case VALUE_TYPE_INT:
+	buffered_writer_cprintf (writer, "%d", * (const int *) field);
+	break;
+
+      case VALUE_TYPE_ENUMERATION:
+	{
+	  const char *value_string;
+	  int enumeration_value;
+
+	  for (value_string = value->enumeration_values_as_strings,
+		 enumeration_value = * (const int *) field;
+	       enumeration_value--; ) {
+	    do
+	      value_string += strlen (value_string) + 1;
+	    while (*value_string);
+
+	    value_string++;
+	  }
+
+	  write_string (writer, value_string);
+	}
+
+	break;
+
+      case VALUE_TYPE_REAL:
+	buffered_writer_cprintf (writer, "%.f", * (const double *) field);
+	break;
+
+      case VALUE_TYPE_COLOR:
+	/* I believe this cannot be locale-dependent, right? */
+	buffered_writer_printf (writer, "\"#%02x%02x%02x\"",
+				((const QuarryColor *) field)->red,
+				((const QuarryColor *) field)->green,
+				((const QuarryColor *) field)->blue);
+	break;
+
+      case VALUE_TYPE_TIME:
+	if (* (const int *) field < 60 * 60) {
+	  buffered_writer_cprintf (writer, "%02d:%02d",
+				   (* (const int *) field) / 60,
+				   (* (const int *) field) % 60);
+	}
+	else {
+	  buffered_writer_cprintf (writer, "%d:%02d:%02d",
+				   (* (const int *) field) / (60 * 60),
+				   ((* (const int *) field) / 60) % 60,
+				   (* (const int *) field) % 60);
+	}
+
+	break;
+
+      default:
+	assert (0);
       }
-
-      break;
-
-    case VALUE_TYPE_REAL:
-      buffered_writer_cprintf (writer, "%.f", * (const double *) field);
-      break;
-
-    case VALUE_TYPE_COLOR:
-      /* I believe this cannot be locale-dependent, right? */
-      buffered_writer_printf (writer, "\"#%02x%02x%02x\"",
-			      ((const QuarryColor *) field)->red,
-			      ((const QuarryColor *) field)->green,
-			      ((const QuarryColor *) field)->blue);
-      break;
-
-    case VALUE_TYPE_TIME:
-      if (* (const int *) field < 60 * 60) {
-	buffered_writer_cprintf (writer, "%02d:%02d",
-				 (* (const int *) field) / 60,
-				 (* (const int *) field) % 60);
-      }
-      else {
-	buffered_writer_cprintf (writer, "%d:%02d:%02d",
-				 (* (const int *) field) / (60 * 60),
-				 ((* (const int *) field) / 60) % 60,
-				 (* (const int *) field) % 60);
-      }
-
-      break;
-
-    default:
-      assert (0);
     }
 
     buffered_writer_add_newline (writer);

@@ -39,7 +39,8 @@ typedef enum {
   VALUE_TYPE_REAL,
   VALUE_TYPE_COLOR,
   VALUE_TYPE_TIME,
-  NUM_VALUE_TYPES
+  NUM_VALUE_TYPES,
+  VALUE_TYPE_IS_NULLABLE = 0x8000
 } ConfigurationValueType;
 
 
