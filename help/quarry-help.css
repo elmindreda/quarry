@@ -102,3 +102,12 @@ div.note h3 {
 	font-weight:	bold;
 	text-decoration: underline;
 }
+
+span.guimenu, span.guisubmenu, span.guimenuitem, span.guibutton {
+	font-weight:	bold;
+}
+
+strong.command {
+	font-family:	monospace;
+	font-weight:	normal;
+}
