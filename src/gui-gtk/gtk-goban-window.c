@@ -320,7 +320,8 @@ static int	 find_variation_to_switch_to (GtkGobanWindow *goban_window,
 					      int x, int y,
 					      SgfDirection direction);
 
-static void	 update_children_for_new_node (GtkGobanWindow *goban_window);
+static void	 update_children_for_new_node (GtkGobanWindow *goban_window,
+					       gboolean forced);
 
 static void	 update_game_information (GtkGobanWindow *goban_window);
 static void	 update_window_title (GtkGobanWindow *goban_window);
@@ -1550,7 +1551,7 @@ do_enter_game_mode (GtkGobanWindow *goban_window)
   }
 
   goban_window->last_displayed_node = NULL;
-  update_children_for_new_node (goban_window);
+  update_children_for_new_node (goban_window, TRUE);
 
   if (USER_IS_TO_PLAY (goban_window) && !goban_window->pending_free_handicap)
     start_clock_if_needed (goban_window);
@@ -1775,7 +1776,7 @@ game_has_been_adjourned (GtkGobanWindow *goban_window)
   static const gchar *hint
     = N_("You can later resume the game by pressing the `Resume Game' button "
 	 "in Quarry Control Center, or selecting `Resume Game' item from "
-	 " `File' menu.");
+	 "the `File' menu.");
 
   gchar *filename_in_utf8 = g_filename_to_utf8 (goban_window->filename, -1,
 						NULL, NULL, NULL);
@@ -3211,7 +3212,7 @@ set_current_tree (GtkGobanWindow *goban_window, SgfGameTree *sgf_tree)
 		     time_control_new_from_sgf_node (sgf_tree->root));
 
   update_game_information (goban_window);
-  update_children_for_new_node (goban_window);
+  update_children_for_new_node (goban_window, TRUE);
   undo_or_redo_availability_changed (NULL, goban_window);
 
   gtk_sgf_tree_view_set_sgf_tree (goban_window->sgf_tree_view, sgf_tree);
@@ -3263,8 +3264,7 @@ reenter_current_node (GtkGobanWindow *goban_window)
 			  &goban_window->sgf_board_state);
   }
 
-  goban_window->last_displayed_node = NULL;
-  update_children_for_new_node (goban_window);
+  update_children_for_new_node (goban_window, TRUE);
 }
 
 
@@ -3326,7 +3326,7 @@ play_pass_move (GtkGobanWindow *goban_window)
   if (goban_window->in_game_mode && IS_DISPLAYING_GAME_NODE (goban_window))
     move_has_been_played (goban_window);
 
-  update_children_for_new_node (goban_window);
+  update_children_for_new_node (goban_window, TRUE);
 }
 
 
@@ -3366,7 +3366,7 @@ do_resign_game (GtkGobanWindow *goban_window)
 			      1);
 
   sgf_utils_append_variation (goban_window->current_tree, EMPTY);
-  update_children_for_new_node (goban_window);
+  update_children_for_new_node (goban_window, TRUE);
 }
 
 
@@ -3554,7 +3554,7 @@ playing_mode_goban_clicked (GtkGobanWindow *goban_window,
       if (goban_window->in_game_mode && IS_DISPLAYING_GAME_NODE (goban_window))
 	move_has_been_played (goban_window);
 
-      update_children_for_new_node (goban_window);
+      update_children_for_new_node (goban_window, TRUE);
     }
 
     break;
@@ -3571,7 +3571,8 @@ playing_mode_goban_clicked (GtkGobanWindow *goban_window,
       sgf_utils_switch_to_given_variation (goban_window->current_tree,
 					   goban_window->node_to_switch_to);
       just_changed_node (goban_window);
-      update_children_for_new_node (goban_window);
+
+      update_children_for_new_node (goban_window, TRUE);
     }
     else
       cancel_amazons_move (goban_window);
@@ -3689,10 +3690,8 @@ setup_mode_goban_clicked (GtkGobanWindow *goban_window,
   }
 
   if (sgf_utils_apply_setup_changes (goban_window->current_tree,
-				     goban_window->goban->grid)) {
-    goban_window->last_displayed_node = NULL;
-    update_children_for_new_node (goban_window);
-  }
+				     goban_window->goban->grid))
+    update_children_for_new_node (goban_window, TRUE);
 }
 
 
@@ -3960,10 +3959,8 @@ label_mode_goban_clicked (GtkGobanWindow *goban_window,
 
   if (sgf_utils_set_list_of_label_property (current_node,
 					    goban_window->current_tree,
-					    SGF_LABEL, new_label_list)) {
-    goban_window->last_displayed_node = NULL;
-    update_children_for_new_node (goban_window);
-  }
+					    SGF_LABEL, new_label_list))
+    update_children_for_new_node (goban_window, TRUE);
 }
 
 
@@ -4226,7 +4223,7 @@ navigate_goban (GtkGobanWindow *goban_window,
   }
 
   just_changed_node (goban_window);
-  update_children_for_new_node (goban_window);
+  update_children_for_new_node (goban_window, TRUE);
 }
 
 
@@ -4237,7 +4234,7 @@ switch_to_given_node (GtkGobanWindow *goban_window, SgfNode *sgf_node)
   sgf_utils_switch_to_given_node (goban_window->current_tree, sgf_node);
   just_changed_node (goban_window);
 
-  update_children_for_new_node (goban_window);
+  update_children_for_new_node (goban_window, FALSE);
 }
 
 
@@ -4266,7 +4263,7 @@ find_variation_to_switch_to (GtkGobanWindow *goban_window,
 
 
 static void
-update_children_for_new_node (GtkGobanWindow *goban_window)
+update_children_for_new_node (GtkGobanWindow *goban_window, gboolean forced)
 {
   const SgfBoardState *const board_state = &goban_window->sgf_board_state;
   SgfGameTree *current_tree = goban_window->current_tree;
@@ -4275,7 +4272,7 @@ update_children_for_new_node (GtkGobanWindow *goban_window)
   const char *comment;
   const char *node_name;
 
-  if (current_node == goban_window->last_displayed_node)
+  if (!forced && current_node == goban_window->last_displayed_node)
     return;
 
   if (goban_window->last_displayed_node)
@@ -4329,6 +4326,8 @@ update_children_for_new_node (GtkGobanWindow *goban_window)
   gtk_utils_set_text_buffer_text (goban_window->text_buffer, comment);
   if (node_name)
     insert_node_name (goban_window, node_name);
+
+  gtk_text_buffer_set_modified (goban_window->text_buffer, FALSE);
 
   if (!goban_window->in_game_mode) {
     int k;
@@ -4977,8 +4976,9 @@ fetch_comment_and_node_name (GtkGobanWindow *goban_window,
 			     gboolean for_current_node)
 {
   if (gtk_text_buffer_get_modified (goban_window->text_buffer)) {
+    SgfGameTree *current_tree = goban_window->current_tree;
     SgfNode *node = (for_current_node
-		     ? goban_window->current_tree->current_node
+		     ? current_tree->current_node
 		     : goban_window->last_displayed_node);
     GtkTextIter start_iterator;
     GtkTextIter end_iterator;
@@ -4986,6 +4986,7 @@ fetch_comment_and_node_name (GtkGobanWindow *goban_window,
     gchar *new_node_name = NULL;
     char *normalized_comment;
     char *normalized_node_name;
+    SgfGameTreeState current_tree_state;
 
     gtk_text_buffer_get_bounds (goban_window->text_buffer,
 				&start_iterator, &end_iterator);
@@ -5005,47 +5006,34 @@ fetch_comment_and_node_name (GtkGobanWindow *goban_window,
     else
       new_comment = gtk_text_iter_get_text (&start_iterator, &end_iterator);
 
-    normalized_comment = sgf_utils_normalize_text (new_comment, 0);
-
-    /* FIXME: It's SGF module that should perform
-     *	      whether-text-value-has-changed checks.
-     */
-    if (normalized_comment) {
-      const char *original_comment
-	= sgf_node_get_text_property_value (node, SGF_COMMENT);
-
-      if (!original_comment
-	  || strcmp (original_comment, normalized_comment) != 0) {
-	sgf_node_add_text_property (node, goban_window->current_tree,
-				    SGF_COMMENT, normalized_comment, 1);
-      }
-    }
-    else {
-      sgf_node_delete_property (node, goban_window->current_tree,
-				SGF_COMMENT);
-    }
-
+    normalized_comment   = sgf_utils_normalize_text (new_comment, 0);
     normalized_node_name = (new_node_name
 			    ? sgf_utils_normalize_text (new_node_name, 1)
 			    : NULL);
 
-    /* FIXME: It's SGF module that should perform
-     *	      whether-text-value-has-changed checks.
+    /* This is needed to suppress node changing signals.  They are not
+     * needed here and get in our way when `for_current_node' is
+     * FALSE.
      */
-    if (normalized_node_name) {
-      const char *original_node_name
-	= sgf_node_get_text_property_value (node, SGF_NODE_NAME);
+    sgf_game_tree_get_state (current_tree, &current_tree_state);
+    gtk_sgf_tree_signal_proxy_push_tree_state (current_tree,
+					       &current_tree_state);
 
-      if (!original_node_name
-	  || strcmp (original_node_name, normalized_node_name) != 0) {
-	sgf_node_add_text_property (node, goban_window->current_tree,
-				    SGF_NODE_NAME, normalized_node_name, 1);
-      }
-    }
-    else {
-      sgf_node_delete_property (node, goban_window->current_tree,
-				SGF_NODE_NAME);
-    }
+    /* FIXME: This makes undo/redo buttons behave weirdly.  Make
+     *	      changes to these fields saved just as they are made, not
+     *	      when the current node changes.  Difficult, but must be
+     *	      done in 0.1.17!
+     */
+    sgf_utils_set_text_property (node, current_tree,
+				 SGF_COMMENT, normalized_comment);
+    sgf_utils_set_text_property (node, current_tree,
+				 SGF_NODE_NAME, normalized_node_name);
+
+    /* In case we switched to `node' and it is different. */
+    sgf_utils_switch_to_given_node (current_tree,
+				    current_tree_state.current_node);
+
+    gtk_sgf_tree_signal_proxy_pop_tree_state (current_tree, NULL);
 
     g_free (new_comment);
     g_free (new_node_name);
@@ -5545,7 +5533,7 @@ move_has_been_generated (GtpClient *client, int successful,
     move_has_been_played (goban_window);
 
     if (IS_DISPLAYING_GAME_NODE (goban_window))
-      update_children_for_new_node (goban_window);
+      update_children_for_new_node (goban_window, TRUE);
     else {
       gtk_sgf_tree_signal_proxy_pop_tree_state (current_tree,
 						&goban_window->game_position);
@@ -5568,7 +5556,11 @@ generate_move_via_gtp (GtkGobanWindow *goban_window)
     double seconds_left = time_control_get_time_left (time_control,
 						      &moves_left);
 
-    /* FIXME: OUT_OF_TIME shouldn't really happen here. */
+    /* FIXME: OUT_OF_TIME shouldn't really happen here.
+     *
+     *	      Check if it still happens.  Time control handling has
+     *	      been significantly improved since this FIXME was added.
+     */
     if (seconds_left != NO_TIME_LIMITS && seconds_left != OUT_OF_TIME) {
       gtp_client_send_time_left (goban_window->players[color_to_play_index],
 				 NULL, NULL, color_to_play,
@@ -5611,7 +5603,7 @@ player_is_out_of_time (GtkClock *clock, GtkGobanWindow *goban_window)
 			      utils_cprintf ("%c+Time", winner_color_char), 1);
 
   sgf_utils_append_variation (goban_window->current_tree, EMPTY);
-  update_children_for_new_node (goban_window);
+  update_children_for_new_node (goban_window, TRUE);
 }
 
 
@@ -5622,9 +5614,7 @@ static void
 undo_operation (GtkGobanWindow *goban_window)
 {
   sgf_utils_undo (goban_window->current_tree);
-
-  goban_window->last_displayed_node = NULL;
-  update_children_for_new_node (goban_window);
+  update_children_for_new_node (goban_window, TRUE);
 }
 
 
@@ -5632,9 +5622,7 @@ static void
 redo_operation (GtkGobanWindow *goban_window)
 {
   sgf_utils_redo (goban_window->current_tree);
-
-  goban_window->last_displayed_node = NULL;
-  update_children_for_new_node (goban_window);
+  update_children_for_new_node (goban_window, TRUE);
 }
 
 
@@ -5642,7 +5630,7 @@ static void
 append_empty_variation (GtkGobanWindow *goban_window)
 {
   sgf_utils_append_variation (goban_window->current_tree, EMPTY);
-  update_children_for_new_node (goban_window);
+  update_children_for_new_node (goban_window, TRUE);
 }
 
 
@@ -5650,9 +5638,7 @@ static void
 delete_current_node (GtkGobanWindow *goban_window)
 {
   sgf_utils_delete_current_node (goban_window->current_tree);
-
-  goban_window->last_displayed_node = NULL;
-  update_children_for_new_node (goban_window);
+  update_children_for_new_node (goban_window, TRUE);
 }
 
 
