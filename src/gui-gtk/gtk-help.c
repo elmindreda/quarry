@@ -114,7 +114,8 @@ gtk_help_display (const gchar *link_id)
     child_argv[0] = "mozilla";
 
     if (link_id) {
-      child_argv[1] = g_strconcat (PACKAGE_DATA_DIR "/help/C/quarry.html#",
+      child_argv[1] = g_strconcat (("file://" PACKAGE_DATA_DIR
+				    "/help/C/quarry.html#"),
 				   link_id, NULL);
     }
     else
