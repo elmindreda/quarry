@@ -1,3 +1,22 @@
+--- New in Quarry 0.1.16 ---------------------------------------------
+
+* Quarry is now an SGF editor!  In addition to features added in
+  0.1.15 and earlier, it is now possible to create game records
+  without playing a game; undo/redo history has been drastically
+  improved and is now really useful; there is an editing toolbar.
+  However, undo/redo of comments and node names still needs an
+  improvement.
+
+* Command to jump straight to a named node.  Advantage over text
+  search here is name completion.  (Only for GTK+ 2.4 and up.)
+
+* Somewhat updated and expanded manual.
+
+* New translations: British English (en_GB), Russian (ru.)
+
+* Bug-fixes and small improvements.
+
+
 --- New in Quarry 0.1.15 ---------------------------------------------
 
 * First stab at making Quarry an SGF editor.  New editing commands:

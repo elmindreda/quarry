@@ -16,19 +16,13 @@
 
 *** Implement search history.
 
-** Support multiple games in one file (postpone?)
-
 * EDITING GAME RECORDS
-
-** Add a command to create a game record without starting a game.
-
-** Add SGF labels editing mode.
 
 ** Support editing various SGF properties (`VA', `BM' etc.)
 
 ** Add command(s) to rearrange children of given node.
 
-** Ask before dismissing modifications.
+** Add a way to change the player to move.
 
 ** GAME INFORMATION
 
@@ -43,9 +37,6 @@
 
 ** Do something about the Control Center, it is kinda ugly.
    (Oh, graphical artist, where art thou?)
-
-** Think of what to add to the toolbars (help of anyone who uses
-   toolbars is welcome.)
 
 * SGF PARSING
 
@@ -65,9 +56,35 @@
 
 * GENERAL
 
-** Expand and fix manual.
+** Expand and fix the manual.
 
 ** Browse all FIXMEs in the code and fix all that are bad.
+
+
+
+			THINGS PLANNED FOR 0.4
+
+* INTERNET GAME SERVER(S) SUPPORT
+
+** Start with IGS, since KGS has proprietary protocol and NNGS/old IGS
+   isn't really used anymore.
+
+* VIEWING GAME RECORDS
+
+** Support multiple games in one file, same for editing.
+
+* GTP SUPPORT
+
+** Add some sort of GTP console for generic GTP engine access.  Look
+   at GoGui for an example.
+
+* GENERAL
+
+** Drop support for GTK+ 2.0 and 2.2 at least.  Remove all related
+   code.
+
+** Make functions receive `size_t' and `gsize' where appropriate, e.g.
+   as string lengths.  Be extra careful with passing through `...'.
 
 
 
