@@ -939,7 +939,7 @@ create_game_tree_page (void)
 	 "window separately.");
   static const gchar *track_current_node_hint
     = N_("In automatic mode the game tree view scrolls to show the current "
-	 "node only if it has been showing current node before.  I.e. unless "
+	 "node only if it has been showing current node before. I.e. unless "
 	 "you scrolled it away manually.");
 
   GtkWidget *radio_buttons[3];
