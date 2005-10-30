@@ -1,3 +1,9 @@
+2005-10-30  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* configure.ac: Quarry version 0.1.16.
+	* NEWS: Update.
+	* TODO: Update.
+
 2005-09-27  Paul Pogonyshev  <pogonyshev@gmx.net>
 
 	* README: Replace "Othello" with "Reversi" and generally update.

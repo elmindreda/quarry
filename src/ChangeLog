@@ -1,3 +1,24 @@
+2005-10-30  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* (Quarry version 0.1.16.)
+
+	* gui-gtk/gtk-goban-window.c (game_has_been_adjourned): Add a
+	missing `the' article to a string constant.
+	(update_children_for_new_node): Add `forced' argument so that the
+	rest of code doesn't have to change `last_displayed_node' to force
+	an update.  (Fixes bug with disappearing comment changes.)  Reset
+	`text_buffer' modification state.
+	(fetch_comment_and_node_name): Temporary set comment and node name
+	with sgf_utils_set_text_property().  Still bad, but better than
+	not saving changes in undo history at all.
+
+	* gui-gtk/gtk-preferences.c (create_game_tree_page): Squeeze a
+	double space in a string constant.
+
+	* gui-gtk/gtk-help.c (gtk_help_display): Pass a `file://' URI, not
+	just a filename to the browser, otherwise `#' fragment
+	specialization doesn't work.
+
 2005-10-29  Paul Pogonyshev  <pogonyshev@gmx.net>
 
 	* gui-gtk/gtk-new-game-record-dialog.c

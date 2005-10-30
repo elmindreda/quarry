@@ -1,3 +1,19 @@
+2005-10-30  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* (Quarry version 0.1.16.)
+
+	* C/figures/control-center.png: Update for newre Quarry versions.
+
+	* C/quarry.xml: Update and expand somewhat.
+
+	* quarry-help.css: Add a few rules to make the HTML look more like
+	what `yelp' displays.
+
+	* quarry-help.sed: Add rule to replace `->' with a proper arrow.
+
+	* Makefile.am (html): Change target format from `html-nochunks' to
+	`xhtml-nochunks'.
+
 2005-09-27  Paul Pogonyshev  <pogonyshev@gmx.net>
 
 	* C/quarry.xml: Use "Reversi" instead of "Othello".

@@ -1,5 +1,7 @@
 2005-09-27  Paul Pogonyshev  <pogonyshev@gmx.net>
 
+	* (Quarry version 0.1.16.)
+
 	* quarry.desktop.in: Replace "Othello" with "Reversi".
 
 2005-08-19  Michel Salim  <michel.salim@gmail.com>
