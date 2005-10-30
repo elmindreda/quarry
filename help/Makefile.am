@@ -11,7 +11,7 @@ SUBDIRS = C
 html:
 	for directory in $(SUBDIRS); do					\
 	  if test -e $$directory/quarry.xml; then			\
-	    xmlto html-nochunks $$directory/quarry.xml -o $$directory;	\
+	    xmlto xhtml-nochunks $$directory/quarry.xml -o $$directory;	\
 	    if test -e $$directory/quarry.html; then			\
 	      sed -f quarry-help.sed					\
 		     < $$directory/quarry.html > quarry.html.tmp;	\
