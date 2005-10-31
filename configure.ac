@@ -146,12 +146,12 @@ else
 fi
 
 
-if test "$have_scrollkeeper" = "yes"; then
-  AC_ARG_ENABLE(scrollkeeper-update,
-		AC_HELP_STRING([--disable-scrollkeeper-update],
-			       [don't update ScrollKeeper database (for packagers)]))
-  AM_CONDITIONAL(DO_SCROLLKEEPER_UPDATE, test "$enable_scrollkeeper_update" != "no")
-fi
+AC_ARG_ENABLE(scrollkeeper-update,
+	      AC_HELP_STRING([--disable-scrollkeeper-update],
+			     [don't update ScrollKeeper database (for packagers)]))
+
+AM_CONDITIONAL(DO_SCROLLKEEPER_UPDATE,
+	       [test "$have_scrollkeeper" == "yes" && test "$enable_scrollkeeper_update" != "no"])
 
 
 # Write `Makefile's.

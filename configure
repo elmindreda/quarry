@@ -8083,15 +8083,15 @@ else
 fi
 
 
-if test "$have_scrollkeeper" = "yes"; then
-  # Check whether --enable-scrollkeeper-update or --disable-scrollkeeper-update was given.
+# Check whether --enable-scrollkeeper-update or --disable-scrollkeeper-update was given.
 if test "${enable_scrollkeeper_update+set}" = set; then
   enableval="$enable_scrollkeeper_update"
 
 fi;
 
 
-if test "$enable_scrollkeeper_update" != "no"; then
+
+if test "$have_scrollkeeper" == "yes" && test "$enable_scrollkeeper_update" != "no"; then
   DO_SCROLLKEEPER_UPDATE_TRUE=
   DO_SCROLLKEEPER_UPDATE_FALSE='#'
 else
@@ -8099,7 +8099,6 @@ else
   DO_SCROLLKEEPER_UPDATE_FALSE=
 fi
 
-fi
 
 
 # Write `Makefile's.
