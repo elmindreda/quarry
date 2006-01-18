@@ -8,10 +8,10 @@ msgstr ""
 "Project-Id-Version: Quarry 0.1.16\n"
 "Report-Msgid-Bugs-To: quarry-dev@gna.org\n"
 "POT-Creation-Date: 2005-10-30 19:04+0200\n"
-"PO-Revision-Date: 2005-12-19 10:12+0100\n"
+"PO-Revision-Date: 2006-01-15 13:35+0200\n"
 "Last-Translator: Robert Stefaniuk <kacprey@gazeta.pl>\n"
 "Language-Team: Polish <pl@li.org>\n"
-"MIME-Version: 1.0\n"
+"MIME-Version: 1.1\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=(n==1 ? 0 : n%10>=2 && n%"
@@ -33,7 +33,7 @@ msgstr "_Tekst etykiety:"
 
 #: src/gui-gtk/gtk-color-button.c:581
 msgid "Pick a Color"
-msgstr "Wybierz kolor"
+msgstr "Wybór koloru"
 
 #: src/gui-gtk/gtk-control-center.c:60
 msgid "Quarry Control Center"
@@ -162,7 +162,7 @@ msgstr "Zagrane _otwarcie:"
 
 #: src/gui-gtk/gtk-game-info-dialog.c:354
 msgid "Comment / _description:"
-msgstr "_Komentarz/оpis:"
+msgstr "_Komentarz/opis:"
 
 #: src/gui-gtk/gtk-game-info-dialog.c:368
 msgid "Description & Result"
@@ -182,7 +182,7 @@ msgstr "Ź_ródło:"
 
 #: src/gui-gtk/gtk-game-info-dialog.c:382
 msgid "_Entered by:"
-msgstr "_Wprowadzone przez:"
+msgstr "_Twórca pliku:"
 
 #: src/gui-gtk/gtk-game-info-dialog.c:391
 msgid "Copyright & Credits"
@@ -190,15 +190,15 @@ msgstr "Informacje o pliku i prawach autorskich"
 
 #: src/gui-gtk/gtk-game-info-dialog.c:404
 msgid "Game Record"
-msgstr "Autor i uprawnienia"
+msgstr "Autorzy i uprawnienia"
 
 #: src/gui-gtk/gtk-games.c:35
 msgid "_Go"
-msgstr "_Gо"
+msgstr "_Go"
 
 #: src/gui-gtk/gtk-games.c:36
 msgid "_Amazons"
-msgstr "Аma_zonki"
+msgstr "Ama_zonki"
 
 #: src/gui-gtk/gtk-games.c:37
 msgid "_Reversi"
@@ -218,11 +218,11 @@ msgstr "Reguły reversi"
 
 #: src/gui-gtk/gtk-goban-window.c:400
 msgid "Open"
-msgstr "Оtwórz"
+msgstr "Otwórz"
 
 #: src/gui-gtk/gtk-goban-window.c:400
 msgid "Open a game record"
-msgstr "Оtwiera zapisaną grę"
+msgstr "Otwiera zapisaną grę"
 
 #: src/gui-gtk/gtk-goban-window.c:405
 msgid "Save"
@@ -406,23 +406,23 @@ msgstr "/Edycja/Narzędzia/"
 
 #: src/gui-gtk/gtk-goban-window.c:618
 msgid "/Edit/Tools/C_ross Markup"
-msgstr "/Edycja/Narzędzia/znaczniki: _krzyżyk"
+msgstr "/Edycja/Narzędzia/Znaczniki: _krzyżyk"
 
 #: src/gui-gtk/gtk-goban-window.c:621
 msgid "/Edit/Tools/_Circle Markup"
-msgstr "/Edycja/Narzędzia/znaczniki: _okrąg"
+msgstr "/Edycja/Narzędzia/Znaczniki: _okrąg"
 
 #: src/gui-gtk/gtk-goban-window.c:624
 msgid "/Edit/Tools/S_quare Markup"
-msgstr "/Edycja/Narzędzia/znaczniki: kwa_drat"
+msgstr "/Edycja/Narzędzia/Znaczniki: kwa_drat"
 
 #: src/gui-gtk/gtk-goban-window.c:627
 msgid "/Edit/Tools/_Triangle Markup"
-msgstr "/Edycja/Narzędzia/znaczniki: _trójkąt"
+msgstr "/Edycja/Narzędzia/Znaczniki: _trójkąt"
 
 #: src/gui-gtk/gtk-goban-window.c:630
 msgid "/Edit/Tools/S_elected Markup"
-msgstr "/Edycja/Narzędzia/_znaczniki: własny"
+msgstr "/Edycja/Narzędzia/_Znaczniki: własny"
 
 #: src/gui-gtk/gtk-goban-window.c:635
 msgid "/Edit/Tools/_Label Tool"
@@ -442,7 +442,7 @@ msgstr "/Edycja/_Dodaj pusty węzeł"
 
 #: src/gui-gtk/gtk-goban-window.c:654
 msgid "/Edit/Edit Node _Name"
-msgstr "/Edycja/Edytuj nazwę _węzła"
+msgstr "/Edycja/Modyfikuj nazwę _węzła"
 
 #: src/gui-gtk/gtk-goban-window.c:659
 msgid "/Edit/_Find"
@@ -576,7 +576,7 @@ msgstr "/Pomoc/_Zawartość"
 
 #: src/gui-gtk/gtk-goban-window.c:768
 msgid "/Help/_About"
-msgstr "/Pomoc/_О programie"
+msgstr "/Pomoc/_o programie"
 
 #: src/gui-gtk/gtk-goban-window.c:774
 msgid "/Move Tool"
@@ -588,31 +588,31 @@ msgstr "/Tryb edycji"
 
 #: src/gui-gtk/gtk-goban-window.c:778
 msgid "/Cross Markup"
-msgstr "/znaczniki: krzyżyk"
+msgstr "/Znaczniki: krzyżyk"
 
 #: src/gui-gtk/gtk-goban-window.c:779
 msgid "/Circle Markup"
-msgstr "/znaczniki: okrąg"
+msgstr "/Znaczniki: okrąg"
 
 #: src/gui-gtk/gtk-goban-window.c:780
 msgid "/Square Markup"
-msgstr "/znaczniki: kwadrat"
+msgstr "/Znaczniki: kwadrat"
 
 #: src/gui-gtk/gtk-goban-window.c:781
 msgid "/Triangle Markup"
-msgstr "/znaczniki: trójkąt"
+msgstr "/Znaczniki: trójkąt"
 
 #: src/gui-gtk/gtk-goban-window.c:782
 msgid "/Selected Markup"
-msgstr "/znaczniki: własny"
+msgstr "/Znaczniki: własny"
 
 #: src/gui-gtk/gtk-goban-window.c:785
 msgid "/Label Tool"
-msgstr "/Wstaw etykiety"
+msgstr "/Etykiety"
 
 #: src/gui-gtk/gtk-goban-window.c:786
 msgid "/Number Tool"
-msgstr "/Wstaw numery"
+msgstr "/Numerowanie pól"
 
 #: src/gui-gtk/gtk-goban-window.c:789
 msgid "/Scoring Tool"
@@ -761,7 +761,7 @@ msgstr "_Poddaj"
 
 #: src/gui-gtk/gtk-goban-window.c:3932
 msgid "Edit Board Label"
-msgstr "Edytuj wstawioną etykietę"
+msgstr "Modyfikuj wstawioną etykietę"
 
 #: src/gui-gtk/gtk-goban-window.c:3935
 msgid "Add Board Label"
@@ -955,7 +955,7 @@ msgstr ""
 
 #: src/gui-gtk/gtk-gtp-client-interface.c:414
 msgid "* WARNING: future GTP version, I don't know about it....\n"
-msgstr "* OSTRZEŻENIE: nowa, nie znana mi wersja GTP...\n"
+msgstr "* OSTRZEŻENIE: nowa, nie znana programowi wersja GTP...\n"
 
 #: src/gui-gtk/gtk-new-game-dialog.c:99
 msgid ""
@@ -1015,7 +1015,7 @@ msgstr "_Czło_wiek"
 
 #: src/gui-gtk/gtk-new-game-dialog.c:175
 msgid "C_omputer"
-msgstr "_Коmputer"
+msgstr "_Komputer"
 
 #: src/gui-gtk/gtk-new-game-dialog.c:239
 msgid "Manage _Engine List"
@@ -1134,11 +1134,11 @@ msgstr "Otwórz plik SGF..."
 #: src/gui-gtk/gtk-parser-interface.c:190
 #, c-format
 msgid "Parsing file `%s'..."
-msgstr "Przetwarzam plik „%s”..."
+msgstr "Przetwarzanie pliku „%s”..."
 
 #: src/gui-gtk/gtk-preferences.c:428
 msgid "<b>General</b>"
-msgstr "<b>Оgólne</b>"
+msgstr "<b>Ogólne</b>"
 
 #: src/gui-gtk/gtk-preferences.c:431
 msgid "Interface"
@@ -1250,7 +1250,7 @@ msgstr "Tylko tekst"
 
 #: src/gui-gtk/gtk-preferences.c:786
 msgid "Show"
-msgstr "Pokazuj"
+msgstr "Wyświetlaj"
 
 #: src/gui-gtk/gtk-preferences.c:793
 msgid "Name"
@@ -1397,7 +1397,7 @@ msgstr "Na _pustych polach:"
 
 #: src/gui-gtk/gtk-preferences.c:1121
 msgid "Pick Checkerboard Pattern Color"
-msgstr "Wybierz kolor zaciemnienia czarnych pól"
+msgstr "Wybór koloru zaciemnienia czarnych pól"
 
 #: src/gui-gtk/gtk-preferences.c:1130
 msgid "Checkerboard _pattern color:"
@@ -1429,15 +1429,15 @@ msgstr "Użyj pojedyńczego _koloru:"
 
 #: src/gui-gtk/gtk-preferences.c:1250
 msgid "Choose a Background Texture..."
-msgstr "Wybierz teksturę dla tła..."
+msgstr "Wybór tekstury dla tła..."
 
 #: src/gui-gtk/gtk-preferences.c:1261
 msgid "Pick Background Color"
-msgstr "Wybierz kolor tła"
+msgstr "Wybór koloru tła"
 
 #: src/gui-gtk/gtk-preferences.c:1275
 msgid "Pick Color for Grid and Labels"
-msgstr "Wybierz kolor siatki i współrzędnych"
+msgstr "Wybór koloru siatki i współrzędnych"
 
 #: src/gui-gtk/gtk-preferences.c:1285
 msgid "_Grid and labels color:"
@@ -1457,11 +1457,11 @@ msgstr "_Rozmiar:"
 
 #: src/gui-gtk/gtk-preferences.c:1378
 msgid "_Opacity:"
-msgstr "_Przeźroczystość:"
+msgstr "_Intensywność:"
 
 #: src/gui-gtk/gtk-preferences.c:1393
 msgid "Size & Opacity"
-msgstr "Rozmiar i przeźroczystość"
+msgstr "Rozmiar i intensywność"
 
 #: src/gui-gtk/gtk-preferences.c:1409
 msgid "Color"
@@ -1469,7 +1469,7 @@ msgstr "Kolor"
 
 #: src/gui-gtk/gtk-preferences.c:1423
 msgid "Pick Color for Markup"
-msgstr "Wybierz kolor dla znaczników"
+msgstr "Wybór koloru dla znaczników"
 
 #: src/gui-gtk/gtk-preferences.c:1459
 msgid "Background"
@@ -1486,7 +1486,7 @@ msgstr "Obsługiwane gry:"
 # FIXME: niezrozumiałe
 #: src/gui-gtk/gtk-preferences.c:1614
 msgid "This engine comes from site configuration."
-msgstr "Ten algorytm pochodzi z lokalnej konfiguracji."
+msgstr "Ten algorytm jest skonfigurowany globalnie."
 
 #: src/gui-gtk/gtk-preferences.c:1833
 msgid ""
@@ -1512,7 +1512,7 @@ msgstr "_Polecenie:"
 
 #: src/gui-gtk/gtk-preferences.c:1932
 msgid "Choose GTP Engine..."
-msgstr "Wybierz algorytm GTP..."
+msgstr "Wybór algorytmu GTP..."
 
 #: src/gui-gtk/gtk-preferences.c:1943
 msgid "Screen _name:"
@@ -1603,7 +1603,7 @@ msgstr "Nie ustalony"
 
 #: src/gui-gtk/gtk-resume-game-dialog.c:267
 msgid "Komi:"
-msgstr "Кomi:"
+msgstr "Komi:"
 
 #: src/gui-gtk/gtk-resume-game-dialog.c:270
 msgid "komi|Not set"
@@ -1641,7 +1641,7 @@ msgstr[2] ""
 msgid "If you don't save, changes from the last minute will be discarded."
 msgstr ""
 "Jeśli nie zapiszesz, zmiany z ostatniej minuty "
-"zostaną bezpowrotnie utracone."
+"zostaną porzucone."
 
 #: src/gui-gtk/quarry-save-confirmation-dialog.c:188
 #, c-format
@@ -1652,13 +1652,13 @@ msgid_plural ""
 "If you don't save, changes from the last minute and %d seconds will be lost "
 "permanently."
 msgstr[0] ""
-"Jeśli nie zapiszesz, zmiany z ostatniej minuty "
+"Jeśli nie zapiszesz, zmiany z ostatniej minuty i sekundy"
 "zostaną bezpowrotnie utracone."
 msgstr[1] ""
-"Jeśli nie zapiszesz, zmiany z ostatnich %d minut "
+"Jeśli nie zapiszesz, zmiany z ostatniej minuty i %d sekund "
 "zostaną bezpowrotnie utracone."
 msgstr[2] ""
-"Jeśli nie zapiszesz, zmiany z ostatnich %d minut "
+"Jeśli nie zapiszesz, zmiany z ostatniej minuty i %d sekund "
 "zostaną bezpowrotnie utracone."
 
 #: src/gui-gtk/quarry-save-confirmation-dialog.c:199
@@ -1767,7 +1767,7 @@ msgstr "_Poprzedni"
 #. letter.
 #: src/board/games.c:29
 msgid "Go"
-msgstr "gо"
+msgstr "go"
 
 #. TRANSLATORS: Use your language's natural capitalization for the
 #. name of the game.  I.e. it doesn't have to start with a capital
@@ -1801,14 +1801,13 @@ msgstr "gomoku"
 msgid "Nine Men's Morris"
 msgstr "Nine Men’s Morris"
 
-# FIXME: polski odpowiednik
 #. TRANSLATORS: Not important currently.
 #. TRANSLATORS: Use your language's natural capitalization for the
 #. name of the game.  I.e. it doesn't have to start with a capital
 #. letter.
 #: src/board/games.c:103
 msgid "Backgammon"
-msgstr "Backgammon"
+msgstr "trik-trak"
 
 #. TRANSLATORS: Not important currently.
 #. TRANSLATORS: Use your language's natural capitalization for the
@@ -1936,9 +1935,9 @@ msgstr "Gess"
 #, c-format
 msgid "White: %d territory"
 msgid_plural "White: %d territory"
-msgstr[0] "Biały: %d punkt terytorium"
-msgstr[1] "Biały: %d punkty terytorium"
-msgstr[2] "Biały: %d punktów terytorium"
+msgstr[0] "Białe: %d punkt terytorium"
+msgstr[1] "Białe: %d punkty terytorium"
+msgstr[2] "Białe: %d punktów terytorium"
 
 #: src/board/go.c:1325 src/board/go.c:1347
 #, c-format
@@ -1958,9 +1957,9 @@ msgstr " %c %.*f komi = %.*f\n"
 #, c-format
 msgid "Black: %d territory"
 msgid_plural "Black: %d territory"
-msgstr[0] "Czarny: %d punkt terytorium"
-msgstr[1] "Czarny: %d punkty terytorium"
-msgstr[2] "Czarny: %d punktów terytorium"
+msgstr[0] "Czarne: %d punkt terytorium"
+msgstr[1] "Czarne: %d punkty terytorium"
+msgstr[2] "Czarne: %d punktów terytorium"
 
 #: src/board/go.c:1366
 msgid "The game is draw"
