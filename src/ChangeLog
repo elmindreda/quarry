@@ -1,3 +1,25 @@
+2006-01-27  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* gui-gtk/gtk-file-selector.c (gtk_file_selector_init): Use new
+	entry_focus_out_event() instead of gtk_file_selector_repopulate()
+	as `focus-out-event' handler.  Fixes a crushing bug reported by
+	Arend Bayer.
+	(entry_focus_out_event): New function: invoke
+	gtk_file_selector_repopulate() and return `FALSE'.
+
+2005-11-11  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* gui-gtk/gtk-utils.c (gtk_utils_create_invisible_notebook): Block
+	`key-press-event' and `key-release-event' signals with new
+	block_key_signal().
+	(block_key_signal): New function.
+
+2005-11-02  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* gui-gtk/gtk-goban-window.c (gtk_goban_window_init): Don't force
+	window maximization, it goes in the way of the window
+	manager (suggested by Heikki Levanto.)
+
 2005-10-30  Paul Pogonyshev  <pogonyshev@gmx.net>
 
 	* (Quarry version 0.1.16.)
