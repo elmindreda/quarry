@@ -1211,8 +1211,6 @@ gtk_goban_window_init (GtkGobanWindow *goban_window)
   /* But hide special mode section again. */
   leave_special_mode (goban_window);
 
-  gtk_window_maximize (GTK_WINDOW (goban_window));
-
   goban_window->board			   = NULL;
 
   goban_window->in_game_mode		   = FALSE;
