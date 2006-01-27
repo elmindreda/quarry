@@ -74,6 +74,9 @@ static gboolean	 time_spin_button_output (GtkSpinButton *spin_button);
 static gint	 time_spin_button_input (GtkSpinButton *spin_button,
 					 gdouble *new_value);
 
+static void	 block_key_signal (GtkWidget *widget, GdkEventKey *event,
+				   gpointer signal_id);
+
 static void	 do_align_left_widgets (GtkWidget *first_level_child,
 					GtkSizeGroup *size_group);
 static void	 do_align_left_widget (GtkWidget *widget,
@@ -824,7 +827,25 @@ gtk_utils_create_invisible_notebook (void)
   gtk_notebook_set_show_tabs (GTK_NOTEBOOK (notebook), FALSE);
   gtk_notebook_set_show_border (GTK_NOTEBOOK (notebook), FALSE);
 
+  g_signal_connect (notebook, "key-press-event",
+		    G_CALLBACK (block_key_signal),
+		    GINT_TO_POINTER (g_signal_lookup ("key-press-event",
+						      GTK_TYPE_WIDGET)));
+  g_signal_connect (notebook, "key-release-event",
+		    G_CALLBACK (block_key_signal),
+		    GINT_TO_POINTER (g_signal_lookup ("key-release-event",
+						      GTK_TYPE_WIDGET)));
+
   return notebook;
+}
+
+
+static void
+block_key_signal (GtkWidget *widget, GdkEventKey *event, gpointer signal_id)
+{
+  UNUSED (event);
+
+  g_signal_stop_emission (widget, GPOINTER_TO_INT (signal_id), 0);
 }
 
 
