@@ -35,11 +35,14 @@
 #include <string.h>
 
 
-static void	gtk_file_selector_class_init (GtkFileSelectorClass *class);
-static void	gtk_file_selector_init (GtkFileSelector *selector);
-static void	gtk_file_selector_finalize (GObject *object);
+static void	 gtk_file_selector_class_init (GtkFileSelectorClass *class);
+static void	 gtk_file_selector_init (GtkFileSelector *selector);
 
-static void	free_glob_patterns (GtkFileSelector *selector);
+static void	 gtk_file_selector_finalize (GObject *object);
+
+static gboolean	 entry_focus_out_event (GtkFileSelector *selector);
+
+static void	 free_glob_patterns (GtkFileSelector *selector);
 
 
 static GtkComboBoxEntryClass  *parent_class;
@@ -93,8 +96,7 @@ gtk_file_selector_init (GtkFileSelector *selector)
   g_object_unref (files_list);
 
   g_signal_connect_swapped (GTK_BIN (selector)->child, "focus-out-event",
-			    G_CALLBACK (gtk_file_selector_repopulate),
-			    selector);
+			    G_CALLBACK (entry_focus_out_event), selector);
 
   selector->glob_patterns  = NULL;
   selector->last_directory = NULL;
@@ -105,6 +107,14 @@ GtkWidget *
 gtk_file_selector_new (void)
 {
   return g_object_new (GTK_TYPE_FILE_SELECTOR, NULL);
+}
+
+
+static gboolean
+entry_focus_out_event (GtkFileSelector *selector)
+{
+  gtk_file_selector_repopulate (selector);
+  return FALSE;
 }
 
 
