@@ -3,7 +3,7 @@
  *                                                                 *
  * Copyright (C) 2003 Paul Pogonyshev.                             *
  * Copyright (C) 2004 Paul Pogonyshev and Martin Holters.          *
- * Copyright (C) 2005 Paul Pogonyshev.                             *
+ * Copyright (C) 2005, 2006 Paul Pogonyshev.                       *
  *                                                                 *
  * This program is free software; you can redistribute it and/or   *
  * modify it under the terms of the GNU General Public License as  *
@@ -2890,7 +2890,8 @@ show_about_dialog (void)
   static const char *description_string
     = N_("A GUI program for Go, Amazons and Reversi board games");
   static const char *copyright_string
-    = N_("Copyright \xc2\xa9 2003, 2004, 2005 Paul Pogonyshev and others");
+    = N_("Copyright \xc2\xa9 2003, 2004, 2005, 2006 "
+	 "Paul Pogonyshev and others");
 
   if (!about_dialog) {
 #if GTK_2_6_OR_LATER

@@ -1,3 +1,6 @@
+* New translation: Polish (pl), by Robert Stefaniuk.
+
+
 --- New in Quarry 0.1.16 ---------------------------------------------
 
 * Quarry is now an SGF editor!  In addition to features added in
@@ -238,6 +241,12 @@
   you want to give it a try.
 
 * Many bug-fixes.
+
+
+  Copyright (C) 2004, 2005, 2006 Paul Pogonyshev.
+
+  Copying and distribution of this file, with or without modification,
+  are permitted provided the copyright notice and this notice are preserved.
 
 
 Local Variables:

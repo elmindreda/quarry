@@ -93,8 +93,8 @@ COPYING-DOC.
 
 * Files `src/gui-gtk/gtk-qhbox.c' and `src/gui-gtk/gtk-qvbox.c' are
   copyrighted 1995-1997 by Peter Mattis, Spencer Kimball and Josh
-  MacDonald and copyrighted 2003, 2004 by Paul Pogonyshev.  They are
-  licensed under GNU GPL version 2 or later.
+  MacDonald and copyrighted in subsequent years by Paul Pogonyshev.
+  They are licensed under GNU GPL version 2 or later.
 
 * File `data/textures/wood1.jpg' can be distributed freely (1).
 

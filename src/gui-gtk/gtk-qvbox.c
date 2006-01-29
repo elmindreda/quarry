@@ -3,7 +3,7 @@
  *                                                                 *
  * Copyright (C) 1995-1997 Peter Mattis, Spencer Kimball and       *
  * Josh MacDonald.                                                 *
- * Copyright (C) 2003, 2004 Paul Pogonyshev.                       *
+ * Copyright (C) 2003, 2004, 2005, 2006 Paul Pogonyshev.           *
  *                                                                 *
  * This program is free software; you can redistribute it and/or   *
  * modify it under the terms of the GNU General Public License as  *
