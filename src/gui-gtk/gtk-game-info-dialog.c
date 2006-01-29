@@ -20,12 +20,14 @@
 \* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 
-#include "gtk-freezable-spin-button.h"
 #include "gtk-game-info-dialog.h"
+
+#include "gtk-freezable-spin-button.h"
 #include "gtk-games.h"
 #include "gtk-named-vbox.h"
 #include "gtk-utils.h"
 #include "quarry-marshal.h"
+#include "quarry-text-view.h"
 #include "sgf.h"
 #include "board.h"
 #include "utils.h"
@@ -336,7 +338,7 @@ gtk_game_info_dialog_init (GtkGameInfoDialog *dialog)
   alignment = gtk_alignment_new (0.0, 0.0, 0.4, 1.0);
   gtk_container_add (GTK_CONTAINER (alignment), vbox);
 
-  text_view = gtk_text_view_new ();
+  text_view = quarry_text_view_new ();
   dialog->game_comment = gtk_text_view_get_buffer (GTK_TEXT_VIEW (text_view));
   gtk_text_view_set_left_margin (GTK_TEXT_VIEW (text_view),
 				 QUARRY_SPACING_VERY_SMALL);
