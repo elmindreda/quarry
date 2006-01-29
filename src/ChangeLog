@@ -1,3 +1,22 @@
+2006-01-29  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* gui-gtk/gtk-game-info-dialog.c (gtk_game_info_dialog_init): Use
+	QuarryTextView instead of GtkTextView to get undo history.
+
+	* gui-gtk/quarry-text-view.c: New file.
+	* gui-gtk/quarry-text-view.h: New file.
+
+	* gui-gtk/quarry-history-text-buffer.c: New file.
+	* gui-gtk/quarry-history-text-buffer.h: New file.
+
+	* gui-gtk/quarry-text-buffer.c: New file.
+	* gui-gtk/quarry-text-buffer.h: New file.
+
+	* gui-gtk/gtk-utils.c (g_signal_accumulator_true_handled):
+	Implement for pre-2.4 GTK+ (was not present in those versions.)
+
+	* gui-gtk/quarry-marshal.glist: New marshaller `BOOLEAN:POINTER'.
+
 2006-01-27  Paul Pogonyshev  <pogonyshev@gmx.net>
 
 	* gui-gtk/gtk-file-selector.c (gtk_file_selector_init): Use new
