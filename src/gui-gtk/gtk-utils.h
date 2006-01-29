@@ -94,6 +94,17 @@
 #endif
 
 
+#if !GTK_2_4_OR_LATER
+
+gboolean	g_signal_accumulator_true_handled
+		  (GSignalInvocationHint *hint,
+		   GValue *return_accumulator,
+		   const GValue *handler_return,
+		   gpointer user_data);
+
+#endif
+
+
 /* Much like g_signal_handlers_block_by_func() and
  * g_signal_handlers_unblock_by_func(), but don't require to match
  * data.

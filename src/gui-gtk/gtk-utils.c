@@ -245,6 +245,29 @@ gtk_utils_workaround_focus_bug (GtkWindow *window)
 }
 
 
+#if !GTK_2_4_OR_LATER
+
+
+gboolean
+g_signal_accumulator_true_handled (GSignalInvocationHint *hint,
+				   GValue *return_accumulator,
+				   const GValue *handler_return,
+				   gpointer user_data)
+{
+  gboolean signal_handled;
+
+  UNUSED (user_data);
+  
+  signal_handled = g_value_get_boolean (handler_return);
+  g_value_set_boolean (return_accumulator, signal_handled);
+  
+  return !signal_handled;
+}
+
+
+#endif /* not GTK_2_4_OR_LATER */
+
+
 GtkWidget *
 gtk_utils_create_titled_page (GtkWidget *contents,
 			      const gchar *icon_stock_id, const gchar *title)
