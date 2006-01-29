@@ -95,9 +95,12 @@ libguigtk_a_SOURCES =				\
 	gtk-tile-set.c				\
 	gtk-utils.c				\
 	gui-back-end.c				\
+	quarry-history-text-buffer.c		\
 	quarry-message-dialog.c			\
 	quarry-save-confirmation-dialog.c	\
 	quarry-stock.c				\
+	quarry-text-buffer.c			\
+	quarry-text-view.c			\
 						\
 	gtk-add-or-edit-label-dialog.h		\
 	gtk-assistant.h				\
@@ -131,9 +134,12 @@ libguigtk_a_SOURCES =				\
 	gtk-tile-set.h				\
 	gtk-utils.h				\
 	gui-back-end.h				\
+	quarry-history-text-buffer.h		\
 	quarry-message-dialog.h			\
 	quarry-save-confirmation-dialog.h	\
 	quarry-stock.h				\
+	quarry-text-buffer.h			\
+	quarry-text-view.h			\
 						\
 	$(LIST_FILES)
 

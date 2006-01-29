@@ -250,9 +250,12 @@ libguigtk_a_SOURCES = \
 	gtk-tile-set.c				\
 	gtk-utils.c				\
 	gui-back-end.c				\
+	quarry-history-text-buffer.c		\
 	quarry-message-dialog.c			\
 	quarry-save-confirmation-dialog.c	\
 	quarry-stock.c				\
+	quarry-text-buffer.c			\
+	quarry-text-view.c			\
 						\
 	gtk-add-or-edit-label-dialog.h		\
 	gtk-assistant.h				\
@@ -286,9 +289,12 @@ libguigtk_a_SOURCES = \
 	gtk-tile-set.h				\
 	gtk-utils.h				\
 	gui-back-end.h				\
+	quarry-history-text-buffer.h		\
 	quarry-message-dialog.h			\
 	quarry-save-confirmation-dialog.h	\
 	quarry-stock.h				\
+	quarry-text-buffer.h			\
+	quarry-text-view.h			\
 						\
 	$(LIST_FILES)
 
@@ -350,9 +356,11 @@ am_libguigtk_a_OBJECTS = gtk-add-or-edit-label-dialog.$(OBJEXT) \
 	gtk-resume-game-dialog.$(OBJEXT) \
 	gtk-sgf-tree-signal-proxy.$(OBJEXT) gtk-sgf-tree-view.$(OBJEXT) \
 	gtk-tile-set.$(OBJEXT) gtk-utils.$(OBJEXT) \
-	gui-back-end.$(OBJEXT) quarry-message-dialog.$(OBJEXT) \
+	gui-back-end.$(OBJEXT) quarry-history-text-buffer.$(OBJEXT) \
+	quarry-message-dialog.$(OBJEXT) \
 	quarry-save-confirmation-dialog.$(OBJEXT) \
-	quarry-stock.$(OBJEXT) $(am__objects_1)
+	quarry-stock.$(OBJEXT) quarry-text-buffer.$(OBJEXT) \
+	quarry-text-view.$(OBJEXT) $(am__objects_1)
 am__objects_2 = gtk-configuration.$(OBJEXT)
 am__objects_3 = $(am__objects_2) $(am__objects_1)
 nodist_libguigtk_a_OBJECTS = $(am__objects_3) quarry-marshal.$(OBJEXT)
@@ -393,10 +401,13 @@ am__depfiles_maybe = depfiles
 @AMDEP_TRUE@	./$(DEPDIR)/gtk-tile-set.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/gtk-utils.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/gui-back-end.Po \
+@AMDEP_TRUE@	./$(DEPDIR)/quarry-history-text-buffer.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/quarry-marshal.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/quarry-message-dialog.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/quarry-save-confirmation-dialog.Po \
-@AMDEP_TRUE@	./$(DEPDIR)/quarry-stock.Po
+@AMDEP_TRUE@	./$(DEPDIR)/quarry-stock.Po \
+@AMDEP_TRUE@	./$(DEPDIR)/quarry-text-buffer.Po \
+@AMDEP_TRUE@	./$(DEPDIR)/quarry-text-view.Po
 COMPILE = $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) \
 	$(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
 CCLD = $(CC)
@@ -464,10 +475,13 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gtk-tile-set.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gtk-utils.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gui-back-end.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/quarry-history-text-buffer.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/quarry-marshal.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/quarry-message-dialog.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/quarry-save-confirmation-dialog.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/quarry-stock.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/quarry-text-buffer.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/quarry-text-view.Po@am__quote@
 
 .c.o:
 @am__fastdepCC_TRUE@	if $(COMPILE) -MT $@ -MD -MP -MF "$(DEPDIR)/$*.Tpo" \
