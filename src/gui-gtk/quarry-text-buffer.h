@@ -60,6 +60,10 @@ struct _QuarryTextBuffer {
   GtkTextBuffer		      text_buffer;
 
   QuarryTextBufferUndoEntry  *current_undo_entry;
+  guint			      modifications_count;
+
+  glong			      last_modification_time;
+  glong			      previous_modification_time;
 };
 
 struct _QuarryTextBufferClass {
@@ -80,6 +84,11 @@ void		 quarry_text_buffer_undo
 void		 quarry_text_buffer_redo
 		   (QuarryTextBuffer *buffer,
 		    const QuarryTextBufferUndoEntry *undo_entry);
+
+gboolean	 quarry_text_buffer_combine_undo_entries
+		   (QuarryTextBuffer *buffer,
+		    QuarryTextBufferUndoEntry *previous_undo_entry,
+		    QuarryTextBufferUndoEntry *current_undo_entry);
 
 
 QuarryTextBufferUndoEntry *

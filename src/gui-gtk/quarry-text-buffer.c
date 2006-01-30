@@ -26,9 +26,7 @@
 
 #include <assert.h>
 #include <gtk/gtk.h>
-
-
-/* FIXME: Make typed words be lumped into single undo operations. */
+#include <string.h>
 
 
 /* NOTE: Keep in sync with operations[]. */
@@ -49,13 +47,16 @@ struct _QuarryTextBufferUndoEntry {
 
   gint			      cursor_offset_before;
   gint			      cursor_offset_after;
+
+  guint			      modifications_count_before;
+  guint			      modifications_count_after;
 };
 
 struct _QuarryTextBufferOperation {
   QuarryTextBufferOperation  *next;
   QuarryTextBufferOperation  *previous;
 
-  OperationType		      operation_type;
+  OperationType		      type;
 };
 
 struct _QuarryTextBufferTextOperation {
@@ -211,7 +212,11 @@ quarry_text_buffer_class_init (QuarryTextBufferClass *class)
 static void
 quarry_text_buffer_init (QuarryTextBuffer *buffer)
 {
-  buffer->current_undo_entry = NULL;
+  buffer->current_undo_entry	     = NULL;
+  buffer->modifications_count	     = 0;
+
+  buffer->last_modification_time     = 0;
+  buffer->previous_modification_time = 0;
 }
 
 
@@ -240,6 +245,7 @@ quarry_text_buffer_delete_range (GtkTextBuffer *text_buffer,
   }
 
   parent_class->delete_range (text_buffer, from, to);
+  buffer->modifications_count++;
 }
 
 
@@ -260,6 +266,7 @@ quarry_text_buffer_insert_text (GtkTextBuffer *text_buffer, GtkTextIter *where,
   }
 
   parent_class->insert_text (text_buffer, where, text, length);
+  buffer->modifications_count++;
 }
 
 
@@ -284,8 +291,9 @@ quarry_text_buffer_remove_tag (GtkTextBuffer *text_buffer, GtkTextTag *tag,
 static void
 quarry_text_buffer_begin_user_action (GtkTextBuffer *text_buffer)
 {
-  GtkTextIter cursor_iterator;
   QuarryTextBuffer *buffer = QUARRY_TEXT_BUFFER (text_buffer);
+  GtkTextIter cursor_iterator;
+  GTimeVal current_time;
 
   assert (!buffer->current_undo_entry);
 
@@ -293,8 +301,16 @@ quarry_text_buffer_begin_user_action (GtkTextBuffer *text_buffer)
 				    gtk_text_buffer_get_insert (text_buffer));
 
   buffer->current_undo_entry = quarry_text_buffer_undo_entry_new ();
+
   buffer->current_undo_entry->cursor_offset_before
     = gtk_text_iter_get_offset (&cursor_iterator);
+  buffer->current_undo_entry->modifications_count_before
+    = buffer->modifications_count;
+
+  g_get_current_time (&current_time);
+
+  buffer->previous_modification_time = buffer->last_modification_time;
+  buffer->last_modification_time     = current_time.tv_sec;
 
   if (parent_class->begin_user_action)
     parent_class->begin_user_action (text_buffer);
@@ -321,8 +337,11 @@ quarry_text_buffer_end_user_action (GtkTextBuffer *text_buffer)
       gtk_text_buffer_get_iter_at_mark (text_buffer, &cursor_iterator,
 					(gtk_text_buffer_get_insert
 					 (text_buffer)));
+
       buffer->current_undo_entry->cursor_offset_after
 	= gtk_text_iter_get_offset (&cursor_iterator);
+      buffer->current_undo_entry->modifications_count_after
+	= buffer->modifications_count;
 
       g_signal_emit (buffer, text_buffer_signals[RECEIVE_UNDO_ENTRY], 0,
 		     buffer->current_undo_entry, &result);
@@ -372,10 +391,14 @@ quarry_text_buffer_undo (QuarryTextBuffer *buffer,
   assert (QUARRY_IS_TEXT_BUFFER (buffer));
   assert (!buffer->current_undo_entry);
   assert (undo_entry);
+  assert (undo_entry->modifications_count_after
+	  == buffer->modifications_count);
 
   for (operation = undo_entry->last; operation;
        operation = operation->previous)
-    operations[operation->operation_type].undo (operation, buffer);
+    operations[operation->type].undo (operation, buffer);
+
+  buffer->modifications_count = undo_entry->modifications_count_before;
 
   gtk_text_buffer_get_iter_at_offset (&buffer->text_buffer, &cursor_iterator,
 				      undo_entry->cursor_offset_before);
@@ -393,13 +416,172 @@ quarry_text_buffer_redo (QuarryTextBuffer *buffer,
   assert (QUARRY_IS_TEXT_BUFFER (buffer));
   assert (!buffer->current_undo_entry);
   assert (undo_entry);
+  assert (undo_entry->modifications_count_before
+	  == buffer->modifications_count);
 
   for (operation = undo_entry->first; operation; operation = operation->next)
-    operations[operation->operation_type].redo (operation, buffer);
+    operations[operation->type].redo (operation, buffer);
+
+  buffer->modifications_count = undo_entry->modifications_count_after;
 
   gtk_text_buffer_get_iter_at_offset (&buffer->text_buffer, &cursor_iterator,
 				      undo_entry->cursor_offset_after);
   gtk_text_buffer_place_cursor (&buffer->text_buffer, &cursor_iterator);
+}
+
+
+gboolean
+quarry_text_buffer_combine_undo_entries
+  (QuarryTextBuffer *buffer,
+   QuarryTextBufferUndoEntry *previous_undo_entry,
+   QuarryTextBufferUndoEntry *current_undo_entry)
+{
+  QuarryTextBufferTextOperation *current_operation;
+  QuarryTextBufferTextOperation *previous_operation;
+
+  assert (QUARRY_IS_TEXT_BUFFER (buffer));
+
+  /* Don't combine if the user made a significant pause. */
+  if (buffer->last_modification_time - buffer->previous_modification_time
+      >= 15)
+    return FALSE;
+
+  /* Basic checks. */
+  if (!previous_undo_entry || !current_undo_entry
+      || quarry_text_buffer_undo_entry_is_empty (current_undo_entry)
+      || current_undo_entry->first  != current_undo_entry->last
+      || quarry_text_buffer_undo_entry_is_empty (previous_undo_entry)
+      || previous_undo_entry->first != previous_undo_entry->last)
+    return FALSE;
+
+  /* Modification count checks: can only combine the two latest undo
+   * entries.
+   */
+  if ((current_undo_entry->modifications_count_after
+       != buffer->modifications_count)
+      || (previous_undo_entry->modifications_count_after
+	  != current_undo_entry->modifications_count_before))
+    return FALSE;
+
+  current_operation
+    = (QuarryTextBufferTextOperation *) current_undo_entry->first;
+  previous_operation
+    = (QuarryTextBufferTextOperation *) previous_undo_entry->first;
+
+  /* Operation type checks: only text deletion or insertion and must
+   * be the same for both entries.
+   */
+  if (current_operation->operation.type != previous_operation->operation.type
+      || (current_operation->operation.type != OPERATION_TEXT_DELETION
+	  && current_operation->operation.type != OPERATION_TEXT_INSERTION))
+    return FALSE;
+
+  /* Only work with single character operations.  Ideally, should only
+   * count _typed/backspaced/deleted_ characters, but I don't see a
+   * way to determine that.
+   */
+  if (!*current_operation->text || *g_utf8_next_char (current_operation->text))
+    return FALSE;
+
+  /* Probably not ideal, but it seems gedit behaves like this.  Don't
+   * combine on the edge of whitespace/non-whitespace.  Also, never
+   * combine if either of the characters is `special.'
+   */
+
+  switch (g_unichar_type (g_utf8_get_char (current_operation->text))) {
+  case G_UNICODE_CONTROL:
+  case G_UNICODE_FORMAT:
+  case G_UNICODE_UNASSIGNED:
+  case G_UNICODE_PRIVATE_USE:
+  case G_UNICODE_SURROGATE:
+  case G_UNICODE_COMBINING_MARK:
+  case G_UNICODE_ENCLOSING_MARK:
+  case G_UNICODE_NON_SPACING_MARK:
+  case G_UNICODE_LINE_SEPARATOR:
+  case G_UNICODE_PARAGRAPH_SEPARATOR:
+    /* Treat tab as space separator even though it is a control
+     * character in Unicode.
+     */
+    if (*current_operation->text != '\t')
+      return FALSE;
+
+  case G_UNICODE_SPACE_SEPARATOR:
+    break;
+
+  default:
+    {
+      const gchar *previous_character
+	= g_utf8_prev_char (previous_operation->text
+			    + strlen (previous_operation->text));
+
+      switch (g_unichar_type (g_utf8_get_char (previous_character))) {
+      case G_UNICODE_CONTROL:
+      case G_UNICODE_FORMAT:
+      case G_UNICODE_UNASSIGNED:
+      case G_UNICODE_PRIVATE_USE:
+      case G_UNICODE_SURROGATE:
+      case G_UNICODE_COMBINING_MARK:
+      case G_UNICODE_ENCLOSING_MARK:
+      case G_UNICODE_NON_SPACING_MARK:
+      case G_UNICODE_LINE_SEPARATOR:
+      case G_UNICODE_PARAGRAPH_SEPARATOR:
+	return FALSE;
+
+      case G_UNICODE_SPACE_SEPARATOR:
+	return FALSE;
+
+      default:
+	break;
+      }
+    }
+  }
+
+  if (current_operation->operation.type == OPERATION_TEXT_DELETION) {
+    gchar *combined_text;
+
+    if (current_operation->offset == previous_operation->offset) {
+      /* Deleting with the Delete key. */
+      combined_text = g_strconcat (previous_operation->text,
+				   current_operation->text, NULL);
+    }
+    else if (current_operation->offset == previous_operation->offset - 1) {
+      /* Deleting with the Backspace key. */
+      previous_operation->offset--;
+      combined_text = g_strconcat (current_operation->text,
+				   previous_operation->text, NULL);
+    }
+    else {
+      /* Distant changes, don't combine. */
+      return FALSE;
+    }
+
+    g_free (previous_operation->text);
+    previous_operation->text = combined_text;
+  }
+  else {
+    gchar *combined_text;
+
+    if (current_operation->offset
+	!= (previous_operation->offset
+	    + g_utf8_strlen (previous_operation->text, -1))) {
+      /* Distant changes, don't combine.*/
+      return FALSE;
+    }
+
+    combined_text = g_strconcat (previous_operation->text,
+				 current_operation->text, NULL);
+    g_free (previous_operation->text);
+    previous_operation->text = combined_text;
+  }
+
+  previous_undo_entry->cursor_offset_after
+    = current_undo_entry->cursor_offset_after;
+  previous_undo_entry->modifications_count_after
+    = current_undo_entry->modifications_count_after;
+
+  quarry_text_buffer_undo_entry_delete (current_undo_entry);
+
+  return TRUE;
 }
 
 
@@ -429,8 +611,8 @@ quarry_text_buffer_undo_entry_delete (QuarryTextBufferUndoEntry *undo_entry)
   while (operation) {
     QuarryTextBufferOperation *next_operation = operation->next;
 
-    if (operations[operation->operation_type].free_data)
-      operations[operation->operation_type].free_data (operation);
+    if (operations[operation->type].free_data)
+      operations[operation->type].free_data (operation);
 
     g_free (operation);
 
@@ -457,9 +639,9 @@ add_operation (QuarryTextBuffer *buffer,
 {
   QuarryTextBufferOperation *operation = g_malloc (operation_structure_size);
 
-  operation->next	    = NULL;
-  operation->previous	    = buffer->current_undo_entry->last;
-  operation->operation_type = operation_type;
+  operation->next     = NULL;
+  operation->previous = buffer->current_undo_entry->last;
+  operation->type     = operation_type;
 
   if (buffer->current_undo_entry->first == NULL)
     buffer->current_undo_entry->first = operation;
