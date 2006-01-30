@@ -1,5 +1,26 @@
 2006-01-30  Paul Pogonyshev  <pogonyshev@gmx.net>
 
+	* gui-gtk/quarry-history-text-buffer.c
+	(quarry_history_text_buffer_receive_undo_entry): Try to combine
+	the just received entry with the last one using new
+	quarry_text_buffer_combine_undo_entries().
+
+	* gui-gtk/quarry-text-buffer.c (quarry_text_buffer_init):
+	Initialize new `modifications_count', `last_modification_time' and
+	`previous_modification_time' fields.
+	(quarry_text_buffer_delete_range): Increment
+	`modifications_count'.
+	(quarry_text_buffer_insert_text): Likewise.
+	(quarry_text_buffer_begin_user_action): Update modification times.
+	Set entry's `modifications_count_before'.
+	(quarry_text_buffer_end_user_action): Set entry's
+	`modifications_count_after'.
+	(quarry_text_buffer_undo): Check that entry's modification count
+	matches the expected for the buffer.  Update buffer's count after
+	undoing.
+	(quarry_text_buffer_redo): Likewise.
+	(quarry_text_buffer_combine_undo_entries): New function.
+
 	* (Globally: use the new copyright updating scheme suggested by
 	the GNU project, i.e. include all the years when Quarry changed,
 	not particular file changed.  Update all relevant files to include
