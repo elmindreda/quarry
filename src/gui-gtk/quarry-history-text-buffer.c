@@ -116,6 +116,16 @@ quarry_history_text_buffer_receive_undo_entry
 		    (GFunc) quarry_text_buffer_undo_entry_delete, NULL);
     g_list_free (undo_history_tail);
   }
+  else if (buffer->last_applied_entry) {
+    QuarryTextBufferUndoEntry *last_undo_entry
+      = (QuarryTextBufferUndoEntry *) buffer->last_applied_entry->data;
+
+    if (quarry_text_buffer_combine_undo_entries
+	(text_buffer, last_undo_entry, undo_entry)) {
+      /* The new entry is merged into the previous, we are done. */
+      return TRUE;
+    }
+  }
 
   if (buffer->undo_history_end) {
     buffer->undo_history_end
