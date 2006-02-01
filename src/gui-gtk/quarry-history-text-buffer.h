@@ -73,14 +73,17 @@ GType		 quarry_history_text_buffer_get_type (void);
 GtkTextBuffer *	 quarry_history_text_buffer_new (GtkTextTagTable *tag_table);
 
 gboolean	 quarry_history_text_buffer_can_undo
-		   (const QuarryHistoryTextBuffer *text_buffer);
+		   (const QuarryHistoryTextBuffer *buffer);
 gboolean	 quarry_history_text_buffer_can_redo
-		   (const QuarryHistoryTextBuffer *text_buffer);
+		   (const QuarryHistoryTextBuffer *buffer);
 
 void		 quarry_history_text_buffer_undo
-		   (QuarryHistoryTextBuffer *text_buffer);
+		   (QuarryHistoryTextBuffer *buffer);
 void		 quarry_history_text_buffer_redo
-		   (QuarryHistoryTextBuffer *text_buffer);
+		   (QuarryHistoryTextBuffer *buffer);
+
+void		 quarry_history_text_buffer_reset_history
+		   (QuarryHistoryTextBuffer *buffer);
 
 
 #endif /* QUARRY_QUARRY_HISTORY_TEXT_BUFFER_H */

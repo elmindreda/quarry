@@ -145,12 +145,8 @@ quarry_history_text_buffer_receive_undo_entry
 static void
 quarry_history_text_buffer_finalize (GObject *object)
 {
-  GList *undo_history
-    = QUARRY_HISTORY_TEXT_BUFFER (object)->undo_history_begin;
-
-  g_list_foreach (undo_history,
-		  (GFunc) quarry_text_buffer_undo_entry_delete, NULL);
-  g_list_free (undo_history);
+  quarry_history_text_buffer_reset_history (QUARRY_HISTORY_TEXT_BUFFER
+					    (object));
 }
 
 
@@ -196,6 +192,21 @@ quarry_history_text_buffer_redo (QuarryHistoryTextBuffer *buffer)
   quarry_text_buffer_redo (&buffer->text_buffer,
 			   ((const QuarryTextBufferUndoEntry *)
 			    buffer->last_applied_entry->data));
+}
+
+
+void
+quarry_history_text_buffer_reset_history (QuarryHistoryTextBuffer *buffer)
+{
+  assert (QUARRY_IS_HISTORY_TEXT_BUFFER (buffer));
+
+  g_list_foreach (buffer->undo_history_begin,
+		  (GFunc) quarry_text_buffer_undo_entry_delete, NULL);
+  g_list_free (buffer->undo_history_begin);
+
+  buffer->undo_history_begin = NULL;
+  buffer->undo_history_end   = NULL;
+  buffer->last_applied_entry = NULL;
 }
 
 
