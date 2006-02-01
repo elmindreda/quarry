@@ -1,3 +1,27 @@
+2006-02-01  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* gui-gtk/gtk-game-info-dialog.c (gtk_game_info_dialog_set_node):
+	Call quarry_history_text_buffer_reset_history().
+
+	* gui-gtk/quarry-history-text-buffer.c
+	(quarry_history_text_buffer_reset_history): New function.
+
+	* gui-gtk/quarry-text-buffer.c: Rename all `modifications_count'
+	to `state_index'.
+	(quarry_text_buffer_class_init): Hook up new
+	quarry_text_buffer_modified_changed().
+	(quarry_text_buffer_init): Initialize new fields
+	`last_assigned_state_index' and `unmodified_state_index'.
+	(quarry_text_buffer_delete_range): Adjust renamed `state_index' so
+	that it counts different buffer states, not just the number of
+	modifications (these are different after undo operations.)
+	(quarry_text_buffer_insert_text): Likewise.
+	(quarry_text_buffer_modified_changed): New function
+	(quarry_text_buffer_undo): Set the buffer to unmodified state if
+	`state_index' is equal to `unmodified_state_index' after the
+	operation.  Inhibit undo entry combinations on the next step.
+	(quarry_text_buffer_redo): Likewise.
+
 2006-01-30  Paul Pogonyshev  <pogonyshev@gmx.net>
 
 	* gui-gtk/quarry-history-text-buffer.c
