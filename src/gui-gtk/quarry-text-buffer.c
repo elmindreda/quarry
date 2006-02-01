@@ -48,8 +48,8 @@ struct _QuarryTextBufferUndoEntry {
   gint			      cursor_offset_before;
   gint			      cursor_offset_after;
 
-  guint			      modifications_count_before;
-  guint			      modifications_count_after;
+  guint			      state_index_before;
+  guint			      state_index_after;
 };
 
 struct _QuarryTextBufferOperation {
@@ -97,6 +97,8 @@ static void	 quarry_text_buffer_remove_tag (GtkTextBuffer *text_buffer,
 						GtkTextTag *tag,
 						const GtkTextIter *from,
 						const GtkTextIter *to);
+static void	 quarry_text_buffer_modified_changed
+		   (GtkTextBuffer *text_buffer);
 
 static void	 quarry_text_buffer_begin_user_action
 		   (GtkTextBuffer *text_buffer);
@@ -186,6 +188,8 @@ quarry_text_buffer_class_init (QuarryTextBufferClass *class)
   text_buffer_class->apply_tag	       = quarry_text_buffer_apply_tag;
   text_buffer_class->remove_tag	       = quarry_text_buffer_remove_tag;
 
+  text_buffer_class->modified_changed  = quarry_text_buffer_modified_changed;
+
   /* FIXME: Is it needed? */
 #if 0
   text_buffer_class->mark_deleted      = quarry_text_buffer_mark_deleted;
@@ -213,7 +217,9 @@ static void
 quarry_text_buffer_init (QuarryTextBuffer *buffer)
 {
   buffer->current_undo_entry	     = NULL;
-  buffer->modifications_count	     = 0;
+  buffer->state_index		     = 0;
+  buffer->last_assigned_state_index  = 0;
+  buffer->unmodified_state_index     = 0;
 
   buffer->last_modification_time     = 0;
   buffer->previous_modification_time = 0;
@@ -244,8 +250,8 @@ quarry_text_buffer_delete_range (GtkTextBuffer *text_buffer,
     operation->offset = gtk_text_iter_get_offset (from);
   }
 
+  buffer->state_index = ++buffer->last_assigned_state_index;
   parent_class->delete_range (text_buffer, from, to);
-  buffer->modifications_count++;
 }
 
 
@@ -265,8 +271,8 @@ quarry_text_buffer_insert_text (GtkTextBuffer *text_buffer, GtkTextIter *where,
     operation->offset = gtk_text_iter_get_offset (where);
   }
 
+  buffer->state_index = ++buffer->last_assigned_state_index;
   parent_class->insert_text (text_buffer, where, text, length);
-  buffer->modifications_count++;
 }
 
 
@@ -289,6 +295,32 @@ quarry_text_buffer_remove_tag (GtkTextBuffer *text_buffer, GtkTextTag *tag,
 
 
 static void
+quarry_text_buffer_modified_changed (GtkTextBuffer *text_buffer)
+{
+  QuarryTextBuffer *buffer = QUARRY_TEXT_BUFFER (text_buffer);
+
+  if (gtk_text_buffer_get_modified (text_buffer)) {
+    if (buffer->state_index == buffer->unmodified_state_index) {
+      /* The current state is explicitly set to `modified.'  Assume
+       * there is no unmodified state at all.
+       */
+      buffer->unmodified_state_index = G_MAXUINT;
+    }
+  }
+  else {
+    /* The current state is declared to be unmodified.  Or maybe we
+     * just returned to an unmodified state (in this case the below
+     * operator does nothing anyway.)
+     */
+    buffer->unmodified_state_index = buffer->state_index;
+  }
+
+  if (parent_class->modified_changed)
+    parent_class->modified_changed (text_buffer);
+}
+
+
+static void
 quarry_text_buffer_begin_user_action (GtkTextBuffer *text_buffer)
 {
   QuarryTextBuffer *buffer = QUARRY_TEXT_BUFFER (text_buffer);
@@ -304,8 +336,7 @@ quarry_text_buffer_begin_user_action (GtkTextBuffer *text_buffer)
 
   buffer->current_undo_entry->cursor_offset_before
     = gtk_text_iter_get_offset (&cursor_iterator);
-  buffer->current_undo_entry->modifications_count_before
-    = buffer->modifications_count;
+  buffer->current_undo_entry->state_index_before = buffer->state_index;
 
   g_get_current_time (&current_time);
 
@@ -340,8 +371,7 @@ quarry_text_buffer_end_user_action (GtkTextBuffer *text_buffer)
 
       buffer->current_undo_entry->cursor_offset_after
 	= gtk_text_iter_get_offset (&cursor_iterator);
-      buffer->current_undo_entry->modifications_count_after
-	= buffer->modifications_count;
+      buffer->current_undo_entry->state_index_after = buffer->state_index;
 
       g_signal_emit (buffer, text_buffer_signals[RECEIVE_UNDO_ENTRY], 0,
 		     buffer->current_undo_entry, &result);
@@ -387,22 +417,34 @@ quarry_text_buffer_undo (QuarryTextBuffer *buffer,
 {
   GtkTextIter cursor_iterator;
   const QuarryTextBufferOperation *operation;
+  guint last_assigned_state_index_copy;
 
   assert (QUARRY_IS_TEXT_BUFFER (buffer));
   assert (!buffer->current_undo_entry);
   assert (undo_entry);
-  assert (undo_entry->modifications_count_after
-	  == buffer->modifications_count);
+  assert (undo_entry->state_index_after == buffer->state_index);
+
+  /* Not really necessary.  Just save a few states indices. */
+  last_assigned_state_index_copy = buffer->last_assigned_state_index;
 
   for (operation = undo_entry->last; operation;
        operation = operation->previous)
     operations[operation->type].undo (operation, buffer);
 
-  buffer->modifications_count = undo_entry->modifications_count_before;
+  buffer->state_index		    = undo_entry->state_index_before;
+  buffer->last_assigned_state_index = last_assigned_state_index_copy;
 
   gtk_text_buffer_get_iter_at_offset (&buffer->text_buffer, &cursor_iterator,
 				      undo_entry->cursor_offset_before);
   gtk_text_buffer_place_cursor (&buffer->text_buffer, &cursor_iterator);
+
+  if (buffer->state_index == buffer->unmodified_state_index)
+    gtk_text_buffer_set_modified (&buffer->text_buffer, FALSE);
+
+  /* This a semi-hackish way to prevent undo entry combinations after
+   * an undo operation, see quarry_text_buffer_combine_undo_entries().
+   */
+  buffer->last_modification_time = 0;
 }
 
 
@@ -412,21 +454,33 @@ quarry_text_buffer_redo (QuarryTextBuffer *buffer,
 {
   GtkTextIter cursor_iterator;
   const QuarryTextBufferOperation *operation;
+  guint last_assigned_state_index_copy;
 
   assert (QUARRY_IS_TEXT_BUFFER (buffer));
   assert (!buffer->current_undo_entry);
   assert (undo_entry);
-  assert (undo_entry->modifications_count_before
-	  == buffer->modifications_count);
+  assert (undo_entry->state_index_before == buffer->state_index);
+
+  /* Not really necessary.  Just save a few states indices. */
+  last_assigned_state_index_copy = buffer->last_assigned_state_index;
 
   for (operation = undo_entry->first; operation; operation = operation->next)
     operations[operation->type].redo (operation, buffer);
 
-  buffer->modifications_count = undo_entry->modifications_count_after;
+  buffer->state_index		    = undo_entry->state_index_after;
+  buffer->last_assigned_state_index = last_assigned_state_index_copy;
 
   gtk_text_buffer_get_iter_at_offset (&buffer->text_buffer, &cursor_iterator,
 				      undo_entry->cursor_offset_after);
   gtk_text_buffer_place_cursor (&buffer->text_buffer, &cursor_iterator);
+
+  if (buffer->state_index == buffer->unmodified_state_index)
+    gtk_text_buffer_set_modified (&buffer->text_buffer, FALSE);
+
+  /* This a semi-hackish way to prevent undo entry combinations after
+   * a redo operation, see quarry_text_buffer_combine_undo_entries().
+   */
+  buffer->last_modification_time = 0;
 }
 
 
@@ -441,7 +495,10 @@ quarry_text_buffer_combine_undo_entries
 
   assert (QUARRY_IS_TEXT_BUFFER (buffer));
 
-  /* Don't combine if the user made a significant pause. */
+  /* Don't combine if the user made a significant pause.  Sometimes we
+   * also specifically set things up for this check to fail to inhibit
+   * undo entry combination.
+   */
   if (buffer->last_modification_time - buffer->previous_modification_time
       >= 15)
     return FALSE;
@@ -454,13 +511,10 @@ quarry_text_buffer_combine_undo_entries
       || previous_undo_entry->first != previous_undo_entry->last)
     return FALSE;
 
-  /* Modification count checks: can only combine the two latest undo
-   * entries.
-   */
-  if ((current_undo_entry->modifications_count_after
-       != buffer->modifications_count)
-      || (previous_undo_entry->modifications_count_after
-	  != current_undo_entry->modifications_count_before))
+  /* State checks: can only combine the two latest undo entries. */
+  if (current_undo_entry->state_index_after != buffer->state_index
+      || (previous_undo_entry->state_index_after
+	  != current_undo_entry->state_index_before))
     return FALSE;
 
   current_operation
@@ -576,8 +630,8 @@ quarry_text_buffer_combine_undo_entries
 
   previous_undo_entry->cursor_offset_after
     = current_undo_entry->cursor_offset_after;
-  previous_undo_entry->modifications_count_after
-    = current_undo_entry->modifications_count_after;
+  previous_undo_entry->state_index_after
+    = current_undo_entry->state_index_after;
 
   quarry_text_buffer_undo_entry_delete (current_undo_entry);
 
