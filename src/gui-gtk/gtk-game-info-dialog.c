@@ -26,6 +26,7 @@
 #include "gtk-games.h"
 #include "gtk-named-vbox.h"
 #include "gtk-utils.h"
+#include "quarry-history-text-buffer.h"
 #include "quarry-marshal.h"
 #include "quarry-text-view.h"
 #include "sgf.h"
@@ -564,6 +565,8 @@ gtk_game_info_dialog_set_node (GtkGameInfoDialog *dialog,
   gtk_entry_set_text (dialog->opening, text ? text : "");
 
   text = sgf_node_get_text_property_value (sgf_node, SGF_GAME_COMMENT);
+  quarry_history_text_buffer_reset_history (QUARRY_HISTORY_TEXT_BUFFER
+					    (dialog->game_comment));
   gtk_utils_set_text_buffer_text (dialog->game_comment, text);
 
   gtk_text_buffer_set_modified (dialog->game_comment, FALSE);
