@@ -1,5 +1,56 @@
 2006-02-04  Paul Pogonyshev  <pogonyshev@gmx.net>
 
+	* gui-gtk/gtk-goban-window.c (gtk_goban_window_init): Add
+	"Edit/Set Player to Move" submenu.  Initialize new
+	`updating_set_player_commands' field.
+	(update_children_for_new_node): Call new function
+	update_set_player_to_move_commands().
+	(update_set_player_to_move_commands, set_player_to_move): New
+	functions.
+
+	* sgf/sgf-utils.c (sgf_utils_append_variation): Make it return the
+	new node.
+	(sgf_utils_set_number_property): Add special case for `PL'
+	property.
+	(sgf_utils_determine_player_to_move_by_rules)
+	(sgf_utils_find_board_state_data): New functions.
+	(sgf_utils_descend_nodes): Adapt to new `PL' value storage scheme.
+	Check for `PL' for all non-move nodes, since in Quarry a node with
+	only a `PL' property is not considered a setup node internally.
+	(sgf_utils_ascend_nodes): Likewise.
+	(find_board_state_data): New function, break out of
+	sgf_utils_ascend_nodes().  Similar change for `PL' property as for
+	sgf_utils_descend_nodes().
+	(determine_final_color_to_play): Make the `tree' argument `const'.
+
+	* sgf/sgf-undo.c
+	(sgf_change_node_inlined_color_undo_history_entry_new): Rename
+	from sgf_change_node_move_color_undo_history_entry_new().  Add
+	`operation' argument.
+	(sgf_operation_change_node_move_color_do_change): Record the node
+	as `node_to_switch_to'.
+	(sgf_operation_change_node_to_play_color_do_change): New function.
+
+	* sgf/sgf-undo-operations.list: Add
+	`SGF_OPERATION_CHANGE_NODE_TO_PLAY_COLOR'.
+
+	* sgf/sgf-writer.c (write_node_sequence): Add special case to
+	write `PL' at appropriate place between other properties.
+
+	* sgf/sgf-properties.list (PL): Use `not_stored' storage type and
+	new sgf_parse_to_play() parser.
+
+	* sgf/sgf-parser.c (complete_node_and_update_board): Adapt to new
+	`PL' value storage scheme.
+	(do_parse_color): New function, broken out of sgf_parse_color().
+	(sgf_parse_color): Remove special case for `PL' property, this
+	function is not invoked for it anymore.
+	(sgf_parse_to_play): New function.
+
+	* sgf/sgf-tree.c (sgf_node_new): Initialize new `to_play_color'
+	field.
+	(sgf_node_duplicate): Copy `to_play_color' field.
+
 	* board/board.h: Include `assert.h' since
 	board_position_list_delete() uses assert().
 
