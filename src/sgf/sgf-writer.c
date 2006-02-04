@@ -181,6 +181,7 @@ static void
 write_node_sequence (SgfWritingData *data, SgfNode *node)
 {
   while (1) {
+    SgfValue to_play;
     SgfProperty *property;
 
     if (IS_STONE (node->move_color)) {
@@ -193,10 +194,21 @@ write_node_sequence (SgfWritingData *data, SgfNode *node)
       buffered_writer_add_character (&data->writer, ']');
     }
 
+    to_play.color = node->to_play_color;
+
     for (property = node->properties; property; property = property->next) {
       if (property_info[property->type].value_writer) {
 	if (data->writer.column >= FILL_BREAK_POINT)
 	  buffered_writer_add_newline (&data->writer);
+
+	if (to_play.color != EMPTY
+	    && property->type > SGF_LAST_SETUP_PROPERTY) {
+	  buffered_writer_cat_string (&data->writer,
+				      property_info[SGF_TO_PLAY].name);
+	  sgf_write_color (data, &to_play);
+
+	  to_play.color = EMPTY;
+	}
 
 	buffered_writer_cat_string (&data->writer,
 				    property_info[property->type].name);
@@ -210,6 +222,13 @@ write_node_sequence (SgfWritingData *data, SgfNode *node)
       }
       else
 	assert (0);
+    }
+
+    /* This can happen if there are no properties after `PL'. */
+    if (to_play.color != EMPTY) {
+      buffered_writer_cat_string (&data->writer,
+				  property_info[SGF_TO_PLAY].name);
+      sgf_write_color (data, &to_play);
     }
 
     if (!node->child)
