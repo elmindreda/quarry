@@ -285,15 +285,15 @@ sgf_delete_node_children_undo_history_entry_new (SgfNode *node)
 
 
 SgfUndoHistoryEntry *
-sgf_change_node_move_color_undo_history_entry_new (SgfNode *node,
-						   int new_move_color)
+sgf_change_node_inlined_color_undo_history_entry_new
+  (SgfNode *node, SgfUndoOperation operation, int new_color)
 {
-  SgfChangeNodeMoveColorOperationEntry *operation_data
-    = utils_malloc (sizeof (SgfChangeNodeMoveColorOperationEntry));
+  SgfChangeNodeInlinedColorOperationEntry *operation_data
+    = utils_malloc (sizeof (SgfChangeNodeInlinedColorOperationEntry));
 
-  operation_data->entry.operation_index = SGF_OPERATION_CHANGE_NODE_MOVE_COLOR;
+  operation_data->entry.operation_index = operation;
   operation_data->node			= node;
-  operation_data->move_color		= new_move_color;
+  operation_data->color			= new_color;
 
   return (SgfUndoHistoryEntry *) operation_data;
 }
@@ -622,16 +622,39 @@ void
 sgf_operation_change_node_move_color_do_change (SgfUndoHistoryEntry *entry,
 						SgfGameTree *tree)
 {
-  SgfNode *node = ((SgfChangeNodeMoveColorOperationEntry *) entry)->node;
-  int *move_color
-    = & ((SgfChangeNodeMoveColorOperationEntry *) entry)->move_color;
-  int temp_move_color;
+  SgfChangeNodeInlinedColorOperationEntry *color_entry
+    = (SgfChangeNodeInlinedColorOperationEntry *) entry;
+  int temp_color;
 
-  UNUSED (tree);
+  tree->node_to_switch_to = color_entry->node;
 
-  temp_move_color  = node->move_color;
-  node->move_color = *move_color;
-  *move_color	   = temp_move_color;
+  temp_color			= color_entry->node->move_color;
+  color_entry->node->move_color = color_entry->color;
+  color_entry->color		= temp_color;
+}
+
+
+/* Works as both undo and redo handler.  Since we just swap move
+ * colors between the node and the undo history entry, it will always
+ * do the right thing.
+ */
+void
+sgf_operation_change_node_to_play_color_do_change (SgfUndoHistoryEntry *entry,
+						   SgfGameTree *tree)
+{
+  SgfChangeNodeInlinedColorOperationEntry *color_entry
+    = (SgfChangeNodeInlinedColorOperationEntry *) entry;
+  SgfNode *node = (SgfNode *) color_entry->node;
+  int temp_color;
+
+  tree->node_to_switch_to = node;
+
+  temp_color	      = node->to_play_color;
+  node->to_play_color = color_entry->color;
+  color_entry->color  = temp_color;
+
+  if (node == tree->current_node)
+    sgf_utils_find_board_state_data (tree, 1, 0);
 }
 
 
