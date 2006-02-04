@@ -331,6 +331,8 @@ static void	 update_game_specific_information
 static void	 update_move_information (const GtkGobanWindow *goban_window);
 static void	 update_commands_sensitivity
 		   (const GtkGobanWindow *goban_window);
+static void	 update_set_player_to_move_commands
+		   (GtkGobanWindow *goban_window);
 
 static void	 insert_node_name (GtkGobanWindow *goban_window,
 				   const gchar *node_name);
@@ -352,6 +354,10 @@ static void	 text_buffer_mark_set (GtkTextBuffer *text_buffer,
 
 static void	 fetch_comment_and_node_name (GtkGobanWindow *goban_window,
 					      gboolean for_current_node);
+
+static void	 set_player_to_move (GtkGobanWindow *goban_window,
+				     guint callback_action,
+				     GtkCheckMenuItem *menu_item);
 
 static int	 initialize_gtp_player (GtpClient *client, int successful,
 					GtkGobanWindow *goban_window, ...);
@@ -653,6 +659,18 @@ gtk_goban_window_init (GtkGobanWindow *goban_window)
     { N_("/Edit/Edit Node _Name"),	"<ctrl><alt>N",
       select_node_name,			0,
       "<Item>" },
+
+    { N_("/Edit/Set Player to _Move"), NULL, NULL, 0, "<Branch>" },
+    { N_("/Edit/Set Player to Move/_White"), NULL,
+      set_player_to_move,		WHITE,
+      "<RadioItem>" },
+    { N_("/Edit/Set Player to Move/_Black"), NULL,
+      set_player_to_move,		BLACK,
+      "/Edit/Set Player to Move/White" },
+    { N_("/Edit/Set Player to Move/By Game _Rules"), NULL,
+      set_player_to_move,		EMPTY,
+      "/Edit/Set Player to Move/Black" },
+
     { N_("/Edit/"), NULL, NULL, 0, "<Separator>" },
 
     { N_("/Edit/_Find"),		"<ctrl>F",
@@ -1210,32 +1228,35 @@ gtk_goban_window_init (GtkGobanWindow *goban_window)
   /* But hide special mode section again. */
   leave_special_mode (goban_window);
 
-  goban_window->board			   = NULL;
+  goban_window->board			     = NULL;
 
-  goban_window->in_game_mode		   = FALSE;
-  goban_window->pending_free_handicap	   = 0;
-  goban_window->players[BLACK_INDEX]	   = NULL;
-  goban_window->players[WHITE_INDEX]	   = NULL;
-  goban_window->time_controls[BLACK_INDEX] = NULL;
-  goban_window->time_controls[WHITE_INDEX] = NULL;
+  goban_window->in_game_mode		     = FALSE;
+  goban_window->pending_free_handicap	     = 0;
+  goban_window->players[BLACK_INDEX]	     = NULL;
+  goban_window->players[WHITE_INDEX]	     = NULL;
+  goban_window->time_controls[BLACK_INDEX]   = NULL;
+  goban_window->time_controls[WHITE_INDEX]   = NULL;
 
-  goban_window->drawn_position_list	   = NULL;
+  goban_window->drawn_position_list	     = NULL;
 
-  goban_window->next_sgf_label		   = NULL;
-  goban_window->labels_mode		   = GTK_GOBAN_WINDOW_NON_LABELS_MODE;
+  goban_window->updating_set_player_commands = FALSE;
 
-  goban_window->time_of_first_modification = 0;
+  goban_window->next_sgf_label		     = NULL;
+  goban_window->labels_mode
+    = GTK_GOBAN_WINDOW_NON_LABELS_MODE;
 
-  goban_window->filename		   = NULL;
-  goban_window->save_as_dialog		   = NULL;
+  goban_window->time_of_first_modification   = 0;
 
-  goban_window->last_displayed_node	   = NULL;
-  goban_window->last_game_info_node	   = NULL;
+  goban_window->filename		     = NULL;
+  goban_window->save_as_dialog		     = NULL;
 
-  goban_window->find_dialog		   = NULL;
-  goban_window->text_to_find		   = NULL;
+  goban_window->last_displayed_node	     = NULL;
+  goban_window->last_game_info_node	     = NULL;
 
-  goban_window->game_info_dialog	   = NULL;
+  goban_window->find_dialog		     = NULL;
+  goban_window->text_to_find		     = NULL;
+
+  goban_window->game_info_dialog	     = NULL;
 }
 
 
@@ -4351,6 +4372,7 @@ update_children_for_new_node (GtkGobanWindow *goban_window, gboolean forced)
   show_sgf_tree_view_automatically (goban_window, current_node);
 
   update_commands_sensitivity (goban_window);
+  update_set_player_to_move_commands (goban_window);
 
   goban_window->switching_x = NULL_X;
   goban_window->switching_y = NULL_Y;
@@ -4797,6 +4819,61 @@ update_commands_sensitivity (const GtkGobanWindow *goban_window)
 
 
 static void
+update_set_player_to_move_commands (GtkGobanWindow *goban_window)
+{
+  const SgfGameTree *game_tree = goban_window->current_tree;
+  const gchar *menu_item_text;
+  GtkWidget *menu_item;
+
+  goban_window->updating_set_player_commands = TRUE;
+
+  switch (game_tree->current_node->to_play_color) {
+  case EMPTY:
+    menu_item_text = "/Edit/Set Player to Move/By Game Rules";
+    break;
+
+  case BLACK:
+    menu_item_text = "/Edit/Set Player to Move/Black";
+    break;
+
+  case WHITE:
+    menu_item_text = "/Edit/Set Player to Move/White";
+    break;
+
+  default:
+    g_assert_not_reached ();
+  }
+
+  menu_item = gtk_item_factory_get_widget (goban_window->item_factory,
+					   menu_item_text);
+  gtk_check_menu_item_set_active (GTK_CHECK_MENU_ITEM (menu_item), TRUE);
+
+  menu_item
+    = gtk_item_factory_get_widget (goban_window->item_factory,
+				   "/Edit/Set Player to Move/By Game Rules");
+
+  switch (sgf_utils_determine_player_to_move_by_rules (game_tree)) {
+  case EMPTY:
+    menu_item_text = _("By Game _Rules (Game Over)");
+    break;
+
+  case BLACK:
+    menu_item_text = _("By Game _Rules (Black)");
+    break;
+
+  case WHITE:
+    menu_item_text = _("By Game _Rules (White)");
+    break;
+  }
+
+  gtk_label_set_text_with_mnemonic (GTK_LABEL (GTK_BIN (menu_item)->child),
+				    menu_item_text);
+
+  goban_window->updating_set_player_commands = FALSE;
+}
+
+
+static void
 insert_node_name (GtkGobanWindow *goban_window, const gchar *node_name)
 {
   static const gchar node_name_and_comment_separator = '\n';
@@ -5035,6 +5112,41 @@ fetch_comment_and_node_name (GtkGobanWindow *goban_window,
     g_free (new_node_name);
 
     gtk_text_buffer_set_modified (goban_window->text_buffer, FALSE);
+  }
+}
+
+
+static void
+set_player_to_move (GtkGobanWindow *goban_window, guint callback_action,
+		    GtkCheckMenuItem *menu_item)
+{
+  if (gtk_check_menu_item_get_active (menu_item)
+      && !goban_window->updating_set_player_commands) {
+    SgfGameTree *game_tree = goban_window->current_tree;
+    SgfNode *node = game_tree->current_node;
+    int created_new_node = 0;
+    int player_to_move_changed;
+
+    sgf_utils_begin_action (game_tree);
+
+    if (IS_STONE (callback_action)
+	&& IS_STONE (game_tree->current_node->move_color)) {
+      node = sgf_utils_append_variation (game_tree, EMPTY);
+      created_new_node = 1;
+    }
+
+    player_to_move_changed = sgf_utils_set_color_property (node, game_tree,
+							   SGF_TO_PLAY,
+							   callback_action);
+
+    sgf_utils_end_action (game_tree);
+
+    if (created_new_node)
+      update_children_for_new_node (goban_window, FALSE);
+    else if (player_to_move_changed) {
+      update_move_information (goban_window);
+      update_set_player_to_move_commands (goban_window);
+    }
   }
 }
 

@@ -116,6 +116,8 @@ struct _GtkGobanWindow {
   BoardPositionList	  *drawn_position_list;
   int			   drawing_mode;
 
+  gboolean		   updating_set_player_commands;
+
   int			   sgf_markup_type;
   gchar			  *next_sgf_label;
   gint			   labels_mode;
