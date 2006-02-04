@@ -22,7 +22,6 @@
 
 #include "gtk-freezable-spin-button.h"
 
-#include <assert.h>
 #include <gtk/gtk.h>
 #include <string.h>
 
@@ -122,7 +121,7 @@ gtk_freezable_spin_button_new (GtkAdjustment *adjustment,
 {
   GtkWidget *spin_button = g_object_new (GTK_TYPE_FREEZABLE_SPIN_BUTTON, NULL);
 
-  assert (!adjustment || GTK_IS_ADJUSTMENT (adjustment));
+  g_return_val_if_fail (!adjustment || GTK_IS_ADJUSTMENT (adjustment), NULL);
 
   gtk_spin_button_configure (GTK_SPIN_BUTTON (spin_button),
 			     adjustment, climb_rate, digits);
@@ -205,7 +204,7 @@ const gchar *
 gtk_freezable_spin_button_get_freezing_string
   (GtkFreezableSpinButton *spin_button)
 {
-  assert (GTK_IS_FREEZABLE_SPIN_BUTTON (spin_button));
+  g_return_val_if_fail (GTK_IS_FREEZABLE_SPIN_BUTTON (spin_button), NULL);
 
   return spin_button->freezing_string;
 }
@@ -215,7 +214,7 @@ void
 gtk_freezable_spin_button_freeze (GtkFreezableSpinButton *spin_button,
 				  const gchar *freezing_string)
 {
-  assert (GTK_IS_FREEZABLE_SPIN_BUTTON (spin_button));
+  g_return_if_fail (GTK_IS_FREEZABLE_SPIN_BUTTON (spin_button));
 
   spin_button->freezing_string = freezing_string;
 }
@@ -225,7 +224,7 @@ void
 gtk_freezable_spin_button_freeze_and_stop_input
   (GtkFreezableSpinButton *spin_button, const gchar *freezing_string)
 {
-  assert (freezing_string);
+  g_return_if_fail (freezing_string);
 
   gtk_freezable_spin_button_freeze (spin_button, freezing_string);
   g_signal_stop_emission (spin_button, input_signal_id, 0);

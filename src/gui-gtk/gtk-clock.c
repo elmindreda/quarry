@@ -29,7 +29,6 @@
 #include "gui-back-end.h"
 #include "time-control.h"
 
-#include <assert.h>
 #include <math.h>
 #include <gtk/gtk.h>
 
@@ -535,8 +534,8 @@ gtk_clock_finalize (GObject *object)
 void
 gtk_clock_set_time (GtkClock *clock, gdouble seconds, gint moves)
 {
-  assert (GTK_IS_CLOCK (clock));
-  assert (!clock->time_control);
+  g_return_if_fail (GTK_IS_CLOCK (clock));
+  g_return_if_fail (!clock->time_control);
 
   do_set_time (clock, seconds, moves);
 }
@@ -547,7 +546,7 @@ gtk_clock_use_time_control (GtkClock *clock, const TimeControl *time_control,
 			    GtkClockOutOfTimeCallback out_of_time_callback,
 			    gpointer user_data)
 {
-  assert (GTK_IS_CLOCK (clock));
+  g_return_if_fail (GTK_IS_CLOCK (clock));
 
   if (clock->time_control_watch_source > 0) {
     g_source_destroy (clock->time_control_watch_source);
@@ -572,8 +571,8 @@ gtk_clock_use_time_control (GtkClock *clock, const TimeControl *time_control,
 void
 gtk_clock_time_control_state_changed (GtkClock *clock)
 {
-  assert (GTK_IS_CLOCK (clock));
-  assert (clock->time_control);
+  g_return_if_fail (GTK_IS_CLOCK (clock));
+  g_return_if_fail (clock->time_control);
 
   if (clock->time_control_watch_source && !clock->time_control->is_active) {
     g_source_destroy (clock->time_control_watch_source);

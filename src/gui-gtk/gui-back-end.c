@@ -32,7 +32,6 @@
 #include "time-control.h"
 #include "utils.h"
 
-#include <assert.h>
 #include <stdlib.h>
 #include <string.h>
 #include <gdk-pixbuf/gdk-pixbuf.h>
@@ -102,7 +101,7 @@ gui_back_end_main_open_files (int num_files, char **filenames)
 void
 gui_back_end_register_object_to_finalize (void *object)
 {
-  assert (G_IS_OBJECT (object));
+  g_return_if_fail (G_IS_OBJECT (object));
 
   if (!objects_to_finalize)
     objects_to_finalize = g_ptr_array_new ();

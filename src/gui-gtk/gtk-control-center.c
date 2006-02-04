@@ -32,7 +32,6 @@
 #include "quarry-stock.h"
 
 #include <gtk/gtk.h>
-#include <assert.h>
 
 
 static GSList	  *windows = NULL;

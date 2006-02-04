@@ -24,7 +24,6 @@
 #include "gtk-utils.h"
 
 #include <gtk/gtk.h>
-#include <assert.h>
 
 
 static void	gtk_named_vbox_class_init (GtkNamedVBoxClass *class);
@@ -205,7 +204,7 @@ void
 gtk_named_vbox_set_label_text (GtkNamedVBox *named_vbox,
 			       const gchar *label_text)
 {
-  assert (GTK_IS_NAMED_VBOX (named_vbox));
+  g_return_if_fail (GTK_IS_NAMED_VBOX (named_vbox));
 
   gtk_label_set_text (GTK_LABEL (named_vbox->label), label_text);
 }

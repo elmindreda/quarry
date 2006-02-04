@@ -37,7 +37,6 @@
 #include "board.h"
 #include "utils.h"
 
-#include <assert.h>
 #include <gtk/gtk.h>
 
 #if HAVE_MEMORY_H
@@ -316,7 +315,7 @@ gtk_sgf_tree_view_set_scroll_adjustments (GtkSgfTreeView *view,
 					  GtkAdjustment *vadjustment)
 {
   if (hadjustment)
-    assert (GTK_IS_ADJUSTMENT (hadjustment));
+    g_return_if_fail (GTK_IS_ADJUSTMENT (hadjustment));
   else {
     hadjustment = GTK_ADJUSTMENT (gtk_adjustment_new (0.0, 0.0, 0.0,
 						      0.0, 0.0, 0.0));
@@ -337,7 +336,7 @@ gtk_sgf_tree_view_set_scroll_adjustments (GtkSgfTreeView *view,
   }
 
   if (vadjustment)
-    assert (GTK_IS_ADJUSTMENT (vadjustment));
+    g_return_if_fail (GTK_IS_ADJUSTMENT (vadjustment));
   else {
     vadjustment = GTK_ADJUSTMENT (gtk_adjustment_new (0.0, 0.0, 0.0,
 						      0.0, 0.0, 0.0));
@@ -402,11 +401,11 @@ gtk_sgf_tree_view_expose (GtkWidget *widget, GdkEventExpose *event)
     GdkWindow *window = view->output_window;
     GdkGC *gc = widget->style->fg_gc[GTK_STATE_NORMAL];
 
-    assert (view->current_tree);
-    assert (view->view_port_nodes);
-    assert (view->view_port_lines);
-    assert (view->tile_map);
-    assert (view->sgf_markup_tile_map);
+    g_return_val_if_fail (view->current_tree, FALSE);
+    g_return_val_if_fail (view->view_port_nodes, FALSE);
+    g_return_val_if_fail (view->view_port_lines, FALSE);
+    g_return_val_if_fail (view->tile_map, FALSE);
+    g_return_val_if_fail (view->sgf_markup_tile_map, FALSE);
 
     gdk_gc_set_line_attributes (gc, 2, GDK_LINE_SOLID,
 				GDK_CAP_ROUND, GDK_JOIN_ROUND);
@@ -649,13 +648,14 @@ gtk_sgf_tree_view_finalize (GObject *object)
 
 
 
+
 void
 gtk_sgf_tree_view_set_sgf_tree (GtkSgfTreeView *view, SgfGameTree *sgf_tree)
 {
   GObject *proxy;
 
-  assert (GTK_IS_SGF_TREE_VIEW (view));
-  assert (sgf_tree);
+  g_return_if_fail (GTK_IS_SGF_TREE_VIEW (view));
+  g_return_if_fail (sgf_tree);
 
   if (view->current_tree) {
     GObject *old_proxy = GET_SIGNAL_PROXY (view->current_tree);
@@ -692,7 +692,7 @@ gtk_sgf_tree_view_set_sgf_tree (GtkSgfTreeView *view, SgfGameTree *sgf_tree)
 void
 gtk_sgf_tree_view_update_view_port (GtkSgfTreeView *view)
 {
-  assert (GTK_IS_SGF_TREE_VIEW (view));
+  g_return_if_fail (GTK_IS_SGF_TREE_VIEW (view));
 
   update_view_port (view);
 
@@ -704,13 +704,11 @@ gtk_sgf_tree_view_update_view_port (GtkSgfTreeView *view)
 void
 gtk_sgf_tree_view_center_on_current_node (GtkSgfTreeView *view)
 {
-  gint view_x = (gint) view->hadjustment->value;
-  gint view_y = (gint) view->vadjustment->value;
-
-  assert (GTK_IS_SGF_TREE_VIEW (view));
+  g_return_if_fail (GTK_IS_SGF_TREE_VIEW (view));
 
   center_on_current_node (view);
-  update_view_port_and_maybe_move_or_resize_window (view, view_x, view_y);
+  update_view_port_and_maybe_move_or_resize_window
+    (view, (gint) view->hadjustment->value, (gint) view->vadjustment->value);
 }
 
 
@@ -1007,7 +1005,8 @@ update_view_port (GtkSgfTreeView *view)
 	  break;
 
 	default:
-	  assert (0);
+	  g_critical ("unknown SGF map code %d", *tile_map_scan);
+	  *tile_map_scan = TILE_NONE;
 	}
 
 	*sgf_markup_tile_map_scan = (sgf_node->is_collapsed

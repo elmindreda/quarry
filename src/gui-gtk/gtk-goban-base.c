@@ -29,7 +29,6 @@
 #include "board.h"
 #include "utils.h"
 
-#include <assert.h>
 #include <gtk/gtk.h>
 
 
@@ -147,7 +146,7 @@ gtk_goban_base_init (GtkGobanBase *goban_base)
 static void
 gtk_goban_base_realize (GtkWidget *widget)
 {
-  assert (GTK_GOBAN_BASE (widget)->cell_size != 0);
+  g_return_if_fail (GTK_GOBAN_BASE (widget)->cell_size != 0);
 
   g_signal_emit (widget, goban_base_signals[ALLOCATE_SCREEN_RESOURCES], 0);
 }
@@ -206,7 +205,7 @@ gtk_goban_base_update_appearance (Game game)
 {
   GSList *item;
 
-  assert (game >= FIRST_GAME && GAME_IS_SUPPORTED (game));
+  g_return_if_fail (game >= FIRST_GAME && GAME_IS_SUPPORTED (game));
 
   for (item = all_goban_bases; item; item = item->next) {
     GtkGobanBase *goban_base = (GtkGobanBase *) (item->data);
@@ -233,8 +232,8 @@ gtk_goban_base_update_appearance (Game game)
 void
 gtk_goban_base_set_game (GtkGobanBase *goban_base, Game game)
 {
-  assert (GTK_IS_GOBAN_BASE (goban_base));
-  assert (GAME_IS_SUPPORTED (game));
+  g_return_if_fail (GTK_IS_GOBAN_BASE (goban_base));
+  g_return_if_fail (GAME_IS_SUPPORTED (game));
 
   if (goban_base->game != game) {
     goban_base->game = game;
@@ -246,8 +245,8 @@ gtk_goban_base_set_game (GtkGobanBase *goban_base, Game game)
 void
 gtk_goban_base_set_cell_size (GtkGobanBase *goban_base, gint cell_size)
 {
-  assert (GTK_IS_GOBAN_BASE (goban_base));
-  assert (cell_size > 0);
+  g_return_if_fail (GTK_IS_GOBAN_BASE (goban_base));
+  g_return_if_fail (cell_size > 0);
 
   if (goban_base->cell_size != cell_size) {
     goban_base->cell_size = cell_size;

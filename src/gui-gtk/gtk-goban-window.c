@@ -70,7 +70,6 @@
 #include "game-info.h"
 #include "utils.h"
 
-#include <assert.h>
 #include <gdk/gdkkeysyms.h>
 #include <gtk/gtk.h>
 #include <math.h>
@@ -1249,8 +1248,8 @@ gtk_goban_window_new (SgfCollection *sgf_collection, const char *filename)
   GtkWidget *widget = GTK_WIDGET (g_object_new (GTK_TYPE_GOBAN_WINDOW, NULL));
   GtkGobanWindow *goban_window = GTK_GOBAN_WINDOW (widget);
 
-  assert (sgf_collection);
-  assert (!filename || g_path_is_absolute (filename));
+  g_return_val_if_fail (sgf_collection, NULL);
+  g_return_val_if_fail (!filename || g_path_is_absolute (filename), NULL);
 
   goban_window->board = NULL;
 
@@ -1296,7 +1295,7 @@ gtk_goban_window_destroy (GtkObject *object)
 gboolean
 gtk_goban_window_stops_closing (GtkGobanWindow *goban_window)
 {
-  assert (GTK_IS_GOBAN_WINDOW (goban_window));
+  g_return_val_if_fail (GTK_IS_GOBAN_WINDOW (goban_window), FALSE);
 
   if (sgf_collection_is_modified (goban_window->sgf_collection)) {
     GtkWidget *question_dialog;
@@ -1410,7 +1409,7 @@ force_minimal_width (GtkWidget *widget, GtkRequisition *requisition)
 void
 gtk_goban_window_enter_game_record_mode (GtkGobanWindow *goban_window)
 {
-  assert (GTK_IS_GOBAN_WINDOW (goban_window));
+  g_return_if_fail (GTK_IS_GOBAN_WINDOW (goban_window));
 
   if (!goban_window->current_tree->undo_history) {
     goban_window->current_tree->undo_history
@@ -1432,8 +1431,8 @@ gtk_goban_window_enter_game_mode (GtkGobanWindow *goban_window,
   const SgfGameTree *game_tree;
   int handicap = -1;
 
-  assert (GTK_IS_GOBAN_WINDOW (goban_window));
-  assert (!goban_window->in_game_mode);
+  g_return_if_fail (GTK_IS_GOBAN_WINDOW (goban_window));
+  g_return_if_fail (!goban_window->in_game_mode);
 
   goban_window->in_game_mode		   = TRUE;
   goban_window->players[BLACK_INDEX]	   = black_player;
@@ -1485,8 +1484,8 @@ gtk_goban_window_resume_game (GtkGobanWindow *goban_window,
 {
   SgfBoardState *const board_state = &goban_window->sgf_board_state;
 
-  assert (GTK_IS_GOBAN_WINDOW (goban_window));
-  assert (!goban_window->in_game_mode);
+  g_return_if_fail (GTK_IS_GOBAN_WINDOW (goban_window));
+  g_return_if_fail (!goban_window->in_game_mode);
 
   goban_window->in_game_mode		   = TRUE;
   goban_window->players[BLACK_INDEX]	   = black_player;
@@ -1544,8 +1543,8 @@ do_enter_game_mode (GtkGobanWindow *goban_window)
 				goban_window);
   }
   else {
-    assert (!goban_window->time_controls[BLACK_INDEX]
-	    && !goban_window->time_controls[WHITE_INDEX]);
+    g_assert (!goban_window->time_controls[BLACK_INDEX]
+	      && !goban_window->time_controls[WHITE_INDEX]);
   }
 
   goban_window->last_displayed_node = NULL;
@@ -1968,9 +1967,9 @@ show_find_dialog (GtkGobanWindow *goban_window)
     /* Let's be over-secure (a compile-time error would have been
      * better...)
      */
-    assert (SEARCH_EVERYWHERE	    == 0
-	    && SEARCH_IN_COMMENTS   == 1
-	    && SEARCH_IN_NODE_NAMES == 2);
+    g_assert (SEARCH_EVERYWHERE	      == 0
+	      && SEARCH_IN_COMMENTS   == 1
+	      && SEARCH_IN_NODE_NAMES == 2);
 
     gtk_utils_create_radio_chain (properties_scope_radio_buttons,
 				  properties_scope_radio_button_labels, 3);
@@ -2200,7 +2199,7 @@ do_find_text (GtkGobanWindow *goban_window, guint callback_action)
       break;
 
     default:
-      assert (0);
+      g_assert_not_reached ();
     }
 
     while (1) {
@@ -3086,11 +3085,11 @@ free_handicap_mode_done (GtkGobanWindow *goban_window)
   grid_diff (goban_window->board->grid, goban_window->goban->grid,
 	     goban_window->board->width, goban_window->board->height,
 	     difference_lists);
-  assert ((difference_lists[BLACK]->num_positions
-	   == goban_window->num_handicap_stones_placed)
-	  && difference_lists[WHITE] == NULL
-	  && difference_lists[EMPTY] == NULL
-	  && difference_lists[SPECIAL_ON_GRID_VALUE] == NULL);
+  g_assert ((difference_lists[BLACK]->num_positions
+	     == goban_window->num_handicap_stones_placed)
+	    && difference_lists[WHITE] == NULL
+	    && difference_lists[EMPTY] == NULL
+	    && difference_lists[SPECIAL_ON_GRID_VALUE] == NULL);
 
   leave_special_mode (goban_window);
   set_goban_signal_handlers (goban_window,
@@ -3315,8 +3314,8 @@ just_changed_node (GtkGobanWindow *goban_window)
 static void
 play_pass_move (GtkGobanWindow *goban_window)
 {
-  assert (goban_window->board->game == GAME_GO
-	  && USER_CAN_PLAY_MOVES (goban_window));
+  g_assert (goban_window->board->game == GAME_GO
+	    && USER_CAN_PLAY_MOVES (goban_window));
 
   sgf_utils_append_variation (goban_window->current_tree,
 			      goban_window->sgf_board_state.color_to_play,
@@ -3647,7 +3646,7 @@ setup_mode_pointer_moved (GtkGobanWindow *goban_window,
       return GOBAN_FEEDBACK_THICK_WHITE_GHOST;
 
     default:
-      assert (0);
+      g_assert_not_reached ();
     }
   }
 
@@ -3853,7 +3852,7 @@ label_mode_pointer_moved (GtkGobanWindow *goban_window,
       break;
 
     default:
-      assert (0);
+      g_assert_not_reached ();
     }
   }
 
@@ -4011,7 +4010,7 @@ free_handicap_mode_goban_clicked (GtkGobanWindow *goban_window,
       goban_window->num_handicap_stones_placed--;
     }
     else
-      assert (0);
+      g_assert_not_reached ();
 
     gtk_goban_set_contents (goban_window->goban, position_list,
 			    contents, GOBAN_TILE_DONT_CHANGE,
@@ -4118,9 +4117,7 @@ sgf_tree_view_clicked (GtkGobanWindow *goban_window, SgfNode *sgf_node,
 {
   if (button_index == 1)
     switch_to_given_node (goban_window, sgf_node);
-  else {
-    assert (button_index == 3);
-
+  else if (button_index == 3) {
     if (sgf_node->child) {
       sgf_utils_set_node_is_collapsed (goban_window->current_tree, sgf_node,
 				       !sgf_node->is_collapsed);
@@ -4650,7 +4647,7 @@ update_move_information (const GtkGobanWindow *goban_window)
       break;
 
     default:
-      assert (0);
+      g_assert_not_reached ();
     }
   }
 
@@ -5056,7 +5053,7 @@ initialize_gtp_player (GtpClient *client, int successful,
 			      + client_color_index);
 
   /* FIXME */
-  assert (successful);
+  g_assert (successful);
 
   /* These special cases are needed to avoid nasty `goto's in `switch'
    * block below.
@@ -5092,7 +5089,7 @@ initialize_gtp_player (GtpClient *client, int successful,
   case  INITIALIZATION_GAME_SET:
     *initialization_step = INITIALIZATION_BOARD_SIZE_SET;
 
-    assert (game_tree->board_width == game_tree->board_height);
+    g_assert (game_tree->board_width == game_tree->board_height);
     gtp_client_set_board_size (client,
 			       ((GtpClientResponseCallback)
 				initialize_gtp_player),
@@ -5214,7 +5211,7 @@ initialize_gtp_player (GtpClient *client, int successful,
 
   default:
     /* Must never happen. */
-    assert (0);
+    g_assert_not_reached ();
   }
 
   return 1;
@@ -5229,7 +5226,7 @@ free_handicap_has_been_placed (GtkGobanWindow *goban_window,
 				      handicap_stones);
 
   reenter_current_node (goban_window);
-  assert (goban_window->game_position.board_state->color_to_play == WHITE);
+  g_assert (goban_window->game_position.board_state->color_to_play == WHITE);
 
   if (GTP_ENGINE_CAN_PLAY_MOVES (goban_window, WHITE)) {
     /* The engine is initialized, but since free handicap placement
@@ -5370,7 +5367,7 @@ move_has_been_played (GtkGobanWindow *goban_window)
       break;
 
     default:
-      assert (0);
+      g_assert_not_reached ();
     }
 
     leave_game_mode (goban_window);
@@ -5391,7 +5388,7 @@ engine_has_scored (GtpClient *client, int successful,
     return;
 
   if (successful) {
-    assert (status == GTP_DEAD);
+    g_assert (status == GTP_DEAD);
 
     board_position_list_mark_on_grid (dead_stones,
 				      goban_window->dead_stones, 1);
@@ -5692,7 +5689,7 @@ activate_scoring_tool (GtkGobanWindow *goban_window, guint callback_action,
     synchronize_tools_menus (goban_window);
 
     if (goban_window->in_game_mode)
-      assert (goban_window->dead_stones);
+      g_assert (goban_window->dead_stones);
     else {
       const SgfNode *current_node = goban_window->current_tree->current_node;
       const BoardPositionList *black_territory
@@ -5702,7 +5699,7 @@ activate_scoring_tool (GtkGobanWindow *goban_window, guint callback_action,
 	= sgf_node_get_list_of_point_property_value (current_node,
 						     SGF_WHITE_TERRITORY);
 
-      assert (!goban_window->dead_stones);
+      g_assert (!goban_window->dead_stones);
 
       goban_window->dead_stones = g_malloc (BOARD_GRID_SIZE * sizeof (char));
       board_fill_grid (goban_window->board, goban_window->dead_stones, 0);

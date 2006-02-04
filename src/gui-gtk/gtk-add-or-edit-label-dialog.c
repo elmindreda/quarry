@@ -25,7 +25,6 @@
 #include "gtk-utils.h"
 
 #include <gtk/gtk.h>
-#include <assert.h>
 
 
 enum {
@@ -120,7 +119,7 @@ void
 gtk_add_or_edit_label_dialog_set_label_text (GtkAddOrEditLabelDialog *dialog,
 					     const gchar *label_text)
 {
-  assert (GTK_IS_ADD_OR_EDIT_LABEL_DIALOG (dialog));
+  g_return_if_fail (GTK_IS_ADD_OR_EDIT_LABEL_DIALOG (dialog));
 
   gtk_entry_set_text (dialog->label_entry, label_text);
 }
@@ -129,7 +128,7 @@ gtk_add_or_edit_label_dialog_set_label_text (GtkAddOrEditLabelDialog *dialog,
 const gchar *
 gtk_add_or_edit_label_dialog_get_label_text (GtkAddOrEditLabelDialog *dialog)
 {
-  assert (GTK_IS_ADD_OR_EDIT_LABEL_DIALOG (dialog));
+  g_return_val_if_fail (GTK_IS_ADD_OR_EDIT_LABEL_DIALOG (dialog), NULL);
 
   return gtk_entry_get_text (dialog->label_entry);
 }

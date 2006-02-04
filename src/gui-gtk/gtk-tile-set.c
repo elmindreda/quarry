@@ -32,7 +32,6 @@
 
 #include <gdk-pixbuf/gdk-pixbuf.h>
 #include <librsvg/rsvg.h>
-#include <assert.h>
 #include <stdio.h>
 #include <string.h>
 
@@ -115,8 +114,8 @@ gtk_main_tile_set_create_or_reuse (gint tile_size, Game game)
   const GtkMainTileSetKey key
     = { (game == GAME_GO ? (tile_size - 1) | 1 : tile_size), game };
 
-  assert (tile_size > 0);
-  assert (GAME_IS_SUPPORTED (game));
+  g_return_val_if_fail (tile_size > 0, NULL);
+  g_return_val_if_fail (GAME_IS_SUPPORTED (game), NULL);
 
   return ((GtkMainTileSet *)
 	  object_cache_create_or_reuse_object (&gtk_main_tile_set_cache,
@@ -169,8 +168,8 @@ gtk_main_tile_set_create (const GtkMainTileSetKey *key)
 
   row_stride = gdk_pixbuf_get_rowstride (tile_set->tiles[BLACK_OPAQUE]);
 
-  assert (gdk_pixbuf_get_rowstride (tile_set->tiles[WHITE_OPAQUE])
-	  == row_stride);
+  g_assert (gdk_pixbuf_get_rowstride (tile_set->tiles[WHITE_OPAQUE])
+	    == row_stride);
 
   if (key->game != GAME_REVERSI) {
     render_go_stones (tile_size, &go_stones_defaults,
@@ -255,7 +254,7 @@ gtk_sgf_markup_tile_set_create_or_reuse (gint tile_size, Game game)
   if (!theme_item)
     theme_item = markup_theme_list_find (&markup_themes, "Default");
 
-  assert (theme_item);
+  g_assert (theme_item);
 
   key.tile_size	      = tile_size;
   key.theme_directory = theme_item->directory;
@@ -361,8 +360,11 @@ gtk_sgf_markup_tile_set_create (const GtkSgfMarkupTileSetKey *key)
       guchar *buffer = g_malloc (file_size);
 
       rewind (file);
-      if (fread (buffer, file_size, 1, file) != 1)
-	assert (0);
+      if (fread (buffer, file_size, 1, file) != 1) {
+	/* FIXME: Too severe. */
+	g_assert (0);
+      }
+
       fclose (file);
 
       for (i = 0; i < NUM_SGF_MARKUP_BACKGROUNDS; i++) {

@@ -34,7 +34,6 @@
 #include "sgf.h"
 
 #include <gtk/gtk.h>
-#include <assert.h>
 #include <string.h>
 
 
@@ -208,7 +207,7 @@ gtk_go_to_named_node_dialog_new (SgfGameTree *sgf_tree)
 						  G_TYPE_STRING,
 						  G_TYPE_POINTER);
 
-  assert (sgf_tree);
+  g_return_val_if_fail (sgf_tree, NULL);
 
   /* Note: cannot use value destructor here, because we build values
    * ``incrementally'' with g_tree_replace() below.

@@ -24,7 +24,6 @@
 #include "gtp-client.h"
 #include "quarry-main.h"
 
-#include <assert.h>
 #include <gtk/gtk.h>
 #include <stdio.h>
 #include <string.h>
@@ -86,8 +85,8 @@ gtk_create_gtp_client (const gchar *command_line,
   GtpClient *client = NULL;
   gchar **argv;
 
-  assert (command_line);
-  assert (error == NULL || *error == NULL);
+  g_return_val_if_fail (command_line, NULL);
+  g_return_val_if_fail (error == NULL || *error == NULL, NULL);
 
   if (g_shell_parse_argv (command_line, NULL, &argv, error)) {
     gint child_pid;
@@ -203,7 +202,7 @@ gtk_schedule_gtp_client_deletion (const GtpClient *client)
   while (1) {
     GtkGtpClientData *data;
 
-    assert (item);
+    g_return_val_if_fail (item, FALSE);
 
     data = (GtkGtpClientData *) (item->data);
     if (data->client == client) {
@@ -318,7 +317,7 @@ handle_engine_stderr (GIOChannel *read_output_from, GIOCondition condition,
       }
 
       if (bytes_read > 0) {
-	assert (data->log_file);
+	g_return_val_if_fail (data->log_file, FALSE);
 
 	/* FIXME: Handle partial lines nicely.  Prepend some character
 	 *	  (maybe '!') to indicate stderr output.
@@ -375,7 +374,7 @@ log_gtp_stream (const char *line, int is_command, int internal_index,
 {
   UNUSED (internal_index);
 
-  assert (data->log_file);
+  g_return_if_fail (data->log_file);
 
   fprintf (data->log_file, "%c %s", (is_command ? '>' : ' '), line);
 }
@@ -416,7 +415,7 @@ log_gtp_stream_error (GtpError error, int command_id, GtkGtpClientData *data)
     break;
 
   default:
-    assert (0);
+    g_warning ("unhandled GTP error code %d", error);
   }
 }
 
@@ -427,8 +426,8 @@ client_deleted (GtpClient *client, GtkGtpClientData *data)
   /* Forbid explicit gtp_client_delete() from outside this module.
    * Other code must use gtk_gtp_client_schedule_deletion().
    */
-  assert (client->operation_stage == GTP_CLIENT_QUIT
-	  || data->deletion_scheduled);
+  g_return_if_fail (client->operation_stage == GTP_CLIENT_QUIT
+		    || data->deletion_scheduled);
 
   clients = g_slist_remove (clients, data);
 

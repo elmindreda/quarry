@@ -24,7 +24,6 @@
 
 #include "quarry-message-dialog.h"
 
-#include <assert.h>
 #include <gtk/gtk.h>
 #include <stdarg.h>
 

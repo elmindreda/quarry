@@ -35,7 +35,6 @@
 #include "game-info.h"
 
 #include <gtk/gtk.h>
-#include <assert.h>
 
 
 static void	gtk_new_game_record_dialog_class_init

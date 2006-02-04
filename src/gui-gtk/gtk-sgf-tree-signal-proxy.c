@@ -25,7 +25,6 @@
 #include "quarry-marshal.h"
 #include "sgf.h"
 
-#include <assert.h>
 #include <gtk/gtk.h>
 
 
@@ -175,10 +174,11 @@ gtk_sgf_tree_signal_proxy_finalize (GObject *object)
 GObject *
 gtk_sgf_tree_signal_proxy_attach (SgfGameTree *sgf_tree)
 {
-  assert (sgf_tree);
+  g_return_val_if_fail (sgf_tree, NULL);
 
   if (sgf_tree->user_data) {
-    assert (GTK_IS_SGF_TREE_SIGNAL_PROXY (sgf_tree->user_data));
+    g_return_val_if_fail (GTK_IS_SGF_TREE_SIGNAL_PROXY (sgf_tree->user_data),
+			  NULL);
 
     return G_OBJECT (sgf_tree->user_data);
   }
@@ -205,8 +205,8 @@ gtk_sgf_tree_signal_proxy_push_tree_state (SgfGameTree *sgf_tree,
   GtkSgfTreeSignalProxy *proxy;
   SgfGameTreeState *old_state;
 
-  assert (sgf_tree);
-  assert (GTK_IS_SGF_TREE_SIGNAL_PROXY (sgf_tree->user_data));
+  g_return_if_fail (sgf_tree);
+  g_return_if_fail (GTK_IS_SGF_TREE_SIGNAL_PROXY (sgf_tree->user_data));
 
   proxy = GTK_SGF_TREE_SIGNAL_PROXY (sgf_tree->user_data);
 
@@ -225,12 +225,12 @@ gtk_sgf_tree_signal_proxy_pop_tree_state (SgfGameTree *sgf_tree,
   GtkSgfTreeSignalProxy *proxy;
   GSList *popped_link;
 
-  assert (sgf_tree);
-  assert (GTK_IS_SGF_TREE_SIGNAL_PROXY (sgf_tree->user_data));
+  g_return_if_fail (sgf_tree);
+  g_return_if_fail (GTK_IS_SGF_TREE_SIGNAL_PROXY (sgf_tree->user_data));
 
   proxy = GTK_SGF_TREE_SIGNAL_PROXY (sgf_tree->user_data);
 
-  assert (proxy->state_stack);
+  g_return_if_fail (proxy->state_stack);
 
   if (old_state)
     sgf_game_tree_get_state (sgf_tree, old_state);
@@ -252,7 +252,7 @@ receive_notification (SgfGameTree *sgf_tree,
 {
   SgfGameTreeState current_tree_state;
 
-  assert (proxy->sgf_tree == sgf_tree);
+  g_return_if_fail (proxy->sgf_tree == sgf_tree);
 
   if (proxy->state_stack) {
     if (notification_code == SGF_ABOUT_TO_CHANGE_CURRENT_NODE
@@ -311,7 +311,8 @@ receive_notification (SgfGameTree *sgf_tree,
     break;
 
   default:
-    assert (0);
+    g_critical ("unhandled SGF notification code %d", notification_code);
+    return;
   }
 
   if (proxy->state_stack) {

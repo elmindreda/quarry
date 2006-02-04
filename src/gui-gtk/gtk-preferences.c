@@ -38,7 +38,6 @@
 #include "markup-theme-configuration.h"
 #include "utils.h"
 
-#include <assert.h>
 #include <gtk/gtk.h>
 #include <string.h>
 
@@ -595,19 +594,21 @@ gtk_preferences_dialog_present (gpointer page_to_select)
     gtk_widget_show_all (hbox);
   }
 
-  assert (page_to_select_gint < NUM_PREFERENCES_DIALOG_PAGES);
-
-  for (category_to_select = -1, subcategory_to_select = -1, k = 0;
-       page_to_select_gint >= 0; k++) {
-    if (preferences_dialog_categories[k].create_page) {
-      page_to_select_gint--;
-      subcategory_to_select++;
-    }
-    else {
-      category_to_select++;
-      subcategory_to_select = -1;
+  if (page_to_select_gint < NUM_PREFERENCES_DIALOG_PAGES) {
+    for (category_to_select = -1, subcategory_to_select = -1, k = 0;
+	 page_to_select_gint >= 0; k++) {
+      if (preferences_dialog_categories[k].create_page) {
+	page_to_select_gint--;
+	subcategory_to_select++;
+      }
+      else {
+	category_to_select++;
+	subcategory_to_select = -1;
+      }
     }
   }
+  else
+    g_warning ("unknown page index %d", page_to_select_gint);
 
 #if GTK_2_2_OR_LATER
   tree_path = gtk_tree_path_new_from_indices (category_to_select,
@@ -670,11 +671,11 @@ create_gtk_ui_page (void)
   /* Let's be over-secure (a compile-time error would have been
    * better...)
    */
-  assert (TOOLBAR_STYLE_DEFAULT		     == 0
-	  && TOOLBAR_STYLE_BOTH		     == 1
-	  && TOOLBAR_STYLE_BOTH_HORIZONTALLY == 2
-	  && TOOLBAR_STYLE_ICONS_ONLY	     == 3
-	  && TOOLBAR_STYLE_TEXT_ONLY	     == 4);
+  g_assert (TOOLBAR_STYLE_DEFAULT	       == 0
+	    && TOOLBAR_STYLE_BOTH	       == 1
+	    && TOOLBAR_STYLE_BOTH_HORIZONTALLY == 2
+	    && TOOLBAR_STYLE_ICONS_ONLY	       == 3
+	    && TOOLBAR_STYLE_TEXT_ONLY	       == 4);
 
   main_toolbar_hbox
     = create_toolbar_style_box (gtk_ui_configuration.main_toolbar_style,
@@ -952,12 +953,12 @@ create_game_tree_page (void)
   /* Let's be over-secure (a compile-time error would have been
    * better...)
    */
-  assert (SHOW_GAME_TREE_ALWAYS		      == 0
-	  && SHOW_GAME_TREE_AUTOMATICALLY     == 1
-	  && SHOW_GAME_TREE_NEVER	      == 2
-	  && TRACK_CURRENT_NODE_ALWAYS	      == 0
-	  && TRACK_CURRENT_NODE_AUTOMATICALLY == 1
-	  && TRACK_CURRENT_NODE_NEVER	      == 2);
+  g_assert (SHOW_GAME_TREE_ALWAYS		== 0
+	    && SHOW_GAME_TREE_AUTOMATICALLY	== 1
+	    && SHOW_GAME_TREE_NEVER		== 2
+	    && TRACK_CURRENT_NODE_ALWAYS	== 0
+	    && TRACK_CURRENT_NODE_AUTOMATICALLY == 1
+	    && TRACK_CURRENT_NODE_NEVER		== 2);
 
   gtk_utils_create_radio_chain (radio_buttons, show_game_tree_radio_labels, 3);
 
@@ -1488,7 +1489,7 @@ gtk_preferences_dialog_change_page (GtkTreeSelection *selection,
 static void
 gtk_preferences_dialog_response (GtkWindow *window, gint response_id)
 {
-  assert (window == preferences_dialog);
+  g_return_if_fail (window == preferences_dialog);
 
   if (response_id == GTK_RESPONSE_HELP) {
     switch (last_selected_page) {
@@ -1681,8 +1682,10 @@ do_remove_gtp_engine (void)
 
   if (!gtk_tree_selection_get_selected (gtp_engines_tree_selection,
 					&gtp_engines_tree_model,
-					&iterator))
-    assert (0);
+					&iterator)) {
+    g_warning ("attempt to remove an engine while none is selected");
+    return;
+  }
 
   gtk_tree_model_get (gtp_engines_tree_model, &iterator,
 		      ENGINES_DATA, &engine_data, -1);
@@ -1751,8 +1754,10 @@ do_move_gtp_engine (gpointer move_upwards)
 
   if (!gtk_tree_selection_get_selected (gtp_engines_tree_selection,
 					&gtp_engines_tree_model,
-					&first_iterator))
-    assert (0);
+					&first_iterator)) {
+    g_warning ("attempt to move an engine while none is selected");
+    return;
+  }
 
   gtk_tree_model_get (gtp_engines_tree_model, &first_iterator,
 		      ENGINES_DATA, &first_engine_data, -1);
@@ -1850,8 +1855,10 @@ gtk_gtp_engine_dialog_present (gpointer new_engine)
 
   if (!GPOINTER_TO_INT (new_engine)) {
     if (!gtk_tree_selection_get_selected (gtp_engines_tree_selection,
-					  NULL, &iterator))
-      assert (0);
+					  NULL, &iterator)) {
+      g_warning ("attempt to edit an engine while none is selected");
+      return;
+    }
 
     gtk_tree_model_get (gtp_engines_tree_model, &iterator,
 			ENGINES_DATA, &engine_data, -1);
@@ -1960,7 +1967,8 @@ gtk_gtp_engine_dialog_destroy (GtkWindow *window, GtkEngineDialogData *data)
   if (gtk_control_center_window_destroyed (window)) {
     GSList *item = find_gtp_engine_dialog_by_engine_data (data->engine_data);
 
-    assert (item);
+    g_return_if_fail (item);
+
     gtp_engine_dialogs = g_slist_delete_link (gtp_engine_dialogs, item);
     g_free (data);
   }
@@ -2276,8 +2284,10 @@ update_board_appearance (GtkWidget *widget, gpointer value_storage)
   else if ((gpointer) &reversi_board_appearance <= value_storage
 	   && value_storage < (gpointer) (&reversi_board_appearance + 1))
     game = GAME_REVERSI;
-  else
-    assert (0);
+  else {
+    g_critical ("unhandled game type");
+    return;
+  }
 
   if (GTK_IS_RANGE (widget))
     * (double *) value_storage = gtk_range_get_value (GTK_RANGE (widget));
@@ -2298,8 +2308,10 @@ update_board_appearance (GtkWidget *widget, gpointer value_storage)
 
     * (QuarryColor *) value_storage = quarry_color;
   }
-  else
-    assert (0);
+  else {
+    g_critical ("unhandled widget type %s", G_OBJECT_TYPE_NAME (widget));
+    return;
+  }
 
   gtk_goban_base_update_appearance (game);
 }
@@ -2397,7 +2409,8 @@ game_to_board_appearance_structure (Game game)
   if (game == GAME_REVERSI)
     return &reversi_board_appearance;
 
-  assert (0);
+  g_critical ("unhandled game %s", game_info[game].name);
+  return NULL;
 }
 
 
@@ -2413,7 +2426,8 @@ game_index_to_board_appearance_structure (GtkGameIndex game_index)
   if (game_index == GTK_GAME_REVERSI)
     return &reversi_board_appearance;
 
-  assert (0);
+  g_critical ("unhandled game %s", INDEX_TO_GAME_NAME (game_index));
+  return NULL;
 }
 
 
@@ -2442,7 +2456,7 @@ gtk_preferences_register_navigation_toolbar (GtkToolbar *toolbar)
 static void
 do_register_toolbar (GtkToolbar *toolbar, GtkToolbarList *toolbar_list)
 {
-  assert (GTK_IS_TOOLBAR (toolbar));
+  g_return_if_fail (GTK_IS_TOOLBAR (toolbar));
 
   toolbar_list->toolbars = g_slist_prepend (toolbar_list->toolbars, toolbar);
   g_signal_connect (toolbar, "destroy",
@@ -2489,7 +2503,7 @@ set_toolbar_style (GtkToolbar *toolbar, int style)
     break;
 
   default:
-    assert (0);
+    g_warning ("unknown toolbar style %d", style);
   }
 }
 
@@ -2616,17 +2630,17 @@ gtk_preferences_set_engine_selector_game_index (GtkWidget *selector,
 {
   GSList *item;
 
-  assert (0 <= game_index && game_index < NUM_SUPPORTED_GAMES);
+  g_return_if_fail (0 <= game_index && game_index < NUM_SUPPORTED_GAMES);
 
   for (item = gtp_engine_selectors; ; item = item->next) {
     GtkEngineSelectorData *data = (GtkEngineSelectorData *) (item->data);
 
-    assert (item);
+    g_return_if_fail (item);
 
     if (data->selector == selector) {
 #if GTK_2_4_OR_LATER
 
-      assert (data->selector_game_index == GTK_GAME_UNSUPPORTED);
+      g_return_if_fail (data->selector_game_index == GTK_GAME_UNSUPPORTED);
 
       gtk_cell_layout_set_cell_data_func (GTK_CELL_LAYOUT (selector),
 					  data->pixbuf_cell,
@@ -2635,7 +2649,7 @@ gtk_preferences_set_engine_selector_game_index (GtkWidget *selector,
 
 #else
 
-      assert (!data->only_this_game);
+      g_return_if_fail (!data->only_this_game);
 
       if (game_index != data->selector_game_index) {
 	GtpEngineListItem *current_selection
@@ -2674,7 +2688,7 @@ gtk_preferences_set_engine_selector_selection
     GtkEngineSelectorData *data;
 
     for (item = gtp_engine_selectors; ; item = item->next) {
-      assert (item);
+      g_return_if_fail (item);
 
       data = (GtkEngineSelectorData *) (item->data);
       if (data->selector == selector)
@@ -2726,7 +2740,7 @@ gtk_preferences_get_engine_selector_selection (GtkWidget *selector)
   gint selected_engine = gtk_utils_get_selector_active_item_index (selector);
 
   for (item = gtp_engine_selectors; ; item = item->next) {
-    assert (item);
+    g_return_val_if_fail (item, NULL);
 
     data = (GtkEngineSelectorData *) (item->data);
     if (data->selector == selector)
@@ -2932,9 +2946,9 @@ gtk_preferences_instantiate_selected_engine (GtkEngineChain *engine_chain,
 					     GtkWidget *selector,
 					     GtpClient **gtp_client)
 {
-  assert (engine_chain);
-  assert (selector);
-  assert (gtp_client);
+  g_return_if_fail (engine_chain);
+  g_return_if_fail (selector);
+  g_return_if_fail (gtp_client);
 
   if (!engine_chain->have_error) {
     GtpEngineListItem *engine_data
@@ -2943,7 +2957,7 @@ gtk_preferences_instantiate_selected_engine (GtkEngineChain *engine_chain,
     GtkChainEngineData *chain_engine_data
       = g_malloc (sizeof (GtkChainEngineData));
 
-    assert (engine_data);
+    g_assert (engine_data);
 
     chain_engine_data->engine_data = engine_data;
     chain_engine_data->engine_chain = engine_chain;

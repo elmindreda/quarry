@@ -33,7 +33,6 @@
 #include "quarry-message-dialog.h"
 #include "quarry-stock.h"
 
-#include <assert.h>
 #include <gtk/gtk.h>
 #include <string.h>
 
@@ -81,10 +80,10 @@ gtk_file_dialog_new (const gchar *title, GtkWindow *parent,
   GtkWidget *dialog;
   GtkFileDialogData *data;
 
-  assert (title);
-  assert (!parent || GTK_IS_WINDOW (parent));
-  assert (affirmative_button_text);
-  assert (response_callback);
+  g_return_val_if_fail (title, NULL);
+  g_return_val_if_fail (!parent || GTK_IS_WINDOW (parent), NULL);
+  g_return_val_if_fail (affirmative_button_text, NULL);
+  g_return_val_if_fail (response_callback, NULL);
 
 #if GTK_2_4_OR_LATER
 
@@ -161,7 +160,7 @@ gtk_file_dialog_get_filename (GtkWidget *dialog)
 		     (GTK_FILE_SELECTION (dialog)));
   }
 
-  assert (0);
+  g_assert_not_reached ();
 }
 
 
@@ -191,7 +190,7 @@ gtk_file_dialog_set_filename (GtkWidget *dialog, const gchar *filename)
     return;
   }
 
-  assert (0);
+  g_assert_not_reached ();
 }
 
 

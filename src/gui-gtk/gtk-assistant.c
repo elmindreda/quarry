@@ -27,7 +27,6 @@
 #include "quarry-stock.h"
 
 #include <gtk/gtk.h>
-#include <assert.h>
 
 
 #define ASSISTANT_RESPONSE_NEXT	1
@@ -150,7 +149,7 @@ gtk_assistant_new (const char *title, gpointer user_data)
 void
 gtk_assistant_set_user_data (GtkAssistant *assistant, gpointer user_data)
 {
-  assert (GTK_IS_ASSISTANT (assistant));
+  g_return_if_fail (GTK_IS_ASSISTANT (assistant));
 
   assistant->user_data = user_data;
 }
@@ -246,7 +245,7 @@ gtk_assistant_response (GtkDialog *dialog, gint response_id)
     page_data = g_object_get_qdata (G_OBJECT (current_page),
 				    assistant_page_quark);
 
-    assert (page_data->help_link_id || page_data->help_link_id_callback);
+    g_assert (page_data->help_link_id || page_data->help_link_id_callback);
 
     gtk_help_display (page_data->help_link_id
 		      ? page_data->help_link_id
@@ -310,8 +309,8 @@ gtk_assistant_add_page (GtkAssistant *assistant, GtkWidget *widget,
   GtkWidget *page = widget;
   GtkAssistantPage *page_data = g_malloc (sizeof (GtkAssistantPage));
 
-  assert (GTK_IS_ASSISTANT (assistant));
-  assert (GTK_IS_WIDGET (widget));
+  g_return_if_fail (GTK_IS_ASSISTANT (assistant));
+  g_return_if_fail (GTK_IS_WIDGET (widget));
 
   if (icon_stock_id || title)
     page = gtk_utils_create_titled_page (widget, icon_stock_id, title);
@@ -336,16 +335,16 @@ gtk_assistant_set_page_help_link_id (GtkAssistant *assistant, GtkWidget *page,
 {
   GtkAssistantPage *page_data;
 
-  assert (GTK_IS_ASSISTANT (assistant));
-  assert (GTK_IS_WIDGET (page));
-  assert (help_link_id);
+  g_return_if_fail (GTK_IS_ASSISTANT (assistant));
+  g_return_if_fail (GTK_IS_WIDGET (page));
+  g_return_if_fail (help_link_id);
 
   page_data = g_object_get_qdata (G_OBJECT (page), assistant_page_quark);
   if (!page_data) {
     page_data = g_object_get_qdata (G_OBJECT (gtk_widget_get_parent
 					      (GTK_WIDGET (page))),
 				    assistant_page_quark);
-    assert (page_data);
+    g_assert (page_data);
   }
 
   page_data->help_link_id = help_link_id;
@@ -365,16 +364,16 @@ gtk_assistant_set_page_help_link_id_callback
 {
   GtkAssistantPage *page_data;
 
-  assert (GTK_IS_ASSISTANT (assistant));
-  assert (GTK_IS_WIDGET (page));
-  assert (callback);
+  g_return_if_fail (GTK_IS_ASSISTANT (assistant));
+  g_return_if_fail (GTK_IS_WIDGET (page));
+  g_return_if_fail (callback);
 
   page_data = g_object_get_qdata (G_OBJECT (page), assistant_page_quark);
   if (!page_data) {
     page_data = g_object_get_qdata (G_OBJECT (gtk_widget_get_parent
 					      (GTK_WIDGET (page))),
 				    assistant_page_quark);
-    assert (page_data);
+    g_assert (page_data);
   }
 
   page_data->help_link_id_callback = callback;
@@ -391,8 +390,8 @@ void
 gtk_assistant_set_finish_button (GtkAssistant *assistant,
 				 const gchar *stock_id)
 {
-  assert (GTK_IS_ASSISTANT (assistant));
-  assert (stock_id);
+  g_return_if_fail (GTK_IS_ASSISTANT (assistant));
+  g_return_if_fail (stock_id);
 
   gtk_widget_destroy (assistant->finish_button);
 

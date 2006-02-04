@@ -33,7 +33,6 @@
 #include "board.h"
 #include "utils.h"
 
-#include <assert.h>
 #include <string.h>
 #include <gtk/gtk.h>
 
@@ -459,9 +458,9 @@ gtk_game_info_dialog_set_node (GtkGameInfoDialog *dialog,
   int k;
   double time_limit;
 
-  assert (GTK_IS_GAME_INFO_DIALOG (dialog));
-  assert (sgf_tree);
-  assert (sgf_node);
+  g_return_if_fail (GTK_IS_GAME_INFO_DIALOG (dialog));
+  g_return_if_fail (sgf_tree);
+  g_return_if_fail (sgf_node);
 
   dialog->sgf_tree = sgf_tree;
   dialog->sgf_node = sgf_node;
@@ -673,7 +672,7 @@ game_info_spin_button_value_changed
 				  utils_cprintf ("%.f", main_time));
     }
     else
-      assert (0);
+      g_assert_not_reached ();
   }
 }
 
@@ -702,7 +701,7 @@ game_info_spin_button_focus_out_event
       else if (dialog->main_time_spin_button == freezable_spin_button)
 	sgf_property_type = SGF_TIME_LIMIT;
       else
-	assert (0);
+	g_assert_not_reached ();
 
       if (sgf_node_get_text_property_value (dialog->sgf_node,
 					    sgf_property_type)) {

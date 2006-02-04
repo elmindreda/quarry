@@ -26,7 +26,6 @@
 #include "quarry-history-text-buffer.h"
 #include "quarry-marshal.h"
 
-#include <assert.h>
 #include <gdk/gdkkeysyms.h>
 #include <gtk/gtk.h>
 
@@ -188,7 +187,7 @@ quarry_text_view_populate_popup (GtkTextView *text_view, GtkMenu *menu)
 void
 quarry_text_view_undo (QuarryTextView *view)
 {
-  assert (QUARRY_IS_TEXT_VIEW (view));
+  g_return_if_fail (QUARRY_IS_TEXT_VIEW (view));
 
   g_signal_emit (view, text_view_signals[UNDO], 0);
 }
@@ -197,7 +196,7 @@ quarry_text_view_undo (QuarryTextView *view)
 void
 quarry_text_view_redo (QuarryTextView *view)
 {
-  assert (QUARRY_IS_TEXT_VIEW (view));
+  g_return_if_fail (QUARRY_IS_TEXT_VIEW (view));
 
   g_signal_emit (view, text_view_signals[REDO], 0);
 }

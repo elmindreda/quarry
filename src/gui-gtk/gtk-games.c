@@ -26,7 +26,6 @@
 #include "board.h"
 #include "game-info.h"
 
-#include <assert.h>
 #include <gtk/gtk.h>
 #include <string.h>
 
@@ -54,7 +53,7 @@ gtk_games_get_capitalized_name (Game game)
   static gchar *capitalized_names[LAST_GAME + 1];
   static gboolean first_call = TRUE;
 
-  assert (FIRST_GAME <= game && game <= LAST_GAME);
+  g_return_val_if_fail (FIRST_GAME <= game && game <= LAST_GAME, NULL);
 
   if (first_call) {
     memset (capitalized_names, 0, sizeof capitalized_names);
@@ -81,7 +80,8 @@ gboolean
 gtk_games_engine_supports_game (GtpEngineListItem *engine_data,
 				GtkGameIndex game_index)
 {
-  assert (0 <= game_index && game_index < NUM_SUPPORTED_GAMES);
+  g_return_val_if_fail (0 <= game_index && game_index < NUM_SUPPORTED_GAMES,
+			FALSE);
 
   return (!engine_data
 	  || (string_list_find (&engine_data->supported_games,
@@ -121,7 +121,8 @@ GtkAdjustment *
 gtk_games_create_board_size_adjustment (GtkGameIndex game_index,
 					gint initial_value)
 {
-  assert (0 <= game_index && game_index < NUM_SUPPORTED_GAMES);
+  g_return_val_if_fail (0 <= game_index && game_index < NUM_SUPPORTED_GAMES,
+			NULL);
 
   if (initial_value <= 0)
     initial_value = game_info[index_to_game[game_index]].default_board_size;
@@ -147,7 +148,7 @@ gtk_games_create_board_size_adjustment (GtkGameIndex game_index,
 				2, 4, 0));
 
   default:
-    assert (0);
+    g_assert_not_reached ();
   }
 }
 

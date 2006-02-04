@@ -36,7 +36,6 @@
 #include "board.h"
 #include "game-info.h"
 
-#include <assert.h>
 #include <gtk/gtk.h>
 #include <math.h>
 #include <stdio.h>

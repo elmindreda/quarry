@@ -34,7 +34,6 @@
 #include "game-info.h"
 #include "utils.h"
 
-#include <assert.h>
 #include <gtk/gtk.h>
 #include <gdk/gdkkeysyms.h>
 #include <math.h>
@@ -329,9 +328,9 @@ gtk_goban_new (void)
 void
 gtk_goban_set_parameters (GtkGoban *goban, Game game, int width, int height)
 {
-  assert (GTK_IS_GOBAN (goban));
-  assert (GAME_IS_SUPPORTED (game));
-  assert (width > 0 && height > 0);
+  g_return_if_fail (GTK_IS_GOBAN (goban));
+  g_return_if_fail (GAME_IS_SUPPORTED (game));
+  g_return_if_fail (width > 0 && height > 0);
 
   if (goban->width && goban->height) {
     int x;
@@ -427,7 +426,7 @@ gtk_goban_size_allocate (GtkWidget *widget, GtkAllocation *allocation)
   int horizontal_gap_pixels;
   int vertical_padding;
 
-  assert (goban->width != 0 && goban->height != 0);
+  g_return_if_fail (goban->width != 0 && goban->height != 0);
 
   cell_size = floor (MIN (allocation->width / (goban->width
 					       + 2 * horizontal_gap),
@@ -736,7 +735,7 @@ gtk_goban_expose (GtkWidget *widget, GdkEventExpose *event)
     if (GDK_IS_PIXBUF (goban->checkerboard_pattern_object))
       checkerboard_pattern_mode = CHECKERBOARD_PATTERN_WITH_PIXBUF;
     else {
-      assert (GDK_IS_PIXMAP (goban->checkerboard_pattern_object));
+      g_assert (GDK_IS_PIXMAP (goban->checkerboard_pattern_object));
       checkerboard_pattern_mode = CHECKERBOARD_PATTERN_WITH_PIXMAP;
     }
   }
@@ -848,7 +847,7 @@ gtk_goban_expose (GtkWidget *widget, GdkEventExpose *event)
 	  }
 
 	  if (markup_tile != TILE_NONE) {
-	    assert (markup_tile != TILE_SPECIAL);
+	    g_assert (markup_tile != TILE_SPECIAL);
 
 	    gdk_draw_pixbuf (window, gc,
 			     goban->small_tile_set->tiles[markup_tile],
@@ -1407,7 +1406,7 @@ gtk_goban_update (GtkGoban *goban,
   int y;
   int last_move_pos;
 
-  assert (GTK_IS_GOBAN (goban));
+  g_return_if_fail (GTK_IS_GOBAN (goban));
 
   for (k = NUM_OVERLAYS; --k >= 0;)
     set_overlay_data (goban, k, NULL, TILE_NONE, TILE_NONE, SGF_MARKUP_NONE);
@@ -1572,11 +1571,11 @@ gtk_goban_set_label_feedback (GtkGoban *goban, int x, int y,
   int positions_to_invalidate[2] = { NULL_POSITION, NULL_POSITION };
   gboolean free_data = TRUE;
 
-  assert (GTK_IS_GOBAN (goban));
-  assert (0 <= ghost_level && ghost_level < NUM_LABEL_GHOST_LEVELS);
+  g_return_if_fail (GTK_IS_GOBAN (goban));
+  g_return_if_fail (0 <= ghost_level && ghost_level < NUM_LABEL_GHOST_LEVELS);
 
   if (ON_SIZED_GRID (goban->width, goban->height, x, y)) {
-    assert (label_text && *label_text);
+    g_return_if_fail (label_text && *label_text);
 
     if (goban->label_feedback_pos != POSITION (x, y)) {
       positions_to_invalidate[0] = goban->label_feedback_pos;
@@ -1593,7 +1592,7 @@ gtk_goban_set_label_feedback (GtkGoban *goban, int x, int y,
     goban->label_feedback_ghost_level = ghost_level;
   }
   else {
-    assert (x == NULL_X && y == NULL_Y && !label_text);
+    g_return_if_fail (x == NULL_X && y == NULL_Y && !label_text);
 
     positions_to_invalidate[0] = goban->label_feedback_pos;
     goban->label_feedback_pos  = NULL_POSITION;
@@ -1643,14 +1642,15 @@ gtk_goban_set_overlay_data (GtkGoban *goban, int overlay_index,
        && board_position_lists_overlap (feedback_position_list,
 					position_list));
 
-  assert (goban);
-  assert (0 <= overlay_index && overlay_index < NUM_OVERLAYS
-	  && overlay_index != FEEDBACK_OVERLAY);
-  assert ((0 <= tile && tile < NUM_TILES) || tile == GOBAN_TILE_DONT_CHANGE);
-  assert ((0 <= goban_markup_tile && goban_markup_tile < NUM_TILES)
-	  || goban_markup_tile == GOBAN_TILE_DONT_CHANGE);
-  assert (tile != GOBAN_TILE_DONT_CHANGE
-	  || goban_markup_tile != GOBAN_TILE_DONT_CHANGE);
+  g_return_if_fail (goban);
+  g_return_if_fail (0 <= overlay_index && overlay_index < NUM_OVERLAYS
+		    && overlay_index != FEEDBACK_OVERLAY);
+  g_return_if_fail ((0 <= tile && tile < NUM_TILES)
+		    || tile == GOBAN_TILE_DONT_CHANGE);
+  g_return_if_fail ((0 <= goban_markup_tile && goban_markup_tile < NUM_TILES)
+		    || goban_markup_tile == GOBAN_TILE_DONT_CHANGE);
+  g_return_if_fail (tile != GOBAN_TILE_DONT_CHANGE
+		    || goban_markup_tile != GOBAN_TILE_DONT_CHANGE);
 
   if (need_feedback_poll) {
     set_overlay_data (goban, FEEDBACK_OVERLAY, NULL,
@@ -1670,8 +1670,8 @@ gtk_goban_set_overlay_data (GtkGoban *goban, int overlay_index,
 void
 gtk_goban_disable_anti_slip_mode (GtkGoban *goban)
 {
-  assert (GTK_IS_GOBAN (goban));
-  assert (goban->button_pressed != 0);
+  g_return_if_fail (GTK_IS_GOBAN (goban));
+  g_return_if_fail (goban->button_pressed != 0);
 
   goban->anti_slip_disabled = TRUE;
 }
@@ -1685,8 +1685,8 @@ gtk_goban_set_contents (GtkGoban *goban, BoardPositionList *position_list,
 {
   int k;
 
-  assert (GTK_IS_GOBAN (goban));
-  assert (goban->base.game != GAME_DUMMY);
+  g_return_if_fail (GTK_IS_GOBAN (goban));
+  g_return_if_fail (goban->base.game != GAME_DUMMY);
 
   for (k = NUM_OVERLAYS; --k >= 0;)
     set_overlay_data (goban, k, NULL, TILE_NONE, TILE_NONE, SGF_MARKUP_NONE);
@@ -1705,9 +1705,10 @@ gtk_goban_get_grid_contents (GtkGoban *goban, int x, int y)
   int k;
   int pos = POSITION (x, y);
 
-  assert (GTK_IS_GOBAN (goban));
-  assert (goban->base.game != GAME_DUMMY);
-  assert (ON_SIZED_GRID (goban->width, goban->height, x, y));
+  g_return_val_if_fail (GTK_IS_GOBAN (goban), OFF_GRID);
+  g_return_val_if_fail (goban->base.game != GAME_DUMMY, OFF_GRID);
+  g_return_val_if_fail (ON_SIZED_GRID (goban->width, goban->height, x, y),
+			OFF_GRID);
 
   for (k = NUM_OVERLAYS; --k >= 0;) {
     if (goban->overlay_positon_lists[k]) {
@@ -1730,9 +1731,10 @@ gtk_goban_get_sgf_markup_contents (GtkGoban *goban, int x, int y)
   int k;
   int pos = POSITION (x, y);
 
-  assert (GTK_IS_GOBAN (goban));
-  assert (goban->base.game != GAME_DUMMY);
-  assert (ON_SIZED_GRID (goban->width, goban->height, x, y));
+  g_return_val_if_fail (GTK_IS_GOBAN (goban), SGF_MARKUP_NONE);
+  g_return_val_if_fail (goban->base.game != GAME_DUMMY, SGF_MARKUP_NONE);
+  g_return_val_if_fail (ON_SIZED_GRID (goban->width, goban->height, x, y),
+			SGF_MARKUP_NONE);
 
   for (k = NUM_OVERLAYS; --k >= 0;) {
     if (goban->overlay_positon_lists[k]) {
@@ -1769,9 +1771,9 @@ emit_pointer_moved (GtkGoban *goban, int x, int y, GdkModifierType modifiers)
 
     g_signal_emit (goban, goban_signals[POINTER_MOVED], 0, &data, &feedback);
 
-    assert (data.button
-	    || ((feedback & GOBAN_FEEDBACK_GRID_MASK)
-		!= GOBAN_FEEDBACK_PRESS_DEFAULT));
+    g_assert (data.button
+	      || ((feedback & GOBAN_FEEDBACK_GRID_MASK)
+		  != GOBAN_FEEDBACK_PRESS_DEFAULT));
 
     if (data.feedback_position_list)
       set_feedback_data (goban, x, y, data.feedback_position_list, feedback);
@@ -1897,7 +1899,7 @@ set_feedback_data (GtkGoban *goban,
     {
       int color_index = feedback_grid - GOBAN_FEEDBACK_MOVE;
 
-      assert (position_list->num_positions == 1);
+      g_return_if_fail (position_list->num_positions == 1);
 
       if (COLOR_INDEX (goban->grid[POSITION (x, y)]) != color_index)
 	feedback_tile = STONE_50_TRANSPARENT + color_index;
@@ -2272,7 +2274,7 @@ get_or_create_label_feedback_pixbuf (GtkGoban *goban, gint background)
 						 pixel_data, row_stride);
     }
     else
-      assert (0);
+      g_assert_not_reached ();
 
     goban->label_ghost_pixbufs[ghost_level][background]
       = gdk_pixbuf_new_from_data (saturated_pixels, GDK_COLORSPACE_RGB,

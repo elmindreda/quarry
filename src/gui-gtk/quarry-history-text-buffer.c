@@ -22,7 +22,6 @@
 
 #include "quarry-history-text-buffer.h"
 
-#include <assert.h>
 #include <gtk/gtk.h>
 
 
@@ -153,7 +152,7 @@ quarry_history_text_buffer_finalize (GObject *object)
 gboolean
 quarry_history_text_buffer_can_undo (const QuarryHistoryTextBuffer *buffer)
 {
-  assert (QUARRY_IS_HISTORY_TEXT_BUFFER (buffer));
+  g_return_val_if_fail (QUARRY_IS_HISTORY_TEXT_BUFFER (buffer), FALSE);
 
   return buffer->last_applied_entry != NULL;
 }
@@ -162,7 +161,7 @@ quarry_history_text_buffer_can_undo (const QuarryHistoryTextBuffer *buffer)
 gboolean
 quarry_history_text_buffer_can_redo (const QuarryHistoryTextBuffer *buffer)
 {
-  assert (QUARRY_IS_HISTORY_TEXT_BUFFER (buffer));
+  g_return_val_if_fail (QUARRY_IS_HISTORY_TEXT_BUFFER (buffer), FALSE);
 
   return buffer->last_applied_entry != buffer->undo_history_end;
 }
@@ -171,7 +170,7 @@ quarry_history_text_buffer_can_redo (const QuarryHistoryTextBuffer *buffer)
 void
 quarry_history_text_buffer_undo (QuarryHistoryTextBuffer *buffer)
 {
-  assert (quarry_history_text_buffer_can_undo (buffer));
+  g_return_if_fail (quarry_history_text_buffer_can_undo (buffer));
 
   quarry_text_buffer_undo (&buffer->text_buffer,
 			   ((const QuarryTextBufferUndoEntry *)
@@ -183,7 +182,7 @@ quarry_history_text_buffer_undo (QuarryHistoryTextBuffer *buffer)
 void
 quarry_history_text_buffer_redo (QuarryHistoryTextBuffer *buffer)
 {
-  assert (quarry_history_text_buffer_can_redo (buffer));
+  g_return_if_fail (quarry_history_text_buffer_can_redo (buffer));
 
   buffer->last_applied_entry = (buffer->last_applied_entry
 				? buffer->last_applied_entry->next
@@ -198,7 +197,7 @@ quarry_history_text_buffer_redo (QuarryHistoryTextBuffer *buffer)
 void
 quarry_history_text_buffer_reset_history (QuarryHistoryTextBuffer *buffer)
 {
-  assert (QUARRY_IS_HISTORY_TEXT_BUFFER (buffer));
+  g_return_if_fail (QUARRY_IS_HISTORY_TEXT_BUFFER (buffer));
 
   g_list_foreach (buffer->undo_history_begin,
 		  (GFunc) quarry_text_buffer_undo_entry_delete, NULL);

@@ -38,7 +38,6 @@
 #include "game-info.h"
 
 #include <gtk/gtk.h>
-#include <assert.h>
 
 
 static void	      gtk_new_game_dialog_init (GtkNewGameDialog *dialog);
@@ -777,7 +776,9 @@ get_game_rules_help_link_id (GtkNewGameDialog *dialog)
     return "new-game-dialog-reversi-rules";
 
   default:
-    assert (0);
+    g_warning ("unhandled game %s",
+	       INDEX_TO_GAME_NAME (get_selected_game (dialog)));
+    return NULL;
   }
 }
 
@@ -920,6 +921,7 @@ begin_game (GtkEnginesInstantiationStatus status, gpointer user_data)
   }
   else {
     switch (time_control_configuration->type) {
+      /* FIXME: Should be an enumeration, not hardwired constants. */
     case 1:
       time_control_configuration->game_time_limit
 	= gtk_adjustment_get_value (time_control_data->game_time_limit);
@@ -953,7 +955,7 @@ begin_game (GtkEnginesInstantiationStatus status, gpointer user_data)
       break;
 
     default:
-      assert (0);
+      g_assert_not_reached ();
     }
 
     time_control_save_settings_in_sgf_node (time_control,

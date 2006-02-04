@@ -28,7 +28,6 @@
 #include <gtk/gtk.h>
 #include <stdio.h>
 #include <math.h>
-#include <assert.h>
 
 
 static void	 gtk_progress_dialog_class_init
@@ -132,11 +131,13 @@ gtk_progress_dialog_new (GtkWindow *parent,
 			 GtkProgressDialogCallback cancel_callback,
 			 gpointer user_data)
 {
-  GtkWidget *widget = GTK_WIDGET (g_object_new (GTK_TYPE_PROGRESS_DIALOG,
-						NULL));
-  GtkProgressDialog *progress_dialog = GTK_PROGRESS_DIALOG (widget);
+  GtkWidget *widget;
+  GtkProgressDialog *progress_dialog;
 
-  assert (!parent || GTK_IS_WINDOW (parent));
+  g_return_val_if_fail (!parent || GTK_IS_WINDOW (parent), NULL);
+
+  widget	  = GTK_WIDGET (g_object_new (GTK_TYPE_PROGRESS_DIALOG, NULL));
+  progress_dialog = GTK_PROGRESS_DIALOG (widget);
 
   progress_dialog->parent = (parent ? GTK_WIDGET (parent) : NULL);
   if (progress_dialog->parent) {
@@ -174,8 +175,8 @@ void
 gtk_progress_dialog_set_help_link_id (GtkProgressDialog *dialog,
 				      const gchar *help_link_id)
 {
-  assert (GTK_IS_PROGRESS_DIALOG (dialog));
-  assert (!dialog->help_link_id);
+  g_return_if_fail (GTK_IS_PROGRESS_DIALOG (dialog));
+  g_return_if_fail (!dialog->help_link_id);
 
   dialog->help_link_id = help_link_id;
   gtk_dialog_add_button (&dialog->dialog, GTK_STOCK_HELP, GTK_RESPONSE_HELP);
@@ -220,10 +221,8 @@ gtk_progress_dialog_response (GtkDialog *dialog, gint response_id)
 					     progress_dialog->user_data))
       gtk_widget_destroy (GTK_WIDGET (dialog));
   }
-  else {
-    assert (progress_dialog->help_link_id);
+  else
     gtk_help_display (progress_dialog->help_link_id);
-  }
 }
 
 
@@ -262,7 +261,7 @@ void
 gtk_progress_dialog_set_fraction (GtkProgressDialog *progress_dialog,
 				  gdouble fraction, const gchar *title_part)
 {
-  assert (GTK_IS_PROGRESS_DIALOG (progress_dialog));
+  g_return_if_fail (GTK_IS_PROGRESS_DIALOG (progress_dialog));
 
   gtk_progress_bar_set_fraction (progress_dialog->progress_bar, fraction);
   if (!GTK_WIDGET_VISIBLE (progress_dialog->progress_bar))
@@ -288,7 +287,7 @@ gtk_progress_dialog_set_fraction (GtkProgressDialog *progress_dialog,
 void
 gtk_progress_dialog_recover_parent (GtkProgressDialog *progress_dialog)
 {
-  assert (GTK_IS_PROGRESS_DIALOG (progress_dialog));
+  g_return_if_fail (GTK_IS_PROGRESS_DIALOG (progress_dialog));
 
   if (progress_dialog->parent) {
     g_signal_handlers_disconnect_by_func (progress_dialog->parent,

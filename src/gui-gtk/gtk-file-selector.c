@@ -30,7 +30,6 @@
 
 #include "quarry-marshal.h"
 
-#include <assert.h>
 #include <gtk/gtk.h>
 #include <string.h>
 
@@ -134,7 +133,7 @@ void
 gtk_file_selector_set_glob_patterns (GtkFileSelector *selector,
 				     const gchar *patterns)
 {
-  assert (GTK_IS_FILE_SELECTOR (selector));
+  g_return_if_fail (GTK_IS_FILE_SELECTOR (selector));
 
   free_glob_patterns (selector);
 
@@ -152,8 +151,8 @@ gtk_file_selector_set_glob_patterns (GtkFileSelector *selector,
 void
 gtk_file_selector_set_text (GtkFileSelector *selector, const gchar *text)
 {
-  assert (GTK_IS_FILE_SELECTOR (selector));
-  assert (text);
+  g_return_if_fail (GTK_IS_FILE_SELECTOR (selector));
+  g_return_if_fail (text);
 
   gtk_entry_set_text (GTK_ENTRY (GTK_BIN (selector)->child), text);
 
@@ -167,7 +166,7 @@ gtk_file_selector_repopulate (GtkFileSelector *selector)
   GtkEntry *entry;
   gchar *current_directory;
 
-  assert (GTK_IS_FILE_SELECTOR (selector));
+  g_return_if_fail (GTK_IS_FILE_SELECTOR (selector));
 
   entry = GTK_ENTRY (GTK_BIN (selector)->child);
   current_directory = g_path_get_dirname (gtk_entry_get_text (entry));

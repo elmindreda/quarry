@@ -29,7 +29,6 @@
 #include "quarry-stock.h"
 #include "utils.h"
 
-#include <assert.h>
 #include <stdarg.h>
 #include <string.h>
 
@@ -111,10 +110,10 @@ gtk_utils_add_similar_bindings (GtkBindingSet *binding_set,
 {
   int k;
 
-  assert (binding_set);
-  assert (signal_name);
-  assert (bindings);
-  assert (num_bindings > 0);
+  g_return_if_fail (binding_set);
+  g_return_if_fail (signal_name);
+  g_return_if_fail (bindings);
+  g_return_if_fail (num_bindings > 0);
 
   for (k = 0; k < num_bindings; k++) {
     gtk_binding_entry_add_signal (binding_set,
@@ -132,7 +131,7 @@ gtk_utils_make_window_only_horizontally_resizable (GtkWindow *window)
 {
   GdkGeometry geometry;
 
-  assert (GTK_IS_WINDOW (window));
+  g_return_if_fail (GTK_IS_WINDOW (window));
 
   geometry.max_width  = G_MAXINT;
   geometry.max_height = -1;
@@ -145,8 +144,8 @@ gtk_utils_make_window_only_horizontally_resizable (GtkWindow *window)
 void
 gtk_utils_standardize_dialog (GtkDialog *dialog, GtkWidget *contents)
 {
-  assert (GTK_IS_DIALOG (dialog));
-  assert (GTK_IS_CONTAINER (contents));
+  g_return_if_fail (GTK_IS_DIALOG (dialog));
+  g_return_if_fail (GTK_IS_CONTAINER (contents));
  
   gtk_widget_set_name (GTK_WIDGET (dialog), "quarry-dialog");
 
@@ -158,7 +157,7 @@ gtk_utils_standardize_dialog (GtkDialog *dialog, GtkWidget *contents)
 void
 gtk_utils_show_and_forget_dialog (GtkDialog *dialog)
 {
-  assert (GTK_IS_DIALOG (dialog));
+  g_return_if_fail (GTK_IS_DIALOG (dialog));
 
   g_signal_connect (dialog, "response", G_CALLBACK (gtk_widget_destroy), NULL);
   gtk_window_present (GTK_WINDOW (dialog));
@@ -169,7 +168,7 @@ void
 gtk_utils_null_pointer_on_destroy (GtkWindow **window_pointer,
 				   gboolean ask_control_center)
 {
-  assert (window_pointer && GTK_IS_WINDOW (*window_pointer));
+  g_return_if_fail (window_pointer && GTK_IS_WINDOW (*window_pointer));
 
   g_signal_connect (*window_pointer, "destroy",
 		    G_CALLBACK (ask_control_center
@@ -182,7 +181,7 @@ gtk_utils_null_pointer_on_destroy (GtkWindow **window_pointer,
 static void
 null_pointer_on_destroy (GtkWindow *window, GtkWindow **window_pointer)
 {
-  assert (window == *window_pointer);
+  g_return_if_fail (window == *window_pointer);
 
   *window_pointer = NULL;
 }
@@ -192,7 +191,7 @@ static void
 null_pointer_on_destroy_ask_control_center (GtkWindow *window,
 					    GtkWindow **window_pointer)
 {
-  assert (window == *window_pointer);
+  g_return_if_fail (window == *window_pointer);
 
   if (gtk_control_center_window_destroyed (window))
     *window_pointer = NULL;
@@ -277,8 +276,8 @@ gtk_utils_create_titled_page (GtkWidget *contents,
   GtkWidget *title_widget;
   GtkWidget *hseparator;
 
-  assert (GTK_IS_WIDGET (contents));
-  assert (icon_stock_id || title);
+  g_return_val_if_fail (GTK_IS_WIDGET (contents), NULL);
+  g_return_val_if_fail (icon_stock_id || title, NULL);
 
   if (icon_stock_id) {
     image = gtk_image_new_from_stock (icon_stock_id,
@@ -341,15 +340,19 @@ gtk_utils_pack_in_box (GType box_type, gint spacing, ...)
   while ((widget = va_arg (arguments, GtkWidget *)) != NULL) {
     guint packing_parameters = va_arg (arguments, guint);
 
-    assert (GTK_IS_WIDGET (widget));
+    if (GTK_IS_WIDGET (widget)) {
+      if (packing_parameters & GTK_UTILS_PACK_END)
+	packing_function = gtk_box_pack_end;
 
-    if (packing_parameters & GTK_UTILS_PACK_END)
-      packing_function = gtk_box_pack_end;
-
-    packing_function (box, widget,
-		      packing_parameters & GTK_UTILS_EXPAND ? TRUE : FALSE,
-		      packing_parameters & GTK_UTILS_FILL ? TRUE : FALSE,
-		      packing_parameters & GTK_UTILS_PACK_PADDING_MASK);
+      packing_function (box, widget,
+			packing_parameters & GTK_UTILS_EXPAND ? TRUE : FALSE,
+			packing_parameters & GTK_UTILS_FILL ? TRUE : FALSE,
+			packing_parameters & GTK_UTILS_PACK_PADDING_MASK);
+    }
+    else {
+      g_critical ("argument of type %s is not a widget",
+		  G_OBJECT_TYPE_NAME (widget));
+    }
   }
 
   return GTK_WIDGET (box);
@@ -385,10 +388,7 @@ gtk_utils_align_widget (GtkWidget *widget,
   GtkWidget *alignment = gtk_alignment_new (x_alignment, y_alignment,
 					    0.0, 0.0);
 
-  assert (GTK_IS_WIDGET (widget));
-
   gtk_container_add (GTK_CONTAINER (alignment), widget);
-
   return alignment;
 }
 
@@ -397,8 +397,6 @@ GtkWidget *
 gtk_utils_sink_widget (GtkWidget *widget)
 {
   GtkWidget *frame = gtk_frame_new (NULL);
-
-  assert (GTK_IS_WIDGET (widget));
 
   gtk_frame_set_shadow_type (GTK_FRAME (frame), GTK_SHADOW_IN);
   gtk_container_add (GTK_CONTAINER (frame), widget);
@@ -413,8 +411,6 @@ gtk_utils_make_widget_scrollable (GtkWidget *widget,
 				  GtkPolicyType vscrollbar_policy)
 {
   GtkWidget *scrolled_window = gtk_scrolled_window_new (NULL, NULL);
-
-  assert (GTK_IS_WIDGET (widget));
 
   gtk_scrolled_window_set_policy (GTK_SCROLLED_WINDOW (scrolled_window),
 				  hscrollbar_policy, vscrollbar_policy);
@@ -498,17 +494,19 @@ gtk_utils_create_browse_button (gboolean with_text,
 				gpointer user_data)
 {
   GtkWidget *button;
-  GtkUtilsBrowseButtonData *data
-    = g_malloc (sizeof (GtkUtilsBrowseButtonData));
+  GtkUtilsBrowseButtonData *data;
 
-  assert (browsing_dialog_caption);
+  g_return_val_if_fail (browsing_dialog_caption, NULL);
 
 #ifdef GTK_TYPE_FILE_SELECTOR
-  assert (GTK_IS_ENTRY (associated_entry)
-	  || GTK_IS_FILE_SELECTOR (associated_entry));
+  g_return_val_if_fail (GTK_IS_ENTRY (associated_entry)
+			|| GTK_IS_FILE_SELECTOR (associated_entry),
+			NULL);
 #else
-  assert (GTK_IS_ENTRY (associated_entry));
+  g_return_val_if_fail (GTK_IS_ENTRY (associated_entry), NULL);
 #endif
+
+  data = g_malloc (sizeof (GtkUtilsBrowseButtonData));
 
   if (with_text)
     button = gtk_button_new_from_stock (QUARRY_STOCK_BROWSE);
@@ -594,8 +592,11 @@ browsing_dialog_response (GtkWidget *file_dialog, gint response_id,
 				  filename_in_utf8);
     }
 #endif /* defined GTK_TYPE_FILE_SELECTOR */
-    else
-      assert (0);
+    else {
+      g_critical ("unhandled entry type %s",
+		  G_OBJECT_TYPE_NAME (data->associated_entry));
+      return;
+    }
 
     gtk_widget_grab_focus (data->associated_entry);
 
@@ -651,7 +652,7 @@ gtk_utils_convert_to_time_spin_button (GtkSpinButton *spin_button)
   gdouble upper_limit;
   gint max_width;
 
-  assert (adjustment);
+  g_return_if_fail (adjustment);
 
   g_signal_connect (spin_button, "output",
 		    G_CALLBACK (time_spin_button_output), NULL);
@@ -733,8 +734,8 @@ gtk_utils_create_selector (const gchar **items, gint num_items,
   GtkWidget *widget;
   int k;
 
-  assert (items);
-  assert (num_items > 0);
+  g_return_val_if_fail (items, NULL);
+  g_return_val_if_fail (num_items > 0, NULL);
 
 #if GTK_2_4_OR_LATER
 
@@ -786,8 +787,8 @@ gtk_utils_create_selector_from_string_list (void *abstract_list,
   StringListItem *list_item;
   int k;
 
-  assert (string_list);
-  assert (string_list->first);
+  g_return_val_if_fail (string_list, NULL);
+  g_return_val_if_fail (string_list->first, NULL);
 
 #if GTK_2_4_OR_LATER
 
@@ -880,8 +881,8 @@ gtk_utils_create_radio_chain (GtkWidget **radio_buttons,
   GtkRadioButton *last_button = NULL;
   int k;
 
-  assert (radio_buttons);
-  assert (label_texts);
+  g_return_if_fail (radio_buttons);
+  g_return_if_fail (label_texts);
 
   for (k = 0; k < num_radio_buttons; k++) {
     radio_buttons[k]
@@ -900,10 +901,8 @@ gtk_utils_create_size_group (GtkSizeGroupMode mode, ...)
   va_list arguments;
 
   va_start (arguments, mode);
-  while ((widget = va_arg (arguments, GtkWidget *)) != NULL) {
-    assert (GTK_IS_WIDGET (widget));
+  while ((widget = va_arg (arguments, GtkWidget *)) != NULL)
     gtk_size_group_add_widget (size_group, widget);
-  }
 
   va_end (arguments);
 
@@ -916,8 +915,8 @@ GtkSizeGroup *
 gtk_utils_align_left_widgets (GtkContainer *container,
 			      GtkSizeGroup *size_group)
 {
-  assert (GTK_IS_CONTAINER (container));
-  assert (!size_group || GTK_IS_SIZE_GROUP (size_group));
+  g_return_val_if_fail (GTK_IS_CONTAINER (container), NULL);
+  g_return_val_if_fail (!size_group || GTK_IS_SIZE_GROUP (size_group), NULL);
 
   if (!size_group)
     size_group = gtk_size_group_new (GTK_SIZE_GROUP_HORIZONTAL);
@@ -972,7 +971,7 @@ gtk_utils_append_toolbar_button (GtkToolbar *toolbar,
 
   GtkToolItem *button;
 
-  assert (entry);
+  g_return_val_if_fail (entry, NULL);
 
   button = gtk_tool_button_new ((gtk_image_new_from_stock
 				 (entry->icon_stock_id,
@@ -999,7 +998,7 @@ gtk_utils_append_toolbar_button (GtkToolbar *toolbar,
 
   GtkWidget *button;
 
-  assert (entry);
+  g_return_val_if_fail (entry, NULL);
 
   UNUSED (flags);
 
@@ -1040,8 +1039,8 @@ gtk_utils_set_toolbar_buttons_sensitive (GtkToolbar *toolbar,
 {
   GtkUtilsToolbarCallbackArguments callback_arguments;
 
-  assert (GTK_IS_TOOLBAR (toolbar));
-  assert (toolbar_button_entry_quark);
+  g_return_if_fail (GTK_IS_TOOLBAR (toolbar));
+  g_return_if_fail (toolbar_button_entry_quark);
 
   callback_arguments.are_sensitive = are_sensitive;
   va_start (callback_arguments.entries, are_sensitive);
@@ -1088,7 +1087,7 @@ set_toolbar_item_sensitive (GtkWidget *button,
 void
 gtk_utils_set_text_buffer_text (GtkTextBuffer *text_buffer, const gchar *text)
 {
-  assert (GTK_IS_TEXT_BUFFER (text_buffer));
+  g_return_if_fail (GTK_IS_TEXT_BUFFER (text_buffer));
 
   if (text) {
     gint length = strlen (text);
@@ -1164,8 +1163,8 @@ gtk_utils_set_sensitive_on_toggle (GtkToggleButton *toggle_button,
        ? set_widget_sensitivity_on_toggle_reversed
        : set_widget_sensitivity_on_toggle);
 
-  assert (GTK_IS_TOGGLE_BUTTON (toggle_button));
-  assert (GTK_IS_WIDGET (widget));
+  g_return_if_fail (GTK_IS_TOGGLE_BUTTON (toggle_button));
+  g_return_if_fail (GTK_IS_WIDGET (widget));
 
   set_widget_sensitivity_function (toggle_button, widget);
   g_signal_connect (toggle_button, "toggled",
@@ -1195,8 +1194,8 @@ set_widget_sensitivity_on_toggle_reversed (GtkToggleButton *toggle_button,
 void
 gtk_utils_set_sensitive_on_input (GtkEntry *entry, GtkWidget *widget)
 {
-  assert (GTK_IS_ENTRY (entry));
-  assert (GTK_IS_WIDGET (widget));
+  g_return_if_fail (GTK_IS_ENTRY (entry));
+  g_return_if_fail (GTK_IS_WIDGET (widget));
 
   set_widget_sensitivity_on_input (entry, widget);
   g_signal_connect (entry, "changed",
@@ -1216,7 +1215,7 @@ set_widget_sensitivity_on_input (GtkEntry *entry, GtkWidget *widget)
 void
 gtk_utils_freeze_on_empty_input (GtkFreezableSpinButton *freezable_spin_button)
 {
-  assert (GTK_IS_FREEZABLE_SPIN_BUTTON (freezable_spin_button));
+  g_return_if_fail (GTK_IS_FREEZABLE_SPIN_BUTTON (freezable_spin_button));
 
   g_signal_connect (freezable_spin_button, "input",
 		    G_CALLBACK (freeze_on_empty_input), NULL);
@@ -1271,7 +1270,7 @@ gtk_utils_set_menu_items_sensitive (GtkItemFactory *item_factory,
   va_list arguments;
   const gchar *path;
 
-  assert (GTK_IS_ITEM_FACTORY (item_factory));
+  g_return_if_fail (GTK_IS_ITEM_FACTORY (item_factory));
 
   va_start (arguments, are_sensitive);
   while ((path = va_arg (arguments, const gchar *)) != NULL) {
@@ -1286,7 +1285,7 @@ gtk_utils_set_menu_items_sensitive (GtkItemFactory *item_factory,
 void
 gtk_utils_set_gdk_color (GdkColor *gdk_color, QuarryColor quarry_color)
 {
-  assert (gdk_color);
+  g_return_if_fail (gdk_color);
 
   gdk_color->red   = (quarry_color.red * G_MAXUINT16) / G_MAXUINT8;
   gdk_color->green = (quarry_color.green * G_MAXUINT16) / G_MAXUINT8;
@@ -1298,8 +1297,8 @@ void
 gtk_utils_set_quarry_color (QuarryColor *quarry_color,
 			    const GdkColor *gdk_color)
 {
-  assert (quarry_color);
-  assert (gdk_color);
+  g_return_if_fail (quarry_color);
+  g_return_if_fail (gdk_color);
 
   quarry_color->red   = (gdk_color->red * G_MAXUINT8) / G_MAXUINT16;
   quarry_color->green = (gdk_color->green * G_MAXUINT8) / G_MAXUINT16;

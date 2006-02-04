@@ -24,7 +24,6 @@
 
 #include "gtk-utils.h"
 
-#include <assert.h>
 #include <gtk/gtk.h>
 #include <stdarg.h>
 
@@ -182,7 +181,7 @@ quarry_message_dialog_new_valist (GtkWindow *parent,
 			    GTK_STOCK_OK, GTK_RESPONSE_OK, NULL);
 
   default:
-    assert (0);
+    g_critical ("unhandled button set type %d", buttons);
   }
 
   quarry_message_dialog_set_icon (dialog, icon_stock_id);
@@ -199,7 +198,7 @@ void
 quarry_message_dialog_set_icon (QuarryMessageDialog *dialog,
 				const gchar *icon_stock_id)
 {
-  assert (QUARRY_IS_MESSAGE_DIALOG (dialog));
+  g_return_if_fail (QUARRY_IS_MESSAGE_DIALOG (dialog));
 
   gtk_image_set_from_stock (GTK_IMAGE (dialog->image),
 			    icon_stock_id, GTK_ICON_SIZE_DIALOG);
@@ -217,7 +216,7 @@ quarry_message_dialog_set_primary_text (QuarryMessageDialog *dialog,
   gchar *escaped_text;
   gchar *marked_up_text;
 
-  assert (QUARRY_IS_MESSAGE_DIALOG (dialog));
+  g_return_if_fail (QUARRY_IS_MESSAGE_DIALOG (dialog));
 
   escaped_text	 = g_markup_escape_text (primary_text, -1);
   marked_up_text = g_strconcat ("<span weight=\"bold\" size=\"larger\">",
@@ -261,7 +260,7 @@ void
 quarry_message_dialog_set_secondary_text (QuarryMessageDialog *dialog,
 					  const gchar *secondary_text)
 {
-  assert (QUARRY_IS_MESSAGE_DIALOG (dialog));
+  g_return_if_fail (QUARRY_IS_MESSAGE_DIALOG (dialog));
 
   if (secondary_text && *secondary_text) {
     gchar *secondary_text_with_newline = g_strconcat ("\n", secondary_text,

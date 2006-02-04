@@ -24,7 +24,6 @@
 
 #include "quarry-marshal.h"
 
-#include <assert.h>
 #include <gtk/gtk.h>
 #include <string.h>
 
@@ -327,21 +326,24 @@ quarry_text_buffer_begin_user_action (GtkTextBuffer *text_buffer)
   GtkTextIter cursor_iterator;
   GTimeVal current_time;
 
-  assert (!buffer->current_undo_entry);
+  if (!buffer->current_undo_entry) {
+    gtk_text_buffer_get_iter_at_mark
+      (text_buffer, &cursor_iterator,
+       gtk_text_buffer_get_insert (text_buffer));
 
-  gtk_text_buffer_get_iter_at_mark (text_buffer, &cursor_iterator,
-				    gtk_text_buffer_get_insert (text_buffer));
+    buffer->current_undo_entry = quarry_text_buffer_undo_entry_new ();
 
-  buffer->current_undo_entry = quarry_text_buffer_undo_entry_new ();
+    buffer->current_undo_entry->cursor_offset_before
+      = gtk_text_iter_get_offset (&cursor_iterator);
+    buffer->current_undo_entry->state_index_before = buffer->state_index;
 
-  buffer->current_undo_entry->cursor_offset_before
-    = gtk_text_iter_get_offset (&cursor_iterator);
-  buffer->current_undo_entry->state_index_before = buffer->state_index;
+    g_get_current_time (&current_time);
 
-  g_get_current_time (&current_time);
-
-  buffer->previous_modification_time = buffer->last_modification_time;
-  buffer->last_modification_time     = current_time.tv_sec;
+    buffer->previous_modification_time = buffer->last_modification_time;
+    buffer->last_modification_time     = current_time.tv_sec;
+  }
+  else
+    g_critical ("inconsistent text buffer state...");
 
   if (parent_class->begin_user_action)
     parent_class->begin_user_action (text_buffer);
@@ -419,10 +421,10 @@ quarry_text_buffer_undo (QuarryTextBuffer *buffer,
   const QuarryTextBufferOperation *operation;
   guint last_assigned_state_index_copy;
 
-  assert (QUARRY_IS_TEXT_BUFFER (buffer));
-  assert (!buffer->current_undo_entry);
-  assert (undo_entry);
-  assert (undo_entry->state_index_after == buffer->state_index);
+  g_return_if_fail (QUARRY_IS_TEXT_BUFFER (buffer));
+  g_return_if_fail (!buffer->current_undo_entry);
+  g_return_if_fail (undo_entry);
+  g_return_if_fail (undo_entry->state_index_after == buffer->state_index);
 
   /* Not really necessary.  Just save a few states indices. */
   last_assigned_state_index_copy = buffer->last_assigned_state_index;
@@ -456,10 +458,10 @@ quarry_text_buffer_redo (QuarryTextBuffer *buffer,
   const QuarryTextBufferOperation *operation;
   guint last_assigned_state_index_copy;
 
-  assert (QUARRY_IS_TEXT_BUFFER (buffer));
-  assert (!buffer->current_undo_entry);
-  assert (undo_entry);
-  assert (undo_entry->state_index_before == buffer->state_index);
+  g_return_if_fail (QUARRY_IS_TEXT_BUFFER (buffer));
+  g_return_if_fail (!buffer->current_undo_entry);
+  g_return_if_fail (undo_entry);
+  g_return_if_fail (undo_entry->state_index_before == buffer->state_index);
 
   /* Not really necessary.  Just save a few states indices. */
   last_assigned_state_index_copy = buffer->last_assigned_state_index;
@@ -493,7 +495,7 @@ quarry_text_buffer_combine_undo_entries
   QuarryTextBufferTextOperation *current_operation;
   QuarryTextBufferTextOperation *previous_operation;
 
-  assert (QUARRY_IS_TEXT_BUFFER (buffer));
+  g_return_val_if_fail (QUARRY_IS_TEXT_BUFFER (buffer), FALSE);
 
   /* Don't combine if the user made a significant pause.  Sometimes we
    * also specifically set things up for this check to fail to inhibit
@@ -659,7 +661,7 @@ quarry_text_buffer_undo_entry_delete (QuarryTextBufferUndoEntry *undo_entry)
 {
   QuarryTextBufferOperation *operation;
 
-  assert (undo_entry);
+  g_return_if_fail (undo_entry);
 
   operation = undo_entry->first;
   while (operation) {
@@ -681,7 +683,7 @@ inline gboolean
 quarry_text_buffer_undo_entry_is_empty
   (const QuarryTextBufferUndoEntry *undo_entry)
 {
-  assert (undo_entry);
+  g_return_val_if_fail (undo_entry, TRUE);
   return undo_entry->first == NULL;
 }
 

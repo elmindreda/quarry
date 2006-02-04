@@ -42,7 +42,6 @@
 #include "sgf.h"
 #include "utils.h"
 
-#include <assert.h>
 #include <gtk/gtk.h>
 
 /* For chdir() function. */
@@ -166,7 +165,7 @@ gtk_parse_sgf_file (const char *filename, GtkWindow *parent,
   gchar *absolute_filename;
   gchar *filename_in_utf8;
 
-  assert (filename);
+  g_return_if_fail (filename);
 
   if (g_path_is_absolute (filename))
     absolute_filename = g_strdup (filename);

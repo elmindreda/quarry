@@ -32,8 +32,6 @@
 
 #include "gtk-qbox.h"
 
-#include <assert.h>
-
 
 static void	gtk_qbox_class_init (GtkQBoxClass *klass);
 static void	gtk_qbox_init (GtkQBox *qbox);
@@ -110,11 +108,11 @@ void
 gtk_qbox_set_ruling_widget (GtkQBox *qbox,
 			    GtkWidget *widget, GtkQBoxCallback widget_callback)
 {
-  assert (GTK_IS_QBOX (qbox));
+  g_return_if_fail (GTK_IS_QBOX (qbox));
 
   if (widget != NULL) {
-    assert (gtk_widget_get_parent (widget) == GTK_WIDGET (qbox));
-    assert (widget_callback);
+    g_return_if_fail (gtk_widget_get_parent (widget) == GTK_WIDGET (qbox));
+    g_return_if_fail (widget_callback);
   }
   else
     widget_callback = NULL;
@@ -127,7 +125,7 @@ gtk_qbox_set_ruling_widget (GtkQBox *qbox,
 GtkWidget *
 gtk_qbox_get_ruling_widget (GtkQBox *qbox)
 {
-  assert (GTK_IS_QBOX (qbox));
+  g_return_val_if_fail (GTK_IS_QBOX (qbox), NULL);
 
   return qbox->ruling_widget;
 }
@@ -136,7 +134,7 @@ gtk_qbox_get_ruling_widget (GtkQBox *qbox)
 GtkQBoxCallback
 gtk_qbox_get_ruling_widget_callback (GtkQBox *qbox)
 {
-  assert (GTK_IS_QBOX (qbox));
+  g_return_val_if_fail (GTK_IS_QBOX (qbox), NULL);
 
   return qbox->widget_callback;
 }
