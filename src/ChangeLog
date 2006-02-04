@@ -1,3 +1,12 @@
+2006-02-04  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* board/board.h: Include `assert.h' since
+	board_position_list_delete() uses assert().
+
+	* (Globally in gui-gtk/: use GLib g_return_*(), and other debug
+	macros instead of plain assert().  The intention is to make Quarry
+	more robust against programming errors.)
+
 2006-02-01  Paul Pogonyshev  <pogonyshev@gmx.net>
 
 	* gui-gtk/gtk-game-info-dialog.c (gtk_game_info_dialog_set_node):
