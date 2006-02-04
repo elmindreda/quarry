@@ -144,6 +144,7 @@ static void	    parse_unknown_property_values
 
 static int	    do_parse_number (SgfParsingData *data, int *number);
 static int	    do_parse_real (SgfParsingData *data, double *real);
+inline static int   do_parse_color (SgfParsingData *data);
 
 static char *	    do_parse_simple_text (SgfParsingData *data,
 					  char extra_stop_character);
@@ -985,14 +986,13 @@ complete_node_and_update_board (SgfParsingData *data, int is_leaf_node)
     if (data->node->move_color != EMPTY
 	|| sgf_node_find_property (data->node, SGF_MOVE_NUMBER, NULL)) {
       if (has_setup_add_properties
-	  || (sgf_node_get_color_property_value (data->node, SGF_TO_PLAY)
-	      == data->node->move_color)) {
+	  || data->node->to_play_color == data->node->move_color) {
 	sgf_node_split (data->node, data->tree);
 	insert_error (data, SGF_ERROR_MIXED_SETUP_ADD_AND_MOVE_PROPERTIES,
 		      &data->node_error_position);
       }
       else {
-	sgf_node_delete_property (data->node, data->tree, SGF_TO_PLAY);
+	data->node->to_play_color = EMPTY;
 	insert_error (data, SGF_ERROR_MIXED_PL_AND_MOVE_PROPERTIES,
 		      &data->node_error_position);
       }
@@ -1424,6 +1424,26 @@ sgf_parse_double (SgfParsingData *data)
 }
 
 
+static int
+do_parse_color (SgfParsingData *data)
+{
+  if (data->token == 'B')
+    return BLACK;
+
+  if (data->token == 'W')
+    return WHITE;
+
+  if (data->token == 'b' || data->token == 'w') {
+    add_error (data, SGF_WARNING_LOWER_CASE_COLOR,
+	       data->token, data->token - ('b' - 'B'));
+
+    return data->token == 'b' ? BLACK : WHITE;
+  }
+
+  return EMPTY;
+}
+
+
 /* Parse color value.  [W] stands for white and [B] - for black.  No
  * other values are allowed except that [w] and [b] are upcased and
  * warned about.
@@ -1432,6 +1452,7 @@ SgfError
 sgf_parse_color (SgfParsingData *data)
 {
   SgfProperty **link;
+  int color;
 
   if (sgf_node_find_property (data->node, data->property_type, &link))
     return SGF_FATAL_DUPLICATE_PROPERTY;
@@ -1440,21 +1461,11 @@ sgf_parse_color (SgfParsingData *data)
   if (data->token == ']')
     return SGF_FATAL_EMPTY_VALUE;
 
-  if (data->token == 'b' || data->token == 'w') {
-    char original_color = data->token;
+  color = do_parse_color (data);
 
-    data->token -= ('b' - 'B');
-    add_error (data, SGF_WARNING_LOWER_CASE_COLOR,
-	       original_color, data->token);
-  }
-
-  if (data->token == 'B' || data->token == 'W') {
+  if (color != EMPTY) {
     *link = sgf_property_new (data->tree, data->property_type, *link);
-    (*link)->value.color = (data->token == 'B' ? BLACK : WHITE);
-
-    /* `PL' is a setup property. */
-    if (data->property_type == SGF_TO_PLAY)
-      data->has_any_setup_property = 1;
+    (*link)->value.color = color;
 
     next_token_in_value (data);
     return end_parsing_value (data);
@@ -2838,6 +2849,30 @@ sgf_parse_time_limit (SgfParsingData *data)
 
   *link = sgf_property_new (data->tree, data->property_type, *link);
   return invalid_game_info_property (data, *link, &storage);
+}
+
+
+SgfError
+sgf_parse_to_play (SgfParsingData *data)
+{
+  if (data->node->to_play_color != EMPTY)
+    return SGF_FATAL_DUPLICATE_PROPERTY;
+
+  begin_parsing_value (data);
+  if (data->token == ']')
+    return SGF_FATAL_EMPTY_VALUE;
+
+  data->node->to_play_color = do_parse_color (data);
+
+  if (data->node->to_play_color != EMPTY) {
+    /* `PL' is a setup property. */
+    data->has_any_setup_property = 1;
+
+    next_token_in_value (data);
+    return end_parsing_value (data);
+  }
+
+  return SGF_FATAL_INVALID_VALUE;
 }
 
 

@@ -168,6 +168,7 @@ DECLARE_VALUE_PARSER (sgf_parse_setup_property);
 DECLARE_VALUE_PARSER (sgf_parse_style);
 DECLARE_VALUE_PARSER (sgf_parse_territory);
 DECLARE_VALUE_PARSER (sgf_parse_time_limit);
+DECLARE_VALUE_PARSER (sgf_parse_to_play);
 
 DECLARE_VALUE_PARSER (sgf_parse_letters);
 DECLARE_VALUE_PARSER (sgf_parse_simple_markup);
