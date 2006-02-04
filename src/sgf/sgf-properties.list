@@ -117,7 +117,7 @@ properties  SgfType property_info {
   # `AA' is specific to Amazons.
   AA	SGF_ADD_ARROWS		list_of_point	sgf_parse_setup_property
 
-  PL	SGF_TO_PLAY		color		sgf_parse_color
+  PL	SGF_TO_PLAY		not_stored	sgf_parse_to_play
 	= SGF_LAST_SETUP_PROPERTY
 
   #> Move properties.
