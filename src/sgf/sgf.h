@@ -33,6 +33,10 @@
 
 /* `sgf-tree.c' global declarations and functions. */
 
+/* Note that in this means that the node has one of the `add sth.'
+ * properties.  Other setup (in SGF sense) nodes, like `PL' do not
+ * count!
+ */
 #define SETUP_NODE		SPECIAL_ON_GRID_VALUE
 
 
@@ -226,6 +230,8 @@ struct _SgfNode {
   unsigned int		  is_collapsed : 1;
   unsigned int		  has_intermediate_map_data : 1;
 
+  unsigned int		  to_play_color : 2;
+
   unsigned int		  move_color : 2;
   BoardPoint		  move_point;
 
@@ -250,6 +256,8 @@ struct _SgfNodeGeneric {
   unsigned int		  is_collapsed : 1;
   unsigned int		  has_intermediate_map_data : 1;
 
+  unsigned int		  to_play_color : 2;
+
   unsigned int		  move_color : 2;
   BoardPoint		  move_point;
 
@@ -266,6 +274,8 @@ struct _SgfNodeAmazons {
 
   unsigned int		  is_collapsed : 1;
   unsigned int		  has_intermediate_map_data : 1;
+
+  unsigned int		  to_play_color : 2;
 
   unsigned int		  move_color : 2;
   BoardPoint		  move_point;
@@ -815,7 +825,7 @@ void	      sgf_utils_switch_to_given_variation (SgfGameTree *tree,
 void	      sgf_utils_switch_to_given_node (SgfGameTree *tree,
 					      SgfNode *node);
 
-void	      sgf_utils_append_variation (SgfGameTree *tree,
+SgfNode *     sgf_utils_append_variation (SgfGameTree *tree,
 					  int color, ...);
 
 int	      sgf_utils_apply_setup_changes (SgfGameTree *tree,
@@ -850,6 +860,11 @@ int	      sgf_utils_set_time_left (SgfNode *node, SgfGameTree *tree,
 				       int color,
 				       double time_left, int moves_left);
 
+int	      sgf_utils_determine_player_to_move_by_rules
+		(const SgfGameTree *tree);
+void	      sgf_utils_find_board_state_data (const SgfGameTree *tree,
+					       int need_color_to_move,
+					       int need_move_coordinates);
 void	      sgf_utils_find_time_control_data (const SgfGameTree *tree);
 
 void	      sgf_utils_delete_current_node (SgfGameTree *tree);

@@ -471,17 +471,19 @@ sgf_node_new (SgfGameTree *tree, SgfNode *parent)
   SgfNode *node;
 
   node = memory_pool_alloc (&tree->node_pool);
-  node->parent		  = parent;
-  node->child		  = NULL;
-  node->next		  = NULL;
-  node->current_variation = NULL;
+
+  node->parent			  = parent;
+  node->child			  = NULL;
+  node->next			  = NULL;
+  node->current_variation	  = NULL;
 
   node->is_collapsed		  = 0;
   node->has_intermediate_map_data = 0;
 
-  node->move_color = EMPTY;
+  node->to_play_color		  = EMPTY;
+  node->move_color		  = EMPTY;
 
-  node->properties = NULL;
+  node->properties		  = NULL;
 
   return node;
 }
@@ -581,7 +583,9 @@ sgf_node_duplicate (const SgfNode *node, SgfGameTree *tree, SgfNode *parent)
   assert (node);
   assert (tree);
 
-  node_copy->move_color = node->move_color;
+  node_copy->to_play_color = node->to_play_color;
+  node_copy->move_color	   = node->move_color;
+
   if (IS_STONE (node->move_color)) {
     node_copy->move_point = node->move_point;
 
