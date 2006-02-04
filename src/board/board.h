@@ -28,6 +28,7 @@
 #include "games.h"
 #include "quarry.h"
 
+#include <assert.h>
 #include <stdarg.h>
 
 
