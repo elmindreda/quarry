@@ -60,6 +60,7 @@
 #include "gtk-utils.h"
 #include "quarry-marshal.h"
 #include "quarry-message-dialog.h"
+#include "quarry-move-number-dialog.h"
 #include "quarry-save-confirmation-dialog.h"
 #include "quarry-stock.h"
 #include "gui-utils.h"
@@ -355,6 +356,7 @@ static void	 text_buffer_mark_set (GtkTextBuffer *text_buffer,
 static void	 fetch_comment_and_node_name (GtkGobanWindow *goban_window,
 					      gboolean for_current_node);
 
+static void	 set_move_number (GtkGobanWindow *goban_window);
 static void	 set_player_to_move (GtkGobanWindow *goban_window,
 				     guint callback_action,
 				     GtkCheckMenuItem *menu_item);
@@ -659,8 +661,11 @@ gtk_goban_window_init (GtkGobanWindow *goban_window)
     { N_("/Edit/Edit Node _Name"),	"<ctrl><alt>N",
       select_node_name,			0,
       "<Item>" },
+    { N_("/Edit/Set _Move Number"),	NULL,
+      set_move_number,			0,
+      "<Item>" },
 
-    { N_("/Edit/Set Player to _Move"), NULL, NULL, 0, "<Branch>" },
+    { N_("/Edit/Set _Player to Move"), NULL, NULL, 0, "<Branch>" },
     { N_("/Edit/Set Player to Move/_White"), NULL,
       set_player_to_move,		WHITE,
       "<RadioItem>" },
@@ -689,7 +694,7 @@ gtk_goban_window_init (GtkGobanWindow *goban_window)
       "<StockItem>",			GTK_STOCK_PROPERTIES },
     { N_("/Edit/"), NULL, NULL, 0, "<Separator>" },
 
-    { N_("/Edit/_Preferences"),		NULL,
+    { N_("/Edit/Pr_eferences"),		NULL,
       show_preferences_dialog,		0,
       "<StockItem>",			GTK_STOCK_PREFERENCES },
 
@@ -4723,6 +4728,14 @@ update_commands_sensitivity (const GtkGobanWindow *goban_window)
 				      "/Edit/Delete Node's Children", NULL);
 
   gtk_utils_set_menu_items_sensitive (goban_window->item_factory,
+				      /* FIXME: Not strictly following
+				       *	SGF, but let's not
+				       *	care for now.
+				       */
+				      IS_STONE (current_node->move_color),
+				      "/Edit/Set Move Number", NULL);
+
+  gtk_utils_set_menu_items_sensitive (goban_window->item_factory,
 				      !is_in_special_mode,
 				      "/Edit/Find", "/Edit/Find Next",
 				      "/Edit/Find Previous", NULL);
@@ -5113,6 +5126,59 @@ fetch_comment_and_node_name (GtkGobanWindow *goban_window,
 
     gtk_text_buffer_set_modified (goban_window->text_buffer, FALSE);
   }
+}
+
+
+static void
+set_move_number (GtkGobanWindow *goban_window)
+{
+  SgfGameTree *game_tree = goban_window->current_tree;
+  GtkWidget *dialog = quarry_move_number_dialog_new ();
+  QuarryMoveNumberDialog *move_number_dialog
+    = QUARRY_MOVE_NUMBER_DIALOG (dialog);
+  int move_number;
+
+  gtk_window_set_title (GTK_WINDOW (dialog), _("Set Move Number"));
+  gtk_window_set_transient_for (GTK_WINDOW (dialog),
+				GTK_WINDOW (goban_window));
+
+  quarry_move_number_dialog_set_sequential_move_number
+    (move_number_dialog, sgf_utils_get_sequential_move_number (game_tree));
+
+  if (sgf_node_get_number_property_value (game_tree->current_node,
+					  SGF_MOVE_NUMBER, &move_number)) {
+    quarry_move_number_dialog_set_specific_move_number (move_number_dialog,
+							move_number);
+    quarry_move_number_dialog_set_use_sequential_move_number
+      (move_number_dialog, FALSE);
+  }
+  else {
+    quarry_move_number_dialog_set_use_sequential_move_number
+      (move_number_dialog, TRUE);
+  }
+
+  if (gtk_dialog_run (GTK_DIALOG (dialog)) == GTK_RESPONSE_OK) {
+    int made_changes;
+
+    if (quarry_move_number_dialog_get_use_sequential_move_number
+	(move_number_dialog)) {
+      made_changes = sgf_utils_delete_property (game_tree->current_node,
+						game_tree, SGF_MOVE_NUMBER);
+    }
+    else {
+      move_number = (quarry_move_number_dialog_get_specific_move_number
+		     (move_number_dialog));
+      made_changes = sgf_utils_set_number_property (game_tree->current_node,
+						    game_tree,
+						    SGF_MOVE_NUMBER,
+						    move_number);
+    }
+
+    if (made_changes)
+      update_move_information (goban_window);
+  }
+
+  gtk_widget_destroy (dialog);
 }
 
 
