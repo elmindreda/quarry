@@ -252,6 +252,7 @@ libguigtk_a_SOURCES = \
 	gui-back-end.c				\
 	quarry-history-text-buffer.c		\
 	quarry-message-dialog.c			\
+	quarry-move-number-dialog.c		\
 	quarry-save-confirmation-dialog.c	\
 	quarry-stock.c				\
 	quarry-text-buffer.c			\
@@ -291,6 +292,7 @@ libguigtk_a_SOURCES = \
 	gui-back-end.h				\
 	quarry-history-text-buffer.h		\
 	quarry-message-dialog.h			\
+	quarry-move-number-dialog.h		\
 	quarry-save-confirmation-dialog.h	\
 	quarry-stock.h				\
 	quarry-text-buffer.h			\
@@ -358,6 +360,7 @@ am_libguigtk_a_OBJECTS = gtk-add-or-edit-label-dialog.$(OBJEXT) \
 	gtk-tile-set.$(OBJEXT) gtk-utils.$(OBJEXT) \
 	gui-back-end.$(OBJEXT) quarry-history-text-buffer.$(OBJEXT) \
 	quarry-message-dialog.$(OBJEXT) \
+	quarry-move-number-dialog.$(OBJEXT) \
 	quarry-save-confirmation-dialog.$(OBJEXT) \
 	quarry-stock.$(OBJEXT) quarry-text-buffer.$(OBJEXT) \
 	quarry-text-view.$(OBJEXT) $(am__objects_1)
@@ -404,6 +407,7 @@ am__depfiles_maybe = depfiles
 @AMDEP_TRUE@	./$(DEPDIR)/quarry-history-text-buffer.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/quarry-marshal.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/quarry-message-dialog.Po \
+@AMDEP_TRUE@	./$(DEPDIR)/quarry-move-number-dialog.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/quarry-save-confirmation-dialog.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/quarry-stock.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/quarry-text-buffer.Po \
@@ -478,6 +482,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/quarry-history-text-buffer.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/quarry-marshal.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/quarry-message-dialog.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/quarry-move-number-dialog.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/quarry-save-confirmation-dialog.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/quarry-stock.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/quarry-text-buffer.Po@am__quote@

@@ -97,6 +97,7 @@ libguigtk_a_SOURCES =				\
 	gui-back-end.c				\
 	quarry-history-text-buffer.c		\
 	quarry-message-dialog.c			\
+	quarry-move-number-dialog.c		\
 	quarry-save-confirmation-dialog.c	\
 	quarry-stock.c				\
 	quarry-text-buffer.c			\
@@ -136,6 +137,7 @@ libguigtk_a_SOURCES =				\
 	gui-back-end.h				\
 	quarry-history-text-buffer.h		\
 	quarry-message-dialog.h			\
+	quarry-move-number-dialog.h		\
 	quarry-save-confirmation-dialog.h	\
 	quarry-stock.h				\
 	quarry-text-buffer.h			\
