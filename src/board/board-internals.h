@@ -69,6 +69,20 @@
     = (MoveStackEntryType *) (board)->move_stack_pointer - 1))
 
 
+typedef struct _BoardStackEntry		BoardStackEntry;
+
+struct _BoardStackEntry {
+#if BOARD_VALIDATION_LEVEL == 2
+  /* Causes problems with very deep branches, since stack is allocated
+   * in one memory chunk.
+   */
+  char		grid_copy[BOARD_GRID_SIZE];
+#endif
+
+  int		move_number;
+};
+
+
 struct _BoardChangeStackEntry {
   short		position;
   char		contents;

@@ -239,11 +239,11 @@ go_play_move (Board *board, int color, va_list move)
     stack_entry->type		       = PASS_MOVE;
     stack_entry->suicide_or_pass_color = color;
 
-    stack_entry->ko_master   = board->data.go.ko_master;
-    stack_entry->ko_position = board->data.go.ko_position;
-    board->data.go.ko_master = EMPTY;
+    stack_entry->ko_master	       = board->data.go.ko_master;
+    stack_entry->ko_position	       = board->data.go.ko_position;
+    board->data.go.ko_master	       = EMPTY;
 
-    stack_entry->move_number = board->move_number++;
+    stack_entry->common.move_number    = board->move_number++;
   }
 }
 
@@ -253,11 +253,11 @@ go_apply_changes (Board *board, int num_changes)
 {
   GoMoveStackEntry *stack_entry = ALLOCATE_GO_MOVE_STACK_ENTRY (board);
 
-  stack_entry->type	   = POSITION_CHANGE;
-  stack_entry->num.changes = num_changes;
-  stack_entry->ko_master   = board->data.go.ko_master;
-  stack_entry->ko_position = board->data.go.ko_position;
-  stack_entry->move_number = board->move_number;
+  stack_entry->type		  = POSITION_CHANGE;
+  stack_entry->num.changes	  = num_changes;
+  stack_entry->ko_master	  = board->data.go.ko_master;
+  stack_entry->ko_position	  = board->data.go.ko_position;
+  stack_entry->common.move_number = board->move_number;
 
   board->data.go.ko_master = EMPTY;
 
@@ -273,10 +273,10 @@ go_add_dummy_move_entry (Board *board)
   /* Ko data is not changed, but go_undo() restores it anyway, so we
    * need to initialize stack's copy of it.
    */
-  stack_entry->type	   = DUMMY_MOVE_ENTRY;
-  stack_entry->ko_master   = board->data.go.ko_master;
-  stack_entry->ko_position = board->data.go.ko_position;
-  stack_entry->move_number = board->move_number;
+  stack_entry->type		  = DUMMY_MOVE_ENTRY;
+  stack_entry->ko_master	  = board->data.go.ko_master;
+  stack_entry->ko_position	  = board->data.go.ko_position;
+  stack_entry->common.move_number = board->move_number;
 }
 
 
@@ -342,7 +342,7 @@ do_play_move (Board *board, int color, int pos)
   stack_entry->ko_position	      = board->data.go.ko_position;
   stack_entry->prisoners[BLACK_INDEX] = board->data.go.prisoners[BLACK_INDEX];
   stack_entry->prisoners[WHITE_INDEX] = board->data.go.prisoners[WHITE_INDEX];
-  stack_entry->move_number	      = board->move_number++;
+  stack_entry->common.move_number     = board->move_number++;
 
   board->data.go.position_mark++;
   board->data.go.string_mark++;
@@ -436,7 +436,7 @@ do_play_over_own_stone (Board *board, int pos)
   stack_entry->ko_position	      = board->data.go.ko_position;
   stack_entry->prisoners[BLACK_INDEX] = board->data.go.prisoners[BLACK_INDEX];
   stack_entry->prisoners[WHITE_INDEX] = board->data.go.prisoners[WHITE_INDEX];
-  stack_entry->move_number	      = board->move_number++;
+  stack_entry->common.move_number     = board->move_number++;
 
   for (k = 0; k < 4; k++) {
     int neighbor = pos + delta[k];
@@ -775,7 +775,7 @@ go_undo (Board *board)
 
   board->data.go.ko_master   = stack_entry->ko_master;
   board->data.go.ko_position = stack_entry->ko_position;
-  board->move_number	     = stack_entry->move_number;
+  board->move_number	     = stack_entry->common.move_number;
 }
 
 

@@ -177,9 +177,9 @@ reversi_play_move (Board *board, int color, va_list move)
     }
   }
 
-  stack_entry->position    = pos;
-  stack_entry->contents    = grid[pos];
-  stack_entry->move_number = board->move_number++;
+  stack_entry->position		  = pos;
+  stack_entry->contents		  = grid[pos];
+  stack_entry->common.move_number = board->move_number++;
 
   grid[pos] = color;
 }
@@ -212,7 +212,7 @@ reversi_undo (Board *board)
   else if (stack_entry->num.changes > 0)
     board_undo_changes (board, stack_entry->num.changes);
 
-  board->move_number = stack_entry->move_number;
+  board->move_number = stack_entry->common.move_number;
 }
 
 
@@ -222,9 +222,9 @@ reversi_apply_changes (Board *board, int num_changes)
   ReversiMoveStackEntry *stack_entry
     = ALLOCATE_REVERSI_MOVE_STACK_ENTRY (board);
 
-  stack_entry->position	   = NULL_POSITION;
-  stack_entry->num.changes = num_changes;
-  stack_entry->move_number = board->move_number;
+  stack_entry->position		  = NULL_POSITION;
+  stack_entry->num.changes	  = num_changes;
+  stack_entry->common.move_number = board->move_number;
 }
 
 

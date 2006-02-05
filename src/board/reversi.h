@@ -40,22 +40,15 @@
 typedef struct _ReversiMoveStackEntry	ReversiMoveStackEntry;
 
 struct _ReversiMoveStackEntry {
-#if BOARD_VALIDATION_LEVEL == 2
-  /* Causes problems with very deep branches, since stack is allocated
-   * in one memory chunk.
-   */
-  char		grid_copy[BOARD_GRID_SIZE];
-#endif
+  BoardStackEntry  common;
 
-  int		position;
-  char		contents;
+  int		   position;
+  char		   contents;
 
   union {
-    char	flips[8];
-    int		changes;
+    char	   flips[8];
+    int		   changes;
   } num;
-
-  int		move_number;
 };
 
 

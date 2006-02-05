@@ -232,7 +232,7 @@ amazons_play_move (Board *board, int color, va_list move)
   grid[stack_entry->to]			 = color;
   grid[stack_entry->misc.shoot_arrow_to] = ARROW;
 
-  stack_entry->move_number = board->move_number++;
+  stack_entry->common.move_number = board->move_number++;
 }
 
 
@@ -250,7 +250,7 @@ amazons_undo (Board *board)
   else if (stack_entry->misc.num_changes > 0)
     board_undo_changes (board, stack_entry->misc.num_changes);
 
-  board->move_number = stack_entry->move_number;
+  board->move_number = stack_entry->common.move_number;
 }
 
 
@@ -260,9 +260,9 @@ amazons_apply_changes (Board *board, int num_changes)
   AmazonsMoveStackEntry *stack_entry
     = ALLOCATE_AMAZONS_MOVE_STACK_ENTRY (board);
 
-  stack_entry->from		= NULL_POSITION;
-  stack_entry->misc.num_changes = num_changes;
-  stack_entry->move_number	= board->move_number;
+  stack_entry->from		  = NULL_POSITION;
+  stack_entry->misc.num_changes   = num_changes;
+  stack_entry->common.move_number = board->move_number;
 }
 
 

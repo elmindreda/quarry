@@ -40,24 +40,16 @@
 typedef struct _AmazonsMoveStackEntry	AmazonsMoveStackEntry;
 
 struct _AmazonsMoveStackEntry {
-#if BOARD_VALIDATION_LEVEL == 2
-  /* Causes problems with very deep branches, since stack is allocated
-   * in one memory chunk.
-   */
-  char		grid_copy[BOARD_GRID_SIZE];
-#endif
-
-  char		to_contents;
-  char		shoot_arrow_to_contents;
-  int		from;
-  int		to;
+  BoardStackEntry  common;
+  char		   to_contents;
+  char		   shoot_arrow_to_contents;
+  int		   from;
+  int		   to;
 
   union {
-    int		shoot_arrow_to;
-    int		num_changes;
+    int		   shoot_arrow_to;
+    int		   num_changes;
   } misc;
-
-  int		move_number;
 };
 
 

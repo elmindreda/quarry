@@ -40,29 +40,22 @@
 typedef struct _GoMoveStackEntry	GoMoveStackEntry;
 
 struct _GoMoveStackEntry {
-#if BOARD_VALIDATION_LEVEL == 2
-  /* Causes problems with very deep branches, since stack is allocated
-   * in one memory chunk.
-   */
-  char		grid_copy[BOARD_GRID_SIZE];
-#endif
+  BoardStackEntry  common;
 
-  char		type;
-  char		contents;
-  char		suicide_or_pass_color;
-  int		position;
-  char		status[4];
+  char		   type;
+  char		   contents;
+  char		   suicide_or_pass_color;
+  int		   position;
+  char		   status[4];
 
   union {
-    int		liberties;
-    int		changes;
+    int		   liberties;
+    int		   changes;
   } num;
 
-  int		ko_master;
-  int		ko_position;
-  int		prisoners[NUM_COLORS];
-
-  int		move_number;
+  int		   ko_master;
+  int		   ko_position;
+  int		   prisoners[NUM_COLORS];
 };
 
 
