@@ -1,3 +1,23 @@
+2006-02-05  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* gui-gtk/gtk-goban-window.c (gtk_goban_window_init): Add
+	"Edit/Set Move Number" menu item.  Adjust some mnemonics.
+	(update_commands_sensitivity): Update sensitivity of the new
+	command.
+	(set_move_number): New function.
+
+	* gui-gtk/quarry-move-number-dialog.c: New file.
+	* gui-gtk/quarry-move-number-dialog.h: New file.
+
+	* sgf/sgf-utils.c (sgf_utils_get_sequential_move_number): New
+	function.
+
+	* board/board.c (board_get_move_number): New function.
+
+	* (Globally in board/: add BoardStackEntry structure that
+	encapsulates `move_number' and, possibly, `grid_copy' fields.
+	Include it in all game-specific stack entry structures.)
+
 2006-02-04  Paul Pogonyshev  <pogonyshev@gmx.net>
 
 	* gui-gtk/gtk-goban-window.c (gtk_goban_window_init): Add
