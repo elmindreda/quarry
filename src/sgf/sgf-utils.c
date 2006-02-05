@@ -759,6 +759,31 @@ sgf_utils_set_time_left (SgfNode *node, SgfGameTree *tree,
 
 
 int
+sgf_utils_get_sequential_move_number (const SgfGameTree *tree)
+{
+  int move_number;
+
+  assert (tree);
+  assert (tree->current_node);
+  assert (tree->board);
+
+  if (sgf_node_find_property (tree->current_node, SGF_MOVE_NUMBER, NULL)) {
+    if (tree->current_node->parent)
+      move_number = board_get_move_number (tree->board, 1);
+    else
+      move_number = 0;
+
+    if (IS_STONE (tree->current_node->move_color))
+      move_number++;
+  }
+  else
+    move_number = tree->board->move_number;
+
+  return move_number;
+}
+
+
+int
 sgf_utils_determine_player_to_move_by_rules (const SgfGameTree *tree)
 {
   int color_to_play_copy;
