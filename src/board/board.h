@@ -219,6 +219,9 @@ inline void	board_add_dummy_move_entry (Board *board);
 
 inline int	board_undo (Board *board, int num_moves);
 
+int		board_get_move_number (const Board *board,
+				       int num_moves_backward);
+
 
 inline void	board_dump (const Board *board);
 inline void	board_validate (const Board *board);

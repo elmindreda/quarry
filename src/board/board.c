@@ -311,8 +311,8 @@ board_play_move (Board *board, int color, ...)
   if (board->move_stack_pointer == board->move_stack_end)
     board_increase_move_stack_size (board);
 
-  memcpy (board->move_stack_pointer, board->grid,
-	  BOARD_GRID_SIZE * sizeof (char));
+  memcpy (((BoardStackEntry *) board->move_stack_pointer).grid_copy,
+	  board->grid, BOARD_GRID_SIZE * sizeof (char));
 #endif
 
   va_start (move, color);
@@ -343,8 +343,8 @@ board_apply_changes
   if (board->move_stack_pointer == board->move_stack_end)
     board_increase_move_stack_size (board);
 
-  memcpy (board->move_stack_pointer, board->grid,
-	  BOARD_GRID_SIZE * sizeof (char));
+  memcpy (((BoardStackEntry *) board->move_stack_pointer).grid_copy,
+	  board->grid, BOARD_GRID_SIZE * sizeof (char));
 #endif
 
   num_changes = 0;
@@ -396,8 +396,8 @@ board_add_dummy_move_entry (Board *board)
   if (board->move_stack_pointer == board->move_stack_end)
     board_increase_move_stack_size (board);
 
-  memcpy (board->move_stack_pointer, board->grid,
-	  BOARD_GRID_SIZE * sizeof (char));
+  memcpy (((BoardStackEntry *) board->move_stack_pointer).grid_copy,
+	  board->grid, BOARD_GRID_SIZE * sizeof (char));
 #endif
 
   game_info[board->game].add_dummy_move_entry (board);
@@ -428,7 +428,8 @@ board_undo (Board *board, int num_undos)
 
 #if BOARD_VALIDATION_LEVEL == 2
   {
-    const char * grid_copy = (const char *) board->move_stack_pointer;
+    const char * grid_copy
+      = ((BoardStackEntry *) board->move_stack_pointer).grid_copy;
     int x;
     int y;
 
@@ -440,6 +441,28 @@ board_undo (Board *board, int num_undos)
 #endif
 
   return 1;
+}
+
+
+int
+board_get_move_number (const Board *board, int num_moves_backward)
+{
+  assert (board);
+  assert (num_moves_backward >= 0);
+  assert (((char *) board->move_stack_pointer
+	   - (num_moves_backward * game_info[board->game].stack_entry_size))
+	  >= (char *) board->move_stack);
+
+  if (num_moves_backward == 0)
+    return board->move_number;
+  else {
+    const BoardStackEntry *stack_entry
+      = ((const BoardStackEntry *)
+	 ((const char *) board->move_stack_pointer
+	  - (num_moves_backward * game_info[board->game].stack_entry_size)));
+
+    return stack_entry->move_number;
+  }
 }
 
 
