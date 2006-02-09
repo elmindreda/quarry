@@ -870,6 +870,25 @@ sgf_utils_delete_current_node_children (SgfGameTree *tree)
 }
 
 
+void
+sgf_utils_swap_current_node_with (SgfGameTree *tree, SgfNode *swap_with)
+{
+  SgfUndoHistoryEntry *entry;
+
+  assert (tree);
+  assert (tree->current_node);
+  assert (swap_with);
+  assert (tree->current_node != swap_with);
+  assert (tree->current_node->parent == swap_with->parent);
+
+  entry = sgf_swap_nodes_undo_history_entry_new (tree->current_node,
+						 swap_with);
+  sgf_utils_begin_action (tree);
+  sgf_utils_apply_undo_history_entry (tree, entry);
+  sgf_utils_end_action (tree);
+}
+
+
 int
 sgf_utils_delete_property (SgfNode *node, SgfGameTree *tree, SgfType type)
 {

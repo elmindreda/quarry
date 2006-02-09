@@ -872,6 +872,9 @@ void	      sgf_utils_find_time_control_data (const SgfGameTree *tree);
 void	      sgf_utils_delete_current_node (SgfGameTree *tree);
 void	      sgf_utils_delete_current_node_children (SgfGameTree *tree);
 
+void	      sgf_utils_swap_current_node_with (SgfGameTree *tree,
+						SgfNode *swap_with);
+
 int	      sgf_utils_delete_property (SgfNode *node, SgfGameTree *tree,
 					 SgfType type);
 
