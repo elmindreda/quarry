@@ -674,16 +674,16 @@ gtk_goban_window_init (GtkGobanWindow *goban_window)
       set_move_number,			0,
       "<Item>" },
 
-    { N_("/Edit/Set _Player to Move"), NULL, NULL, 0, "<Branch>" },
-    { N_("/Edit/Set Player to Move/_White"), NULL,
+    { N_("/Edit/_Player to Move"), NULL, NULL, 0, "<Branch>" },
+    { N_("/Edit/Player to Move/_White"), NULL,
       set_player_to_move,		WHITE,
       "<RadioItem>" },
-    { N_("/Edit/Set Player to Move/_Black"), NULL,
+    { N_("/Edit/Player to Move/_Black"), NULL,
       set_player_to_move,		BLACK,
-      "/Edit/Set Player to Move/White" },
-    { N_("/Edit/Set Player to Move/By Game _Rules"), NULL,
+      "/Edit/Player to Move/White" },
+    { N_("/Edit/Player to Move/By Game _Rules"), NULL,
       set_player_to_move,		EMPTY,
-      "/Edit/Set Player to Move/Black" },
+      "/Edit/Player to Move/Black" },
 
     { N_("/Edit/"), NULL, NULL, 0, "<Separator>" },
 
@@ -4858,15 +4858,15 @@ update_set_player_to_move_commands (GtkGobanWindow *goban_window)
 
   switch (game_tree->current_node->to_play_color) {
   case EMPTY:
-    menu_item_text = "/Edit/Set Player to Move/By Game Rules";
+    menu_item_text = "/Edit/Player to Move/By Game Rules";
     break;
 
   case BLACK:
-    menu_item_text = "/Edit/Set Player to Move/Black";
+    menu_item_text = "/Edit/Player to Move/Black";
     break;
 
   case WHITE:
-    menu_item_text = "/Edit/Set Player to Move/White";
+    menu_item_text = "/Edit/Player to Move/White";
     break;
 
   default:
@@ -4879,7 +4879,7 @@ update_set_player_to_move_commands (GtkGobanWindow *goban_window)
 
   menu_item
     = gtk_item_factory_get_widget (goban_window->item_factory,
-				   "/Edit/Set Player to Move/By Game Rules");
+				   "/Edit/Player to Move/By Game Rules");
 
   switch (sgf_utils_determine_player_to_move_by_rules (game_tree)) {
   case EMPTY:
