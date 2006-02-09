@@ -285,6 +285,21 @@ sgf_delete_node_children_undo_history_entry_new (SgfNode *node)
 
 
 SgfUndoHistoryEntry *
+sgf_swap_nodes_undo_history_entry_new (SgfNode *node1, SgfNode *node2)
+{
+  SgfTwoNodesOperationEntry *operation_data
+    = utils_malloc (sizeof (SgfTwoNodesOperationEntry));
+
+  operation_data->entry.operation_index	   = SGF_OPERATION_SWAP_NODES;
+  operation_data->node1			   = node1;
+  operation_data->node2			   = node2;
+  operation_data->parent_current_variation = node1->parent->current_variation;
+
+  return (SgfUndoHistoryEntry *) operation_data;
+}
+
+
+SgfUndoHistoryEntry *
 sgf_change_node_inlined_color_undo_history_entry_new
   (SgfNode *node, SgfUndoOperation operation, int new_color)
 {
@@ -377,6 +392,8 @@ delete_undo_history_entry (SgfUndoHistoryEntry *entry, int is_applied,
   utils_free (entry);
 }
 
+
+
 
 static void
 begin_undoing_or_redoing (SgfGameTree *tree)
@@ -506,6 +523,8 @@ sgf_utils_apply_undo_history_entry (SgfGameTree *tree,
 }
 
 
+
+
 void
 sgf_operation_add_node (SgfUndoHistoryEntry *entry, SgfGameTree *tree)
 {
@@ -611,6 +630,52 @@ sgf_operation_delete_node_children_free_data (SgfUndoHistoryEntry *entry,
       this_node = next_node;
     } while (this_node);
   }
+}
+
+
+void
+sgf_operation_swap_nodes_do_swap (SgfUndoHistoryEntry *entry, 
+				  SgfGameTree *tree)
+{
+  SgfNode *node1  = ((SgfTwoNodesOperationEntry *) entry)->node1;
+  SgfNode *node2  = ((SgfTwoNodesOperationEntry *) entry)->node2;
+  SgfNode *parent = node1->parent;
+  SgfNode *temp;
+  SgfNode **link;
+
+  assert (node1->parent == node2->parent);
+
+  set_is_modifying_map (tree);
+  set_is_modifying_tree (tree);
+
+  tree->node_to_switch_to = node1;
+
+  link = &parent->child;
+  while (*link != node1 && *link != node2) {
+    assert (*link);
+    link = & (*link)->next;
+  }
+
+  if (*link == node2) {
+    temp  = node1;
+    node1 = node2;
+    node2 = temp;
+  }
+
+  *link = node2;
+
+  temp	      = node1->next;
+  node1->next = node2->next;
+  node2->next = temp;
+
+  do {
+    assert (*link);
+    link = & (*link)->next;
+  } while (*link != node2);
+
+  *link = node1;
+
+  sgf_game_tree_invalidate_map (tree, parent);
 }
 
 

@@ -50,6 +50,7 @@ struct _SgfUndoHistoryEntry {
 
 
 typedef struct _SgfNodeOperationEntry		SgfNodeOperationEntry;
+typedef struct _SgfTwoNodesOperationEntry	SgfTwoNodesOperationEntry;
 typedef struct _SgfChangeNodeInlinedColorOperationEntry
 		SgfChangeNodeInlinedColorOperationEntry;
 
@@ -63,6 +64,14 @@ struct _SgfNodeOperationEntry {
   SgfUndoHistoryEntry	entry;
 
   SgfNode	       *node;
+  SgfNode	       *parent_current_variation;
+};
+
+struct _SgfTwoNodesOperationEntry {
+  SgfUndoHistoryEntry	entry;
+
+  SgfNode	       *node1;
+  SgfNode	       *node2;
   SgfNode	       *parent_current_variation;
 };
 
@@ -121,6 +130,9 @@ DECLARE_UNDO_OR_REDO_FUNCTION (sgf_operation_delete_node_children_undo);
 DECLARE_UNDO_OR_REDO_FUNCTION (sgf_operation_delete_node_children_redo);
 DECLARE_FREE_DATA_FUNCTION (sgf_operation_delete_node_children_free_data);
 
+/* Used both for node adding and removing undo/redo. */
+DECLARE_UNDO_OR_REDO_FUNCTION (sgf_operation_swap_nodes_do_swap);
+
 DECLARE_UNDO_OR_REDO_FUNCTION (sgf_operation_change_node_move_color_do_change);
 DECLARE_UNDO_OR_REDO_FUNCTION
   (sgf_operation_change_node_to_play_color_do_change);
@@ -154,6 +166,8 @@ SgfUndoHistoryEntry *  sgf_new_node_undo_history_entry_new (SgfNode *new_node);
 SgfUndoHistoryEntry *  sgf_delete_node_undo_history_entry_new (SgfNode *node);
 SgfUndoHistoryEntry *  sgf_delete_node_children_undo_history_entry_new
 			 (SgfNode *node);
+SgfUndoHistoryEntry *  sgf_swap_nodes_undo_history_entry_new (SgfNode *node1,
+							      SgfNode *node2);
 SgfUndoHistoryEntry *  sgf_change_node_inlined_color_undo_history_entry_new
 			 (SgfNode *node, SgfUndoOperation operation,
 			  int new_color);
