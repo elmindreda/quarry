@@ -42,6 +42,11 @@ operations  SgfUndoOperation sgf_undo_operations {
   		sgf_operation_delete_node_children_redo
   		sgf_operation_delete_node_children_free_data
 
+  SGF_OPERATION_SWAP_NODES
+		sgf_operation_swap_nodes_do_swap
+		sgf_operation_swap_nodes_do_swap
+		NULL
+
   SGF_OPERATION_CHANGE_NODE_MOVE_COLOR
 		sgf_operation_change_node_move_color_do_change
 		sgf_operation_change_node_move_color_do_change
