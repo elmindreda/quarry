@@ -1,5 +1,8 @@
 2006-02-09  Paul Pogonyshev  <pogonyshev@gmx.net>
 
+	* gui-gtk/gtk-goban-window.c (gtk_goban_window_init): Rename "Set
+	Player to Move" submenu to "Player to Move".
+
 	* gui-gtk/gtk-goban-window.c (gtk_goban_window_init): Add
 	"Edit/Move Branch Up" and "Edit/Move Branch Down" menu items.
 	Resolve a mnemonics conflict.
