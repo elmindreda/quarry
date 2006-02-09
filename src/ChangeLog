@@ -1,3 +1,20 @@
+2006-02-09  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* gui-gtk/gtk-goban-window.c (gtk_goban_window_init): Add
+	"Edit/Move Branch Up" and "Edit/Move Branch Down" menu items.
+	Resolve a mnemonics conflict.
+	(update_commands_sensitivity): Update sensitivity of the new
+	commands.
+	(swap_adjacent_branches): New function.
+
+	* sgf/sgf-utils.c (sgf_utils_swap_current_node_with): New
+	function.
+
+	* sgf/sgf-undo.c (sgf_swap_nodes_undo_history_entry_new)
+	(sgf_operation_swap_nodes_do_swap): New functions.
+
+	* sgf/sgf-undo-operations.list: Add `SGF_OPERATION_SWAP_NODES'.
+
 2006-02-05  Paul Pogonyshev  <pogonyshev@gmx.net>
 
 	* gui-gtk/gtk-goban-window.c (gtk_goban_window_init): Add
