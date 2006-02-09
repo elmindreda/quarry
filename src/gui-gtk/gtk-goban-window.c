@@ -383,6 +383,9 @@ static void	 redo_operation (GtkGobanWindow *goban_window);
 
 static void	 append_empty_variation (GtkGobanWindow *goban_window);
 
+static void	 swap_adjacent_branches (GtkGobanWindow *goban_window,
+					 guint use_previous_branch);
+
 static void	 delete_current_node (GtkGobanWindow *goban_window);
 static void	 delete_current_node_children (GtkGobanWindow *goban_window);
 
@@ -651,12 +654,18 @@ gtk_goban_window_init (GtkGobanWindow *goban_window)
       activate_scoring_tool,		0,
       "/Edit/Tools/Number Tool" },
 
-
-    { N_("/Edit/Add _Empty Node"),	NULL,
+    { N_("/Edit/_Add Empty Node"),	NULL,
       append_empty_variation,		0,
       "<Item>" },
     { N_("/Edit/"), NULL, NULL, 0, "<Separator>" },
 
+    { N_("/Edit/Move _Branch Up"),	NULL,
+      swap_adjacent_branches,		TRUE,
+      "<Item>" },
+    { N_("/Edit/Move Branch Do_wn"),	NULL,
+      swap_adjacent_branches,		FALSE,
+      "<Item>" },
+    { N_("/Edit/"), NULL, NULL, 0, "<Separator>" },
 
     { N_("/Edit/Edit Node _Name"),	"<ctrl><alt>N",
       select_node_name,			0,
@@ -4714,6 +4723,13 @@ update_commands_sensitivity (const GtkGobanWindow *goban_window)
 				      "/Edit/Add Empty Node", NULL);
 
   gtk_utils_set_menu_items_sensitive (goban_window->item_factory,
+				      previous_variation_sensitive,
+				      "/Edit/Move Branch Up", NULL);
+  gtk_utils_set_menu_items_sensitive (goban_window->item_factory,
+				      next_variation_sensitive,
+				      "/Edit/Move Branch Down", NULL);
+
+  gtk_utils_set_menu_items_sensitive (goban_window->item_factory,
 				      (!goban_window->in_game_mode
 				       && current_node->parent != NULL),
 				      "/Edit/Delete Node", NULL);
@@ -5805,6 +5821,20 @@ append_empty_variation (GtkGobanWindow *goban_window)
 {
   sgf_utils_append_variation (goban_window->current_tree, EMPTY);
   update_children_for_new_node (goban_window, TRUE);
+}
+
+
+static void
+swap_adjacent_branches (GtkGobanWindow *goban_window,
+			guint use_previous_branch)
+{
+  SgfGameTree *game_tree = goban_window->current_tree;
+  SgfNode *swap_with = (use_previous_branch
+			? sgf_node_get_previous_node (game_tree->current_node)
+			: game_tree->current_node->next);
+
+  sgf_utils_swap_current_node_with (game_tree, swap_with);
+  update_commands_sensitivity (goban_window);
 }
 
 
