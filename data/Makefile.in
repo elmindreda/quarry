@@ -16,6 +16,9 @@
 
 # Process this file with Automake to produce `Makefile.in'.
 
+# FIXME: Internationalize `quarry.desktop' and `quarry.xml'.  Probably
+#	 need to use `intltool'.
+
 srcdir = @srcdir@
 top_srcdir = @top_srcdir@
 VPATH = @srcdir@
@@ -106,6 +109,8 @@ QUARRY_GTK_LIBS = @QUARRY_GTK_LIBS@
 QUARRY_WARNINGS = @QUARRY_WARNINGS@
 QUARRY_WARNINGS_GTK = @QUARRY_WARNINGS_GTK@
 RANLIB = @RANLIB@
+REGISTER_MIME_TYPES_FALSE = @REGISTER_MIME_TYPES_FALSE@
+REGISTER_MIME_TYPES_TRUE = @REGISTER_MIME_TYPES_TRUE@
 SET_MAKE = @SET_MAKE@
 SHELL = @SHELL@
 STRIP = @STRIP@
@@ -164,10 +169,19 @@ files_DATA = $(FILES)
 
 DESKTOP_FILE = quarry.desktop
 
-desktopdir = $(prefix)/share/applications
+desktopdir = $(datadir)/applications
 desktop_DATA = $(DESKTOP_FILE)
 
-EXTRA_DIST = $(FILES) $(DESKTOP_FILE:.desktop=.desktop.in)
+@REGISTER_MIME_TYPES_TRUE@MIME_DESCRIPTION_FILE = quarry.xml
+
+@REGISTER_MIME_TYPES_TRUE@mimedir = $(datadir)/mime/packages
+@REGISTER_MIME_TYPES_TRUE@mime_DATA = $(MIME_DESCRIPTION_FILE)
+
+EXTRA_DIST = \
+	$(FILES)				\
+	$(DESKTOP_FILE:.desktop=.desktop.in)	\
+	$(MIME_DESCRIPTION_FILE)
+
 
 DISTCLEANFILES = *~
 subdir = data
@@ -176,7 +190,7 @@ mkinstalldirs = $(SHELL) $(top_srcdir)/aux/mkinstalldirs
 CONFIG_HEADER = $(top_builddir)/config.h
 CONFIG_CLEAN_FILES = quarry.desktop
 DIST_SOURCES =
-DATA = $(desktop_DATA) $(files_DATA)
+DATA = $(desktop_DATA) $(files_DATA) $(mime_DATA)
 
 
 RECURSIVE_TARGETS = info-recursive dvi-recursive pdf-recursive \
@@ -233,6 +247,24 @@ uninstall-filesDATA:
 	  f="`echo $$p | sed -e 's|^.*/||'`"; \
 	  echo " rm -f $(DESTDIR)$(filesdir)/$$f"; \
 	  rm -f $(DESTDIR)$(filesdir)/$$f; \
+	done
+mimeDATA_INSTALL = $(INSTALL_DATA)
+install-mimeDATA: $(mime_DATA)
+	@$(NORMAL_INSTALL)
+	$(mkinstalldirs) $(DESTDIR)$(mimedir)
+	@list='$(mime_DATA)'; for p in $$list; do \
+	  if test -f "$$p"; then d=; else d="$(srcdir)/"; fi; \
+	  f="`echo $$p | sed -e 's|^.*/||'`"; \
+	  echo " $(mimeDATA_INSTALL) $$d$$p $(DESTDIR)$(mimedir)/$$f"; \
+	  $(mimeDATA_INSTALL) $$d$$p $(DESTDIR)$(mimedir)/$$f; \
+	done
+
+uninstall-mimeDATA:
+	@$(NORMAL_UNINSTALL)
+	@list='$(mime_DATA)'; for p in $$list; do \
+	  f="`echo $$p | sed -e 's|^.*/||'`"; \
+	  echo " rm -f $(DESTDIR)$(mimedir)/$$f"; \
+	  rm -f $(DESTDIR)$(mimedir)/$$f; \
 	done
 
 # This directory's subdirectories are mostly independent; you can cd
@@ -408,7 +440,7 @@ check: check-recursive
 all-am: Makefile $(DATA)
 installdirs: installdirs-recursive
 installdirs-am:
-	$(mkinstalldirs) $(DESTDIR)$(desktopdir) $(DESTDIR)$(filesdir)
+	$(mkinstalldirs) $(DESTDIR)$(desktopdir) $(DESTDIR)$(filesdir) $(DESTDIR)$(mimedir)
 
 install: install-recursive
 install-exec: install-exec-recursive
@@ -451,7 +483,9 @@ info: info-recursive
 
 info-am:
 
-install-data-am: install-desktopDATA install-filesDATA
+install-data-am: install-desktopDATA install-filesDATA install-mimeDATA
+	@$(NORMAL_INSTALL)
+	$(MAKE) $(AM_MAKEFLAGS) install-data-hook
 
 install-exec-am:
 
@@ -478,7 +512,9 @@ ps: ps-recursive
 ps-am:
 
 uninstall-am: uninstall-desktopDATA uninstall-filesDATA \
-	uninstall-info-am
+	uninstall-info-am uninstall-mimeDATA
+	@$(NORMAL_INSTALL)
+	$(MAKE) $(AM_MAKEFLAGS) uninstall-hook
 
 uninstall-info: uninstall-info-recursive
 
@@ -490,15 +526,25 @@ uninstall-info: uninstall-info-recursive
 	install-desktopDATA install-exec install-exec-am \
 	install-exec-recursive install-filesDATA install-info \
 	install-info-am install-info-recursive install-man \
-	install-recursive install-strip installcheck installcheck-am \
-	installdirs installdirs-am installdirs-recursive \
-	maintainer-clean maintainer-clean-generic \
+	install-mimeDATA install-recursive install-strip installcheck \
+	installcheck-am installdirs installdirs-am \
+	installdirs-recursive maintainer-clean maintainer-clean-generic \
 	maintainer-clean-recursive mostlyclean mostlyclean-generic \
 	mostlyclean-recursive pdf pdf-am pdf-recursive ps ps-am \
 	ps-recursive tags tags-recursive uninstall uninstall-am \
 	uninstall-desktopDATA uninstall-filesDATA uninstall-info-am \
-	uninstall-info-recursive uninstall-recursive
+	uninstall-info-recursive uninstall-mimeDATA uninstall-recursive
 
+
+@REGISTER_MIME_TYPES_TRUE@install-data-hook: update-mime-database
+
+@REGISTER_MIME_TYPES_TRUE@uninstall-hook: update-mime-database
+
+@REGISTER_MIME_TYPES_TRUE@update-mime-database:
+@REGISTER_MIME_TYPES_TRUE@	(update-mime-database $(datadir)/mime				\
+@REGISTER_MIME_TYPES_TRUE@	 || echo "*WARNING* failed to update the MIME database")
+
+@REGISTER_MIME_TYPES_TRUE@.PHONY: update-mime-database
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.
 .NOEXPORT:
