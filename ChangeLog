@@ -1,3 +1,7 @@
+2006-02-11  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* configure.ac: Add `--disable-mime-database-update' option.
+
 2006-01-30  Paul Pogonyshev  <pogonyshev@gmx.net>
 
 	* (Globally: use the new copyright updating scheme suggested by

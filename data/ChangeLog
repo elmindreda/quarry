@@ -1,3 +1,10 @@
+2006-02-11  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* Makefile.am: Install `quarry.xml' into the MIME database and
+	rebuild it, unless this is disabled at configuration step.
+
+	* quarry.xml: New file (SGF MIME specification.)
+
 2005-09-27  Paul Pogonyshev  <pogonyshev@gmx.net>
 
 	* (Quarry version 0.1.16.)

@@ -1,3 +1,14 @@
+2006-02-19  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* gui-gtk/gtk-goban-window.c (gtk_goban_window_init): Only call
+	gtk_item_factory_set_translate_func() if ENABLE_NLS is true, else
+	it won't compile without NLS (thanks to C Thomas for bug-report.)
+
+2006-02-18  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* gui-gtk/gtk-file-dialog.c: Include `gtk-utils.c' again, else
+	GTK_2_4_OR_LATER never gets defined.
+
 2006-02-09  Paul Pogonyshev  <pogonyshev@gmx.net>
 
 	* gui-gtk/gtk-goban-window.c (gtk_goban_window_init): Rename "Set
