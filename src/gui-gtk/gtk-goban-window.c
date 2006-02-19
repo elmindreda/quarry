@@ -1689,8 +1689,6 @@ gtk_goban_window_save (GtkGobanWindow *goban_window, guint callback_action)
 
     if (!goban_window->save_as_dialog
 	|| goban_window->adjourning_game != adjourning_game) {
-      char *filename = suggest_filename (goban_window);
-
       if (goban_window->save_as_dialog)
 	gtk_widget_destroy (goban_window->save_as_dialog);
 
@@ -1698,11 +1696,22 @@ gtk_goban_window_save (GtkGobanWindow *goban_window, guint callback_action)
 	= gtk_file_dialog_new ((adjourning_game
 				? _("Adjourn & Save As...") : _("Save As...")),
 			       GTK_WINDOW (goban_window),
-			       FALSE, GTK_STOCK_SAVE,
-			       G_CALLBACK (save_file_as_response),
-			       goban_window);
-      gtk_file_dialog_set_filename (goban_window->save_as_dialog, filename);
-      utils_free (filename);
+			       FALSE, GTK_STOCK_SAVE);
+
+      g_signal_connect (goban_window->save_as_dialog, "response",
+			G_CALLBACK (save_file_as_response), goban_window);
+
+      if (goban_window->filename) {
+	gtk_file_dialog_set_filename (goban_window->save_as_dialog,
+				      goban_window->filename);
+      }
+      else {
+	char *filename = suggest_filename (goban_window);
+
+	gtk_file_dialog_set_current_name (goban_window->save_as_dialog,
+					  filename);
+	utils_free (filename);
+      }
 
       goban_window->adjourning_game = adjourning_game;
       gtk_control_center_window_created
@@ -1803,7 +1812,7 @@ save_file_as_response (GtkWidget *file_dialog, gint response_id,
       g_free (filename);
   }
 
-  if (gtk_main_level () == 1
+  if (!gtk_window_get_modal (GTK_WINDOW (file_dialog))
       && (response_id == GTK_RESPONSE_OK
 	  || response_id == GTK_RESPONSE_CANCEL))
     gtk_widget_destroy (file_dialog);
@@ -4540,23 +4549,37 @@ update_game_specific_information (const GtkGobanWindow *goban_window)
 				   board->data.go.prisoners[BLACK_INDEX]),
 			 board->data.go.prisoners[BLACK_INDEX]);
 
+    white_string
+      = g_strdup_printf (ngettext ("%d capture", "%d captures",
+				   board->data.go.prisoners[WHITE_INDEX]),
+			 board->data.go.prisoners[WHITE_INDEX]);
+
     if (game_info_node
 	&& sgf_node_get_komi (game_info_node, &komi) && komi != 0.0) {
-      white_string
-	= g_strdup_printf (ngettext ("%d capture %c %.*f komi",
-				     "%d captures %c %.*f komi",
-				     board->data.go.prisoners[WHITE_INDEX]),
-			   board->data.go.prisoners[WHITE_INDEX],
-			   (komi > 0.0 ? '+' : '-'),
-			   ((int) floor (komi * 100.0 + 0.5) % 10 == 0
-			    ? 1 : 2),
-			   fabs (komi));
-    }
-    else {
-      white_string
-	= g_strdup_printf (ngettext ("%d capture", "%d captures",
-				     board->data.go.prisoners[WHITE_INDEX]),
-			   board->data.go.prisoners[WHITE_INDEX]);
+      gchar *full_white_string;
+
+      if ((fabs (fabs (komi) - floor (fabs (komi) + 0.005)) >= 0.005)) {
+	full_white_string
+	  = g_strdup_printf (_("%s %s %.*f komi"),
+			     white_string,
+			     (komi >= 0.0 ? "+" : "\xe2\x88\x92"),
+			     ((int) floor (komi * 100.0 + 0.5) % 10 == 0
+			      ? 1 : 2),
+			     fabs (komi));
+      }
+      else {
+	int absolute_integral_komi = (int) floor (fabs (komi) + 0.005);
+
+	full_white_string
+	  = g_strdup_printf (ngettext ("%s %s %d komi", "%s %s %d komi",
+				       absolute_integral_komi),
+			     white_string,
+			     (komi >= 0.0 ? "+" : "\xe2\x88\x92"),
+			     absolute_integral_komi);
+      }
+
+      g_free (white_string);
+      white_string = full_white_string;
     }
   }
   else if (board->game == GAME_REVERSI) {
@@ -4665,16 +4688,14 @@ update_move_information (const GtkGobanWindow *goban_window)
     case SGF_RESULT_BLACK_WIN_BY_SCORE:
     case SGF_RESULT_WHITE_WIN_BY_SCORE:
       {
-	int num_digits
-	  = (fabs (score - floor (score + 0.005)) >= 0.005
-	     ? ((score + 0.005) * 10 - floor ((score + 0.005) * 10) >= 0.1
-		? 2 : 1)
-	     : 0);
+	double score_difference = (result == SGF_RESULT_BLACK_WIN_BY_SCORE
+				   ? score : -score);
+	char *score_string
+	  = game_format_score_difference (goban_window->board->game,
+					  score_difference);
 
-	sprintf (buffer + length,
-		 (result == SGF_RESULT_BLACK_WIN_BY_SCORE
-		  ? _("Black wins by %.*f") : _("White wins by %.*f")),
-		 num_digits, score);
+	strcpy (buffer + length, score_string);
+	utils_free (score_string);
       }
 
       break;
