@@ -1034,8 +1034,12 @@ gtk_goban_window_init (GtkGobanWindow *goban_window)
   goban_window->item_factory = gtk_item_factory_new (GTK_TYPE_MENU_BAR,
 						     "<QuarryGobanWindowMenu>",
 						     accel_group);
+
+#if ENABLE_NLS
   gtk_item_factory_set_translate_func (goban_window->item_factory,
 				       (GtkTranslateFunc) gettext, NULL, NULL);
+#endif
+
   gtk_item_factory_create_items (goban_window->item_factory,
 				 (sizeof menu_entries
 				  / sizeof (GtkItemFactoryEntry)),
@@ -1049,8 +1053,12 @@ gtk_goban_window_init (GtkGobanWindow *goban_window)
   /* Tools menu, used with the editing toolbar below. */
   goban_window->tools_item_factory
     = gtk_item_factory_new (GTK_TYPE_MENU, "<QuarryToolsMenu>", NULL);
+
+#if ENABLE_NLS
   gtk_item_factory_set_translate_func (goban_window->tools_item_factory,
 				       (GtkTranslateFunc) gettext, NULL, NULL);
+#endif
+
   gtk_item_factory_create_items (goban_window->tools_item_factory,
 				 (sizeof tools_menu_entries
 				  / sizeof (GtkItemFactoryEntry)),
