@@ -27,6 +27,7 @@
 #include "utils.h"
 
 #include <assert.h>
+#include <math.h>
 
 #ifdef HAVE_MEMORY_H
 #include <memory.h>
@@ -889,6 +890,51 @@ game_format_move_valist (Game game, int board_width, int board_height,
   buffer[num_characters] = 0;
 
   return num_characters;
+}
+
+
+char *
+game_format_score_difference (Game game, double score)
+{
+  /* We may want to distinguish based on game later. */
+  UNUSED (game);
+  assert (game >= FIRST_GAME && GAME_IS_SUPPORTED (game));
+
+  if (fabs (score - floor (score + 0.005)) >= 0.005) {
+    int num_digits
+      = ((score + 0.005) * 10 - floor ((score + 0.005) * 10) >= 0.1 ? 2 : 1);
+
+    if (score > 0.0) {
+      /* TRANSLATORS: This is only used for non-integral scores.  You
+	 should also add translation of `points' if it is required by
+	 your language. */
+      return utils_printf (_("Black wins by %.*f"), num_digits, score);
+    }
+    else {
+      /* TRANSLATORS: This is only used for non-integral scores.  You
+	 should also add translation of `points' if it is required by
+	 your language. */
+      return utils_printf (_("White wins by %.*f"), num_digits, -score);
+    }
+  }
+  else {
+    int integral_score = (int) floor (score + 0.005);
+
+    if (integral_score > 0) {
+      /* TRANSLATORS: You should add translation of `points' if it is
+	 required by your language. */
+      return utils_printf (ngettext ("Black wins by %d", "Black wins by %d",
+				     integral_score),
+			   integral_score);
+    }
+    else {
+      /* TRANSLATORS: You should add translation of `points' if it is
+	 required by your language. */
+      return utils_printf (ngettext ("White wins by %d", "White wins by %d",
+				     -integral_score),
+			   -integral_score);
+    }
+  }
 }
 
 

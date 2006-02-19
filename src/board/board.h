@@ -285,6 +285,8 @@ int		game_format_move_valist (Game game,
 					 int board_width, int board_height,
 					 char *buffer, va_list move);
 
+char *		game_format_score_difference (Game game, double score);
+
 int		game_parse_point (Game game, int board_width, int board_height,
 				  const char *point_string, int *x, int *y);
 BoardPositionList *
