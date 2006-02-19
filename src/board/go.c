@@ -1284,6 +1284,7 @@ go_score_game (Board *board, const char *dead_stones, double komi,
   int pos;
   int black_score;
   double white_score;
+  double score_difference;
 
   assert (board);
 
@@ -1308,14 +1309,19 @@ go_score_game (Board *board, const char *dead_stones, double komi,
     pos += BOARD_MAX_WIDTH + 1 - board->width;
   }
 
-  black_score = (num_territory_positions[BLACK_INDEX]
-		 + num_prisoners[BLACK_INDEX]);
-  white_score = (num_territory_positions[WHITE_INDEX]
-		 + num_prisoners[WHITE_INDEX] + komi);
+  black_score	   = (num_territory_positions[BLACK_INDEX]
+		      + num_prisoners[BLACK_INDEX]);
+  white_score	   = (num_territory_positions[WHITE_INDEX]
+		      + num_prisoners[WHITE_INDEX] + komi);
+  score_difference = black_score - white_score;
+
   if (score)
-    *score = black_score - white_score;
+    *score = score_difference;
 
   if (detailed_score) {
+    int komi_is_fractional
+      = (fabs (fabs (komi) - floor (fabs (komi) + 0.005)) >= 0.005);
+
     *detailed_score
       = utils_printf (ngettext ("White: %d territory", "White: %d territory",
 				num_territory_positions[WHITE_INDEX]),
@@ -1325,16 +1331,35 @@ go_score_game (Board *board, const char *dead_stones, double komi,
 			  ngettext (" + %d capture", " + %d captures",
 				    num_prisoners[WHITE_INDEX]),
 			  num_prisoners[WHITE_INDEX]);
-    *detailed_score
-      = utils_cat_printf (*detailed_score,
-			  /* TRANSLATORS: e.g. `` + 6.5 komi = 87.5''. */
-			  _(" %c %.*f komi = %.*f\n"),
-			  (komi >= 0.0 ? '+' : '-'),
-			  ((int) floor (komi * 100.0 + 0.5) % 10 == 0 ? 1 : 2),
-			  fabs (komi),
-			  ((int) floor (white_score * 100.0 + 0.5) % 10 == 0
-			   ? 1 : 2),
-			  white_score);
+
+    if (komi_is_fractional) {
+      *detailed_score
+	= utils_cat_printf (*detailed_score,
+			    /* TRANSLATORS: e.g. `` + 6.5 komi =
+			       87.5''.  This is used only with
+			       fractional komi. */
+			    _(" %s %.*f komi = %.*f\n"),
+			    (komi >= 0.0 ? "+" : "\xe2\x88\x92"),
+			    ((int) floor (komi * 100.0 + 0.5) % 10 == 0 ?
+			     1 : 2),
+			    fabs (komi),
+			    ((int) floor (white_score * 100.0 + 0.5) % 10 == 0
+			     ? 1 : 2),
+			    white_score);
+    }
+    else {
+      int absolute_integral_komi = (int) floor (fabs (komi) + 0.005);
+
+      *detailed_score
+	= utils_cat_printf (*detailed_score,
+			    /* TRANSLATORS: e.g. `` + 6 komi = 87''. */
+			    ngettext (" %s %d komi = %d\n",
+				      " %s %d komi = %d\n",
+				      absolute_integral_komi),
+			    (komi >= 0.0 ? "+" : "\xe2\x88\x92"),
+			    absolute_integral_komi,
+			    (int) floor (white_score + 0.005));
+    }
 
     *detailed_score
       = utils_cat_printf (*detailed_score,
@@ -1347,19 +1372,16 @@ go_score_game (Board *board, const char *dead_stones, double komi,
 			  ngettext (" + %d capture", " + %d captures",
 				    num_prisoners[BLACK_INDEX]),
 			  num_prisoners[BLACK_INDEX]);
-    *detailed_score = utils_cat_printf (*detailed_score, " = %.1f\n\n",
+    *detailed_score = utils_cat_printf (*detailed_score, " = %.*f\n\n",
+					(komi_is_fractional ? 1 : 0),
 					(double) black_score);
 
-    if ((double) black_score != white_score) {
-      *detailed_score
-	= utils_cat_printf (*detailed_score,
-			    ((double) black_score > white_score
-			     ? _("Black wins by %.*f")
-			     : _("White wins by %.*f")),
-			    ((int) floor ((black_score - white_score) * 100.0
-					  + 0.5)
-			     % 10 == 0 ? 1 : 2),
-			    fabs (black_score - white_score));
+    if (fabs (score_difference) >= 0.005) {
+      char *score_string = game_format_score_difference (GAME_GO,
+							 score_difference);
+
+      *detailed_score = utils_cat_string (*detailed_score, score_string);
+      utils_free (score_string);
     }
     else {
       *detailed_score = utils_cat_string (*detailed_score,
