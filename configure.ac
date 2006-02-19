@@ -154,6 +154,13 @@ AM_CONDITIONAL(DO_SCROLLKEEPER_UPDATE,
 	       [test "$have_scrollkeeper" == "yes" && test "$enable_scrollkeeper_update" != "no"])
 
 
+AC_ARG_ENABLE(mime-database-update,
+	      AC_HELP_STRING([--disable-mime-database-update],
+			     [don't update the Shared MIME-info Database]))
+
+AM_CONDITIONAL(REGISTER_MIME_TYPES, test "$enable_mime_database_update" != "no")
+
+
 # Write `Makefile's.
 AC_CONFIG_FILES(Makefile
 		data/Makefile

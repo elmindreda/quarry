@@ -311,7 +311,7 @@ ac_includes_default="\
 # include <unistd.h>
 #endif"
 
-ac_subst_vars='SHELL PATH_SEPARATOR PACKAGE_NAME PACKAGE_TARNAME PACKAGE_VERSION PACKAGE_STRING PACKAGE_BUGREPORT exec_prefix prefix program_transform_name bindir sbindir libexecdir datadir sysconfdir sharedstatedir localstatedir libdir includedir oldincludedir infodir mandir build_alias host_alias target_alias DEFS ECHO_C ECHO_N ECHO_T LIBS INSTALL_PROGRAM INSTALL_SCRIPT INSTALL_DATA CYGPATH_W PACKAGE VERSION ACLOCAL AUTOCONF AUTOMAKE AUTOHEADER MAKEINFO AMTAR install_sh STRIP ac_ct_STRIP INSTALL_STRIP_PROGRAM AWK SET_MAKE am__leading_dot MAINTAINER_MODE_TRUE MAINTAINER_MODE_FALSE MAINT CC CFLAGS LDFLAGS CPPFLAGS ac_ct_CC EXEEXT OBJEXT DEPDIR am__include am__quote AMDEP_TRUE AMDEP_FALSE AMDEPBACKSLASH CCDEPMODE am__fastdepCC_TRUE am__fastdepCC_FALSE RANLIB ac_ct_RANLIB QUARRY_WARNINGS QUARRY_WARNINGS_GTK CPP EGREP LIBOBJS MKINSTALLDIRS USE_NLS MSGFMT GMSGFMT XGETTEXT MSGMERGE build build_cpu build_vendor build_os host host_cpu host_vendor host_os INTL_MACOSX_LIBS LIBICONV LTLIBICONV INTLLIBS LIBINTL LTLIBINTL POSUB have_scrollkeeper HAVE_SCROLLKEEPER_TRUE HAVE_SCROLLKEEPER_FALSE PKG_CONFIG ac_pt_PKG_CONFIG QUARRY_GTK_CFLAGS QUARRY_GTK_LIBS QUARRY_GTHREAD_CFLAGS QUARRY_GTHREAD_LIBS GLIB_GENMARSHAL BUILD_SGF_UTILS_TRUE BUILD_SGF_UTILS_FALSE QUARRY_GTK_DEPRECATED_FLAGS DO_SCROLLKEEPER_UPDATE_TRUE DO_SCROLLKEEPER_UPDATE_FALSE LTLIBOBJS'
+ac_subst_vars='SHELL PATH_SEPARATOR PACKAGE_NAME PACKAGE_TARNAME PACKAGE_VERSION PACKAGE_STRING PACKAGE_BUGREPORT exec_prefix prefix program_transform_name bindir sbindir libexecdir datadir sysconfdir sharedstatedir localstatedir libdir includedir oldincludedir infodir mandir build_alias host_alias target_alias DEFS ECHO_C ECHO_N ECHO_T LIBS INSTALL_PROGRAM INSTALL_SCRIPT INSTALL_DATA CYGPATH_W PACKAGE VERSION ACLOCAL AUTOCONF AUTOMAKE AUTOHEADER MAKEINFO AMTAR install_sh STRIP ac_ct_STRIP INSTALL_STRIP_PROGRAM AWK SET_MAKE am__leading_dot MAINTAINER_MODE_TRUE MAINTAINER_MODE_FALSE MAINT CC CFLAGS LDFLAGS CPPFLAGS ac_ct_CC EXEEXT OBJEXT DEPDIR am__include am__quote AMDEP_TRUE AMDEP_FALSE AMDEPBACKSLASH CCDEPMODE am__fastdepCC_TRUE am__fastdepCC_FALSE RANLIB ac_ct_RANLIB QUARRY_WARNINGS QUARRY_WARNINGS_GTK CPP EGREP LIBOBJS MKINSTALLDIRS USE_NLS MSGFMT GMSGFMT XGETTEXT MSGMERGE build build_cpu build_vendor build_os host host_cpu host_vendor host_os INTL_MACOSX_LIBS LIBICONV LTLIBICONV INTLLIBS LIBINTL LTLIBINTL POSUB have_scrollkeeper HAVE_SCROLLKEEPER_TRUE HAVE_SCROLLKEEPER_FALSE PKG_CONFIG ac_pt_PKG_CONFIG QUARRY_GTK_CFLAGS QUARRY_GTK_LIBS QUARRY_GTHREAD_CFLAGS QUARRY_GTHREAD_LIBS GLIB_GENMARSHAL BUILD_SGF_UTILS_TRUE BUILD_SGF_UTILS_FALSE QUARRY_GTK_DEPRECATED_FLAGS DO_SCROLLKEEPER_UPDATE_TRUE DO_SCROLLKEEPER_UPDATE_FALSE REGISTER_MIME_TYPES_TRUE REGISTER_MIME_TYPES_FALSE LTLIBOBJS'
 ac_subst_files=''
 
 # Initialize some variables set by options.
@@ -886,6 +886,8 @@ Optional Features:
                           don't use for normal builds)
   --disable-scrollkeeper-update
                           don't update ScrollKeeper database (for packagers)
+  --disable-mime-database-update
+                          don't update the Shared MIME-info Database
 
 Optional Packages:
   --with-PACKAGE[=ARG]    use PACKAGE [ARG=yes]
@@ -8101,6 +8103,24 @@ fi
 
 
 
+# Check whether --enable-mime-database-update or --disable-mime-database-update was given.
+if test "${enable_mime_database_update+set}" = set; then
+  enableval="$enable_mime_database_update"
+
+fi;
+
+
+
+if test "$enable_mime_database_update" != "no"; then
+  REGISTER_MIME_TYPES_TRUE=
+  REGISTER_MIME_TYPES_FALSE='#'
+else
+  REGISTER_MIME_TYPES_TRUE='#'
+  REGISTER_MIME_TYPES_FALSE=
+fi
+
+
+
 # Write `Makefile's.
                                                                                                                                                       ac_config_files="$ac_config_files Makefile data/Makefile data/quarry.desktop data/markup-themes/Makefile data/textures/Makefile help/Makefile help/C/Makefile po/Makefile.in src/Makefile src/board/Makefile src/gtp/Makefile src/gui-gtk/Makefile src/gui-utils/Makefile src/sgf/Makefile src/utils/Makefile"
 
@@ -8236,6 +8256,13 @@ if test -z "${DO_SCROLLKEEPER_UPDATE_TRUE}" && test -z "${DO_SCROLLKEEPER_UPDATE
   { { echo "$as_me:$LINENO: error: conditional \"DO_SCROLLKEEPER_UPDATE\" was never defined.
 Usually this means the macro was only invoked conditionally." >&5
 echo "$as_me: error: conditional \"DO_SCROLLKEEPER_UPDATE\" was never defined.
+Usually this means the macro was only invoked conditionally." >&2;}
+   { (exit 1); exit 1; }; }
+fi
+if test -z "${REGISTER_MIME_TYPES_TRUE}" && test -z "${REGISTER_MIME_TYPES_FALSE}"; then
+  { { echo "$as_me:$LINENO: error: conditional \"REGISTER_MIME_TYPES\" was never defined.
+Usually this means the macro was only invoked conditionally." >&5
+echo "$as_me: error: conditional \"REGISTER_MIME_TYPES\" was never defined.
 Usually this means the macro was only invoked conditionally." >&2;}
    { (exit 1); exit 1; }; }
 fi
@@ -8874,6 +8901,8 @@ s,@BUILD_SGF_UTILS_FALSE@,$BUILD_SGF_UTILS_FALSE,;t t
 s,@QUARRY_GTK_DEPRECATED_FLAGS@,$QUARRY_GTK_DEPRECATED_FLAGS,;t t
 s,@DO_SCROLLKEEPER_UPDATE_TRUE@,$DO_SCROLLKEEPER_UPDATE_TRUE,;t t
 s,@DO_SCROLLKEEPER_UPDATE_FALSE@,$DO_SCROLLKEEPER_UPDATE_FALSE,;t t
+s,@REGISTER_MIME_TYPES_TRUE@,$REGISTER_MIME_TYPES_TRUE,;t t
+s,@REGISTER_MIME_TYPES_FALSE@,$REGISTER_MIME_TYPES_FALSE,;t t
 s,@LTLIBOBJS@,$LTLIBOBJS,;t t
 CEOF
 
