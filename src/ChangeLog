@@ -1,5 +1,48 @@
 2006-02-19  Paul Pogonyshev  <pogonyshev@gmx.net>
 
+	* gui-gtk/gtk-parser-interface.c (gtk_parser_interface_present):
+	Update for new `response' callback usage scheme of
+	gtk_file_dialog_new().
+	* gui-gtk/gtk-utils.c (browse_button_clicked): Likewise.
+
+	* gui-gtk/gtk-goban-window.c (gtk_goban_window_save): Use new
+	gtk_file_dialog_set_current_name() function when saving the file
+	for the first time.  Update for new `response' callback scheme.
+	(save_file_as_response): Use gtk_window_get_modal() check instead
+	of gtk_main_level() to determine if we should destroy the
+	dialog (the latter doesn't work.)
+
+	* gui-gtk/gtk-file-dialog.c (gtk_file_dialog_new): Remove
+	`response_callback' and `user_data' arguments.  Don't create
+	custom data structure or connect handlers to free it.
+	(gtk_file_dialog_set_filename): With GtkFileChooser, use
+	gtk_file_chooser_set_current_name() when the filename is not an
+	absolute path or doesn't exist.
+	(gtk_file_dialog_set_current_name): New function.
+	(file_chooser_save_response): Remove `data' argument.  Don't
+	invoke user callback.  Stop signal emission if confirmation dialog
+	is shown (this is to make it work from gtk_dialog_run().)
+	(file_selection_open_response): Likewise; stop emission if a
+	directory is selected.
+	(file_selection_save_response): Likewise; stop emission in both
+	cases.
+	(check_if_overwriting_file): Remove `data' argument.
+	(overwrite_confirmation): Remove `data' argument.  Don't invoke
+	user callback, but instead emit `response' signal on the file
+	dialog after disconnecting our handlers.
+
+	* gui-gtk/gtk-goban-window.c (update_game_specific_information):
+	Use ngettext() for integral komi, use proper minus sign.
+	(update_move_information): Use new game_format_score_difference().
+
+	* board/go.c (go_score_game): Use ngettext() for integral komi,
+	use new game_format_score_difference(), use proper minus sign.
+
+	* board/board.c (game_format_score_difference): New function,
+	break common part out of go_score_game() and
+	update_move_information().  Use ngettext() for integral score
+	differences.
+	
 	* gui-gtk/gtk-goban-window.c (gtk_goban_window_init): Only call
 	gtk_item_factory_set_translate_func() if ENABLE_NLS is true, else
 	it won't compile without NLS (thanks to C Thomas for bug-report.)
