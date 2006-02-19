@@ -30,6 +30,7 @@
 
 #include "gtk-configuration.h"
 #include "gtk-control-center.h"
+#include "gtk-utils.h"
 #include "quarry-message-dialog.h"
 #include "quarry-stock.h"
 
