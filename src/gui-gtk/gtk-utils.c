@@ -547,8 +547,10 @@ browse_button_clicked (GtkWidget *button, GtkUtilsBrowseButtonData *data)
     data->browsing_dialog
       = gtk_file_dialog_new (data->browsing_dialog_caption,
 			     GTK_WINDOW (gtk_widget_get_toplevel (button)),
-			     TRUE, GTK_STOCK_OPEN,
-			     G_CALLBACK (browsing_dialog_response), data);
+			     TRUE, GTK_STOCK_OPEN);
+
+    g_signal_connect (data->browsing_dialog, "response",
+		      G_CALLBACK (browsing_dialog_response), data);
 
     if (*current_entry_text) {
       if (data->is_command_line_entry) {

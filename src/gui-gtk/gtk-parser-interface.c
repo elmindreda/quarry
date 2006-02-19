@@ -96,10 +96,13 @@ gtk_parser_interface_present (GtkWindow **dialog_window, const gchar *title,
     dialog_window = &open_sgf_file_dialog;
 
   if (*dialog_window == NULL) {
-    GtkWidget *file_dialog
-      = gtk_file_dialog_new (title ? title : _("Open SGF File..."),
-			     NULL, TRUE, GTK_STOCK_OPEN,
-			     G_CALLBACK (open_file_response), callback);
+    GtkWidget *file_dialog = gtk_file_dialog_new ((title
+						   ? title
+						   : _("Open SGF File...")),
+						  NULL, TRUE, GTK_STOCK_OPEN);
+
+    g_signal_connect (file_dialog, "response",
+		      G_CALLBACK (open_file_response), callback);
 
     *dialog_window = GTK_WINDOW (file_dialog);
     gtk_control_center_window_created (*dialog_window);

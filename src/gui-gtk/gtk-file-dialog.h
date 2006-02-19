@@ -31,13 +31,13 @@
 
 GtkWidget *	gtk_file_dialog_new (const gchar *title, GtkWindow *parent,
 				     gboolean for_opening,
-				     const gchar *affirmative_button_text,
-				     GCallback response_callback,
-				     gpointer user_data);
+				     const gchar *affirmative_button_text);
 
 gchar *		gtk_file_dialog_get_filename (GtkWidget *dialog);
 void		gtk_file_dialog_set_filename (GtkWidget *dialog,
 					      const gchar *filename);
+void		gtk_file_dialog_set_current_name (GtkWidget *dialog,
+						  const gchar *filename);
 
 
 #endif /* QUARRY_GTK_FILE_DIALOG_H */

@@ -37,54 +37,36 @@
 #include <gtk/gtk.h>
 #include <string.h>
 
-typedef void (* GtkFileDialogResponseCallback)
-  (GtkWidget *file_dialog, gint response_id, gpointer user_data);
-
-typedef struct _GtkFileDialogData	GtkFileDialogData;
-
-struct _GtkFileDialogData {
-  GtkFileDialogResponseCallback	  response_callback;
-  gpointer			  user_data;
-};
-
 
 #if GTK_2_4_OR_LATER
 static void	 file_chooser_save_response (GtkWidget *dialog,
-					     gint response_id,
-					     GtkFileDialogData *data);
+					     gint response_id);
 #endif
 
 static void	 file_selection_open_response (GtkWidget *dialog,
-					       gint response_id,
-					       GtkFileDialogData *data);
+					       gint response_id);
 static void	 file_selection_save_response (GtkWidget *dialog,
-					       gint response_id,
-					       GtkFileDialogData *data);
+					       gint response_id);
 
 static gboolean	 check_if_directory_selected (GtkWidget *dialog,
 					      const gchar *filename);
 static gboolean	 check_if_overwriting_file (GtkWidget *dialog,
-					    const gchar *filename,
-					    GtkFileDialogData *data);
+					    const gchar *filename);
 
 static void	 overwrite_confirmation (GtkWidget *confirmation_dialog,
-					 gint response_id,
-					 GtkFileDialogData *data);
+					 gint response_id);
 
 
 GtkWidget *
 gtk_file_dialog_new (const gchar *title, GtkWindow *parent,
 		     gboolean for_opening,
-		     const gchar *affirmative_button_text,
-		     GCallback response_callback, gpointer user_data)
+		     const gchar *affirmative_button_text)
 {
   GtkWidget *dialog;
-  GtkFileDialogData *data;
 
   g_return_val_if_fail (title, NULL);
   g_return_val_if_fail (!parent || GTK_IS_WINDOW (parent), NULL);
   g_return_val_if_fail (affirmative_button_text, NULL);
-  g_return_val_if_fail (response_callback, NULL);
 
 #if GTK_2_4_OR_LATER
 
@@ -100,18 +82,9 @@ gtk_file_dialog_new (const gchar *title, GtkWindow *parent,
 
     gtk_dialog_set_default_response (GTK_DIALOG (dialog), GTK_RESPONSE_OK);
 
-    if (for_opening)
-      g_signal_connect (dialog, "response", response_callback, user_data);
-    else {
-      data = g_malloc (sizeof (GtkFileDialogData));
-
-      data->response_callback = ((GtkFileDialogResponseCallback)
-				 response_callback);
-      data->user_data	      = user_data;
-
+    if (!for_opening) {
       g_signal_connect (dialog, "response",
-			G_CALLBACK (file_chooser_save_response), data);
-      g_signal_connect_swapped (dialog, "destroy", G_CALLBACK (g_free), data);
+			G_CALLBACK (file_chooser_save_response), NULL);
     }
   }
   else {
@@ -125,18 +98,11 @@ gtk_file_dialog_new (const gchar *title, GtkWindow *parent,
       gtk_window_set_destroy_with_parent (GTK_WINDOW (dialog), TRUE);
     }
 
-    data = g_malloc (sizeof (GtkFileDialogData));
-
-    data->response_callback = ((GtkFileDialogResponseCallback)
-			       response_callback);
-    data->user_data	    = user_data;
-
     g_signal_connect (dialog, "response",
 		      G_CALLBACK (for_opening
 				  ? file_selection_open_response
 				  : file_selection_save_response),
-		      data);
-    g_signal_connect_swapped (dialog, "destroy", G_CALLBACK (g_free), data);
+		      NULL);
 
 #if GTK_2_4_OR_LATER
   }
@@ -174,7 +140,24 @@ gtk_file_dialog_set_filename (GtkWidget *dialog, const gchar *filename)
 #if GTK_2_4_OR_LATER
 
   if (GTK_IS_FILE_CHOOSER (dialog)) {
-    gtk_file_chooser_set_filename (GTK_FILE_CHOOSER (dialog), filename);
+    if (g_path_is_absolute (filename)) {
+      if (g_file_test (filename, G_FILE_TEST_EXISTS))
+	gtk_file_chooser_set_filename (GTK_FILE_CHOOSER (dialog), filename);
+      else {
+	gchar *base_name = g_path_get_basename (filename);
+
+	if (strcmp (base_name, G_DIR_SEPARATOR_S) != 0
+	    && strcmp (base_name, ".") != 0) {
+	  gtk_file_chooser_set_current_name (GTK_FILE_CHOOSER (dialog),
+					     base_name);
+	}
+
+	g_free (base_name);
+      }
+    }
+    else
+      gtk_file_chooser_set_current_name (GTK_FILE_CHOOSER (dialog), filename);
+
     return;
   }
 
@@ -195,26 +178,39 @@ gtk_file_dialog_set_filename (GtkWidget *dialog, const gchar *filename)
 }
 
 
+void
+gtk_file_dialog_set_current_name (GtkWidget *dialog, const gchar *filename)
+{
+#if GTK_2_4_OR_LATER
+
+  if (GTK_IS_FILE_CHOOSER (dialog)) {
+    gtk_file_chooser_set_current_name (GTK_FILE_CHOOSER (dialog), filename);
+    return;
+  }
+
+#endif
+
+  /* For GtkFileSelection there is no distinction. */
+  gtk_file_dialog_set_filename (dialog, filename);
+}
+
+
 #if GTK_2_4_OR_LATER
 
 
 static void
-file_chooser_save_response (GtkWidget *dialog, gint response_id,
-			    GtkFileDialogData *data)
+file_chooser_save_response (GtkWidget *dialog, gint response_id)
 {
   if (response_id == GTK_RESPONSE_OK) {
     gchar *filename
       = gtk_file_chooser_get_filename (GTK_FILE_CHOOSER (dialog));
-    gboolean confirmation_asked = check_if_overwriting_file (dialog, filename,
-							     data);
+    gboolean confirmation_asked = check_if_overwriting_file (dialog, filename);
 
     g_free (filename);
 
     if (confirmation_asked)
-      return;
+      g_signal_stop_emission_by_name (dialog, "response");
   }
-
-  data->response_callback (dialog, response_id, data->user_data);
 }
 
 
@@ -222,37 +218,33 @@ file_chooser_save_response (GtkWidget *dialog, gint response_id,
 
 
 static void
-file_selection_open_response (GtkWidget *dialog, gint response_id,
-			      GtkFileDialogData *data)
+file_selection_open_response (GtkWidget *dialog, gint response_id)
 {
   if (response_id == GTK_RESPONSE_OK) {
     const gchar *filename
       = gtk_file_selection_get_filename (GTK_FILE_SELECTION (dialog));
 
     if (check_if_directory_selected (dialog, filename))
-      return;
+      g_signal_stop_emission_by_name (dialog, "response");
   }
-
-  data->response_callback (dialog, response_id, data->user_data);
 }
 
 
 static void
-file_selection_save_response (GtkWidget *dialog, gint response_id,
-			      GtkFileDialogData *data)
+file_selection_save_response (GtkWidget *dialog, gint response_id)
 {
   if (response_id == GTK_RESPONSE_OK) {
     const gchar *filename
       = gtk_file_selection_get_filename (GTK_FILE_SELECTION (dialog));
 
-    if (check_if_directory_selected (dialog, filename))
+    if (check_if_directory_selected (dialog, filename)) {
+      g_signal_stop_emission_by_name (dialog, "response");
       return;
+    }
 
-    if (check_if_overwriting_file (dialog, filename, data))
-      return;
+    if (check_if_overwriting_file (dialog, filename))
+      g_signal_stop_emission_by_name (dialog, "response");
   }
-
-  data->response_callback (dialog, response_id, data->user_data);
 }
 
 
@@ -280,8 +272,7 @@ check_if_directory_selected (GtkWidget *dialog, const gchar *filename)
 
 
 static gboolean
-check_if_overwriting_file (GtkWidget *dialog, const gchar *filename,
-			   GtkFileDialogData *data)
+check_if_overwriting_file (GtkWidget *dialog, const gchar *filename)
 {
   if (*filename && g_file_test (filename, G_FILE_TEST_EXISTS)) {
     static const gchar *hint
@@ -311,7 +302,7 @@ check_if_overwriting_file (GtkWidget *dialog, const gchar *filename,
     gtk_window_set_modal (GTK_WINDOW (confirmation_dialog), TRUE);
 
     g_signal_connect (confirmation_dialog, "response",
-		      G_CALLBACK (overwrite_confirmation), data);
+		      G_CALLBACK (overwrite_confirmation), NULL);
 
     gtk_window_present (GTK_WINDOW (confirmation_dialog));
 
@@ -323,16 +314,36 @@ check_if_overwriting_file (GtkWidget *dialog, const gchar *filename,
 
 
 static void
-overwrite_confirmation (GtkWidget *confirmation_dialog, gint response_id,
-			GtkFileDialogData *data)
+overwrite_confirmation (GtkWidget *confirmation_dialog, gint response_id)
 {
-  if (response_id == GTK_RESPONSE_YES) {
-    data->response_callback (GTK_WIDGET (gtk_window_get_transient_for
-					 (GTK_WINDOW (confirmation_dialog))),
-			     GTK_RESPONSE_OK, data->user_data);
-  }
+  GtkDialog *file_dialog = GTK_DIALOG (gtk_window_get_transient_for
+				       (GTK_WINDOW (confirmation_dialog)));
 
   gtk_widget_destroy (confirmation_dialog);
+
+  if (response_id == GTK_RESPONSE_YES) {
+    /* Disconnect our `response' handlers so that they don't pop
+     * confirmation dialog up again.
+     */
+
+#if GTK_2_4_OR_LATER
+
+    if (GTK_IS_FILE_CHOOSER (file_dialog)) {
+      g_signal_handlers_disconnect_by_func (file_dialog,
+					    file_chooser_save_response, NULL);
+    }
+    else {
+#endif
+
+      g_signal_handlers_disconnect_by_func (file_dialog,
+					    file_selection_save_response, NULL);
+
+#if GTK_2_4_OR_LATER
+    }
+#endif
+
+    gtk_dialog_response (file_dialog, GTK_RESPONSE_OK);
+  }
 }
 
 
