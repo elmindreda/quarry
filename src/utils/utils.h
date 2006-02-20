@@ -465,6 +465,7 @@ void		string_buffer_delete (StringBuffer *string_buffer);
 void		string_buffer_dispose (StringBuffer *string_buffer);
 
 void		string_buffer_empty (StringBuffer *string_buffer);
+char *		string_buffer_steal_string (StringBuffer *string_buffer);
 
 
 #define string_buffer_add_character(string_buffer, character)		\

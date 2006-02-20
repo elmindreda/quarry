@@ -76,6 +76,15 @@ string_buffer_empty (StringBuffer *string_buffer)
 }
 
 
+char *
+string_buffer_steal_string (StringBuffer *string_buffer)
+{
+  assert (string_buffer);
+
+  return utils_realloc (string_buffer->string, string_buffer->length + 1);
+}
+
+
 void
 string_buffer_delete (StringBuffer *string_buffer)
 {
