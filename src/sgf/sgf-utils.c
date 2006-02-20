@@ -73,54 +73,40 @@ sgf_utils_play_node_move (const SgfNode *node, Board *board)
 }
 
 
-int
+void
 sgf_utils_format_node_move (const SgfGameTree *tree, const SgfNode *node,
-			    char *buffer,
+			    StringBuffer *buffer,
 			    const char *black_string, const char *white_string,
 			    const char *pass_string)
 {
-  char *pointer = buffer;
-
   assert (tree);
   assert (node);
   assert (buffer);
   assert (IS_STONE (node->move_color));
 
   if (node->move_color == BLACK) {
-    if (black_string) {
-      pointer += strlen (black_string);
-      memcpy (buffer, black_string, pointer - buffer);
-    }
+    if (black_string)
+      string_buffer_cat_string (buffer, black_string);
   }
   else {
-    if (white_string) {
-      pointer += strlen (white_string);
-      memcpy (buffer, white_string, pointer - buffer);
-    }
+    if (white_string)
+      string_buffer_cat_string (buffer, white_string);
   }
 
   if (tree->game != GAME_AMAZONS) {
     if (tree->game != GAME_GO
-	|| !IS_PASS (node->move_point.x, node->move_point.y) || !pass_string) {
-      pointer += game_format_move (tree->game,
-				   tree->board_width, tree->board_height,
-				   pointer,
-				   node->move_point.x, node->move_point.y);
+	|| !IS_PASS (node->move_point.x, node->move_point.y)) {
+      game_format_move (tree->game, tree->board_width, tree->board_height,
+			buffer, node->move_point.x, node->move_point.y);
     }
-    else {
-      strcpy (pointer, pass_string);
-      pointer += strlen (pass_string);
-    }
+    else if (pass_string)
+      string_buffer_cat_string (buffer, pass_string);
   }
   else {
-    pointer += game_format_move (tree->game,
-				 tree->board_width, tree->board_height,
-				 pointer,
-				 node->move_point.x, node->move_point.y,
-				 node->data.amazons);
+    game_format_move (tree->game, tree->board_width, tree->board_height,
+		      buffer, node->move_point.x, node->move_point.y,
+		      node->data.amazons);
   }
-
-  return pointer - buffer;
 }
 
 

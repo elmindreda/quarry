@@ -34,7 +34,6 @@
 #include <stdio.h>
 
 
-#define MAX_ERROR_LENGTH		0x200
 #define MAX_TIMES_TO_REPORT_ERROR	10
 
 

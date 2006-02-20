@@ -26,6 +26,7 @@
 
 #include "games.h"
 #include "board-internals.h"
+#include "utils.h"
 #include "quarry.h"
 
 
@@ -62,8 +63,8 @@ struct _GameInfo {
   void (* apply_changes)	(Board *board, int num_changes);
   void (* add_dummy_move_entry)	(Board *board);
 
-  int (* format_move)		(int board_width, int board_height,
-				 char *buffer, va_list move);
+  void (* format_move)		(int board_width, int board_height,
+				 StringBuffer *buffer, va_list move);
   int (* parse_move)		(int board_width, int board_height,
 				 const char *move_string,
 				 int *x, int *y,

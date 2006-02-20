@@ -816,9 +816,9 @@ game_from_game_name (const char *game_name, int case_sensitive)
 }
 
 
-int
+void
 game_format_point (Game game, int board_width, int board_height,
-		   char *buffer, int x, int y)
+		   StringBuffer *buffer, int x, int y)
 {
   assert (game >= FIRST_GAME && GAME_IS_SUPPORTED (game));
   assert (BOARD_MIN_WIDTH <= board_width && board_width <= BOARD_MAX_WIDTH);
@@ -827,19 +827,18 @@ game_format_point (Game game, int board_width, int board_height,
   assert (buffer);
   assert (ON_SIZED_GRID (board_width, board_height, x, y));
 
-  *buffer = game_info[game].horizontal_coordinates[x];
-  return (1 + utils_ncprintf (buffer + 1, 3, "%d",
-			      (game_info[game].reversed_vertical_coordinates
-			       ? board_height - y : y + 1)));
+  string_buffer_cprintf (buffer, "%c%d", 
+			 game_info[game].horizontal_coordinates[x],
+			 (game_info[game].reversed_vertical_coordinates
+			  ? board_height - y : y + 1));
 }
 
 
-int
+void
 game_format_position_list (Game game, int board_width, int board_height,
-			   char *buffer,
+			   StringBuffer *buffer,
 			   const BoardPositionList *position_list)
 {
-  char *buffer_pointer = buffer;
   int k;
 
   assert (position_list);
@@ -847,54 +846,41 @@ game_format_position_list (Game game, int board_width, int board_height,
   for (k = 0; k < position_list->num_positions; k++) {
     int pos = position_list->positions[k];
 
-    buffer_pointer += game_format_point (game, board_width, board_height,
-					 buffer_pointer,
-					 POSITION_X (pos), POSITION_Y (pos));
-    *buffer_pointer++ = ' ';
-  }
+    if (k > 0)
+      string_buffer_add_character (buffer, ' ');
 
-  *--buffer_pointer = 0;
-  return buffer_pointer - buffer;
+    game_format_point (game, board_width, board_height, buffer,
+		       POSITION_X (pos), POSITION_Y (pos));
+  }
 }
 
 
-int
+void
 game_format_move (Game game, int board_width, int board_height,
-		  char *buffer, ...)
+		  StringBuffer *buffer, ...)
 {
   va_list move;
-  int num_characters;
 
   assert (game >= FIRST_GAME && GAME_IS_SUPPORTED (game));
 
   va_start (move, buffer);
-  num_characters = game_info[game].format_move (board_width, board_height,
-						buffer, move);
+  game_info[game].format_move (board_width, board_height, buffer, move);
   va_end (move);
-
-  buffer[num_characters] = 0;
-  return num_characters;
 }
 
 
-int
+void
 game_format_move_valist (Game game, int board_width, int board_height,
-			 char *buffer, va_list move)
+			 StringBuffer *buffer, va_list move)
 {
-  int num_characters;
-
   assert (game >= FIRST_GAME && GAME_IS_SUPPORTED (game));
 
-  num_characters = game_info[game].format_move (board_width, board_height,
-						buffer, move);
-  buffer[num_characters] = 0;
-
-  return num_characters;
+  game_info[game].format_move (board_width, board_height, buffer, move);
 }
 
 
-char *
-game_format_score_difference (Game game, double score)
+void
+game_format_score_difference (Game game, StringBuffer *buffer, double score)
 {
   /* We may want to distinguish based on game later. */
   UNUSED (game);
@@ -908,13 +894,15 @@ game_format_score_difference (Game game, double score)
       /* TRANSLATORS: This is only used for non-integral scores.  You
 	 should also add translation of `points' if it is required by
 	 your language. */
-      return utils_printf (_("Black wins by %.*f"), num_digits, score);
+      string_buffer_printf (buffer, _("Black wins by %.*f"),
+			    num_digits, score);
     }
     else {
       /* TRANSLATORS: This is only used for non-integral scores.  You
 	 should also add translation of `points' if it is required by
 	 your language. */
-      return utils_printf (_("White wins by %.*f"), num_digits, -score);
+      string_buffer_printf (buffer, _("White wins by %.*f"),
+			    num_digits, -score);
     }
   }
   else {
@@ -923,16 +911,18 @@ game_format_score_difference (Game game, double score)
     if (integral_score > 0) {
       /* TRANSLATORS: You should add translation of `points' if it is
 	 required by your language. */
-      return utils_printf (ngettext ("Black wins by %d", "Black wins by %d",
-				     integral_score),
-			   integral_score);
+      string_buffer_printf (buffer,
+			    ngettext ("Black wins by %d", "Black wins by %d",
+				      integral_score),
+			    integral_score);
     }
     else {
       /* TRANSLATORS: You should add translation of `points' if it is
 	 required by your language. */
-      return utils_printf (ngettext ("White wins by %d", "White wins by %d",
-				     -integral_score),
-			   -integral_score);
+      string_buffer_printf (buffer,
+			    ngettext ("White wins by %d", "White wins by %d",
+				      -integral_score),
+			    -integral_score);
     }
   }
 }

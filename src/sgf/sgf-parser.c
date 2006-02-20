@@ -191,7 +191,8 @@ static int	    is_composed_value (SgfParsingData *data,
 				       int expecting_simple_text);
 static SgfError	    end_parsing_value (SgfParsingData *data);
 
-static int	    format_error_valist (SgfParsingData *data, char *buffer,
+static void	    format_error_valist (SgfParsingData *data,
+					 StringBuffer *buffer,
 					 SgfError error, va_list arguments);
 
 
@@ -2934,18 +2935,20 @@ add_error (SgfParsingData *data, SgfError error, ...)
 
   if (error < SGF_FIRST_PROPERTY_NAME_ERROR
       || SGF_LAST_PROPERTY_NAME_ERROR < error) {
-    char buffer[MAX_ERROR_LENGTH];
-    int length;
+    StringBuffer buffer;
 
     if (error != SGF_WARNING_ERROR_SUPPRESSED
 	&& data->times_error_reported[error] == MAX_TIMES_TO_REPORT_ERROR)
       return;
 
+    string_buffer_init (&buffer, 0x200, 0x200);
+
     va_start (arguments, error);
-    length = format_error_valist (data, buffer, error, arguments);
+    format_error_valist (data, &buffer, error, arguments);
     va_end (arguments);
 
-    string_list_add_from_buffer (data->error_list, buffer, length);
+    string_list_add_ready (data->error_list,
+			   string_buffer_steal_string (&buffer));
     data->error_list->last->line = data->line;
     data->error_list->last->column = data->column + data->first_column;
 
@@ -2979,18 +2982,18 @@ insert_error_valist (SgfParsingData *data, SgfError error,
 		     SgfErrorPosition *error_position, va_list arguments)
 {
   SgfErrorListItem *error_item;
-  char buffer[MAX_ERROR_LENGTH];
-  int length;
+  StringBuffer buffer;
 
   if (error != SGF_WARNING_ERROR_SUPPRESSED
       && data->times_error_reported[error] == MAX_TIMES_TO_REPORT_ERROR)
     return;
 
-  length = format_error_valist (data, buffer, error, arguments);
+  string_buffer_init (&buffer, 0x200, 0x200);
+  format_error_valist (data, &buffer, error, arguments);
 
-  error_item = string_list_insert_from_buffer (data->error_list,
-					       error_position->notch,
-					       buffer, length);
+  error_item = string_list_insert_ready (data->error_list,
+					 error_position->notch,
+					 string_buffer_steal_string (&buffer));
   error_item->line   = error_position->line;
   error_item->column = error_position->column + data->first_column;
 
@@ -3115,23 +3118,21 @@ end_parsing_value (SgfParsingData *data)
  * - `%M': move, stored in `data->node' is formatted according to
  *   current game.
  */
-static int
-format_error_valist (SgfParsingData *data, char *buffer,
+static void
+format_error_valist (SgfParsingData *data, StringBuffer *buffer,
 		     SgfError error, va_list arguments)
 {
-  char *pointer = buffer;
   const char *format_string = sgf_errors[error];
 
   while (*format_string) {
     if (*format_string != '%')
-      *pointer++ = *format_string++;
+      string_buffer_add_character (buffer, *format_string++);
     else {
       format_string++;
       switch (*format_string++) {
       case 'N':
-	strcpy (pointer, property_info[data->property_type].name);
-	pointer += strlen (property_info[data->property_type].name);
-
+	string_buffer_cat_string (buffer,
+				  property_info[data->property_type].name);
 	break;
 
       case 'V':
@@ -3158,20 +3159,14 @@ format_error_valist (SgfParsingData *data, char *buffer,
 	}
 
 	if (data->temp_buffer - data->buffer <= 27) {
-	  memcpy (pointer, data->buffer, data->temp_buffer - data->buffer);
-	  pointer += data->temp_buffer - data->buffer;
+	  string_buffer_cat_as_string (buffer, data->buffer,
+				       data->temp_buffer - data->buffer);
 	}
 	else {
 	  /* Value is long, only output the beginning and the end. */
-	  memcpy (pointer, data->buffer, 12);
-	  pointer += 12;
-
-	  *pointer++ = '.';
-	  *pointer++ = '.';
-	  *pointer++ = '.';
-
-	  memcpy (pointer, data->temp_buffer - 12, 12);
-	  pointer += 12;
+	  string_buffer_cat_as_string (buffer, data->buffer, 12);
+	  string_buffer_add_characters (buffer, '.', 3);
+	  string_buffer_cat_as_string (buffer, data->temp_buffer - 12, 12);
 	}
 
 	break;
@@ -3181,46 +3176,37 @@ format_error_valist (SgfParsingData *data, char *buffer,
 	  int x = va_arg (arguments, int);
 	  int y = va_arg (arguments, int);
 
-	  pointer += game_format_point (data->game,
-					data->board_width, data->board_height,
-					pointer, x, y);
+	  game_format_point (data->game, data->board_width, data->board_height,
+			     buffer, x, y);
 	}
 
 	break;
 
       case 'M':
-	pointer += sgf_utils_format_node_move (data->tree, data->node, pointer,
-					       "B ", "W ", NULL);
+	sgf_utils_format_node_move (data->tree, data->node, buffer,
+				    "B ", "W ", NULL);
 	break;
 
       case 'c':
-	*pointer++ = (char) va_arg (arguments, int);
+	string_buffer_add_character (buffer, (char) va_arg (arguments, int));
 	break;
 
       case 'd':
-	pointer += sprintf (pointer, "%d", va_arg (arguments, int));
+	string_buffer_printf (buffer, "%d", va_arg (arguments, int));
 	break;
 
       case 's':
-	{
-	  const char *string = va_arg (arguments, const char *);
-
-	  strcpy (pointer, string);
-	  pointer += strlen (string);
-	}
-
+	string_buffer_cat_string (buffer, va_arg (arguments, const char *));
 	break;
 
       case 0:
 	break;
 
       default:
-	*pointer++ = *(format_string - 1);
+	string_buffer_add_character (buffer, *(format_string - 1));
       }
     }
   }
-
-  return pointer - buffer;
 }
 
 

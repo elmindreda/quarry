@@ -516,15 +516,19 @@ gtp_client_set_free_handicap (GtpClient *client,
 			      void *user_data,
 			      const BoardPositionList *handicap_stones)
 {
-  char buffer[SUGGESTED_POSITION_LIST_BUFFER_SIZE];
+  StringBuffer buffer;
 
   assert (client);
   assert (handicap_stones);
 
+  string_buffer_init (&buffer, 0x100, 0x100);
+
   game_format_position_list (GAME_GO, client->board_size, client->board_size,
-			     buffer, handicap_stones);
+			     &buffer, handicap_stones);
   send_command (client, response_callback, user_data,
 		"set_free_handicap %s", buffer);
+
+  string_buffer_dispose (&buffer);
 }
 
 
@@ -583,20 +587,24 @@ gtp_client_play_move (GtpClient *client,
 		      void *user_data, int color, ...)
 {
   va_list move;
-  char move_buffer[32];
+  StringBuffer move_buffer;
 
   assert (client);
   assert (IS_STONE (color));
 
+  string_buffer_init (&move_buffer, 0x10, 0x20);
+
   va_start (move, color);
   game_format_move_valist (client->game,
 			   client->board_size, client->board_size,
-			   move_buffer, move);
+			   &move_buffer, move);
   va_end (move);
 
   send_command (client, response_callback, user_data,
 		client->protocol_version != 1 ? "play %s %s" : "%s %s",
 		COLOR_STRING (color), move_buffer);
+
+  string_buffer_dispose (&move_buffer);
 }
 
 

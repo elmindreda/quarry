@@ -25,8 +25,8 @@
 
 
 #include "sgf-properties.h"
-#include "utils.h"
 #include "board.h"
+#include "utils.h"
 #include "quarry.h"
 
 
@@ -795,9 +795,9 @@ typedef enum {
 
 
 inline void   sgf_utils_play_node_move (const SgfNode *node, Board *board);
-int	      sgf_utils_format_node_move (const SgfGameTree *tree,
+void	      sgf_utils_format_node_move (const SgfGameTree *tree,
 					  const SgfNode *node,
-					  char *buffer,
+					  StringBuffer *buffer,
 					  const char *black_string,
 					  const char *white_string,
 					  const char *pass_string);

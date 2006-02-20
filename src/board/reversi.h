@@ -25,6 +25,7 @@
 
 
 #include "board-internals.h"
+#include "utils.h"
 #include "quarry.h"
 
 #include <stdarg.h>
@@ -73,8 +74,8 @@ void		reversi_undo (Board *board);
 void		reversi_apply_changes (Board *board, int num_changes);
 void		reversi_add_dummy_move_entry (Board *board);
 
-int		reversi_format_move (int board_width, int board_height,
-				     char *buffer, va_list move);
+void		reversi_format_move (int board_width, int board_height,
+				     StringBuffer *buffer, va_list move);
 int		reversi_parse_move (int board_width, int board_height,
 				    const char *move_string,
 				    int *x, int *y,

@@ -26,6 +26,7 @@
 
 #include "board-topology.h"
 #include "games.h"
+#include "utils.h"
 #include "quarry.h"
 
 #include <assert.h>
@@ -267,25 +268,24 @@ void		     board_position_list_mark_on_grid
 			char grid[BOARD_GRID_SIZE], char value);
 
 
-#define SUGGESTED_POSITION_LIST_BUFFER_SIZE	(4 * BOARD_MAX_POSITIONS)
-
-
 Game		game_from_game_name (const char *game_name,
 				     int case_sensitive);
 
-int		game_format_point (Game game,
+void		game_format_point (Game game,
 				   int board_width, int board_height,
-				   char *buffer, int x, int y);
-int		game_format_position_list
+				   StringBuffer *buffer, int x, int y);
+void		game_format_position_list
 		  (Game game, int board_width, int board_height,
-		   char *buffer, const BoardPositionList *position_list);
-int		game_format_move (Game game, int board_width, int board_height,
-				  char *buffer, ...);
-int		game_format_move_valist (Game game,
+		   StringBuffer *buffer,
+		   const BoardPositionList *position_list);
+void		game_format_move (Game game, int board_width, int board_height,
+				  StringBuffer *buffer, ...);
+void		game_format_move_valist (Game game,
 					 int board_width, int board_height,
-					 char *buffer, va_list move);
+					 StringBuffer *buffer, va_list move);
 
-char *		game_format_score_difference (Game game, double score);
+void		game_format_score_difference (Game game, StringBuffer *buffer,
+					      double score);
 
 int		game_parse_point (Game game, int board_width, int board_height,
 				  const char *point_string, int *x, int *y);
@@ -368,8 +368,8 @@ BoardPositionList *  go_get_string_stones (Board *board, int x, int y);
 BoardPositionList *  go_get_logically_dead_stones (Board *board, int x, int y);
 
 void		     go_score_game (Board *board, const char *dead_stones,
-				    double komi,
-				    double *score, char **detailed_score,
+				    double komi, double *score,
+				    StringBuffer *detailed_score,
 				    BoardPositionList **black_territory,
 				    BoardPositionList **white_territory);
 void		     go_mark_territory_on_grid (Board *board, char *grid,

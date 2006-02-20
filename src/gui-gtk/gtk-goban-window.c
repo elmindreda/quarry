@@ -3198,17 +3198,19 @@ handle_go_scoring_results (GtkGobanWindow *goban_window)
   SgfNode *game_info_node   = current_tree->board_state->game_info_node;
   double komi = 0.0;
   double score;
-  char *detailed_score;
+  StringBuffer detailed_score;
   BoardPositionList *black_territory;
   BoardPositionList *white_territory;
 
   sgf_node_get_komi (game_info_node, &komi);
 
+  string_buffer_init (&detailed_score, 0x400, 0x200);
   go_score_game (current_tree->board, goban_window->dead_stones, komi,
 		 &score, &detailed_score, &black_territory, &white_territory);
 
   sgf_node_append_text_property (current_tree->current_node, current_tree,
-				 SGF_COMMENT, detailed_score,
+				 SGF_COMMENT,
+				 string_buffer_steal_string (&detailed_score),
 				 "\n\n----------------\n\n");
 
   sgf_node_add_list_of_point_property (current_tree->current_node,
@@ -4615,29 +4617,31 @@ update_move_information (const GtkGobanWindow *goban_window)
   SgfResult result = SGF_RESULT_NOT_SET;
   gboolean result_is_final;
   double score;
-  char buffer[512];
-  int length;
+  StringBuffer buffer;
+
+  string_buffer_init (&buffer, 0x100, 0x100);
 
   if (move_node) {
     if (goban_window->current_tree->current_node == move_node) {
-      length = sprintf (buffer, _("Move %d: "),
-			goban_window->board->move_number);
+      string_buffer_printf (&buffer, _("Move %d: "),
+			    goban_window->board->move_number);
     }
     else {
-      length = sprintf (buffer, _("Last move: %u, "),
-			goban_window->board->move_number);
+      string_buffer_printf (&buffer, _("Last move: %u, "),
+			    goban_window->board->move_number);
     }
 
-    length += (sgf_utils_format_node_move
-	       (goban_window->current_tree, move_node, buffer + length,
-		/* TRANSLATORS: This is an abbreviation of `Black'. */
-		_("B "),
-		/* TRANSLATORS: This is an abbreviation of `White'. */
-		_("W "),
-		_("pass")));
+    sgf_utils_format_node_move (goban_window->current_tree, move_node, &buffer,
+				/* TRANSLATORS: This is an
+				   abbreviation of `Black'. */
+				_("B "),
+				/* TRANSLATORS: This is an
+				   abbreviation of `White'. */
+				_("W "),
+				_("pass"));
   }
   else
-    length = sprintf (buffer, _("Game beginning"));
+    string_buffer_cat_string (&buffer, _("Game beginning"));
 
   if (game_info_node
       && !goban_window->current_tree->current_node->child
@@ -4652,63 +4656,57 @@ update_move_information (const GtkGobanWindow *goban_window)
   if (!result_is_final
       && !board_is_game_over (goban_window->board, RULE_SET_DEFAULT,
 			      goban_window->sgf_board_state.color_to_play)) {
-    strcpy (buffer + length,
-	    (goban_window->sgf_board_state.color_to_play == BLACK
-	     ? _("; black to play") : _("; white to play")));
+    string_buffer_cat_string (&buffer, 
+			      ((goban_window->sgf_board_state.color_to_play
+				== BLACK)
+			       ? _("; black to play") : _("; white to play")));
   }
   else
-    strcpy (buffer + length, _("; game over"));
+    string_buffer_cat_string (&buffer, _("; game over"));
 
   if (result_is_final) {
-    length += strlen (buffer + length);
-    *(buffer + length++) = '\n';
+    string_buffer_add_character (&buffer, '\n');
 
     switch (result) {
     case SGF_RESULT_BLACK_WIN:
-      strcpy (buffer + length, _("Black wins"));
+      string_buffer_cat_string (&buffer, _("Black wins"));
       break;
     case SGF_RESULT_WHITE_WIN:
-      strcpy (buffer + length, _("White wins"));
+      string_buffer_cat_string (&buffer, _("White wins"));
       break;
 
     case SGF_RESULT_BLACK_WIN_BY_FORFEIT:
-      strcpy (buffer + length, _("Black wins by forfeit"));
+      string_buffer_cat_string (&buffer, _("Black wins by forfeit"));
       break;
     case SGF_RESULT_WHITE_WIN_BY_FORFEIT:
-      strcpy (buffer + length, _("White wins by forfeit"));
+      string_buffer_cat_string (&buffer, _("White wins by forfeit"));
       break;
 
     case SGF_RESULT_BLACK_WIN_BY_RESIGNATION:
-      strcpy (buffer + length, _("White resigns"));
+      string_buffer_cat_string (&buffer, _("White resigns"));
       break;
     case SGF_RESULT_WHITE_WIN_BY_RESIGNATION:
-      strcpy (buffer + length, _("Black resigns"));
+      string_buffer_cat_string (&buffer, _("Black resigns"));
       break;
 
     case SGF_RESULT_BLACK_WIN_BY_SCORE:
     case SGF_RESULT_WHITE_WIN_BY_SCORE:
-      {
-	double score_difference = (result == SGF_RESULT_BLACK_WIN_BY_SCORE
-				   ? score : -score);
-	char *score_string
-	  = game_format_score_difference (goban_window->board->game,
-					  score_difference);
-
-	strcpy (buffer + length, score_string);
-	utils_free (score_string);
-      }
-
+      game_format_score_difference (goban_window->board->game, &buffer,
+				    (result == SGF_RESULT_BLACK_WIN_BY_SCORE
+				     ? score : -score));
       break;
 
     case SGF_RESULT_BLACK_WIN_BY_TIME:
-      strcpy (buffer + length, _("White runs out of time and loses"));
+      string_buffer_cat_string (&buffer,
+				_("White runs out of time and loses"));
       break;
     case SGF_RESULT_WHITE_WIN_BY_TIME:
-      strcpy (buffer + length, _("Black runs out of time and loses"));
+      string_buffer_cat_string (&buffer,
+				_("Black runs out of time and loses"));
       break;
 
     case SGF_RESULT_DRAW:
-      strcpy (buffer + length, _("Game is draw"));
+      string_buffer_cat_string (&buffer, _("Game is draw"));
       break;
 
     default:
@@ -4716,7 +4714,8 @@ update_move_information (const GtkGobanWindow *goban_window)
     }
   }
 
-  gtk_label_set_text (goban_window->move_information_label, buffer);
+  gtk_label_set_text (goban_window->move_information_label, buffer.string);
+  string_buffer_dispose (&buffer);
 }
 
 

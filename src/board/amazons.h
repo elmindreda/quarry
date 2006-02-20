@@ -25,6 +25,7 @@
 
 
 #include "board-internals.h"
+#include "utils.h"
 #include "quarry.h"
 
 #include <stdarg.h>
@@ -74,8 +75,8 @@ void		amazons_undo (Board *board);
 void		amazons_apply_changes (Board *board, int num_changes);
 void		amazons_add_dummy_move_entry (Board *board);
 
-int		amazons_format_move (int board_width, int board_height,
-				     char *buffer, va_list move);
+void		amazons_format_move (int board_width, int board_height,
+				     StringBuffer *buffer, va_list move);
 int		amazons_parse_move (int board_width, int board_height,
 				    const char *move_string,
 				    int *x, int *y,

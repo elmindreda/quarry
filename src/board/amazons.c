@@ -305,27 +305,23 @@ amazons_dump_board (const Board *board)
 }
 
 
-int
+void
 amazons_format_move (int board_width, int board_height,
-		     char *buffer, va_list move)
+		     StringBuffer *buffer, va_list move)
 {
   int x = va_arg (move, int);
   int y = va_arg (move, int);
   BoardAmazonsMoveData move_data = va_arg (move, BoardAmazonsMoveData);
-  char *pointer = buffer;
 
-  pointer += game_format_point (GAME_AMAZONS, board_width, board_height,
-				pointer, move_data.from.x, move_data.from.y);
-  *pointer++ = '-';
-  pointer += game_format_point (GAME_AMAZONS, board_width, board_height,
-				pointer, x, y);
-  *pointer++ = '-';
-  pointer += game_format_point (GAME_AMAZONS, board_width, board_height,
-				pointer,
-				move_data.shoot_arrow_to.x,
-				move_data.shoot_arrow_to.y);
+  game_format_point (GAME_AMAZONS, board_width, board_height,
+		     buffer, move_data.from.x, move_data.from.y);
+  string_buffer_add_character (buffer, '-');
 
-  return pointer - buffer;
+  game_format_point (GAME_AMAZONS, board_width, board_height, buffer, x, y);
+  string_buffer_add_character (buffer, '-');
+
+  game_format_point (GAME_AMAZONS, board_width, board_height, buffer,
+		     move_data.shoot_arrow_to.x, move_data.shoot_arrow_to.y);
 }
 
 

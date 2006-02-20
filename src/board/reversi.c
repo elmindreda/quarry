@@ -235,15 +235,14 @@ reversi_add_dummy_move_entry (Board *board)
 }
 
 
-int
+void
 reversi_format_move (int board_width, int board_height,
-		     char *buffer, va_list move)
+		     StringBuffer *buffer, va_list move)
 {
   int x = va_arg (move, int);
   int y = va_arg (move, int);
 
-  return game_format_point (GAME_REVERSI, board_width, board_height,
-			    buffer, x, y);
+  game_format_point (GAME_REVERSI, board_width, board_height, buffer, x, y);
 }
 
 
