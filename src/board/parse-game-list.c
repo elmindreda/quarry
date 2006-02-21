@@ -75,6 +75,7 @@ game_list_parse_game2 (StringBuffer *c_file_arrays,
 		       char **pending_eol_comment, int *pending_linefeeds)
 {
   const char *default_board_size;
+  StringBuffer standard_board_sizes;
   const char *color_to_play_first;
   const char *adjust_color_to_play_function;
   const char *is_game_over_function;
@@ -111,7 +112,7 @@ game_list_parse_game2 (StringBuffer *c_file_arrays,
       string_buffer_cat_string (c_file_arrays, "  { NULL, ");
 
     string_buffer_cat_string (c_file_arrays,
-			      ("0, EMPTY, NULL,\n"
+			      ("0, NULL, EMPTY, NULL,\n"
 			       "    NULL,\n    NULL, 0,\n    NULL, NULL,\n"
 			       "    NULL, NULL, NULL,\n    NULL, NULL,\n"
 			       "    NULL, NULL,\n    NULL, NULL,\n"
@@ -121,6 +122,28 @@ game_list_parse_game2 (StringBuffer *c_file_arrays,
   }
 
   PARSE_THING (default_board_size, INTEGER_NUMBER, line, "default board size");
+
+  string_buffer_init (&standard_board_sizes, 0x20, 0x20);
+
+  if (looking_at ("{", line)) {
+    while (!looking_at ("}", line)) {
+      const char *board_size;
+
+      PARSE_THING (board_size, INTEGER_NUMBER, line, "board size");
+
+      if (standard_board_sizes.length == 0)
+	string_buffer_add_character (&standard_board_sizes, '"');
+
+      string_buffer_cat_string (&standard_board_sizes, board_size);
+      string_buffer_cat_string (&standard_board_sizes, "\\000");
+    }
+
+    if (standard_board_sizes.length > 0)
+      string_buffer_add_character (&standard_board_sizes, '"');
+  }
+
+  if (standard_board_sizes.length == 0)
+    string_buffer_cat_string (&standard_board_sizes, "NULL");
 
   if (looking_at ("black", line))
     color_to_play_first = "BLACK";
@@ -172,11 +195,12 @@ game_list_parse_game2 (StringBuffer *c_file_arrays,
 
   string_buffer_cprintf (c_file_arrays,
 			 (CAPITALIZATION_HINT
-			  "  { N_(%s), %s, %s, %s,\n    %s,\n    \"%s\", %d,\n"
-			  "    %s, %s,\n    %s, %s, %s,\n    %s, %s,\n"
-			  "    %s, %s,\n    %s, %s,\n    sizeof (%s), %s }"),
+			  "  { N_(%s), %s, %s, %s, %s,\n    %s,\n"
+			  "    \"%s\", %d,\n    %s, %s,\n    %s, %s, %s,\n"
+			  "    %s, %s,\n    %s, %s,\n    %s, %s,\n"
+			  "    sizeof (%s), %s }"),
 			 game_full_name, default_board_size,
-			 color_to_play_first,
+			 standard_board_sizes.string, color_to_play_first,
 			 adjust_color_to_play_function, is_game_over_function,
 			 horizontal_coordinates,
 			 reversed_vertical_coordinates_flag,
@@ -188,6 +212,8 @@ game_list_parse_game2 (StringBuffer *c_file_arrays,
 			 validate_board_function, dump_board_function,
 			 move_stack_entry_structure,
 			 relative_num_moves_per_game);
+
+  string_buffer_dispose (&standard_board_sizes);
 
   return 0;
 }

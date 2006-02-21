@@ -40,6 +40,8 @@ struct _GameInfo {
   const char			*name;
 
   int				 default_board_size;
+  const char			*standard_board_sizes;
+
   int				 color_to_play_first;
 
   int (* adjust_color_to_play)  (const Board *board, BoardRuleSet rule_set,
