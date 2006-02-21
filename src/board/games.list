@@ -42,7 +42,7 @@ games  Game game_info {
 
 
   #> GM[1], Go.
-  "Go"		GAME_GO			19
+  "Go"		GAME_GO			19	{ 9 13 19 }
 		black			NULL
 		go_is_game_over
 
@@ -61,7 +61,7 @@ games  Game game_info {
 
   #> GM[2], Othello (which we call Reversi to avoid potential
   #> trademark problems.)
-  "Reversi"	GAME_REVERSI		8
+  "Reversi"	GAME_REVERSI		8	{ 8 10 }
 		black			reversi_adjust_color_to_play
 		NULL
 
@@ -139,7 +139,7 @@ games  Game game_info {
 
 
   #> GM[18], Amazons.
-  "Amazons"	GAME_AMAZONS		10
+  "Amazons"	GAME_AMAZONS		10	{ 10 }
 		white			amazons_adjust_color_to_play
 		amazons_is_game_over
 
