@@ -59,8 +59,10 @@ struct _QuarryMessageDialog {
   GtkDialog	   dialog;
 
   GtkWidget	  *image;
-  GtkLabel	  *primary_text_label;
-  GtkLabel	  *secondary_text_label;
+  GtkLabel	  *label;
+
+  gchar		  *primary_text;
+  gchar		  *secondary_text;
 };
 
 struct _QuarryMessageDialogClass {

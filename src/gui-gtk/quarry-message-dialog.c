@@ -26,22 +26,32 @@
 
 #include <gtk/gtk.h>
 #include <stdarg.h>
+#include <string.h>
 
 
-static void	 quarry_message_dialog_init (QuarryMessageDialog *dialog);
+static void	quarry_message_dialog_class_init
+		  (QuarryMessageDialogClass *class);
+static void	quarry_message_dialog_init (QuarryMessageDialog *dialog);
+
+static void	quarry_message_dialog_finalize (GObject *object);
+
+static void	set_label_text (QuarryMessageDialog *dialog);
+
+
+static GtkDialogClass  *parent_class;
 
 
 GType
 quarry_message_dialog_get_type (void)
 {
-  static GType quarry_message_dialog_type = 0;
+  static GType message_dialog_type = 0;
 
-  if (!quarry_message_dialog_type) {
-    static const GTypeInfo quarry_message_dialog_info = {
+  if (!message_dialog_type) {
+    static const GTypeInfo message_dialog_info = {
       sizeof (QuarryMessageDialogClass),
       NULL,
       NULL,
-      NULL,
+      (GClassInitFunc) quarry_message_dialog_class_init,
       NULL,
       NULL,
       sizeof (QuarryMessageDialog),
@@ -50,12 +60,21 @@ quarry_message_dialog_get_type (void)
       NULL
     };
 
-    quarry_message_dialog_type
+    message_dialog_type
       = g_type_register_static (GTK_TYPE_DIALOG, "QuarryMessageDialog",
-				&quarry_message_dialog_info, 0);
+				&message_dialog_info, 0);
   }
 
-  return quarry_message_dialog_type;
+  return message_dialog_type;
+}
+
+
+static void
+quarry_message_dialog_class_init (QuarryMessageDialogClass *class)
+{
+  parent_class = g_type_class_peek_parent (class);
+
+  G_OBJECT_CLASS (class)->finalize = quarry_message_dialog_finalize;
 }
 
 
@@ -63,9 +82,7 @@ static void
 quarry_message_dialog_init (QuarryMessageDialog *dialog)
 {
   GtkWindow *window = GTK_WINDOW (dialog);
-  GtkWidget *primary_text_label;
-  GtkWidget *secondary_text_label;
-  GtkWidget *vbox;
+  GtkWidget *label;
   GtkWidget *hbox;
 
   gtk_window_set_title (window, "");
@@ -84,35 +101,26 @@ quarry_message_dialog_init (QuarryMessageDialog *dialog)
   dialog->image = gtk_image_new ();
   gtk_misc_set_alignment (GTK_MISC (dialog->image), 0.5, 0.0);
 
-  primary_text_label	     = gtk_label_new (NULL);
-  dialog->primary_text_label = GTK_LABEL (primary_text_label);
+  label		= gtk_label_new (NULL);
+  dialog->label = GTK_LABEL (label);
 
-  gtk_label_set_line_wrap (dialog->primary_text_label, TRUE);
-  gtk_label_set_selectable (dialog->primary_text_label, TRUE);
-  gtk_misc_set_alignment (GTK_MISC (dialog->primary_text_label), 0.0, 0.0);
+  gtk_label_set_line_wrap (dialog->label, TRUE);
+  gtk_label_set_selectable (dialog->label, TRUE);
+  gtk_misc_set_alignment (GTK_MISC (dialog->label), 0.0, 0.0);
 
-  gtk_widget_show (primary_text_label);
-
-  secondary_text_label	       = gtk_label_new (NULL);
-  dialog->secondary_text_label = GTK_LABEL (secondary_text_label);
-
-  gtk_label_set_line_wrap (dialog->secondary_text_label, TRUE);
-  gtk_label_set_selectable (dialog->secondary_text_label, TRUE);
-  gtk_misc_set_alignment (GTK_MISC (dialog->secondary_text_label), 0.0, 0.0);
-
-  vbox = gtk_utils_pack_in_box (GTK_TYPE_VBOX, 0,
-				primary_text_label, GTK_UTILS_FILL,
-				secondary_text_label, GTK_UTILS_FILL, NULL);
-  gtk_widget_show (vbox);
+  gtk_widget_show (label);
 
   hbox = gtk_utils_pack_in_box (GTK_TYPE_HBOX, QUARRY_SPACING,
 				dialog->image, GTK_UTILS_FILL,
-				vbox, GTK_UTILS_FILL, NULL);
+				label, GTK_UTILS_FILL, NULL);
   gtk_widget_show (hbox);
 
   gtk_utils_standardize_dialog (&dialog->dialog, hbox);
   gtk_box_set_spacing (GTK_BOX (dialog->dialog.vbox),
 		       QUARRY_SPACING_VERY_BIG);
+
+  dialog->primary_text	 = NULL;
+  dialog->secondary_text = NULL;
 }
 
 
@@ -195,6 +203,18 @@ quarry_message_dialog_new_valist (GtkWindow *parent,
 
 
 void
+quarry_message_dialog_finalize (GObject *object)
+{
+  QuarryMessageDialog *dialog = QUARRY_MESSAGE_DIALOG (object);
+
+  g_free (dialog->primary_text);
+  g_free (dialog->secondary_text);
+
+  G_OBJECT_CLASS (parent_class)->finalize (object);
+}
+
+
+void
 quarry_message_dialog_set_icon (QuarryMessageDialog *dialog,
 				const gchar *icon_stock_id)
 {
@@ -213,19 +233,17 @@ void
 quarry_message_dialog_set_primary_text (QuarryMessageDialog *dialog,
 					const gchar *primary_text)
 {
-  gchar *escaped_text;
-  gchar *marked_up_text;
-
   g_return_if_fail (QUARRY_IS_MESSAGE_DIALOG (dialog));
 
-  escaped_text	 = g_markup_escape_text (primary_text, -1);
-  marked_up_text = g_strconcat ("<span weight=\"bold\" size=\"larger\">",
-				escaped_text, "</span>", NULL);
+  if (primary_text != NULL
+      ? (dialog->primary_text == NULL
+	 || strcmp (dialog->primary_text, primary_text) != 0)
+      : dialog->primary_text != NULL) {
+    g_free (dialog->primary_text);
+    dialog->primary_text = g_strdup (primary_text);
 
-  gtk_label_set_markup (dialog->primary_text_label, marked_up_text);
-
-  g_free (marked_up_text);
-  g_free (escaped_text);
+    set_label_text (dialog);
+  }
 }
 
 
@@ -262,19 +280,14 @@ quarry_message_dialog_set_secondary_text (QuarryMessageDialog *dialog,
 {
   g_return_if_fail (QUARRY_IS_MESSAGE_DIALOG (dialog));
 
-  if (secondary_text && *secondary_text) {
-    gchar *secondary_text_with_newline = g_strconcat ("\n", secondary_text,
-						      NULL);
+  if (secondary_text != NULL
+      ? (dialog->secondary_text == NULL
+	 || strcmp (dialog->secondary_text, secondary_text) != 0)
+      : dialog->secondary_text != NULL) {
+    g_free (dialog->secondary_text);
+    dialog->secondary_text = g_strdup (secondary_text);
 
-    gtk_label_set_text (dialog->secondary_text_label,
-			secondary_text_with_newline);
-    g_free (secondary_text_with_newline);
-
-    gtk_widget_show (GTK_WIDGET (dialog->secondary_text_label));
-  }
-  else {
-    gtk_label_set_text (dialog->secondary_text_label, NULL);
-    gtk_widget_hide (GTK_WIDGET (dialog->secondary_text_label));
+    set_label_text (dialog);
   }
 }
 
@@ -302,6 +315,38 @@ quarry_message_dialog_format_secondary_text_valist
 
   quarry_message_dialog_set_secondary_text (dialog, secondary_text);
   g_free (secondary_text);
+}
+
+
+static void
+set_label_text (QuarryMessageDialog *dialog)
+{
+  if (dialog->primary_text) {
+    gchar *escaped_primary_text = g_markup_escape_text (dialog->primary_text,
+							-1);
+    gchar *marked_up_text;
+
+    if (dialog->secondary_text) {
+      gchar *escaped_secondary_text
+	= g_markup_escape_text (dialog->secondary_text, -1);
+
+      marked_up_text = g_strconcat ("<span weight=\"bold\" size=\"larger\">",
+				    escaped_primary_text, "</span>\n\n",
+				    escaped_secondary_text, NULL);
+      g_free (escaped_secondary_text);
+    }
+    else {
+      marked_up_text = g_strconcat ("<span weight=\"bold\" size=\"larger\">",
+				    escaped_primary_text, "</span>", NULL);
+    }
+
+    gtk_label_set_markup (dialog->label, marked_up_text);
+
+    g_free (marked_up_text);
+    g_free (escaped_primary_text);
+  }
+  else
+    gtk_label_set_text (dialog->label, dialog->secondary_text);
 }
 
 
