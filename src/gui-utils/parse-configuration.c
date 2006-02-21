@@ -477,7 +477,7 @@ configuration_parse_values2 (StringBuffer *c_file_arrays,
 	enumeration_values_as_strings
 	  = utils_cat_as_strings (enumeration_values_as_strings,
 				  value_string + 1, strlen (value_string) - 2,
-				  "\\0", 2, NULL);
+				  "\\000", 4, NULL);
 
 	while (*line && ! **line)
 	  *line = read_line ();
