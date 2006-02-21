@@ -78,6 +78,10 @@ GtkGameIndex	 gtk_games_get_game_index (Game game);
 
 GtkAdjustment *	 gtk_games_create_board_size_adjustment
 		   (GtkGameIndex game_index, gint initial_value);
+GtkWidget *	 gtk_games_create_board_size_selector_box
+		   (GtkGameIndex game_index, GtkAdjustment *adjustment,
+		    GtkWidget **board_size_spin_button);
+
 GtkAdjustment *	 gtk_games_create_handicap_adjustment (gint initial_value);
 GtkAdjustment *	 gtk_games_create_komi_adjustmet (gdouble initial_value);
 

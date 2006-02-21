@@ -151,15 +151,10 @@ gtk_new_game_record_dialog_init (GtkNewGameRecordDialog *dialog)
 
     dialog->board_sizes[k]
       = gtk_games_create_board_size_adjustment (k, default_board_size);
+    hbox = gtk_games_create_board_size_selector_box (k, dialog->board_sizes[k],
+						     &spin_button);
 
-    spin_button = gtk_utils_create_spin_button (dialog->board_sizes[k],
-						0.0, 0, TRUE);
     gtk_size_group_add_widget (spin_button_size_group, spin_button);
-
-    label = gtk_utils_create_mnemonic_label (_("Board _size:"), spin_button);
-
-    hbox = gtk_utils_pack_in_box (GTK_TYPE_HBOX, QUARRY_SPACING,
-				  label, 0, spin_button, GTK_UTILS_FILL, NULL);
     gtk_size_group_add_widget (height_size_group, hbox);
 
     rules_named_vbox = gtk_named_vbox_new (_(game_rules_labels[k]), FALSE,

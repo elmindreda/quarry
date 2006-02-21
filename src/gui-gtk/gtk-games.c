@@ -22,12 +22,17 @@
 
 #include "gtk-games.h"
 
+#include "gtk-utils.h"
 #include "gui-back-end.h"
 #include "board.h"
 #include "game-info.h"
 
 #include <gtk/gtk.h>
 #include <string.h>
+
+
+static void	set_standard_board_size (GtkButton *size_button,
+					 GtkSpinButton *spin_button);
 
 
 const gchar *game_labels[NUM_SUPPORTED_GAMES] = {
@@ -153,6 +158,64 @@ gtk_games_create_board_size_adjustment (GtkGameIndex game_index,
 }
 
 
+GtkWidget *
+gtk_games_create_board_size_selector_box (GtkGameIndex game_index,
+					  GtkAdjustment *adjustment,
+					  GtkWidget **board_size_spin_button)
+{
+  Game game;
+  GtkWidget *spin_button;
+  GtkWidget *label;
+  GtkWidget *hbox;
+
+  g_return_val_if_fail (0 <= game_index && game_index < NUM_SUPPORTED_GAMES,
+			NULL);
+  g_return_val_if_fail (adjustment, NULL);
+
+  spin_button = gtk_utils_create_spin_button (adjustment, 0.0, 0, TRUE);
+  if (board_size_spin_button)
+    *board_size_spin_button = spin_button;
+
+  label = gtk_utils_create_mnemonic_label (_("Board _size:"), spin_button);
+
+  hbox = gtk_utils_pack_in_box (GTK_TYPE_HBOX, QUARRY_SPACING,
+				label, GTK_UTILS_FILL,
+				spin_button, GTK_UTILS_FILL, NULL);
+
+  game = index_to_game[game_index];
+
+  if (game_info[game].standard_board_sizes) {
+    StringList standard_board_sizes = STATIC_STRING_LIST;
+    const StringListItem *item;
+
+    string_list_fill_from_string (&standard_board_sizes,
+				  game_info[game].standard_board_sizes);
+
+    if (!string_list_is_empty (&standard_board_sizes)) {
+      GtkSizeGroup *size_group
+	= gtk_size_group_new (GTK_SIZE_GROUP_HORIZONTAL);
+
+      for (item = standard_board_sizes.first; item; item = item->next) {
+	GtkWidget *button = gtk_button_new_with_label (item->text);
+
+	GTK_WIDGET_UNSET_FLAGS (button, GTK_CAN_FOCUS);
+	gtk_button_set_relief (GTK_BUTTON (button), GTK_RELIEF_HALF);
+
+	gtk_size_group_add_widget (size_group, button);
+	gtk_box_pack_start (GTK_BOX (hbox), button, FALSE, TRUE, 0);
+
+	g_signal_connect (button, "clicked",
+			  G_CALLBACK (set_standard_board_size), spin_button);
+      }
+
+      string_list_empty (&standard_board_sizes);
+    }
+  }
+
+  return hbox;
+}
+
+
 GtkAdjustment *
 gtk_games_create_handicap_adjustment (gint initial_value)
 {
@@ -190,6 +253,17 @@ gtk_games_set_handicap_adjustment_limits
 				       (board_width * board_height - 1));
     gtk_adjustment_changed (free_handicap_adjustment);
   }
+}
+
+
+
+
+static void
+set_standard_board_size (GtkButton *size_button, GtkSpinButton *spin_button)
+{
+  gtk_spin_button_set_value (spin_button,
+			     atoi (gtk_button_get_label (size_button)));
+  gtk_widget_grab_focus (GTK_WIDGET (spin_button));
 }
 
 

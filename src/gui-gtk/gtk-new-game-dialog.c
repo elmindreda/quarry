@@ -344,20 +344,12 @@ gtk_new_game_dialog_init (GtkNewGameDialog *dialog)
 					    QUARRY_SPACING_SMALL);
     rules_vbox = GTK_BOX (rules_vbox_widget);
 
-    /* Board size spin button and a label for it. */
-    dialog->board_sizes[k] =
-      gtk_games_create_board_size_adjustment (k, initial_board_size);
-    board_size_spin_button
-      = gtk_utils_create_spin_button (dialog->board_sizes[k], 0.0, 0, TRUE);
-
-    label = gtk_utils_create_mnemonic_label (_("Board _size:"),
-					     board_size_spin_button);
-
-    /* Pack them into a box and add to "Game Rules" box. */
-    hbox = gtk_utils_pack_in_box (GTK_TYPE_HBOX, QUARRY_SPACING,
-				  label, 0,
-				  board_size_spin_button, GTK_UTILS_FILL,
-				  NULL);
+    /* Board size controls. */
+    dialog->board_sizes[k]
+      = gtk_games_create_board_size_adjustment (k, initial_board_size);
+    hbox
+      = gtk_games_create_board_size_selector_box (k, dialog->board_sizes[k],
+						  &board_size_spin_button);
     gtk_box_pack_start (rules_vbox, hbox, FALSE, TRUE, 0);
 
     /* A combo box (option menu for pre-2.4) for selecting time
