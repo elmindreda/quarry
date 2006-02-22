@@ -860,6 +860,8 @@ int	      sgf_utils_set_time_left (SgfNode *node, SgfGameTree *tree,
 				       int color,
 				       double time_left, int moves_left);
 
+int	      sgf_utils_get_node_move_number (const SgfNode *node,
+					      const SgfGameTree *tree);
 int	      sgf_utils_get_sequential_move_number (const SgfGameTree *tree);
 
 int	      sgf_utils_determine_player_to_move_by_rules
