@@ -35,6 +35,8 @@ values  - gtp_engine_section_values {
 
 
 values  - game_tree_view_values {
+  "Show tooltips"		show_tooltips			boolean
+
   "Show game tree"		show_game_tree			enumeration
 								new
     SHOW_GAME_TREE_ALWAYS	      "Always"
