@@ -95,9 +95,8 @@ gtk_named_vbox_init (GtkNamedVBox *named_vbox)
 
   gtk_widget_set_name (label, "quarry-sub-header");
   gtk_widget_set_parent (label, GTK_WIDGET (named_vbox));
-  gtk_widget_show (label);
 
-  named_vbox->label = label;
+  named_vbox->label	   = label;
   named_vbox->left_padding = 0;
 }
 
@@ -112,7 +111,7 @@ gtk_named_vbox_new (const gchar *label_text,
   box->homogeneous = homogeneous;
   box->spacing = spacing;
 
-  gtk_label_set_text (GTK_LABEL (GTK_NAMED_VBOX (widget)->label), label_text);
+  gtk_named_vbox_set_label_text (GTK_NAMED_VBOX (widget), label_text);
 
   return widget;
 }
@@ -151,19 +150,25 @@ static void
 gtk_named_vbox_size_request (GtkWidget *widget, GtkRequisition *requisition)
 {
   GtkNamedVBox *named_vbox = GTK_NAMED_VBOX (widget);
-  GtkRequisition label_requisition;
 
   GTK_WIDGET_CLASS (parent_class)->size_request (widget,
 						 (&named_vbox
 						  ->vbox_requisition));
-  gtk_widget_size_request (named_vbox->label, &label_requisition);
 
-  requisition->width = MAX ((named_vbox->vbox_requisition.width
-			     + named_vbox->left_padding),
-			    label_requisition.width);
-  requisition->height = (label_requisition.height
-			 + QUARRY_SPACING_SMALL
-			 + named_vbox->vbox_requisition.height);
+  if (GTK_WIDGET_VISIBLE (named_vbox->label)) {
+    GtkRequisition label_requisition;
+
+    gtk_widget_size_request (named_vbox->label, &label_requisition);
+
+    requisition->width = MAX ((named_vbox->vbox_requisition.width
+			       + named_vbox->left_padding),
+			      label_requisition.width);
+    requisition->height = (label_requisition.height
+			   + QUARRY_SPACING_SMALL
+			   + named_vbox->vbox_requisition.height);
+  }
+  else
+    requisition->height += named_vbox->left_padding;
 }
 
 
@@ -172,26 +177,33 @@ gtk_named_vbox_size_allocate (GtkWidget *widget, GtkAllocation *allocation)
 {
   GtkNamedVBox *named_vbox = GTK_NAMED_VBOX (widget);
   GtkRequisition widget_requisition;
-  GtkRequisition label_requisition;
   GtkAllocation child_allocation;
+  gint label_height_with_padding;
 
-  gtk_widget_get_child_requisition (named_vbox->label, &label_requisition);
+  if (GTK_WIDGET_VISIBLE (named_vbox->label)) {
+    GtkRequisition label_requisition;
 
-  child_allocation.x	  = allocation->x;
-  child_allocation.y	  = allocation->y;
-  child_allocation.width  = allocation->width;
-  child_allocation.height = label_requisition.height;
+    gtk_widget_get_child_requisition (named_vbox->label, &label_requisition);
 
-  gtk_widget_size_allocate (named_vbox->label, &child_allocation);
+    child_allocation.x	    = allocation->x;
+    child_allocation.y	    = allocation->y;
+    child_allocation.width  = allocation->width;
+    child_allocation.height = label_requisition.height;
 
-  child_allocation.x	  += named_vbox->left_padding;
-  child_allocation.y	  += label_requisition.height + QUARRY_SPACING_SMALL;
-  child_allocation.width  -= named_vbox->left_padding;
-  child_allocation.height  = (allocation->height
-			      - (label_requisition.height
-				 + QUARRY_SPACING_SMALL));
+    gtk_widget_size_allocate (named_vbox->label, &child_allocation);
 
-  widget_requisition = widget->requisition;
+    label_height_with_padding = (label_requisition.height
+				 + QUARRY_SPACING_SMALL);
+  }
+  else
+    label_height_with_padding = 0;
+
+  child_allocation.x	  = allocation->x + named_vbox->left_padding;
+  child_allocation.y	  = allocation->y + label_height_with_padding;
+  child_allocation.width  = allocation->width  - named_vbox->left_padding;
+  child_allocation.height = allocation->height - label_height_with_padding;
+
+  widget_requisition  = widget->requisition;
   widget->requisition = named_vbox->vbox_requisition;
   GTK_WIDGET_CLASS (parent_class)->size_allocate (widget, &child_allocation);
 
@@ -207,6 +219,11 @@ gtk_named_vbox_set_label_text (GtkNamedVBox *named_vbox,
   g_return_if_fail (GTK_IS_NAMED_VBOX (named_vbox));
 
   gtk_label_set_text (GTK_LABEL (named_vbox->label), label_text);
+
+  if (label_text && *label_text)
+    gtk_widget_show (named_vbox->label);
+  else
+    gtk_widget_hide (named_vbox->label);
 }
 
 
