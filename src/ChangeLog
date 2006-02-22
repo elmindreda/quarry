@@ -1,3 +1,113 @@
+2006-02-22  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* gui-gtk/gtk-sgf-tree-view.c (VIEW_PORT_NODE): New macro, break
+	out of gtk_sgf_tree_view_button_release_event().
+	(gtk_sgf_tree_view_class_init): Hook up new
+	gtk_sgf_tree_view_motion_notify_event().
+	(gtk_sgf_tree_view_init): Reset new `last_tooltips_node' field.
+	(gtk_sgf_tree_view_realize): Add all pointer movement-related
+	flags to the event mask.
+	(gtk_sgf_tree_view_button_release_event): Call new
+	synthesize_enter_notify_event().
+	(gtk_sgf_tree_view_motion_notify_event): New function.
+	(gtk_sgf_tree_view_finalize): Unset view's tooltip, if any.
+	(gtk_sgf_tree_view_get_tooltips_enabled)
+	(gtk_sgf_tree_view_set_tooltips_enabled, append_limited_text)
+	(get_shared_tooltips, synthesize_enter_notify_event): New
+	functions.
+
+	* gui-gtk/gtk-preferences.c (create_game_tree_page): Add a check
+	button controlling whether tooltips are shown on the game tree
+	view.  Adjust a mnemonic.
+	(create_markup_box): Wrap `theme_hbox' in a GtkNamedVbox for
+	better alignment and don't pack a dummy label into it.
+	(update_game_tree_tooltips_status): New function.
+
+	* gui-gtk/gtk-named-vbox.c (gtk_named_vbox_init): Don't show the
+	label just yet.
+	(gtk_named_vbox_new): Use gtk_named_vbox_set_label_text() instead
+	of explicit gtk_label_set_text() call.
+	(gtk_named_vbox_size_request): Don't request space for the label
+	if it is not visible.
+	(gtk_named_vbox_size_allocate): Likewise: don't allocate.
+	(gtk_named_vbox_set_label_text): Show or hide the label depending
+	on whether text is empty.
+
+	* sgf/sgf-utils.c (sgf_utils_get_node_move_number): New function.
+
+	* gui-utils/common-configuration-values.list: Add value
+	controlling whether to show tooltips in game tree view.
+	* gui-utils/common-configuration-defaults.list: Likewise.
+
+	* gui-gtk/gtk-go-to-named-node-dialog.c (set_selected_node): Make
+	comment window contain text "Empty" when there is no comment and
+	don't make it sensitive.
+
+2006-02-21  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* gui-gtk/quarry-message-dialog.c
+	(quarry_message_dialog_class_init): New function.
+	(quarry_message_dialog_init): Create only one label (so that user
+	can select the complete text, not only part.)  Initialize new
+	`primary_text' and `secondary_text' fields.
+	(quarry_message_dialog_finalize): New function.
+	(quarry_message_dialog_set_primary_text): Call set_label_text().
+	(quarry_message_dialog_set_secondary_text): Likewise.
+	(set_label_text): New function.
+
+	* gui-utils/parse-configuration.c (configuration_parse_values2):
+	Bug-fix: write `\000' instead of `\0' to avoid misinterpretations
+	if followed by a digit.
+
+	* gui-gtk/gtk-games.c (gtk_games_create_board_size_selector_box):
+	New function, break out a common part of
+	gtk_new_game_dialog_init() and gtk_new_game_record_dialog_init()
+	and add quick standard board size selectors.
+	(set_standard_board_size): New function.
+
+	* board/games.list: Add standard board sizes data to the three
+	supported games.
+
+	* board/parse-game-list.c (game_list_parse_game2): Parse and write
+	a set of standard board sizes (written in format suitable for
+	string_list_fill_from_string().)
+
+2006-02-20  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* sgf/sgf-parser.c (format_error_valist): Change `buffer' type
+	from `char *' to `StringBuffer *'.  Don't return anything.
+
+	* sgf/sgf-parser.h (MAX_ERROR_LENGTH): Remove macro.
+
+	* sgf/sgf-utils.c (sgf_utils_format_node_move): Change `buffer'
+	type from `char *' to `StringBuffer *'.  Don't return anything.
+
+	* board/amazons.c (amazons_format_move): Change `buffer' type from
+	`char *' to `StringBuffer *'.  Don't return anything.
+
+	* board/go.c (go_format_move): Change `buffer' type from `char *'
+	to `StringBuffer *'.  Don't return anything.
+	(go_score_game): Change `detailed_score' type from `char **' to
+	`StringBuffer *'.  Don't allocate `detailed_score' but write to
+	the buffer instead (if non-NULL.)
+
+	* board/reversi.c (reversi_format_move): Change `buffer' type from
+	`char *' to `StringBuffer *'.  Don't return anything.
+
+	* board/board.c (game_format_point): Change `buffer' type from
+	`char *' to `StringBuffer *'.  Don't return anything.
+	(game_format_position_list): Likewise.
+	(game_format_move): Likewise.
+	(game_format_move_valist): Likewise.
+	(game_format_score_difference): Add `buffer' argument, don't
+	allocate and return a string.
+
+	* board/board.h (SUGGESTED_POSITION_LIST_BUFFER_SIZE): Remove
+	macro.
+
+	* utils/string-buffer.c (string_buffer_steal_string): New
+	function.
+
 2006-02-19  Paul Pogonyshev  <pogonyshev@gmx.net>
 
 	* gui-gtk/gtk-parser-interface.c (gtk_parser_interface_present):
