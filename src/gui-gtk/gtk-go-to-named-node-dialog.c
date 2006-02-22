@@ -64,7 +64,7 @@ static void	 set_selected_node (GtkGoToNamedNodeDialog *dialog,
 
 static GtkDialogClass	*parent_class;
 
-static GtkTextTag	*no_such_node_tag;
+static GtkTextTag	*special_comment_tag;
 static GtkTextTagTable	*dialog_tag_table;
 
 
@@ -108,14 +108,14 @@ gtk_go_to_named_node_dialog_class_init (GtkGoToNamedNodeDialogClass *class)
    * text.
    */
 
-  no_such_node_tag = gtk_text_tag_new (NULL);
-  g_object_set (no_such_node_tag, "style", PANGO_STYLE_ITALIC, NULL);
+  special_comment_tag = gtk_text_tag_new (NULL);
+  g_object_set (special_comment_tag, "style", PANGO_STYLE_ITALIC, NULL);
 
   dialog_tag_table = gtk_text_tag_table_new ();
   gui_back_end_register_object_to_finalize (dialog_tag_table);
 
-  gtk_text_tag_table_add (dialog_tag_table, no_such_node_tag);
-  g_object_unref (no_such_node_tag);
+  gtk_text_tag_table_add (dialog_tag_table, special_comment_tag);
+  g_object_unref (special_comment_tag);
 }
 
 
@@ -319,28 +319,31 @@ match_selected (GtkGoToNamedNodeDialog *dialog, GtkTreeModel *tree_model,
 static void
 set_selected_node (GtkGoToNamedNodeDialog *dialog, SgfNode *sgf_node)
 {
-  const char *node_comment;
+  const char *node_comment = NULL;
+  const char *comment_text;
 
   dialog->selected_node = sgf_node;
 
-  if (sgf_node)
+  if (sgf_node) {
     node_comment = sgf_node_get_text_property_value (sgf_node, SGF_COMMENT);
+    comment_text = (node_comment ? node_comment : Q_("comment|Empty"));
+  }
   else
-    node_comment = _("There is no such node");
+    comment_text = _("There is no such node");
 
-  gtk_utils_set_text_buffer_text (dialog->comment_buffer, node_comment);
+  gtk_utils_set_text_buffer_text (dialog->comment_buffer, comment_text);
 
-  if (!sgf_node) {
+  if (!node_comment) {
     GtkTextIter start_iterator;
     GtkTextIter end_iterator;
 
     gtk_text_buffer_get_bounds (dialog->comment_buffer,
 				&start_iterator, &end_iterator);
-    gtk_text_buffer_apply_tag (dialog->comment_buffer, no_such_node_tag,
+    gtk_text_buffer_apply_tag (dialog->comment_buffer, special_comment_tag,
 			       &start_iterator, &end_iterator);
   }
 
-  gtk_widget_set_sensitive (dialog->comment_widgets, sgf_node != NULL);
+  gtk_widget_set_sensitive (dialog->comment_widgets, node_comment != NULL);
   gtk_dialog_set_response_sensitive (&dialog->dialog, GTK_RESPONSE_OK,
 				     sgf_node != NULL);
 }
