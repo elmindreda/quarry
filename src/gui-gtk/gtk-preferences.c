@@ -32,6 +32,7 @@
 #include "gtk-named-vbox.h"
 #include "gtk-gtp-client-interface.h"
 #include "gtk-progress-dialog.h"
+#include "gtk-sgf-tree-view.h"
 #include "gtk-utils.h"
 #include "quarry-message-dialog.h"
 #include "quarry-stock.h"
@@ -204,6 +205,9 @@ static void	    store_toggle_setting (GtkToggleButton *toggle_button,
 					  int *value_storage);
 static void	    store_radio_button_setting (GtkRadioButton *radio_button,
 						int *value_storage);
+
+static void	    update_game_tree_tooltips_status
+		      (GtkToggleButton *toggle_button);
 
 static gboolean	    update_board_background_texture (GtkEntry *entry,
 						     GdkEventFocus *event,
@@ -929,7 +933,7 @@ create_game_tree_page (void)
   static const gchar *show_game_tree_radio_labels[3]
     = { N_("_Always"), N_("A_utomatically"), N_("_Never") };
   static const gchar *track_current_node_radio_labels[3]
-    = { N_("Al_ways"), N_("Au_tomatically"), N_("Ne_ver") };
+    = { N_("Al_ways"), N_("Aut_omatically"), N_("Ne_ver") };
   static const gchar *scroll_method_radio_labels[2]
     = { N_("Scroll _minimal distance"),
 	N_("_Recenter view on the current node") };
@@ -948,6 +952,8 @@ create_game_tree_page (void)
   GtkWidget *show_game_tree_named_vbox;
   GtkWidget *scroll_method_radio_buttons[2];
   GtkWidget *track_current_node_named_vbox;
+  GtkWidget *tooltips_check_button;
+  GtkWidget *tooltips_named_vbox;
   int k;
 
   /* Let's be over-secure (a compile-time error would have been
@@ -1031,10 +1037,23 @@ create_game_tree_page (void)
     (GTK_NAMED_VBOX (track_current_node_named_vbox),
      _("Track Tree's Current Node"));
 
+  tooltips_check_button
+    = gtk_check_button_new_with_mnemonic (_("Show _tooltips"));
+  gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (tooltips_check_button),
+				game_tree_view.show_tooltips);
+
+  g_signal_connect (tooltips_check_button, "toggled",
+		    G_CALLBACK (update_game_tree_tooltips_status), NULL);
+
+  tooltips_named_vbox = gtk_named_vbox_new (_("Tooltips"), FALSE,
+					    QUARRY_SPACING_SMALL);
+  gtk_box_pack_start (GTK_BOX (tooltips_named_vbox), tooltips_check_button,
+		      TRUE, FALSE, 0);
+
   return gtk_utils_pack_in_box (GTK_TYPE_VBOX, QUARRY_SPACING_BIG,
 				show_game_tree_named_vbox, GTK_UTILS_FILL,
 				track_current_node_named_vbox, GTK_UTILS_FILL,
-				NULL);
+				tooltips_named_vbox, GTK_UTILS_FILL, NULL);
 }
 
 
@@ -1326,7 +1345,6 @@ create_markup_box (GtkGameIndex game_index, const gchar *labels[4])
 
   theme_hbox = gtk_utils_pack_in_box (GTK_TYPE_HBOX, 0,
 				      theme_label, 0,
-				      gtk_label_new ("    "), 0,
 				      selector,
 				      GTK_UTILS_FILL | QUARRY_SPACING,
 				      NULL);
@@ -1438,7 +1456,10 @@ create_markup_box (GtkGameIndex game_index, const gchar *labels[4])
   }
 
   return gtk_utils_pack_in_box (GTK_TYPE_VBOX, QUARRY_SPACING_BIG,
-				theme_hbox, GTK_UTILS_FILL,
+				(gtk_utils_pack_in_box
+				 (GTK_TYPE_NAMED_VBOX, 0,
+				  theme_hbox, GTK_UTILS_FILL, NULL)),
+				GTK_UTILS_FILL,
 				size_and_opacity_named_vbox, GTK_UTILS_FILL,
 				color_named_vbox, GTK_UTILS_FILL, NULL);
 }
@@ -2224,6 +2245,14 @@ store_radio_button_setting (GtkRadioButton *radio_button, int *value_storage)
     *value_storage = ((g_slist_length (radio_button_group) - 1)
 		      - g_slist_index (radio_button_group, radio_button));
   }
+}
+
+
+static void
+update_game_tree_tooltips_status (GtkToggleButton *toggle_button)
+{
+  gtk_sgf_tree_view_set_tooltips_enabled (gtk_toggle_button_get_active
+					  (toggle_button));
 }
 
 
