@@ -32,6 +32,7 @@
 #include "gtk-sgf-tree-signal-proxy.h"
 #include "gtk-tile-set.h"
 #include "gtk-utils.h"
+#include "gui-back-end.h"
 #include "quarry-marshal.h"
 #include "sgf.h"
 #include "board.h"
@@ -55,6 +56,13 @@
 
 #define FULL_CELL_SIZE(view)						\
   ((view)->base.cell_size + 2 * PADDING_WIDTH ((view)->base.cell_size))
+
+#define VIEW_PORT_NODE(view, x, y)					\
+  * ((view)->view_port_nodes						\
+     + (((y) - (view)->view_port_y0)					\
+	* ((view)->view_port_x1 - (view)->view_port_x0))		\
+     + ((x) - (view)->view_port_x0))
+
 
 
 #define SHOULD_TRACK_CURRENT_NODE(view)					\
@@ -92,6 +100,9 @@ static gboolean	 gtk_sgf_tree_view_button_press_event (GtkWidget *widget,
 static gboolean	 gtk_sgf_tree_view_button_release_event
 		   (GtkWidget *widget, GdkEventButton *event);
 
+static gboolean	 gtk_sgf_tree_view_motion_notify_event (GtkWidget *widget,
+							GdkEventMotion *event);
+
 static void	 gtk_sgf_tree_view_unrealize (GtkWidget *widget);
 
 static void	 gtk_sgf_tree_view_finalize (GObject *object);
@@ -118,6 +129,14 @@ static void	 about_to_modify_map (GtkSgfTreeView *view);
 static void	 about_to_change_current_node (GtkSgfTreeView *view);
 static void	 current_node_changed (GtkSgfTreeView *view);
 static void	 map_modified (GtkSgfTreeView *view);
+
+static GtkTooltips *
+		 get_shared_tooltips (void);
+
+static void	 append_limited_text (StringBuffer *buffer, const char *text,
+				      gint num_characters_limit);
+
+static void	 synthesize_enter_notify_event (GdkEvent *event);
 
 
 static GtkGobanBaseClass  *parent_class;
@@ -178,6 +197,7 @@ gtk_sgf_tree_view_class_init (GtkSgfTreeViewClass *class)
   widget_class->expose_event	     = gtk_sgf_tree_view_expose;
   widget_class->button_press_event   = gtk_sgf_tree_view_button_press_event;
   widget_class->button_release_event = gtk_sgf_tree_view_button_release_event;
+  widget_class->motion_notify_event  = gtk_sgf_tree_view_motion_notify_event;
 
   class->set_scroll_adjustments	= gtk_sgf_tree_view_set_scroll_adjustments;
   class->sgf_tree_view_clicked	= NULL;
@@ -214,10 +234,12 @@ gtk_sgf_tree_view_init (GtkSgfTreeView *view)
   view->vadjustment		  = NULL;
   view->ignore_adjustment_changes = FALSE;
 
-  view->current_tree = NULL;
+  view->current_tree		  = NULL;
 
-  view->map_width  = 1;
-  view->map_height = 1;
+  view->map_width		  = 1;
+  view->map_height		  = 1;
+
+  view->last_tooltips_node	  = NULL;
 }
 
 
@@ -236,7 +258,9 @@ gtk_sgf_tree_view_realize (GtkWidget *widget)
   const gint attributes_mask = (GDK_WA_X | GDK_WA_Y | GDK_WA_VISUAL
 				| GDK_WA_COLORMAP);
   const gint event_mask = (GDK_EXPOSURE_MASK
-			   | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK);
+			   | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK
+			   | GDK_POINTER_MOTION_MASK
+			   | GDK_ENTER_NOTIFY_MASK | GDK_LEAVE_NOTIFY_MASK);
 
   if (!view->hadjustment || !view->vadjustment)
     gtk_sgf_tree_view_set_scroll_adjustments (view, NULL, NULL);
@@ -550,9 +574,9 @@ gtk_sgf_tree_view_button_press_event (GtkWidget *widget, GdkEventButton *event)
     y /= full_cell_size;
 
     if (view->button_pressed == 0) {
-      view->button_pressed  = event->button;
-      view->press_x	    = x;
-      view->press_y	    = y;
+      view->button_pressed = event->button;
+      view->press_x	   = x;
+      view->press_y	   = y;
     }
     else
       view->button_pressed = -1;
@@ -568,23 +592,18 @@ gtk_sgf_tree_view_button_release_event (GtkWidget *widget,
 {
   if (event->button == 1 || event->button == 3) {
     GtkSgfTreeView *view = GTK_SGF_TREE_VIEW (widget);
-    gint full_cell_size = FULL_CELL_SIZE (view);
-    gint x;
-    gint y;
-
-    gdk_window_get_pointer (view->output_window, &x, &y, NULL);
-    x /= full_cell_size;
-    y /= full_cell_size;
 
     if (view->button_pressed == event->button) {
-      view->button_pressed = 0;
+      gint full_cell_size = FULL_CELL_SIZE (view);
+      gint x;
+      gint y;
+
+      gdk_window_get_pointer (view->output_window, &x, &y, NULL);
+      x /= full_cell_size;
+      y /= full_cell_size;
 
       if (x == view->press_x && y == view->press_y) {
-	SgfNode *clicked_node = * (view->view_port_nodes
-				   + ((y - view->view_port_y0)
-				      * (view->view_port_x1
-					 - view->view_port_x0))
-				   + (x - view->view_port_x0));
+	SgfNode *clicked_node = VIEW_PORT_NODE (view, x, y);
 
 	if (clicked_node) {
 	  g_signal_emit (G_OBJECT (view),
@@ -593,8 +612,79 @@ gtk_sgf_tree_view_button_release_event (GtkWidget *widget,
 	}
       }
     }
-    else
-      view->button_pressed = 0;
+
+    view->button_pressed = 0;
+  }
+
+  /* Make sure tooltips reappear now. */
+  synthesize_enter_notify_event ((GdkEvent *) event);
+
+  return FALSE;
+}
+
+
+static gboolean
+gtk_sgf_tree_view_motion_notify_event (GtkWidget *widget, GdkEventMotion *event)
+{
+  GtkSgfTreeView *view = GTK_SGF_TREE_VIEW (widget);
+  gint full_cell_size = FULL_CELL_SIZE (view);
+  const SgfNode *node = VIEW_PORT_NODE (view,
+					(int) event->x / full_cell_size,
+					(int) event->y / full_cell_size);
+
+  if (node != view->last_tooltips_node) {
+    /* FIXME: I would like some markup in the tooltip, e.g. boldened
+     *	      node name.  However, this is not very important, let's
+     *	      see if GTK+ provides advanced tooltips itself before
+     *	      inventing our own.
+     */
+
+    GtkTooltips *tooltips = get_shared_tooltips ();
+    StringBuffer tooltip_text;
+    gboolean had_tooltip_set = (gtk_tooltips_data_get (widget) != NULL);
+
+    string_buffer_init (&tooltip_text, 0x400, 0x200);
+
+    if (node) {
+      const char *node_name = sgf_node_get_text_property_value (node,
+								SGF_NODE_NAME);
+      const char *comment   = sgf_node_get_text_property_value (node,
+								SGF_COMMENT);
+
+      if (IS_STONE (node->move_color)) {
+	int move_number = sgf_utils_get_node_move_number (node,
+							  view->current_tree);
+
+	string_buffer_printf (&tooltip_text, _("Move %d: "), move_number);
+	sgf_utils_format_node_move (view->current_tree, node,
+				    &tooltip_text, _("B "), _("W "), _("pass"));
+      }
+
+      if (node_name) {
+	if (tooltip_text.length)
+	  string_buffer_add_characters (&tooltip_text, '\n', 2);
+
+	string_buffer_cat_string (&tooltip_text, _("Node name: "));
+	append_limited_text (&tooltip_text, node_name, 80);
+      }
+
+      if (comment) {
+	if (tooltip_text.length)
+	  string_buffer_add_characters (&tooltip_text, '\n', 2);
+
+	append_limited_text (&tooltip_text, comment, 400);
+      }
+    }
+
+    gtk_tooltips_set_tip (tooltips, GTK_WIDGET (view),
+			  (tooltip_text.length ? tooltip_text.string : NULL),
+			  NULL);
+
+    if (tooltip_text.length && !had_tooltip_set)
+      synthesize_enter_notify_event ((GdkEvent *) event);
+
+    string_buffer_dispose (&tooltip_text);
+    view->last_tooltips_node = node;
   }
 
   return FALSE;
@@ -642,6 +732,11 @@ gtk_sgf_tree_view_finalize (GObject *object)
 
   disconnect_adjustment (view, view->hadjustment);
   disconnect_adjustment (view, view->vadjustment);
+
+  if (view->last_tooltips_node) {
+    gtk_tooltips_set_tip (get_shared_tooltips (), GTK_WIDGET (view),
+			  NULL, NULL);
+  }
 
   G_OBJECT_CLASS (parent_class)->finalize (object);
 }
@@ -709,6 +804,25 @@ gtk_sgf_tree_view_center_on_current_node (GtkSgfTreeView *view)
   center_on_current_node (view);
   update_view_port_and_maybe_move_or_resize_window
     (view, (gint) view->hadjustment->value, (gint) view->vadjustment->value);
+}
+
+
+gboolean
+gtk_sgf_tree_view_get_tooltips_enabled (void)
+{
+  return game_tree_view.show_tooltips;
+}
+
+
+void
+gtk_sgf_tree_view_set_tooltips_enabled (gboolean enabled)
+{
+  game_tree_view.show_tooltips = enabled;
+
+  if (enabled)
+    gtk_tooltips_enable (get_shared_tooltips ());
+  else
+    gtk_tooltips_disable (get_shared_tooltips ());
 }
 
 
@@ -1159,6 +1273,128 @@ map_modified (GtkSgfTreeView *view)
   }
 
   view->expect_map_modification = FALSE;
+}
+
+
+/* Append not more than about `num_characters_limit' of `text' to the
+ * given string `buffer'.  Note that `num_characters_limit' is
+ * considered to be advisory only and more text can be appended still.
+ */
+static void
+append_limited_text (StringBuffer *buffer, const char *text,
+		     gint num_characters_limit)
+{
+  int k;
+  const char *limit;
+  const char *scan;
+
+  for (k = 0, limit = text; k < num_characters_limit; k++) {
+    if (!*limit) {
+      /* All the text doesn't exceed the limit.  Append everything. */
+      string_buffer_cat_as_string (buffer, text, limit - text);
+      return;
+    }
+
+    limit = g_utf8_next_char (limit);
+  }
+
+  /* Let's not cut off 10% of text. */
+  for (k = 0, scan = limit; k < num_characters_limit / 10; k++) {
+    if (!*scan) {
+      string_buffer_cat_as_string (buffer, text, scan - text);
+      return;
+    }
+
+    scan = g_utf8_next_char (scan);
+  }
+
+  /* OK, so the text is quite long.  Now let's determine an
+   * appropriate cutting point.  For now, we only uncoditionally skip
+   * backward all whitespace-like and control-like characters.
+   *
+   * FIXME: Improve.  In particular, try to not cut words apart.
+   *	    Maybe try using Pango for really good behavior...
+   */
+  for (scan = limit; scan > text; ) {
+    GUnicodeType type;
+
+    scan = g_utf8_prev_char (scan);
+    type = g_unichar_type (g_utf8_get_char (scan));
+
+    if (type	!= G_UNICODE_CONTROL
+	&& type != G_UNICODE_CONTROL
+	&& type != G_UNICODE_FORMAT
+	&& type != G_UNICODE_UNASSIGNED
+	&& type != G_UNICODE_PRIVATE_USE
+	&& type != G_UNICODE_SURROGATE
+	&& type != G_UNICODE_COMBINING_MARK
+	&& type != G_UNICODE_ENCLOSING_MARK
+	&& type != G_UNICODE_NON_SPACING_MARK
+	&& type != G_UNICODE_LINE_SEPARATOR
+	&& type != G_UNICODE_PARAGRAPH_SEPARATOR
+	&& type != G_UNICODE_SPACE_SEPARATOR)
+      break;
+  }
+
+  string_buffer_cat_as_string (buffer, text, g_utf8_next_char (scan) - text);
+
+  /* Append ellipsis to indicate text truncation. */
+  string_buffer_cat_string (buffer, "\xe2\x80\xa6");
+}
+
+
+static GtkTooltips *
+get_shared_tooltips (void)
+{
+  static GtkTooltips *shared_tooltips = NULL;
+
+  if (!shared_tooltips) {
+    shared_tooltips = gtk_tooltips_new ();
+    g_object_ref (shared_tooltips);
+    gtk_object_sink (GTK_OBJECT (shared_tooltips));
+
+    gui_back_end_register_object_to_finalize (shared_tooltips);
+
+    /* Enable or disable the tooltips, as appropriate. */
+    gtk_sgf_tree_view_set_tooltips_enabled (game_tree_view.show_tooltips);
+  }
+
+  return shared_tooltips;
+}
+
+
+/* This is a workaround for GTK+ deficiency: if you set tooltip for
+ * the widget under the pointer and it didn't have one before, the
+ * tooltip won't appear.  We synthesize an `enter-notify' event so
+ * that GtkTooltips will think the pointer has just entered the widget
+ * window.  This function is also called after clicks on the widget.
+ */
+static void
+synthesize_enter_notify_event (GdkEvent *event)
+{
+  GdkEventCrossing synthesized_event;
+
+  synthesized_event.type       = GDK_ENTER_NOTIFY;
+  synthesized_event.window     = event->any.window;
+  synthesized_event.send_event = TRUE;
+  synthesized_event.subwindow  = event->any.window;
+  synthesized_event.time       = gdk_event_get_time (event);
+  synthesized_event.mode       = GDK_CROSSING_NORMAL;
+  synthesized_event.detail     = GDK_NOTIFY_UNKNOWN;
+  synthesized_event.focus      = FALSE;
+
+  gdk_event_get_coords (event, &synthesized_event.x, &synthesized_event.y);
+  gdk_event_get_root_coords (event,
+			     &synthesized_event.x_root,
+			     &synthesized_event.y_root);
+  gdk_event_get_state (event, &synthesized_event.state);
+
+  /* Note: this works better than gtk_main_do_event().  Apparently,
+   * GtkTooltips won't show tooltips when a button is still pressed
+   * and we call this function from
+   * gtk_sgf_tree_view_button_release_event() too.
+   */
+  gdk_event_put ((GdkEvent *) &synthesized_event);
 }
 
 

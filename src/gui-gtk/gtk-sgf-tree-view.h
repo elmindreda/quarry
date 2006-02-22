@@ -87,6 +87,8 @@ struct _GtkSgfTreeView {
   unsigned int		button_pressed;
   gint			press_x;
   gint			press_y;
+
+  const SgfNode	       *last_tooltips_node;
 };
 
 struct _GtkSgfTreeViewClass {
@@ -112,6 +114,9 @@ void		gtk_sgf_tree_view_update_view_port (GtkSgfTreeView *view);
 
 void		gtk_sgf_tree_view_center_on_current_node
 		  (GtkSgfTreeView *view);
+
+gboolean	gtk_sgf_tree_view_get_tooltips_enabled (void);
+void		gtk_sgf_tree_view_set_tooltips_enabled (gboolean enabled);
 
 
 #endif /* QUARRY_GTK_SGF_TREE_VIEW_H */
