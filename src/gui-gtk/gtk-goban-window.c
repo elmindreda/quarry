@@ -111,6 +111,7 @@ enum {
   INITIALIZATION_NOT_STARTED,
   INITIALIZATION_GAME_SET,
   INITIALIZATION_BOARD_SIZE_SET,
+  INITIALIZATION_BOARD_CLEARED,
   INITIALIZATION_TIME_LIMITS_SET,
   INITIALIZATION_FIXED_HANDICAP_SET,
   INITIALIZATION_FREE_HANDICAP_PLACED,
@@ -5319,6 +5320,14 @@ initialize_gtp_player (GtpClient *client, int successful,
     break;
 
   case INITIALIZATION_BOARD_SIZE_SET:
+    *initialization_step = INITIALIZATION_BOARD_CLEARED;
+    gtp_client_clear_board (client,
+			    (GtpClientResponseCallback) initialize_gtp_player,
+			    goban_window);
+
+    break;
+
+  case INITIALIZATION_BOARD_CLEARED:
     {
       TimeControl *time_control =
 	goban_window->time_controls[client_color_index];
