@@ -469,8 +469,6 @@ gtk_preferences_dialog_present (gpointer page_to_select)
   };
 
   int k;
-  int category_to_select;
-  int subcategory_to_select;
   GtkTreePath *tree_path;
   gint page_to_select_gint = (GPOINTER_TO_INT (page_to_select) >= 0
 			      ? GPOINTER_TO_INT (page_to_select)
@@ -599,6 +597,9 @@ gtk_preferences_dialog_present (gpointer page_to_select)
   }
 
   if (page_to_select_gint < NUM_PREFERENCES_DIALOG_PAGES) {
+    int category_to_select;
+    int subcategory_to_select;
+
     for (category_to_select = -1, subcategory_to_select = -1, k = 0;
 	 page_to_select_gint >= 0; k++) {
       if (preferences_dialog_categories[k].create_page) {
@@ -610,22 +611,22 @@ gtk_preferences_dialog_present (gpointer page_to_select)
 	subcategory_to_select = -1;
       }
     }
+
+#if GTK_2_2_OR_LATER
+    tree_path = gtk_tree_path_new_from_indices (category_to_select,
+						subcategory_to_select, -1);
+#else
+    tree_path = gtk_tree_path_new ();
+
+    gtk_tree_path_append_index (tree_path, category_to_select);
+    gtk_tree_path_append_index (tree_path, subcategory_to_select);
+#endif
+
+    gtk_tree_view_set_cursor (category_tree_view, tree_path, NULL, FALSE);
+    gtk_tree_path_free (tree_path);
   }
   else
     g_warning ("unknown page index %d", page_to_select_gint);
-
-#if GTK_2_2_OR_LATER
-  tree_path = gtk_tree_path_new_from_indices (category_to_select,
-					      subcategory_to_select, -1);
-#else
-  tree_path = gtk_tree_path_new ();
-
-  gtk_tree_path_append_index (tree_path, category_to_select);
-  gtk_tree_path_append_index (tree_path, subcategory_to_select);
-#endif
-
-  gtk_tree_view_set_cursor (category_tree_view, tree_path, NULL, FALSE);
-  gtk_tree_path_free (tree_path);
 
   gtk_window_present (preferences_dialog);
 }
