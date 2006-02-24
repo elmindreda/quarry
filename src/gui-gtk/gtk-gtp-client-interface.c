@@ -410,7 +410,9 @@ log_gtp_stream_error (GtpError error, int command_id, GtkGtpClientData *data)
     break;
 
   case GTP_WARNING_FUTURE_GTP_VERSION:
-    fputs (_("* WARNING: future GTP version, I don't know about it....\n"),
+    /* TRANSLATORS: Don't put ellipsis here, this string will most
+       often go to fixed-width font terminals. */
+    fputs (_("* WARNING: future GTP version, I don't know about it...\n"),
 	   data->log_file);
     break;
 
