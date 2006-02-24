@@ -30,8 +30,8 @@
  * gtp_client_grab_response().
  */
 
-/* Fuck me if I remember what are the internal command/response
- * counters for...  (consider this a FIXME.)
+/* Fuck me if I remember what the internal command/response counters
+ * are for...  (consider this a FIXME.)
  */
 
 /* To be consistent with de facto GTP standard set up with first
@@ -479,6 +479,16 @@ gtp_client_set_board_size (GtpClient *client,
 		store_user_callback_data (response_callback, user_data,
 					  board_size, &client->board_size),
 		"boardsize %d", board_size);
+}
+
+void
+gtp_client_clear_board (GtpClient *client,
+			GtpClientResponseCallback response_callback,
+			void *user_data)
+{
+  assert (client);
+
+  send_command (client, response_callback, user_data, "clear_board");
 }
 
 

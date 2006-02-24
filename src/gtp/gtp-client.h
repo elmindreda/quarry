@@ -208,6 +208,10 @@ void		gtp_client_set_board_size
 		  (GtpClient *client,
 		   GtpClientResponseCallback response_callback,
 		   void *user_data, int board_size);
+void		gtp_client_clear_board
+		  (GtpClient *client,
+		   GtpClientResponseCallback response_callback,
+		   void *user_data);
 void		gtp_client_set_fixed_handicap
 		  (GtpClient *client,
 		   GtpClientResponseCallback response_callback,
