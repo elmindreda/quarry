@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <mime-info xmlns="http://www.freedesktop.org/standards/shared-mime-info">
-  <mime-type type="text/sgf">
+  <mime-type type="application/x-go-sgf">
     <comment>Board game record</comment>
     <glob pattern="*.sgf"/>
 
@@ -38,6 +38,7 @@
       <match type="string" value="(;" offset="0"/>
     </magic>
 
+    <alias type="text/sgf"/>
     <alias type="text/x-sgf"/>
   </mime-type>
 </mime-info>
