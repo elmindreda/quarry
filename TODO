@@ -1,16 +1,8 @@
 	   THINGS THAT NEED TO BE DONE BEFORE RELEASING 0.2
 
-* PLAYING GAMES
-
-** Display move list?  Right column is already quite filled...
-
 * VIEWING GAME RECORDS
 
 ** Display values of various SGF properties (`VA',  `BM' etc.)
-
-** GAME TREE VIEW
-
-*** Maybe add command to narrow to a subtree.
 
 ** TEXT SEARCH
 
@@ -18,25 +10,20 @@
 
 * EDITING GAME RECORDS
 
+** Complete undo/redo machinery so that comments are handler properly.
+
 ** Support editing various SGF properties (`VA', `BM' etc.)
 
-** Add command(s) to rearrange children of given node.
-
-** Add a way to change the player to move.
+** Implement standard clipboard operations: cut, copy and paste.
 
 ** GAME INFORMATION
 
-*** Add a way to revert to original values.  Maybe a button to undo
-    changes one by one (property by property.)
+*** Add a way to revert to original values.
+    Maybe a button to undo changes one by one (property by property.)
 
 * BOARD APPEARANCE
 
-** Make Amazons queens look like chess queens (with SVG.)
-
-* GENERAL GUI
-
-** Do something about the Control Center, it is kinda ugly.
-   (Oh, graphical artist, where art thou?)
+** Make Amazons look like chess queens (with SVG.)
 
 * SGF PARSING
 
@@ -46,11 +33,9 @@
 
 * INTERNAL BOARD CODE
 
-** Score sekis properly.
+** Score sekis correctly.
 
 * INTERNAL GTP CODE
-
-** Issue `clear_board' command after `boardsize'.
 
 ** Be nicer to engines, don't crash if they don't support some command.
 
@@ -62,29 +47,54 @@
 
 
 
-			THINGS PLANNED FOR 0.4
+		      THINGS PLANNED FOR 0.4/1.0
 
 * INTERNET GAME SERVER(S) SUPPORT
 
-** Start with IGS, since KGS has proprietary protocol and NNGS/old IGS
-   isn't really used anymore.
+** Start with IGS.
+   KGS has proprietary protocol and NNGS/old IGS isn't really used
+   anymore.
+
+* PLAYING GAMES
+
+** Optionally display move list.
+   Requires pondering on where to place it, since the right column has
+   no more place...
 
 * VIEWING GAME RECORDS
 
 ** Support multiple games in one file, same for editing.
 
+** GAME TREE VIEW
+
+*** Maybe add command to narrow to a subtree.
+
 * GTP SUPPORT
 
-** Add some sort of GTP console for generic GTP engine access.  Look
-   at GoGui for an example.
+** Add some sort of GTP console for generic GTP engine access.
+   Look at GoGui for an example.
+
+** Add `GTP wrapper' mode.
+   The idea is to sit on a GTP channel, display the board status and
+   keep SGF records of what's going on.  This way you can connect an
+   engine to an arbitrary internet GTP server and see the games in
+   Quarry in real-time.
+
+* GENERAL GUI
+
+** Make the Control Center nicer, with graphics.
+   Requires artistic contributions, therefore postponed from 0.2.
 
 * GENERAL
 
-** Drop support for GTK+ 2.0 and 2.2 at least.  Remove all related
-   code.
+** Drop support for GTK+ 2.0 and 2.2 at least.
+   Remove all related code, obviously.
 
-** Make functions receive `size_t' and `gsize' where appropriate, e.g.
-   as string lengths.  Be extra careful with passing through `...'.
+** Make functions receive `size_t' and `gsize' where appropriate.
+   E.g. string lengths should have these types.  Be extra careful with
+   passing through `...'.
+
+** Maybe reimplement everything in C++/Gtkmm?  (Loads of work...)
 
 
 

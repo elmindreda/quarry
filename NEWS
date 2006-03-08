@@ -1,4 +1,21 @@
-* New translation: Polish (pl), by Robert Stefaniuk.
+--- New in Quarry 0.1.17 ---------------------------------------------
+
+* More features for editing SGF game records: it is now possible to
+  rearrange game tree branches, explicitly set the move number and
+  change the player to move (useful e.g. in problems.)
+
+* Game tree view now shows tooltips over nodes.  Tooltips display
+  node's move, name and comment text.
+
+* Quarry now registers `application/x-go-sgf' MIME type (for SGF game
+  records) during installation.  GNOME 2.8+ desktop will pick the type
+  up automatically.  However, Quarry cannot associate itself with the
+  type yet...
+
+* New translation: Polish (pl), by Robert Stefaniuk.  Updated
+  translations: en_GB, ru.
+
+* Many bug-fixes and small improvements.
 
 
 --- New in Quarry 0.1.16 ---------------------------------------------
@@ -243,10 +260,12 @@
 * Many bug-fixes.
 
 
+
   Copyright (C) 2004, 2005, 2006 Paul Pogonyshev.
 
   Copying and distribution of this file, with or without modification,
   are permitted provided the copyright notice and this notice are preserved.
+
 
 
 Local Variables:
