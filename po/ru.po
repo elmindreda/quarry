@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Quarry 0.1.15\n"
 "Report-Msgid-Bugs-To: quarry-dev@gna.org\n"
-"POT-Creation-Date: 2005-10-30 19:04+0200\n"
-"PO-Revision-Date: 2005-10-30 14:52+0200\n"
+"POT-Creation-Date: 2006-03-09 00:05+0200\n"
+"PO-Revision-Date: 2006-02-24 02:20+0200\n"
 "Last-Translator: Paul Pogonyshev <pogonyshev@gmx.net>\n"
 "Language-Team: Russian <ru@li.org>\n"
 "MIME-Version: 1.0\n"
@@ -17,7 +17,7 @@ msgstr ""
 "Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%"
 "10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
 
-#: src/gui-gtk/gtk-add-or-edit-label-dialog.c:74
+#: src/gui-gtk/gtk-add-or-edit-label-dialog.c:73
 msgid ""
 "Although board labels are not limited in length, it is better to use only "
 "one or two characters long labels. Longer labels will not be visible "
@@ -26,7 +26,7 @@ msgstr ""
 "Хотя надписи не ограничены по длине, лучше не использовать более одного или "
 "двух символов. Более длинные надписи будут не видны в большинстве клиентов."
 
-#: src/gui-gtk/gtk-add-or-edit-label-dialog.c:88
+#: src/gui-gtk/gtk-add-or-edit-label-dialog.c:87
 msgid "Label _text:"
 msgstr "Текст _надписи:"
 
@@ -34,19 +34,19 @@ msgstr "Текст _надписи:"
 msgid "Pick a Color"
 msgstr "Выберите цвет"
 
-#: src/gui-gtk/gtk-control-center.c:60
+#: src/gui-gtk/gtk-control-center.c:59
 msgid "Quarry Control Center"
 msgstr "Панель управления Quarry"
 
-#: src/gui-gtk/gtk-control-center.c:70
+#: src/gui-gtk/gtk-control-center.c:69
 msgid "Ne_w Game Record"
 msgstr "Новая _запись партии"
 
-#: src/gui-gtk/gtk-control-center.c:79
+#: src/gui-gtk/gtk-control-center.c:78
 msgid "_Resume Game"
 msgstr "_Возобновить партию"
 
-#: src/gui-gtk/gtk-file-dialog.c:288
+#: src/gui-gtk/gtk-file-dialog.c:279
 msgid ""
 "Note that all information in the existing file will be lost permanently if "
 "you choose to overwrite it."
@@ -54,601 +54,634 @@ msgstr ""
 "Если вы решите переписать существующий файл, вся информация в нем будет "
 "безвозвратно потеряна."
 
-#: src/gui-gtk/gtk-file-dialog.c:291
+#: src/gui-gtk/gtk-file-dialog.c:282
 #, c-format
 msgid ""
 "File named `%s' already exists. Do you want to overwrite it with the one you "
 "are saving?"
 msgstr "Файл с именем «%s» уже существует. Вы хотите переписать его?"
 
-#: src/gui-gtk/gtk-game-info-dialog.c:147
-#: src/gui-gtk/gtk-game-info-dialog.c:213
+#: src/gui-gtk/gtk-game-info-dialog.c:149
+#: src/gui-gtk/gtk-game-info-dialog.c:215
 msgid "Game Information"
 msgstr "Информация о партии"
 
-#: src/gui-gtk/gtk-game-info-dialog.c:152
-#: src/gui-gtk/gtk-resume-game-dialog.c:324
+#: src/gui-gtk/gtk-game-info-dialog.c:154
+#: src/gui-gtk/gtk-resume-game-dialog.c:323
 msgid "N_ame:"
 msgstr "И_мя:"
 
-#: src/gui-gtk/gtk-game-info-dialog.c:152
-#: src/gui-gtk/gtk-resume-game-dialog.c:323
+#: src/gui-gtk/gtk-game-info-dialog.c:154
+#: src/gui-gtk/gtk-resume-game-dialog.c:322
 msgid "_Name:"
 msgstr "_Имя:"
 
-#: src/gui-gtk/gtk-game-info-dialog.c:159
+#: src/gui-gtk/gtk-game-info-dialog.c:161
 msgid "Team:"
 msgstr "Команда:"
 
-#: src/gui-gtk/gtk-game-info-dialog.c:165
+#: src/gui-gtk/gtk-game-info-dialog.c:167
 msgid "Rank:"
 msgstr "Ранг:"
 
-#: src/gui-gtk/gtk-game-info-dialog.c:177
-#: src/gui-gtk/gtk-new-game-dialog.c:227
-#: src/gui-gtk/gtk-resume-game-dialog.c:363
+#: src/gui-gtk/gtk-game-info-dialog.c:179
+#: src/gui-gtk/gtk-new-game-dialog.c:226
+#: src/gui-gtk/gtk-resume-game-dialog.c:362
 msgid "Black Player"
 msgstr "Черные"
 
-#: src/gui-gtk/gtk-game-info-dialog.c:177
-#: src/gui-gtk/gtk-new-game-dialog.c:227
-#: src/gui-gtk/gtk-resume-game-dialog.c:363
+#: src/gui-gtk/gtk-game-info-dialog.c:179
+#: src/gui-gtk/gtk-new-game-dialog.c:226
+#: src/gui-gtk/gtk-resume-game-dialog.c:362
 msgid "White Player"
 msgstr "Белые"
 
-#: src/gui-gtk/gtk-game-info-dialog.c:191
+#: src/gui-gtk/gtk-game-info-dialog.c:193
 msgid "_Game name:"
 msgstr "_Название партии:"
 
-#: src/gui-gtk/gtk-game-info-dialog.c:194
+#: src/gui-gtk/gtk-game-info-dialog.c:196
 msgid "_Place:"
 msgstr "Мес_то проведения:"
 
-#: src/gui-gtk/gtk-game-info-dialog.c:197
+#: src/gui-gtk/gtk-game-info-dialog.c:199
 msgid "Da_te:"
 msgstr "_Дата:"
 
-#: src/gui-gtk/gtk-game-info-dialog.c:200
+#: src/gui-gtk/gtk-game-info-dialog.c:202
 msgid "_Event:"
 msgstr "_Событие:"
 
-#: src/gui-gtk/gtk-game-info-dialog.c:203
+#: src/gui-gtk/gtk-game-info-dialog.c:205
 msgid "_Round:"
 msgstr "_Раунд:"
 
-#: src/gui-gtk/gtk-game-info-dialog.c:216
+#: src/gui-gtk/gtk-game-info-dialog.c:218
 msgid "Rule _set:"
 msgstr "_Правила:"
 
-#: src/gui-gtk/gtk-game-info-dialog.c:239
-#: src/gui-gtk/gtk-new-game-record-dialog.c:192
+#: src/gui-gtk/gtk-game-info-dialog.c:241
+#: src/gui-gtk/gtk-new-game-record-dialog.c:186
 msgid "Han_dicap:"
 msgstr "_Гандикап:"
 
-#: src/gui-gtk/gtk-game-info-dialog.c:260
-#: src/gui-gtk/gtk-new-game-dialog.c:583
-#: src/gui-gtk/gtk-new-game-record-dialog.c:236
+#: src/gui-gtk/gtk-game-info-dialog.c:262
+#: src/gui-gtk/gtk-new-game-dialog.c:574
+#: src/gui-gtk/gtk-new-game-record-dialog.c:230
 msgid "_Komi:"
 msgstr "_Коми:"
 
-#: src/gui-gtk/gtk-game-info-dialog.c:285
-#: src/gui-gtk/gtk-new-game-dialog.c:453
+#: src/gui-gtk/gtk-game-info-dialog.c:287
+#: src/gui-gtk/gtk-new-game-dialog.c:444
 msgid "_Main time:"
 msgstr "Основное _время:"
 
-#: src/gui-gtk/gtk-game-info-dialog.c:297
+#: src/gui-gtk/gtk-game-info-dialog.c:299
 msgid "_Overtime:"
 msgstr "Допо_лнительное время:"
 
-#: src/gui-gtk/gtk-game-info-dialog.c:307
-#: src/gui-gtk/gtk-new-game-dialog.c:611
+#: src/gui-gtk/gtk-game-info-dialog.c:309
+#: src/gui-gtk/gtk-new-game-dialog.c:602
 msgid "Game Rules"
 msgstr "Правила игры"
 
-#: src/gui-gtk/gtk-game-info-dialog.c:322
+#: src/gui-gtk/gtk-game-info-dialog.c:324
 msgid "General"
 msgstr "Общая информация"
 
-#: src/gui-gtk/gtk-game-info-dialog.c:325
+#: src/gui-gtk/gtk-game-info-dialog.c:327
 msgid "Game _result:"
 msgstr "_Результат партии:"
 
-#: src/gui-gtk/gtk-game-info-dialog.c:328
+#: src/gui-gtk/gtk-game-info-dialog.c:330
 msgid "_Opening played:"
 msgstr "Сыграный _дебют:"
 
-#: src/gui-gtk/gtk-game-info-dialog.c:354
+#: src/gui-gtk/gtk-game-info-dialog.c:356
 msgid "Comment / _description:"
 msgstr "_Комментарии/описание:"
 
-#: src/gui-gtk/gtk-game-info-dialog.c:368
+#: src/gui-gtk/gtk-game-info-dialog.c:370
 msgid "Description & Result"
 msgstr "Описание и результат"
 
-#: src/gui-gtk/gtk-game-info-dialog.c:371
+#: src/gui-gtk/gtk-game-info-dialog.c:373
 msgid "Co_pyright string:"
 msgstr "_Авторские права:"
 
-#: src/gui-gtk/gtk-game-info-dialog.c:375
+#: src/gui-gtk/gtk-game-info-dialog.c:377
 msgid "_Annotator:"
 msgstr "А_ннотатор:"
 
-#: src/gui-gtk/gtk-game-info-dialog.c:379
+#: src/gui-gtk/gtk-game-info-dialog.c:381
 msgid "_Source:"
 msgstr "_Источник:"
 
-#: src/gui-gtk/gtk-game-info-dialog.c:382
+#: src/gui-gtk/gtk-game-info-dialog.c:384
 msgid "_Entered by:"
 msgstr "_Создатель файла:"
 
 # «Авторские права и благодарности» слишком длинно
-#: src/gui-gtk/gtk-game-info-dialog.c:391
+#: src/gui-gtk/gtk-game-info-dialog.c:393
 msgid "Copyright & Credits"
 msgstr "Благодарности"
 
-#: src/gui-gtk/gtk-game-info-dialog.c:404
+#: src/gui-gtk/gtk-game-info-dialog.c:406
 msgid "Game Record"
 msgstr "Запись партии"
 
-#: src/gui-gtk/gtk-games.c:35
+#: src/gui-gtk/gtk-games.c:39
 msgid "_Go"
 msgstr "_Го"
 
-#: src/gui-gtk/gtk-games.c:36
+#: src/gui-gtk/gtk-games.c:40
 msgid "_Amazons"
 msgstr "_Амазонки"
 
-#: src/gui-gtk/gtk-games.c:37
+#: src/gui-gtk/gtk-games.c:41
 msgid "_Reversi"
 msgstr "_Реверси"
 
-#: src/gui-gtk/gtk-games.c:41
+#: src/gui-gtk/gtk-games.c:45
 msgid "Go Rules"
 msgstr "Правила го"
 
-#: src/gui-gtk/gtk-games.c:42
+#: src/gui-gtk/gtk-games.c:46
 msgid "Amazons Rules"
 msgstr "Правила амазонок"
 
-#: src/gui-gtk/gtk-games.c:43
+#: src/gui-gtk/gtk-games.c:47
 msgid "Reversi Rules"
 msgstr "Правила реверси"
 
-#: src/gui-gtk/gtk-goban-window.c:400
+#: src/gui-gtk/gtk-games.c:179
+msgid "Board _size:"
+msgstr "Размер _доски:"
+
+#: src/gui-gtk/gtk-goban-window.c:411
 msgid "Open"
 msgstr "Открыть"
 
-#: src/gui-gtk/gtk-goban-window.c:400
+#: src/gui-gtk/gtk-goban-window.c:411
 msgid "Open a game record"
 msgstr "Открыть запись партии"
 
-#: src/gui-gtk/gtk-goban-window.c:405
+#: src/gui-gtk/gtk-goban-window.c:416
 msgid "Save"
 msgstr "Сохранить"
 
-#: src/gui-gtk/gtk-goban-window.c:405
+#: src/gui-gtk/gtk-goban-window.c:416
 msgid "Save the current file"
 msgstr "Сохранить текущий файл"
 
-#: src/gui-gtk/gtk-goban-window.c:410 src/gui-gtk/gtk-goban-window.c:1821
+#: src/gui-gtk/gtk-goban-window.c:421 src/gui-gtk/gtk-goban-window.c:1871
 msgid "Find"
 msgstr "Найти"
 
-#: src/gui-gtk/gtk-goban-window.c:410
+#: src/gui-gtk/gtk-goban-window.c:421
 msgid "Search for a string in comments"
 msgstr "Найти строку в комментариях"
 
-#: src/gui-gtk/gtk-goban-window.c:415
+#: src/gui-gtk/gtk-goban-window.c:426
 msgid "Info"
 msgstr "Инфо"
 
-#: src/gui-gtk/gtk-goban-window.c:415
+#: src/gui-gtk/gtk-goban-window.c:426
 msgid "View and edit game information"
 msgstr "Просмотреть и редактировать информацию о партии"
 
-#: src/gui-gtk/gtk-goban-window.c:421
+#: src/gui-gtk/gtk-goban-window.c:432
 msgid "Undo"
 msgstr "Отменить"
 
-#: src/gui-gtk/gtk-goban-window.c:421
+#: src/gui-gtk/gtk-goban-window.c:432
 msgid "Undo the last action"
 msgstr "Отменить последнее действие"
 
-#: src/gui-gtk/gtk-goban-window.c:426
+#: src/gui-gtk/gtk-goban-window.c:437
 msgid "Redo"
 msgstr "Вернуть"
 
-#: src/gui-gtk/gtk-goban-window.c:426
+#: src/gui-gtk/gtk-goban-window.c:437
 msgid "Redo the last undone action"
 msgstr "Вернуть последнее отмененное действие"
 
-#: src/gui-gtk/gtk-goban-window.c:431
+#: src/gui-gtk/gtk-goban-window.c:442
 msgid "Delete"
 msgstr "Удалить"
 
-#: src/gui-gtk/gtk-goban-window.c:431
+#: src/gui-gtk/gtk-goban-window.c:442
 msgid "Delete the current node"
 msgstr "Удалить текущий узел"
 
-#: src/gui-gtk/gtk-goban-window.c:437
+#: src/gui-gtk/gtk-goban-window.c:448
 msgid "Root"
 msgstr "Корень"
 
-#: src/gui-gtk/gtk-goban-window.c:437
+#: src/gui-gtk/gtk-goban-window.c:448
 msgid "Go to the root node"
 msgstr "Перейти к корневому узлу"
 
-#: src/gui-gtk/gtk-goban-window.c:442
+#: src/gui-gtk/gtk-goban-window.c:453
 msgid "Back"
 msgstr "Назад"
 
-#: src/gui-gtk/gtk-goban-window.c:442
+#: src/gui-gtk/gtk-goban-window.c:453
 msgid "Go to the previous node"
 msgstr "Перейти к предыдущему узлу"
 
-#: src/gui-gtk/gtk-goban-window.c:447
+#: src/gui-gtk/gtk-goban-window.c:458
 msgid "Forward"
 msgstr "Вперед"
 
-#: src/gui-gtk/gtk-goban-window.c:447
+#: src/gui-gtk/gtk-goban-window.c:458
 msgid "Go to the next node"
 msgstr "Перейти к следующему узлу"
 
-#: src/gui-gtk/gtk-goban-window.c:452
+#: src/gui-gtk/gtk-goban-window.c:463
 msgid "End"
 msgstr "Конец"
 
-#: src/gui-gtk/gtk-goban-window.c:452
+#: src/gui-gtk/gtk-goban-window.c:463
 msgid "Go to the current variation's last node"
 msgstr "Перейти к последнему узлу текущего варианта"
 
-#: src/gui-gtk/gtk-goban-window.c:458
+#: src/gui-gtk/gtk-goban-window.c:469
 msgid "Previous"
 msgstr "Предыдущий"
 
-#: src/gui-gtk/gtk-goban-window.c:458
+#: src/gui-gtk/gtk-goban-window.c:469
 msgid "Switch to the previous variation"
 msgstr "Переключиться на предыдущий вариант"
 
-#: src/gui-gtk/gtk-goban-window.c:464
+#: src/gui-gtk/gtk-goban-window.c:475
 msgid "Next"
 msgstr "Следующий"
 
-#: src/gui-gtk/gtk-goban-window.c:464
+#: src/gui-gtk/gtk-goban-window.c:475
 msgid "Switch to the next variation"
 msgstr "Переключиться на следующий вариант"
 
-#: src/gui-gtk/gtk-goban-window.c:558
+#: src/gui-gtk/gtk-goban-window.c:569
 msgid "/_File"
 msgstr "/_Файл"
 
-#: src/gui-gtk/gtk-goban-window.c:559
+#: src/gui-gtk/gtk-goban-window.c:570
 msgid "/File/_New Game..."
-msgstr "/Файл/_Новая партия..."
+msgstr "/Файл/_Новая партия…"
 
-#: src/gui-gtk/gtk-goban-window.c:562
+#: src/gui-gtk/gtk-goban-window.c:573
 msgid "/File/Ne_w Game Record..."
-msgstr "/Файл/Нов_ая запись партии..."
+msgstr "/Файл/Нов_ая запись партии…"
 
-#: src/gui-gtk/gtk-goban-window.c:565 src/gui-gtk/gtk-goban-window.c:573
-#: src/gui-gtk/gtk-goban-window.c:581
+#: src/gui-gtk/gtk-goban-window.c:576 src/gui-gtk/gtk-goban-window.c:584
+#: src/gui-gtk/gtk-goban-window.c:592
 msgid "/File/"
 msgstr "/Файл/"
 
-#: src/gui-gtk/gtk-goban-window.c:567
+#: src/gui-gtk/gtk-goban-window.c:578
 msgid "/File/_Open..."
-msgstr "/Файл/_Открыть..."
+msgstr "/Файл/_Открыть…"
 
-#: src/gui-gtk/gtk-goban-window.c:570
+#: src/gui-gtk/gtk-goban-window.c:581
 msgid "/File/_Resume Game..."
-msgstr "/Файл/_Возобновить партию..."
+msgstr "/Файл/_Возобновить партию…"
 
-#: src/gui-gtk/gtk-goban-window.c:575
+#: src/gui-gtk/gtk-goban-window.c:586
 msgid "/File/_Save"
 msgstr "/Файл/_Сохранить"
 
-#: src/gui-gtk/gtk-goban-window.c:578
+#: src/gui-gtk/gtk-goban-window.c:589
 msgid "/File/Save _As..."
-msgstr "/Файл/Сохранить _как..."
+msgstr "/Файл/Сохранить _как…"
 
-#: src/gui-gtk/gtk-goban-window.c:583
+#: src/gui-gtk/gtk-goban-window.c:594
 msgid "/File/_Close"
 msgstr "/Файл/_Закрыть"
 
-#: src/gui-gtk/gtk-goban-window.c:586
+#: src/gui-gtk/gtk-goban-window.c:597
 msgid "/File/_Quit"
 msgstr "/Файл/В_ыход"
 
-#: src/gui-gtk/gtk-goban-window.c:591
+#: src/gui-gtk/gtk-goban-window.c:602
 msgid "/_Edit"
 msgstr "/_Правка"
 
-#: src/gui-gtk/gtk-goban-window.c:592
+#: src/gui-gtk/gtk-goban-window.c:603
 msgid "/Edit/_Undo"
 msgstr "/Правка/_Отменить"
 
-#: src/gui-gtk/gtk-goban-window.c:595
+#: src/gui-gtk/gtk-goban-window.c:606
 msgid "/Edit/_Redo"
 msgstr "/Правка/Ве_рнуть"
 
-#: src/gui-gtk/gtk-goban-window.c:598 src/gui-gtk/gtk-goban-window.c:606
-#: src/gui-gtk/gtk-goban-window.c:651 src/gui-gtk/gtk-goban-window.c:657
-#: src/gui-gtk/gtk-goban-window.c:668 src/gui-gtk/gtk-goban-window.c:673
+#: src/gui-gtk/gtk-goban-window.c:609 src/gui-gtk/gtk-goban-window.c:617
+#: src/gui-gtk/gtk-goban-window.c:661 src/gui-gtk/gtk-goban-window.c:669
+#: src/gui-gtk/gtk-goban-window.c:689 src/gui-gtk/gtk-goban-window.c:700
+#: src/gui-gtk/gtk-goban-window.c:705
 msgid "/Edit/"
 msgstr "/Правка/"
 
-#: src/gui-gtk/gtk-goban-window.c:600
+#: src/gui-gtk/gtk-goban-window.c:611
 msgid "/Edit/_Delete Node"
 msgstr "/Правка/_Удалить узел"
 
-#: src/gui-gtk/gtk-goban-window.c:603
+#: src/gui-gtk/gtk-goban-window.c:614
 msgid "/Edit/Delete Node's _Children"
 msgstr "/Правка/Удалить _дочерние узлы"
 
-#: src/gui-gtk/gtk-goban-window.c:609
+#: src/gui-gtk/gtk-goban-window.c:620
 msgid "/Edit/_Tools"
 msgstr "/Правка/_Инструменты"
 
-#: src/gui-gtk/gtk-goban-window.c:610
+#: src/gui-gtk/gtk-goban-window.c:621
 msgid "/Edit/Tools/_Move Tool"
 msgstr "/Правка/Инструменты/Инструмент _ходов"
 
-#: src/gui-gtk/gtk-goban-window.c:613
+#: src/gui-gtk/gtk-goban-window.c:624
 msgid "/Edit/Tools/_Setup Tool"
 msgstr "/Правка/Инструменты/_Установка позиции"
 
-#: src/gui-gtk/gtk-goban-window.c:616 src/gui-gtk/gtk-goban-window.c:633
-#: src/gui-gtk/gtk-goban-window.c:641
+#: src/gui-gtk/gtk-goban-window.c:627 src/gui-gtk/gtk-goban-window.c:644
+#: src/gui-gtk/gtk-goban-window.c:652
 msgid "/Edit/Tools/"
 msgstr "/Правка/Инструменты/"
 
-#: src/gui-gtk/gtk-goban-window.c:618
+#: src/gui-gtk/gtk-goban-window.c:629
 msgid "/Edit/Tools/C_ross Markup"
 msgstr "/Правка/Инструменты/Разметка _крестиком"
 
-#: src/gui-gtk/gtk-goban-window.c:621
+#: src/gui-gtk/gtk-goban-window.c:632
 msgid "/Edit/Tools/_Circle Markup"
 msgstr "/Правка/Инструменты/Разметка к_ружком"
 
-#: src/gui-gtk/gtk-goban-window.c:624
+#: src/gui-gtk/gtk-goban-window.c:635
 msgid "/Edit/Tools/S_quare Markup"
 msgstr "/Правка/Инструменты/Разметка к_вадратом"
 
-#: src/gui-gtk/gtk-goban-window.c:627
+#: src/gui-gtk/gtk-goban-window.c:638
 msgid "/Edit/Tools/_Triangle Markup"
 msgstr "/Правка/Инструменты/Разметка _треугольником"
 
-#: src/gui-gtk/gtk-goban-window.c:630
+#: src/gui-gtk/gtk-goban-window.c:641
 msgid "/Edit/Tools/S_elected Markup"
 msgstr "/Правка/Инструменты/Разметка-в_ыбор"
 
-#: src/gui-gtk/gtk-goban-window.c:635
+#: src/gui-gtk/gtk-goban-window.c:646
 msgid "/Edit/Tools/_Label Tool"
 msgstr "/Правка/Инструменты/Инструмент _надписей"
 
-#: src/gui-gtk/gtk-goban-window.c:638
+#: src/gui-gtk/gtk-goban-window.c:649
 msgid "/Edit/Tools/_Number Tool"
 msgstr "/Правка/Инструменты/Инструмент ну_мерации"
 
-#: src/gui-gtk/gtk-goban-window.c:643
+#: src/gui-gtk/gtk-goban-window.c:654
 msgid "/Edit/Tools/Scori_ng Tool"
 msgstr "/Правка/Tools/Инструмент _подсчета очков"
 
-#: src/gui-gtk/gtk-goban-window.c:648
-msgid "/Edit/Add _Empty Node"
+#: src/gui-gtk/gtk-goban-window.c:658
+msgid "/Edit/_Add Empty Node"
 msgstr "/Правка/До_бавить пустой узел"
 
-#: src/gui-gtk/gtk-goban-window.c:654
+#: src/gui-gtk/gtk-goban-window.c:663
+msgid "/Edit/Move _Branch Up"
+msgstr "/Правка/Переместить _ветку вверх"
+
+#: src/gui-gtk/gtk-goban-window.c:666
+msgid "/Edit/Move Branch Do_wn"
+msgstr "/Правка/Переместить в_етку вниз"
+
+#: src/gui-gtk/gtk-goban-window.c:671
 msgid "/Edit/Edit Node _Name"
 msgstr "/Правка/Редактировать на_звание узла"
 
-#: src/gui-gtk/gtk-goban-window.c:659
+#: src/gui-gtk/gtk-goban-window.c:674
+msgid "/Edit/Set _Move Number"
+msgstr "/Правка/Установить но_мер хода"
+
+#: src/gui-gtk/gtk-goban-window.c:678
+msgid "/Edit/_Player to Move"
+msgstr "/Правка/Следующими _ходят"
+
+#: src/gui-gtk/gtk-goban-window.c:679
+msgid "/Edit/Player to Move/_White"
+msgstr "/Правка/Следующими ходят/_Белые"
+
+#: src/gui-gtk/gtk-goban-window.c:682
+msgid "/Edit/Player to Move/_Black"
+msgstr "/Правка/Следующими ходят/_Черные"
+
+#: src/gui-gtk/gtk-goban-window.c:685
+msgid "/Edit/Player to Move/By Game _Rules"
+msgstr "/Правка/Следующими ходят/По _правилам"
+
+#: src/gui-gtk/gtk-goban-window.c:691
 msgid "/Edit/_Find"
 msgstr "/Правка/_Найти"
 
-#: src/gui-gtk/gtk-goban-window.c:662
+#: src/gui-gtk/gtk-goban-window.c:694
 msgid "/Edit/Find Ne_xt"
 msgstr "/Правка/Найти _следующее"
 
-#: src/gui-gtk/gtk-goban-window.c:665
+#: src/gui-gtk/gtk-goban-window.c:697
 msgid "/Edit/Find Pre_vious"
 msgstr "/Правка/Найти _предыдущее"
 
-#: src/gui-gtk/gtk-goban-window.c:670
+#: src/gui-gtk/gtk-goban-window.c:702
 msgid "/Edit/Game _Information"
 msgstr "/Правка/Ин_формация о партии"
 
-#: src/gui-gtk/gtk-goban-window.c:675
-msgid "/Edit/_Preferences"
+#: src/gui-gtk/gtk-goban-window.c:707
+msgid "/Edit/Pr_eferences"
 msgstr "/Правка/П_араметры"
 
-#: src/gui-gtk/gtk-goban-window.c:680
+#: src/gui-gtk/gtk-goban-window.c:712
 msgid "/_View"
 msgstr "/_Вид"
 
-#: src/gui-gtk/gtk-goban-window.c:681
+#: src/gui-gtk/gtk-goban-window.c:713
 msgid "/View/_Main Toolbar"
 msgstr "/Вид/_Главная панель инструментов"
 
-#: src/gui-gtk/gtk-goban-window.c:684
+#: src/gui-gtk/gtk-goban-window.c:716
 msgid "/View/_Editing Toolbar"
 msgstr "/Вид/Панель инструментов _редактирования"
 
-#: src/gui-gtk/gtk-goban-window.c:687
+#: src/gui-gtk/gtk-goban-window.c:719
 msgid "/View/_Navigation Toolbar"
 msgstr "/Вид/Панель инструментов _навигации"
 
-#: src/gui-gtk/gtk-goban-window.c:690 src/gui-gtk/gtk-goban-window.c:695
-#: src/gui-gtk/gtk-goban-window.c:703
+#: src/gui-gtk/gtk-goban-window.c:722 src/gui-gtk/gtk-goban-window.c:727
+#: src/gui-gtk/gtk-goban-window.c:735
 msgid "/View/"
 msgstr "/Вид/"
 
-#: src/gui-gtk/gtk-goban-window.c:692
+#: src/gui-gtk/gtk-goban-window.c:724
 msgid "/View/_Game Action Buttons"
 msgstr "/Вид/Дополнительные _кнопки"
 
-#: src/gui-gtk/gtk-goban-window.c:697
+#: src/gui-gtk/gtk-goban-window.c:729
 msgid "/View/Game _Tree"
 msgstr "/Вид/_Дерево партии"
 
-#: src/gui-gtk/gtk-goban-window.c:700
+#: src/gui-gtk/gtk-goban-window.c:732
 msgid "/View/_Recenter on Current Node"
 msgstr "/Вид/_Центрировать на текущем узле"
 
-#: src/gui-gtk/gtk-goban-window.c:705
+#: src/gui-gtk/gtk-goban-window.c:737
 msgid "/View/_Control Center"
 msgstr "/Вид/Панель _управления"
 
-#: src/gui-gtk/gtk-goban-window.c:710
+#: src/gui-gtk/gtk-goban-window.c:742
 msgid "/_Play"
 msgstr "/_Игра"
 
-#: src/gui-gtk/gtk-goban-window.c:711
+#: src/gui-gtk/gtk-goban-window.c:743
 msgid "/Play/_Pass"
 msgstr "/Игра/_Пасс"
 
-#: src/gui-gtk/gtk-goban-window.c:714 src/gui-gtk/gtk-goban-window.c:719
+#: src/gui-gtk/gtk-goban-window.c:746 src/gui-gtk/gtk-goban-window.c:751
 msgid "/Play/"
 msgstr "/Игра/"
 
-#: src/gui-gtk/gtk-goban-window.c:716
+#: src/gui-gtk/gtk-goban-window.c:748
 msgid "/Play/_Resign"
 msgstr "/Игра/_Сдаться"
 
-#: src/gui-gtk/gtk-goban-window.c:721
+#: src/gui-gtk/gtk-goban-window.c:753
 msgid "/Play/_Adjourn Game"
 msgstr "/Play/_Отложить партию"
 
-#: src/gui-gtk/gtk-goban-window.c:726
+#: src/gui-gtk/gtk-goban-window.c:758
 msgid "/_Go"
 msgstr "/Перей_ти"
 
-#: src/gui-gtk/gtk-goban-window.c:727
+#: src/gui-gtk/gtk-goban-window.c:759
 msgid "/Go/_Previous Node"
 msgstr "/Перейти/_Предыдущий узел"
 
-#: src/gui-gtk/gtk-goban-window.c:730
+#: src/gui-gtk/gtk-goban-window.c:762
 msgid "/Go/_Next Node"
 msgstr "/Перейти/_Следующий узел"
 
-#: src/gui-gtk/gtk-goban-window.c:733
+#: src/gui-gtk/gtk-goban-window.c:765
 msgid "/Go/Ten Nodes _Backward"
 msgstr "/Перейти/Десять узлов _вперед"
 
-#: src/gui-gtk/gtk-goban-window.c:736
+#: src/gui-gtk/gtk-goban-window.c:768
 msgid "/Go/Ten Nodes _Forward"
 msgstr "/Перейти/Десять узлов _назад"
 
-#: src/gui-gtk/gtk-goban-window.c:739 src/gui-gtk/gtk-goban-window.c:747
-#: src/gui-gtk/gtk-goban-window.c:757
+#: src/gui-gtk/gtk-goban-window.c:771 src/gui-gtk/gtk-goban-window.c:779
+#: src/gui-gtk/gtk-goban-window.c:789
 msgid "/Go/"
 msgstr "/Перейти/"
 
-#: src/gui-gtk/gtk-goban-window.c:741
+#: src/gui-gtk/gtk-goban-window.c:773
 msgid "/Go/_Root Node"
 msgstr "/Перейти/_Корневой узел"
 
-#: src/gui-gtk/gtk-goban-window.c:744
+#: src/gui-gtk/gtk-goban-window.c:776
 msgid "/Go/Variation _Last Node"
 msgstr "/Перейти/Пос_ледний узел варианта"
 
-#: src/gui-gtk/gtk-goban-window.c:749
+#: src/gui-gtk/gtk-goban-window.c:781
 msgid "/Go/Pre_vious Variation"
 msgstr "/Перейти/Пр_едыдущий вариант"
 
-#: src/gui-gtk/gtk-goban-window.c:752
+#: src/gui-gtk/gtk-goban-window.c:784
 msgid "/Go/Ne_xt Variation"
 msgstr "/Go/Сле_дующий вариант"
 
-#: src/gui-gtk/gtk-goban-window.c:758
+#: src/gui-gtk/gtk-goban-window.c:790
 msgid "/Go/_Go to Named Node..."
-msgstr "/Go/Перейти к _именованному узлу..."
+msgstr "/Go/Перейти к _именованному узлу…"
 
-#: src/gui-gtk/gtk-goban-window.c:764
+#: src/gui-gtk/gtk-goban-window.c:796
 msgid "/_Help"
 msgstr "/_Справка"
 
-#: src/gui-gtk/gtk-goban-window.c:765
+#: src/gui-gtk/gtk-goban-window.c:797
 msgid "/Help/_Contents"
 msgstr "/Справка/_Содержание"
 
-#: src/gui-gtk/gtk-goban-window.c:768
+#: src/gui-gtk/gtk-goban-window.c:800
 msgid "/Help/_About"
 msgstr "/Справка/_О программе"
 
-#: src/gui-gtk/gtk-goban-window.c:774
+#: src/gui-gtk/gtk-goban-window.c:806
 msgid "/Move Tool"
 msgstr "/Инструмент ходов"
 
-#: src/gui-gtk/gtk-goban-window.c:775
+#: src/gui-gtk/gtk-goban-window.c:807
 msgid "/Setup Tool"
 msgstr "/Установка позиции"
 
-#: src/gui-gtk/gtk-goban-window.c:778
+#: src/gui-gtk/gtk-goban-window.c:810
 msgid "/Cross Markup"
 msgstr "/Разметка крестиком"
 
-#: src/gui-gtk/gtk-goban-window.c:779
+#: src/gui-gtk/gtk-goban-window.c:811
 msgid "/Circle Markup"
 msgstr "/Разметка кружочком"
 
-#: src/gui-gtk/gtk-goban-window.c:780
+#: src/gui-gtk/gtk-goban-window.c:812
 msgid "/Square Markup"
 msgstr "/Разметка квадратом"
 
-#: src/gui-gtk/gtk-goban-window.c:781
+#: src/gui-gtk/gtk-goban-window.c:813
 msgid "/Triangle Markup"
 msgstr "/Разметка треугольником"
 
-#: src/gui-gtk/gtk-goban-window.c:782
+#: src/gui-gtk/gtk-goban-window.c:814
 msgid "/Selected Markup"
 msgstr "/Разметка-выбор"
 
-#: src/gui-gtk/gtk-goban-window.c:785
+#: src/gui-gtk/gtk-goban-window.c:817
 msgid "/Label Tool"
 msgstr "/Инструмент надписей"
 
-#: src/gui-gtk/gtk-goban-window.c:786
+#: src/gui-gtk/gtk-goban-window.c:818
 msgid "/Number Tool"
 msgstr "/Инструмент нумерации"
 
-#: src/gui-gtk/gtk-goban-window.c:789
+#: src/gui-gtk/gtk-goban-window.c:821
 msgid "/Scoring Tool"
 msgstr "/Инструмент подсчета очков"
 
-#: src/gui-gtk/gtk-goban-window.c:854
+#: src/gui-gtk/gtk-goban-window.c:886
 msgid "Black"
 msgstr "Черные"
 
-#: src/gui-gtk/gtk-goban-window.c:854
+#: src/gui-gtk/gtk-goban-window.c:886
 msgid "White"
 msgstr "Белые"
 
-#: src/gui-gtk/gtk-goban-window.c:882
+#: src/gui-gtk/gtk-goban-window.c:914
 msgid "Pass"
 msgstr "Пасс"
 
-#: src/gui-gtk/gtk-goban-window.c:888
+#: src/gui-gtk/gtk-goban-window.c:920
 msgid "Resign"
 msgstr "Сдаться"
 
-#: src/gui-gtk/gtk-goban-window.c:1315
+#: src/gui-gtk/gtk-goban-window.c:1356
 #, c-format
 msgid "Save changes to game record `%s' before closing?"
 msgstr "Сохранить изменения в записи партии «%s» перед закрытием?"
 
-#: src/gui-gtk/gtk-goban-window.c:1324
+#: src/gui-gtk/gtk-goban-window.c:1365
 msgid "Save changes to the untitled game record before closing?"
 msgstr "Сохранить изменения в неименованной записи партии перед закрытием?"
 
 #. TRANSLATORS: Width of this string in default font is used to
 #. determine the minimal width of the right board window side.
-#: src/gui-gtk/gtk-goban-window.c:1399
+#: src/gui-gtk/gtk-goban-window.c:1440
 msgid "A good width for the right side to have."
 msgstr "Вполне подходящая ширина для правой колонки."
 
 #. TRANSLATORS: It can never be 1 stone, always at least 2.
-#: src/gui-gtk/gtk-goban-window.c:1459
+#: src/gui-gtk/gtk-goban-window.c:1500
 #, c-format
 msgid ""
 "Please set up %d (or less)\n"
@@ -666,125 +699,125 @@ msgstr[2] ""
 "Пожалуйста, разместите %d (или меньше)\n"
 "камней свободного гандикапа"
 
-#: src/gui-gtk/gtk-goban-window.c:1659
+#: src/gui-gtk/gtk-goban-window.c:1698
 msgid "Adjourn & Save As..."
-msgstr "Отложить партию и сохранить как..."
+msgstr "Отложить партию и сохранить как…"
 
-#: src/gui-gtk/gtk-goban-window.c:1659
+#: src/gui-gtk/gtk-goban-window.c:1698
 msgid "Save As..."
-msgstr "Сохранить как..."
+msgstr "Сохранить как…"
 
-#: src/gui-gtk/gtk-goban-window.c:1777
+#: src/gui-gtk/gtk-goban-window.c:1827
 msgid ""
 "You can later resume the game by pressing the `Resume Game' button in Quarry "
 "Control Center, or selecting `Resume Game' item from the `File' menu."
 msgstr ""
-"Вы можете вернуться к игре, нажав кнопку «Возобновить партию» в «Панели "
-"управления Quarry» или выбрав пункт «Возобновить партию» из меню «Файл»."
+"Вы можете вернуться к игре, нажав кнопку «Возобновить партию» в Панели "
+"управления Quarry или выбрав пункт «Возобновить партию» из меню «Файл»."
 
-#: src/gui-gtk/gtk-goban-window.c:1783
+#: src/gui-gtk/gtk-goban-window.c:1833
 #, c-format
 msgid "The game is adjourned and saved in file `%s'"
 msgstr "Партия отложена и сохранена в файле «%s»"
 
-#: src/gui-gtk/gtk-goban-window.c:1813
+#: src/gui-gtk/gtk-goban-window.c:1863
 msgid "Whole game _tree"
 msgstr "Все _дерево"
 
-#: src/gui-gtk/gtk-goban-window.c:1813
+#: src/gui-gtk/gtk-goban-window.c:1863
 msgid "Current no_de only"
 msgstr "Только текущий _узел"
 
-#: src/gui-gtk/gtk-goban-window.c:1816
+#: src/gui-gtk/gtk-goban-window.c:1866
 msgid "C_omments & node names"
 msgstr "Комментарии _и названия узлов"
 
-#: src/gui-gtk/gtk-goban-window.c:1817
+#: src/gui-gtk/gtk-goban-window.c:1867
 msgid "Comm_ents only"
 msgstr "Только _комментарии"
 
-#: src/gui-gtk/gtk-goban-window.c:1817
+#: src/gui-gtk/gtk-goban-window.c:1867
 msgid "Node na_mes only"
 msgstr "Только наз_вания узлов"
 
-#: src/gui-gtk/gtk-goban-window.c:1876
+#: src/gui-gtk/gtk-goban-window.c:1926
 msgid "Search _for:"
 msgstr "_Найти:"
 
-#: src/gui-gtk/gtk-goban-window.c:1883
+#: src/gui-gtk/gtk-goban-window.c:1933
 msgid "Case _sensitive"
 msgstr "Учитывать _регистр"
 
-#: src/gui-gtk/gtk-goban-window.c:1897
+#: src/gui-gtk/gtk-goban-window.c:1947
 msgid "Whole _words only"
 msgstr "Только слова _целиком"
 
-#: src/gui-gtk/gtk-goban-window.c:1911
+#: src/gui-gtk/gtk-goban-window.c:1961
 msgid "Wrap _around"
 msgstr "Автоматически на_чинать сначала"
 
-#: src/gui-gtk/gtk-goban-window.c:1933
+#: src/gui-gtk/gtk-goban-window.c:1983
 msgid "A_uto-close this dialog"
 msgstr "Закрывать диалог _автоматически"
 
-#: src/gui-gtk/gtk-goban-window.c:1949
+#: src/gui-gtk/gtk-goban-window.c:1999
 msgid "Options"
 msgstr "Параметры"
 
-#: src/gui-gtk/gtk-goban-window.c:2010
+#: src/gui-gtk/gtk-goban-window.c:2060
 msgid "Search Scope"
 msgstr "Область поиска"
 
-#: src/gui-gtk/gtk-goban-window.c:2869
+#: src/gui-gtk/gtk-goban-window.c:2919
 msgid "Sorry, there are no named nodes in this game tree"
 msgstr "Извините, в этом дереве нет именованных узлов"
 
-#: src/gui-gtk/gtk-goban-window.c:2893
+#: src/gui-gtk/gtk-goban-window.c:2943
 msgid "A GUI program for Go, Amazons and Reversi board games"
 msgstr "Универсальный интерфейс для го, амазонок и реверси"
 
-#: src/gui-gtk/gtk-goban-window.c:2895
-msgid "Copyright © 2003, 2004, 2005 Paul Pogonyshev and others"
-msgstr "Copyright © 2003, 2004, 2005 Павел Погонышев и другие"
+#: src/gui-gtk/gtk-goban-window.c:2945
+msgid "Copyright © 2003, 2004, 2005, 2006 Paul Pogonyshev and others"
+msgstr "Copyright © 2003, 2004, 2005, 2006 Павел Погонышев и другие"
 
-#: src/gui-gtk/gtk-goban-window.c:2911
+#: src/gui-gtk/gtk-goban-window.c:2962
 msgid "About Quarry"
 msgstr "О программе Quarry"
 
-#: src/gui-gtk/gtk-goban-window.c:3339
+#: src/gui-gtk/gtk-goban-window.c:3392
 msgid "Really resign this game?"
 msgstr "Вы действительно хотите сдать эту партию?"
 
-#: src/gui-gtk/gtk-goban-window.c:3343
+#: src/gui-gtk/gtk-goban-window.c:3396
 msgid "_Resign"
 msgstr "_Сдаться"
 
-#: src/gui-gtk/gtk-goban-window.c:3932
+#: src/gui-gtk/gtk-goban-window.c:3985
 msgid "Edit Board Label"
 msgstr "Редактирование надписи"
 
-#: src/gui-gtk/gtk-goban-window.c:3935
+#: src/gui-gtk/gtk-goban-window.c:3988
 msgid "Add Board Label"
 msgstr "Добавление надписи"
 
-#: src/gui-gtk/gtk-goban-window.c:4404
+#: src/gui-gtk/gtk-goban-window.c:4456
 #, c-format
 msgid "%s (W) vs. %s"
 msgstr "%s (б) против %s"
 
-#: src/gui-gtk/gtk-goban-window.c:4428
+#: src/gui-gtk/gtk-goban-window.c:4480
 msgid "Unnamed Game"
 msgstr "Безымянная партия"
 
-#: src/gui-gtk/gtk-goban-window.c:4433
+#: src/gui-gtk/gtk-goban-window.c:4485
 msgid "modified"
 msgstr "изменен"
 
-#: src/gui-gtk/gtk-goban-window.c:4466
+#: src/gui-gtk/gtk-goban-window.c:4518
 msgid "[unknown]"
 msgstr "[неизвестно]"
 
-#: src/gui-gtk/gtk-goban-window.c:4499 src/gui-gtk/gtk-goban-window.c:4517
+#: src/gui-gtk/gtk-goban-window.c:4551 src/gui-gtk/gtk-goban-window.c:4556
 #, c-format
 msgid "%d capture"
 msgid_plural "%d captures"
@@ -792,15 +825,20 @@ msgstr[0] "%d пленник"
 msgstr[1] "%d пленника"
 msgstr[2] "%d пленников"
 
-#: src/gui-gtk/gtk-goban-window.c:4506
+#: src/gui-gtk/gtk-goban-window.c:4566
 #, c-format
-msgid "%d capture %c %.*f komi"
-msgid_plural "%d captures %c %.*f komi"
-msgstr[0] "%d пленник %c %.*f коми"
-msgstr[1] "%d пленника %c %.*f коми"
-msgstr[2] "%d пленников %c %.*f коми"
+msgid "%s %s %.*f komi"
+msgstr "%s %s %.*f коми"
 
-#: src/gui-gtk/gtk-goban-window.c:4527 src/gui-gtk/gtk-goban-window.c:4530
+#: src/gui-gtk/gtk-goban-window.c:4577
+#, c-format
+msgid "%s %s %d komi"
+msgid_plural "%s %s %d komi"
+msgstr[0] "%s %s %d коми"
+msgstr[1] "%s %s %d коми"
+msgstr[2] "%s %s %d коми"
+
+#: src/gui-gtk/gtk-goban-window.c:4593 src/gui-gtk/gtk-goban-window.c:4596
 #, c-format
 msgid "%d disk"
 msgid_plural "%d disks"
@@ -808,102 +846,109 @@ msgstr[0] "%d диск"
 msgstr[1] "%d диска"
 msgstr[2] "%d дисков"
 
-#: src/gui-gtk/gtk-goban-window.c:4560
+#: src/gui-gtk/gtk-goban-window.c:4627
 #, c-format
 msgid "Move %d: "
 msgstr "Ход %d: "
 
-#: src/gui-gtk/gtk-goban-window.c:4564
+#: src/gui-gtk/gtk-goban-window.c:4631
 #, c-format
 msgid "Last move: %u, "
 msgstr "Последний ход: %u, "
 
-#. TRANSLATORS: This is an abbreviation of `Black'.
-#: src/gui-gtk/gtk-goban-window.c:4571
+#. TRANSLATORS: This is an
+#. abbreviation of `Black'.
+#: src/gui-gtk/gtk-goban-window.c:4638
 msgid "B "
 msgstr "Ч "
 
-#. TRANSLATORS: This is an abbreviation of `White'.
-#: src/gui-gtk/gtk-goban-window.c:4573
+#. TRANSLATORS: This is an
+#. abbreviation of `White'.
+#: src/gui-gtk/gtk-goban-window.c:4641
 msgid "W "
 msgstr "Б "
 
-#: src/gui-gtk/gtk-goban-window.c:4574
+#: src/gui-gtk/gtk-goban-window.c:4642
 msgid "pass"
 msgstr "пасс"
 
-#: src/gui-gtk/gtk-goban-window.c:4577
-#, c-format
+#: src/gui-gtk/gtk-goban-window.c:4645
 msgid "Game beginning"
 msgstr "Начало партии"
 
-#: src/gui-gtk/gtk-goban-window.c:4594
+#: src/gui-gtk/gtk-goban-window.c:4663
 msgid "; black to play"
 msgstr "; ходят черные"
 
-#: src/gui-gtk/gtk-goban-window.c:4594
+#: src/gui-gtk/gtk-goban-window.c:4663
 msgid "; white to play"
 msgstr "; ходят белые"
 
-#: src/gui-gtk/gtk-goban-window.c:4597
+#: src/gui-gtk/gtk-goban-window.c:4666
 msgid "; game over"
 msgstr "; конец игры"
 
-#: src/gui-gtk/gtk-goban-window.c:4605
+#: src/gui-gtk/gtk-goban-window.c:4673
 msgid "Black wins"
 msgstr "Черные выиграли"
 
-#: src/gui-gtk/gtk-goban-window.c:4608
+#: src/gui-gtk/gtk-goban-window.c:4676
 msgid "White wins"
 msgstr "Белые выиграли"
 
-#: src/gui-gtk/gtk-goban-window.c:4612
+#: src/gui-gtk/gtk-goban-window.c:4680
 msgid "Black wins by forfeit"
 msgstr "Черным засчитано техническое поражение"
 
-#: src/gui-gtk/gtk-goban-window.c:4615
+#: src/gui-gtk/gtk-goban-window.c:4683
 msgid "White wins by forfeit"
 msgstr "Белым засчитано техническое поражение"
 
-#: src/gui-gtk/gtk-goban-window.c:4619
+#: src/gui-gtk/gtk-goban-window.c:4687
 msgid "White resigns"
 msgstr "Белые сдались"
 
-#: src/gui-gtk/gtk-goban-window.c:4622
+#: src/gui-gtk/gtk-goban-window.c:4690
 msgid "Black resigns"
 msgstr "Черные сдались"
 
-#: src/gui-gtk/gtk-goban-window.c:4636 src/board/go.c:1357
-#, c-format
-msgid "Black wins by %.*f"
-msgstr "Черные выиграли %.*f"
-
-#: src/gui-gtk/gtk-goban-window.c:4636 src/board/go.c:1358
-#, c-format
-msgid "White wins by %.*f"
-msgstr "Белые выиграли %.*f"
-
-#: src/gui-gtk/gtk-goban-window.c:4643
+#: src/gui-gtk/gtk-goban-window.c:4702
 msgid "White runs out of time and loses"
 msgstr "Белые проиграли по времени"
 
-#: src/gui-gtk/gtk-goban-window.c:4646
+#: src/gui-gtk/gtk-goban-window.c:4706
 msgid "Black runs out of time and loses"
 msgstr "Черные проиграли по времени"
 
-#: src/gui-gtk/gtk-goban-window.c:4650
+#: src/gui-gtk/gtk-goban-window.c:4710
 msgid "Game is draw"
 msgstr "Ничья"
 
-#: src/gui-gtk/gtk-goban-window.c:4834
+#: src/gui-gtk/gtk-goban-window.c:4915
+msgid "By Game _Rules (Game Over)"
+msgstr "По правилам (конец игры)"
+
+#: src/gui-gtk/gtk-goban-window.c:4919
+msgid "By Game _Rules (Black)"
+msgstr "По правилам (черные)"
+
+#: src/gui-gtk/gtk-goban-window.c:4923
+msgid "By Game _Rules (White)"
+msgstr "По правилам (белые)"
+
+#: src/gui-gtk/gtk-goban-window.c:4965
 msgid "insert node name here"
 msgstr "вставьте здесь название узла"
 
-#: src/gui-gtk/gtk-goban-window.c:5323
-msgid "GTP engine is scoring..."
-msgstr "GTP-движок подсчитывает результат партии..."
+#: src/gui-gtk/gtk-goban-window.c:5186
+msgid "Set Move Number"
+msgstr "Установить номер хода"
 
-#: src/gui-gtk/gtk-goban-window.c:5716
+#: src/gui-gtk/gtk-goban-window.c:5550
+msgid "GTP engine is scoring..."
+msgstr "GTP-движок подсчитывает результат партии…"
+
+#: src/gui-gtk/gtk-goban-window.c:5957
 msgid ""
 "Please select dead stones\n"
 "to score the game"
@@ -911,54 +956,60 @@ msgstr ""
 "Пожалуйста, выберите мертвые камни\n"
 "для подсчета очков"
 
-#: src/gui-gtk/gtk-go-to-named-node-dialog.c:136
+#: src/gui-gtk/gtk-go-to-named-node-dialog.c:135
 msgid "Go to Named Node"
 msgstr "Перейти к именованному узлу"
 
-#: src/gui-gtk/gtk-go-to-named-node-dialog.c:151
+#: src/gui-gtk/gtk-go-to-named-node-dialog.c:150
 msgid "Node _name:"
 msgstr "_Название узла:"
 
-#: src/gui-gtk/gtk-go-to-named-node-dialog.c:157
+#: src/gui-gtk/gtk-go-to-named-node-dialog.c:156
 msgid "Node comment:"
 msgstr "Комментарий узла:"
 
-#: src/gui-gtk/gtk-go-to-named-node-dialog.c:330
+#: src/gui-gtk/gtk-go-to-named-node-dialog.c:329
+msgid "comment|Empty"
+msgstr "Отсутствует"
+
+#: src/gui-gtk/gtk-go-to-named-node-dialog.c:332
 msgid "There is no such node"
 msgstr "Узла с таким названием нет в дереве"
 
-#: src/gui-gtk/gtk-gtp-client-interface.c:283
+#: src/gui-gtk/gtk-gtp-client-interface.c:282
 msgid "Engine hung up"
 msgstr "Движок отключился по собственной инициативе"
 
-#: src/gui-gtk/gtk-gtp-client-interface.c:392
+#: src/gui-gtk/gtk-gtp-client-interface.c:391
 msgid "* ERROR: wrong response format\n"
 msgstr "* ОШИБКА: неверный формат ответа\n"
 
-#: src/gui-gtk/gtk-gtp-client-interface.c:396
+#: src/gui-gtk/gtk-gtp-client-interface.c:395
 msgid "* WARNING: unexpected response:\n"
 msgstr "* ПРЕДУПРЕЖДЕНИЕ: неожиданный ответ\n"
 
-#: src/gui-gtk/gtk-gtp-client-interface.c:400
+#: src/gui-gtk/gtk-gtp-client-interface.c:399
 msgid "* ERROR: unrecognized response line:\n"
 msgstr "* ОШИБКА: нераспознанная строка ответа:\n"
 
-#: src/gui-gtk/gtk-gtp-client-interface.c:405
+#: src/gui-gtk/gtk-gtp-client-interface.c:404
 #, c-format
 msgid "* ERROR: mismatched ID (%d expected):\n"
 msgstr "* ОШИБКА: несоответствующий идентификатор (ожидалось %d):\n"
 
-#: src/gui-gtk/gtk-gtp-client-interface.c:409
+#: src/gui-gtk/gtk-gtp-client-interface.c:408
 msgid "* ERROR: unexpected ID in response (the command had none):\n"
 msgstr ""
 "* ОШИБКА: неожиданный идентификатор в ответе (в команде не было "
 "идентификатора):\n"
 
-#: src/gui-gtk/gtk-gtp-client-interface.c:414
-msgid "* WARNING: future GTP version, I don't know about it....\n"
-msgstr "* ПРЕДУПРЕЖДЕНИЕ: версия GTP из будущего, я о такой не знаю....\n"
+#. TRANSLATORS: Don't put ellipsis here, this string will most
+#. often go to fixed-width font terminals.
+#: src/gui-gtk/gtk-gtp-client-interface.c:415
+msgid "* WARNING: future GTP version, I don't know about it...\n"
+msgstr "* ПРЕДУПРЕЖДЕНИЕ: версия GTP из будущего, я о такой не знаю...\n"
 
-#: src/gui-gtk/gtk-new-game-dialog.c:99
+#: src/gui-gtk/gtk-new-game-dialog.c:98
 msgid ""
 "Note that most GTP engines support only one game. Hence certain game / "
 "computer player combinations may be not possible to play."
@@ -966,128 +1017,123 @@ msgstr ""
 "Большинство GTP-движков поддерживают только одну игру. Поэтому, некоторые "
 "комбинации игр и компьютерных оппонентов недоступны."
 
-#: src/gui-gtk/gtk-new-game-dialog.c:103
+#: src/gui-gtk/gtk-new-game-dialog.c:102
 msgid "Fi_xed handicap:"
 msgstr "Стандартный _гандикап:"
 
-#: src/gui-gtk/gtk-new-game-dialog.c:103
+#: src/gui-gtk/gtk-new-game-dialog.c:102
 msgid "_Free handicap:"
 msgstr "Сво_бодный гандикап:"
 
-#: src/gui-gtk/gtk-new-game-dialog.c:106
+#: src/gui-gtk/gtk-new-game-dialog.c:105
 msgid "No limit"
 msgstr "Без ограничения"
 
-#: src/gui-gtk/gtk-new-game-dialog.c:106
+#: src/gui-gtk/gtk-new-game-dialog.c:105
 msgid "Limited time for entire game"
 msgstr "Ограниченное время на всю партию"
 
-#: src/gui-gtk/gtk-new-game-dialog.c:107
+#: src/gui-gtk/gtk-new-game-dialog.c:106
 msgid "Limited time per move"
 msgstr "Ограниченное время на ход"
 
-#: src/gui-gtk/gtk-new-game-dialog.c:107
+#: src/gui-gtk/gtk-new-game-dialog.c:106
 msgid "Canadian overtime"
 msgstr "Канадское дополнительное время"
 
-#: src/gui-gtk/gtk-new-game-dialog.c:125
+#: src/gui-gtk/gtk-new-game-dialog.c:124
 msgid "New Game"
 msgstr "Новая партия"
 
-#: src/gui-gtk/gtk-new-game-dialog.c:168
-#: src/gui-gtk/gtk-new-game-record-dialog.c:132
+#: src/gui-gtk/gtk-new-game-dialog.c:167
+#: src/gui-gtk/gtk-new-game-record-dialog.c:131
 msgid "Game"
 msgstr "Игра"
 
-#: src/gui-gtk/gtk-new-game-dialog.c:174
-#: src/gui-gtk/gtk-resume-game-dialog.c:306
+#: src/gui-gtk/gtk-new-game-dialog.c:173
+#: src/gui-gtk/gtk-resume-game-dialog.c:305
 msgid "Hu_man"
 msgstr "Че_ловек"
 
-#: src/gui-gtk/gtk-new-game-dialog.c:174
-#: src/gui-gtk/gtk-resume-game-dialog.c:307
+#: src/gui-gtk/gtk-new-game-dialog.c:173
+#: src/gui-gtk/gtk-resume-game-dialog.c:306
 msgid "Com_puter"
 msgstr "_Компьютер"
 
-#: src/gui-gtk/gtk-new-game-dialog.c:175
-#: src/gui-gtk/gtk-resume-game-dialog.c:307
+#: src/gui-gtk/gtk-new-game-dialog.c:174
+#: src/gui-gtk/gtk-resume-game-dialog.c:306
 msgid "H_uman"
 msgstr "_Человек"
 
-#: src/gui-gtk/gtk-new-game-dialog.c:175
+#: src/gui-gtk/gtk-new-game-dialog.c:174
 msgid "C_omputer"
 msgstr "_Компьютер"
 
-#: src/gui-gtk/gtk-new-game-dialog.c:239
+#: src/gui-gtk/gtk-new-game-dialog.c:238
 msgid "Manage _Engine List"
 msgstr "Редактировать список д_вижков"
 
-#: src/gui-gtk/gtk-new-game-dialog.c:259
+#: src/gui-gtk/gtk-new-game-dialog.c:258
 msgid "_Swap"
 msgstr "_Переставить"
 
-#: src/gui-gtk/gtk-new-game-dialog.c:288
+#: src/gui-gtk/gtk-new-game-dialog.c:287
 msgid "Game & Players"
 msgstr "Игра и соперники"
 
-#: src/gui-gtk/gtk-new-game-dialog.c:354
-#: src/gui-gtk/gtk-new-game-record-dialog.c:160
-msgid "Board _size:"
-msgstr "Размер _доски:"
-
-#: src/gui-gtk/gtk-new-game-dialog.c:371
+#: src/gui-gtk/gtk-new-game-dialog.c:362
 msgid "Time control _type:"
 msgstr "Тип _ограничения:"
 
-#: src/gui-gtk/gtk-new-game-dialog.c:393
+#: src/gui-gtk/gtk-new-game-dialog.c:384
 msgid "Time Limit"
 msgstr "Ограничение по времени"
 
-#: src/gui-gtk/gtk-new-game-dialog.c:396
+#: src/gui-gtk/gtk-new-game-dialog.c:387
 msgid "K_eep track of total time"
 msgstr "_Подсчитывать потраченное время"
 
-#: src/gui-gtk/gtk-new-game-dialog.c:416
+#: src/gui-gtk/gtk-new-game-dialog.c:407
 msgid "Time _limit for game:"
 msgstr "Огра_ничение на игру:"
 
-#: src/gui-gtk/gtk-new-game-dialog.c:422
+#: src/gui-gtk/gtk-new-game-dialog.c:413
 msgid "(per player)"
 msgstr "(для каждого из игроков)"
 
-#: src/gui-gtk/gtk-new-game-dialog.c:436
+#: src/gui-gtk/gtk-new-game-dialog.c:427
 msgid "Time _limit for move:"
 msgstr "Ограничение на _ход:"
 
-#: src/gui-gtk/gtk-new-game-dialog.c:470
+#: src/gui-gtk/gtk-new-game-dialog.c:461
 msgid "_Overtime period length:"
 msgstr "_Период дополнительного времени:"
 
-#: src/gui-gtk/gtk-new-game-dialog.c:487
+#: src/gui-gtk/gtk-new-game-dialog.c:478
 msgid "Mo_ves per overtime:"
 msgstr "_Ходов на один период:"
 
-#: src/gui-gtk/gtk-new-game-record-dialog.c:119
+#: src/gui-gtk/gtk-new-game-record-dialog.c:118
 msgid "New Game Record"
 msgstr "Новая запись партии"
 
-#: src/gui-gtk/gtk-new-game-record-dialog.c:194
+#: src/gui-gtk/gtk-new-game-record-dialog.c:188
 msgid "_Place stones"
 msgstr "Раз_местить камни"
 
-#: src/gui-gtk/gtk-new-game-record-dialog.c:270
+#: src/gui-gtk/gtk-new-game-record-dialog.c:264
 msgid "_White player:"
 msgstr "_Белые:"
 
-#: src/gui-gtk/gtk-new-game-record-dialog.c:281
+#: src/gui-gtk/gtk-new-game-record-dialog.c:275
 msgid "_Black player:"
 msgstr "_Черные:"
 
-#: src/gui-gtk/gtk-new-game-record-dialog.c:292
+#: src/gui-gtk/gtk-new-game-record-dialog.c:286
 msgid "Game _name:"
 msgstr "_Название партии:"
 
-#: src/gui-gtk/gtk-new-game-record-dialog.c:305
+#: src/gui-gtk/gtk-new-game-record-dialog.c:299
 msgid ""
 "You can always change and expand game information later. Just choose `Edit/"
 "Game Information' menu item or press `Info' button on the main toolbar."
@@ -1096,29 +1142,29 @@ msgstr ""
 "выберите элемент меню «Правка/Информация о партии» или нажмите кнопку «Инфо» "
 "на главной панели инструментов."
 
-#: src/gui-gtk/gtk-new-game-record-dialog.c:315
-#: src/gui-gtk/gtk-resume-game-dialog.c:226
+#: src/gui-gtk/gtk-new-game-record-dialog.c:309
+#: src/gui-gtk/gtk-resume-game-dialog.c:225
 msgid "Short Game Information"
 msgstr "Краткая информация о партии"
 
-#: src/gui-gtk/gtk-parser-interface.c:59
+#: src/gui-gtk/gtk-parser-interface.c:58
 #, c-format
 msgid "Error reading file `%s'"
 msgstr "Ошибка при чтении файла «%s»"
 
-#: src/gui-gtk/gtk-parser-interface.c:61
+#: src/gui-gtk/gtk-parser-interface.c:60
 #, c-format
 msgid "File `%s' doesn't appear to be a valid SGF file"
 msgstr "Файл «%s» не является правильным SGF-файлом"
 
-#: src/gui-gtk/gtk-parser-interface.c:64
+#: src/gui-gtk/gtk-parser-interface.c:63
 msgid ""
 "Please check that the file exists and its permission allow you to read it."
 msgstr ""
 "Пожалуйста, проверьте, что файл существует, и права доступа к нему разрешают "
 "вам чтение файла."
 
-#: src/gui-gtk/gtk-parser-interface.c:68
+#: src/gui-gtk/gtk-parser-interface.c:67
 msgid ""
 "Quarry uses SGF file format for storing game records. SGF files would "
 "normally have `sgf' extension, but that's not necessarily true. Please make "
@@ -1130,190 +1176,190 @@ msgstr ""
 
 #: src/gui-gtk/gtk-parser-interface.c:101
 msgid "Open SGF File..."
-msgstr "Открыть SGF-файл..."
+msgstr "Открыть SGF-файл…"
 
-#: src/gui-gtk/gtk-parser-interface.c:190
+#: src/gui-gtk/gtk-parser-interface.c:192
 #, c-format
 msgid "Parsing file `%s'..."
-msgstr "Разбор файла «%s»..."
+msgstr "Разбор файла «%s»…"
 
-#: src/gui-gtk/gtk-preferences.c:428
+#: src/gui-gtk/gtk-preferences.c:431
 msgid "<b>General</b>"
 msgstr "<b>Общие</b>"
 
-#: src/gui-gtk/gtk-preferences.c:431
+#: src/gui-gtk/gtk-preferences.c:434
 msgid "Interface"
 msgstr "Интерфейс"
 
-#: src/gui-gtk/gtk-preferences.c:432
+#: src/gui-gtk/gtk-preferences.c:435
 msgid "General Interface"
 msgstr "Общие настройки интерфейса"
 
-#: src/gui-gtk/gtk-preferences.c:434
+#: src/gui-gtk/gtk-preferences.c:437
 msgid "<b>Editing &amp; Viewing</b>"
 msgstr "<b>Редактирование и просмотр</b>"
 
-#: src/gui-gtk/gtk-preferences.c:437 src/gui-gtk/gtk-preferences.c:438
+#: src/gui-gtk/gtk-preferences.c:440 src/gui-gtk/gtk-preferences.c:441
 msgid "Game Tree"
 msgstr "Дерево партии"
 
-#: src/gui-gtk/gtk-preferences.c:441
+#: src/gui-gtk/gtk-preferences.c:444
 msgid "<b>GTP</b>"
 msgstr "<b>GTP</b>"
 
-#: src/gui-gtk/gtk-preferences.c:444 src/gui-gtk/gtk-preferences.c:445
+#: src/gui-gtk/gtk-preferences.c:447 src/gui-gtk/gtk-preferences.c:448
 msgid "GTP Engines"
 msgstr "GTP-движки"
 
-#: src/gui-gtk/gtk-preferences.c:448
+#: src/gui-gtk/gtk-preferences.c:451
 msgid "<b>Game Records (SGF)</b>"
 msgstr "<b>Записи партий (SGF)</b>"
 
-#: src/gui-gtk/gtk-preferences.c:451
+#: src/gui-gtk/gtk-preferences.c:454
 msgid "Saving"
 msgstr "Сохранение"
 
-#: src/gui-gtk/gtk-preferences.c:452
+#: src/gui-gtk/gtk-preferences.c:455
 msgid "Saving Game Records"
 msgstr "Сохранение партий"
 
-#: src/gui-gtk/gtk-preferences.c:455
+#: src/gui-gtk/gtk-preferences.c:458
 msgid "<b>Board Appearance</b>"
 msgstr "<b>Внешний вид доски</b>"
 
-#: src/gui-gtk/gtk-preferences.c:459
+#: src/gui-gtk/gtk-preferences.c:462
 msgid "Go Board Appearance"
 msgstr "Внешний вид гобана"
 
-#: src/gui-gtk/gtk-preferences.c:462
+#: src/gui-gtk/gtk-preferences.c:465
 msgid "Amazons Board Appearance"
 msgstr "Внешний вид доски для амазонок"
 
-#: src/gui-gtk/gtk-preferences.c:465
+#: src/gui-gtk/gtk-preferences.c:468
 msgid "Reversi Board Appearance"
 msgstr "Внешний вид доски для реверси"
 
-#: src/gui-gtk/gtk-preferences.c:477
+#: src/gui-gtk/gtk-preferences.c:478
 msgid "Preferences"
 msgstr "Настройки"
 
-#: src/gui-gtk/gtk-preferences.c:514
+#: src/gui-gtk/gtk-preferences.c:515
 msgid "Categor_y:"
 msgstr "Категори_я:"
 
-#: src/gui-gtk/gtk-preferences.c:635
+#: src/gui-gtk/gtk-preferences.c:641
 msgid "Use _newer (GTK+ 2.4) file chooser"
 msgstr "Использовать но_вый (GTK+ 2.4) диалог выбора файлов"
 
-#: src/gui-gtk/gtk-preferences.c:636
+#: src/gui-gtk/gtk-preferences.c:642
 msgid "Use _old-style file selection dialog"
 msgstr "Использовать с_тарый диалог выбора файлов"
 
-#: src/gui-gtk/gtk-preferences.c:666
+#: src/gui-gtk/gtk-preferences.c:672
 msgid "File Chooser Dialog Style"
 msgstr "Стиль диалога выбора файлов"
 
-#: src/gui-gtk/gtk-preferences.c:682
+#: src/gui-gtk/gtk-preferences.c:688
 msgid "_Main toolbar style:"
 msgstr "Стиль _главной панели инструментов:"
 
-#: src/gui-gtk/gtk-preferences.c:686
+#: src/gui-gtk/gtk-preferences.c:692
 msgid "_Editing toolbar style:"
 msgstr "Стиль панели инструментов _редактирования:"
 
-#: src/gui-gtk/gtk-preferences.c:690
+#: src/gui-gtk/gtk-preferences.c:696
 msgid "N_avigation toolbar style:"
 msgstr "Стиль панели инструментов _навигации:"
 
-#: src/gui-gtk/gtk-preferences.c:699
+#: src/gui-gtk/gtk-preferences.c:705
 msgid "Toolbar Styles"
 msgstr "Стили панелей инструментов"
 
-#: src/gui-gtk/gtk-preferences.c:719
+#: src/gui-gtk/gtk-preferences.c:725
 msgid "Desktop default"
 msgstr "По умолчанию"
 
-#: src/gui-gtk/gtk-preferences.c:720
+#: src/gui-gtk/gtk-preferences.c:726
 msgid "Text below icons"
 msgstr "Текст под значками"
 
-#: src/gui-gtk/gtk-preferences.c:726
+#: src/gui-gtk/gtk-preferences.c:732
 msgid "Text beside important icons"
 msgstr "Текст рядом со значками"
 
-#: src/gui-gtk/gtk-preferences.c:729
+#: src/gui-gtk/gtk-preferences.c:735
 msgid "Icons only"
 msgstr "Только значки"
 
-#: src/gui-gtk/gtk-preferences.c:730
+#: src/gui-gtk/gtk-preferences.c:736
 msgid "Text only"
 msgstr "Только текст"
 
-#: src/gui-gtk/gtk-preferences.c:786
+#: src/gui-gtk/gtk-preferences.c:792
 msgid "Show"
 msgstr "Показывать"
 
-#: src/gui-gtk/gtk-preferences.c:793
+#: src/gui-gtk/gtk-preferences.c:799
 msgid "Name"
 msgstr "Название"
 
-#: src/gui-gtk/gtk-preferences.c:802
+#: src/gui-gtk/gtk-preferences.c:808
 msgid "_List of GTP engines:"
 msgstr "С_писок GTP-движков:"
 
-#: src/gui-gtk/gtk-preferences.c:850
+#: src/gui-gtk/gtk-preferences.c:856
 msgid "Name:"
 msgstr "Название:"
 
-#: src/gui-gtk/gtk-preferences.c:859
+#: src/gui-gtk/gtk-preferences.c:865
 msgid "Version:"
 msgstr "Версия:"
 
-#: src/gui-gtk/gtk-preferences.c:869 src/gui-gtk/gtk-preferences.c:1607
+#: src/gui-gtk/gtk-preferences.c:875 src/gui-gtk/gtk-preferences.c:1630
 msgid "Supported game:"
 msgstr "Поддерживаемая игра:"
 
-#: src/gui-gtk/gtk-preferences.c:883
+#: src/gui-gtk/gtk-preferences.c:889
 msgid "Command line:"
 msgstr "Командная строка:"
 
-#: src/gui-gtk/gtk-preferences.c:908
+#: src/gui-gtk/gtk-preferences.c:914
 msgid "GTP Engine Information"
 msgstr "Информация о GTP-движке"
 
-#: src/gui-gtk/gtk-preferences.c:929
+#: src/gui-gtk/gtk-preferences.c:935
 msgid "_Always"
 msgstr "_Всегда"
 
-#: src/gui-gtk/gtk-preferences.c:929
+#: src/gui-gtk/gtk-preferences.c:935
 msgid "A_utomatically"
 msgstr "_Автоматически"
 
-#: src/gui-gtk/gtk-preferences.c:929
+#: src/gui-gtk/gtk-preferences.c:935
 msgid "_Never"
 msgstr "_Никогда"
 
-#: src/gui-gtk/gtk-preferences.c:931
+#: src/gui-gtk/gtk-preferences.c:937
 msgid "Al_ways"
 msgstr "Все_гда"
 
-#: src/gui-gtk/gtk-preferences.c:931
-msgid "Au_tomatically"
+#: src/gui-gtk/gtk-preferences.c:937
+msgid "Aut_omatically"
 msgstr "Ав_томатически"
 
-#: src/gui-gtk/gtk-preferences.c:931
+#: src/gui-gtk/gtk-preferences.c:937
 msgid "Ne_ver"
 msgstr "Ни_когда"
 
-#: src/gui-gtk/gtk-preferences.c:933
+#: src/gui-gtk/gtk-preferences.c:939
 msgid "Scroll _minimal distance"
 msgstr "Отматывать на _минимальныое расстояние"
 
-#: src/gui-gtk/gtk-preferences.c:934
+#: src/gui-gtk/gtk-preferences.c:940
 msgid "_Recenter view on the current node"
 msgstr "_Центрировать на текущем узле"
 
-#: src/gui-gtk/gtk-preferences.c:937
+#: src/gui-gtk/gtk-preferences.c:943
 msgid ""
 "In automatic mode the game tree is shown only if it has at least one "
 "variation. In any case, you can show/hide game tree in each window "
@@ -1323,7 +1369,7 @@ msgstr ""
 "ветвь кроме основной. В любом случае вы можете показывать/прятать дерево "
 "отдельно в каждом окне."
 
-#: src/gui-gtk/gtk-preferences.c:941
+#: src/gui-gtk/gtk-preferences.c:947
 msgid ""
 "In automatic mode the game tree view scrolls to show the current node only "
 "if it has been showing current node before. I.e. unless you scrolled it away "
@@ -1333,23 +1379,31 @@ msgstr ""
 "узлу только если она показывала текущий узел и раньше, то есть, если вы не "
 "перемотали ее в другое место дерева вручную."
 
-#: src/gui-gtk/gtk-preferences.c:984
+#: src/gui-gtk/gtk-preferences.c:992
 msgid "Show Game Tree"
 msgstr "Показывать дерево партии"
 
-#: src/gui-gtk/gtk-preferences.c:1031
+#: src/gui-gtk/gtk-preferences.c:1039
 msgid "Track Tree's Current Node"
 msgstr "Отслеживать текущий узел дерева"
 
-#: src/gui-gtk/gtk-preferences.c:1044
+#: src/gui-gtk/gtk-preferences.c:1042
+msgid "Show _tooltips"
+msgstr "Показывать всплывающие _подсказки"
+
+#: src/gui-gtk/gtk-preferences.c:1049
+msgid "Tooltips"
+msgstr "Подсказки"
+
+#: src/gui-gtk/gtk-preferences.c:1065
 msgid "Always use _UTF-8 (recommended)"
 msgstr "_Всегда использовать UTF-8 (рекоммендуется)"
 
-#: src/gui-gtk/gtk-preferences.c:1045
+#: src/gui-gtk/gtk-preferences.c:1066
 msgid "Preserve _original encoding"
 msgstr "Использовать _оригинальную кодировку"
 
-#: src/gui-gtk/gtk-preferences.c:1047
+#: src/gui-gtk/gtk-preferences.c:1068
 msgid ""
 "Note that many characters cannot be represented in non-UTF-8 encodings and "
 "thus some information may be lost if you use them. Quarry also works fastest "
@@ -1361,135 +1415,135 @@ msgstr ""
 "всего работает именно с UTF-8, что может быть немаловажно при работе с очень "
 "большими SGF-файлами."
 
-#: src/gui-gtk/gtk-preferences.c:1072
+#: src/gui-gtk/gtk-preferences.c:1093
 msgid "Encoding"
 msgstr "Кодировка"
 
-#: src/gui-gtk/gtk-preferences.c:1082
+#: src/gui-gtk/gtk-preferences.c:1103
 msgid "_Relative to stone size"
 msgstr "_Относительно размера камней"
 
-#: src/gui-gtk/gtk-preferences.c:1083
+#: src/gui-gtk/gtk-preferences.c:1104
 msgid "On _white stones:"
 msgstr "На _белых камнях:"
 
-#: src/gui-gtk/gtk-preferences.c:1084
+#: src/gui-gtk/gtk-preferences.c:1105
 msgid "On _black stones:"
 msgstr "На _черных камнях:"
 
-#: src/gui-gtk/gtk-preferences.c:1085
+#: src/gui-gtk/gtk-preferences.c:1106
 msgid "On _empty intersections:"
 msgstr "На _пустых пересечениях:"
 
-#: src/gui-gtk/gtk-preferences.c:1099
+#: src/gui-gtk/gtk-preferences.c:1120
 msgid "_Relative to amazon size"
 msgstr "_Относительно размера «амазонок»"
 
-#: src/gui-gtk/gtk-preferences.c:1100
+#: src/gui-gtk/gtk-preferences.c:1121
 msgid "On _white amazons:"
 msgstr "На _белых «амазонках»:"
 
-#: src/gui-gtk/gtk-preferences.c:1101
+#: src/gui-gtk/gtk-preferences.c:1122
 msgid "On _black amazons:"
 msgstr "На _черных «амазонках»:"
 
-#: src/gui-gtk/gtk-preferences.c:1102 src/gui-gtk/gtk-preferences.c:1161
+#: src/gui-gtk/gtk-preferences.c:1123 src/gui-gtk/gtk-preferences.c:1182
 msgid "On _empty fields:"
 msgstr "На _пустых клетках:"
 
-#: src/gui-gtk/gtk-preferences.c:1121
+#: src/gui-gtk/gtk-preferences.c:1142
 msgid "Pick Checkerboard Pattern Color"
 msgstr "Выберите цвет шахматного рисунка"
 
-#: src/gui-gtk/gtk-preferences.c:1130
+#: src/gui-gtk/gtk-preferences.c:1151
 msgid "Checkerboard _pattern color:"
 msgstr "Цвет _шахматного рисунка:"
 
-#: src/gui-gtk/gtk-preferences.c:1146
+#: src/gui-gtk/gtk-preferences.c:1167
 msgid "Checkerboard pattern _opacity:"
 msgstr "_Непрозрачность шахматного рисунка:"
 
-#: src/gui-gtk/gtk-preferences.c:1158
+#: src/gui-gtk/gtk-preferences.c:1179
 msgid "_Relative to disk size"
 msgstr "_Относительно размера дисков"
 
-#: src/gui-gtk/gtk-preferences.c:1159
+#: src/gui-gtk/gtk-preferences.c:1180
 msgid "On _white disks:"
 msgstr "На _белых дисках:"
 
-#: src/gui-gtk/gtk-preferences.c:1160
+#: src/gui-gtk/gtk-preferences.c:1181
 msgid "On _black disks:"
 msgstr "На _черных дисках:"
 
-#: src/gui-gtk/gtk-preferences.c:1174
+#: src/gui-gtk/gtk-preferences.c:1195
 msgid "Use _texture:"
 msgstr "Использовать _текстуру:"
 
-#: src/gui-gtk/gtk-preferences.c:1175
+#: src/gui-gtk/gtk-preferences.c:1196
 msgid "Use _solid color:"
 msgstr "_Одноцветный фон:"
 
-#: src/gui-gtk/gtk-preferences.c:1250
+#: src/gui-gtk/gtk-preferences.c:1271
 msgid "Choose a Background Texture..."
-msgstr "Выберите фоновую текстуру..."
+msgstr "Выберите фоновую текстуру…"
 
-#: src/gui-gtk/gtk-preferences.c:1261
+#: src/gui-gtk/gtk-preferences.c:1282
 msgid "Pick Background Color"
 msgstr "Выберите цвет фона"
 
-#: src/gui-gtk/gtk-preferences.c:1275
+#: src/gui-gtk/gtk-preferences.c:1296
 msgid "Pick Color for Grid and Labels"
 msgstr "Выберите цвет координатной сетки и меток"
 
-#: src/gui-gtk/gtk-preferences.c:1285
+#: src/gui-gtk/gtk-preferences.c:1306
 msgid "_Grid and labels color:"
 msgstr "Цвет _координатной сетки и меток:"
 
-#: src/gui-gtk/gtk-preferences.c:1324
+#: src/gui-gtk/gtk-preferences.c:1345
 msgid "_Theme:"
 msgstr "_Тема:"
 
-#: src/gui-gtk/gtk-preferences.c:1334
+#: src/gui-gtk/gtk-preferences.c:1354
 msgid "Use theme _defaults"
 msgstr "_Использовать настройки из темы"
 
-#: src/gui-gtk/gtk-preferences.c:1351
+#: src/gui-gtk/gtk-preferences.c:1371
 msgid "_Size:"
 msgstr "_Размер:"
 
-#: src/gui-gtk/gtk-preferences.c:1378
+#: src/gui-gtk/gtk-preferences.c:1398
 msgid "_Opacity:"
 msgstr "_Непрозрачность:"
 
-#: src/gui-gtk/gtk-preferences.c:1393
+#: src/gui-gtk/gtk-preferences.c:1413
 msgid "Size & Opacity"
 msgstr "Размер и непрозрачность"
 
-#: src/gui-gtk/gtk-preferences.c:1409
+#: src/gui-gtk/gtk-preferences.c:1429
 msgid "Color"
 msgstr "Цвет"
 
-#: src/gui-gtk/gtk-preferences.c:1423
+#: src/gui-gtk/gtk-preferences.c:1443
 msgid "Pick Color for Markup"
 msgstr "Выберите цвет разметки"
 
-#: src/gui-gtk/gtk-preferences.c:1459
+#: src/gui-gtk/gtk-preferences.c:1482
 msgid "Background"
 msgstr "Фон"
 
-#: src/gui-gtk/gtk-preferences.c:1461
+#: src/gui-gtk/gtk-preferences.c:1484
 msgid "Markup"
 msgstr "Разметка"
 
-#: src/gui-gtk/gtk-preferences.c:1607
+#: src/gui-gtk/gtk-preferences.c:1630
 msgid "Supported games:"
 msgstr "Поддерживаемае игры:"
 
-#: src/gui-gtk/gtk-preferences.c:1614
+#: src/gui-gtk/gtk-preferences.c:1637
 msgid "This engine comes from site configuration."
 msgstr "Этот движок описан в конфигурации рабочего места."
 
-#: src/gui-gtk/gtk-preferences.c:1833
+#: src/gui-gtk/gtk-preferences.c:1860
 msgid ""
 "You can use `%n' and `%v' strings in <i>Screen name</i> field. They will "
 "substituted with name and version of the engine correspondingly. By default, "
@@ -1499,32 +1553,32 @@ msgstr ""
 "название». Они будут заменены на название и версию движка соответственно. По "
 "умолчанию, используется «%n %v»."
 
-#: src/gui-gtk/gtk-preferences.c:1879
+#: src/gui-gtk/gtk-preferences.c:1908
 msgid "Modify GTP Engine Information"
 msgstr "Изменить информацию о GTP-движке"
 
-#: src/gui-gtk/gtk-preferences.c:1880
+#: src/gui-gtk/gtk-preferences.c:1909
 msgid "New GTP Engine"
 msgstr "Новый GTP-движок"
 
-#: src/gui-gtk/gtk-preferences.c:1926
+#: src/gui-gtk/gtk-preferences.c:1955
 msgid "Command _line:"
 msgstr "_Командная строка:"
 
-#: src/gui-gtk/gtk-preferences.c:1932
+#: src/gui-gtk/gtk-preferences.c:1961
 msgid "Choose GTP Engine..."
-msgstr "Выберите GTP-движок..."
+msgstr "Выберите GTP-движок…"
 
-#: src/gui-gtk/gtk-preferences.c:1943
+#: src/gui-gtk/gtk-preferences.c:1972
 msgid "Screen _name:"
 msgstr "Отображаемое _название:"
 
-#: src/gui-gtk/gtk-preferences.c:1988
+#: src/gui-gtk/gtk-preferences.c:2018
 msgid "Querying engine's name, version and known commands..."
 msgstr ""
-"Запрашиваю название и версию движка, а также список поддерживаемых команд..."
+"Запрашиваю название и версию движка, а также список поддерживаемых команд…"
 
-#: src/gui-gtk/gtk-preferences.c:2009
+#: src/gui-gtk/gtk-preferences.c:2039
 msgid ""
 "Please make sure you typed engine's filename correctly and that you have "
 "permission to execute it."
@@ -1532,11 +1586,11 @@ msgstr ""
 "Пожалуйста, убедитесь, что название файла движка набрано верно, и что у вас "
 "есть права на его выполнение."
 
-#: src/gui-gtk/gtk-preferences.c:2048
+#: src/gui-gtk/gtk-preferences.c:2078
 msgid "Waiting for the engine to quit..."
-msgstr "Ожидаю завершения работы движка..."
+msgstr "Ожидаю завершения работы движка…"
 
-#: src/gui-gtk/gtk-preferences.c:2152
+#: src/gui-gtk/gtk-preferences.c:2182
 msgid ""
 "The engine might have crashed, quit prematurely or disconnected. Please "
 "verify command line, including options, and consult engine's documentation "
@@ -1546,12 +1600,12 @@ msgstr ""
 "инициативе. Пожалуйста, проверьте командную строчку, включая опции. При "
 "необходимости, проконсультируйтесь с документацией движка."
 
-#: src/gui-gtk/gtk-preferences.c:2167
+#: src/gui-gtk/gtk-preferences.c:2197
 #, c-format
 msgid "Lost connection to GTP Engine (%s)"
 msgstr "Потеряна связь с GTP-движком (%s)"
 
-#: src/gui-gtk/gtk-preferences.c:2967
+#: src/gui-gtk/gtk-preferences.c:3011
 msgid ""
 "Perhaps engine's binary has been deleted or changed. You will probably need "
 "to alter engine's command line in the Preferences dialog."
@@ -1560,16 +1614,16 @@ msgstr ""
 "изменить соответствующим образом командную строку для запуска движка в "
 "диалоге настроек."
 
-#: src/gui-gtk/gtk-resume-game-dialog.c:92
+#: src/gui-gtk/gtk-resume-game-dialog.c:91
 msgid "Resume Game..."
-msgstr "Возобновить партию..."
+msgstr "Возобновить партию…"
 
-#: src/gui-gtk/gtk-resume-game-dialog.c:115
+#: src/gui-gtk/gtk-resume-game-dialog.c:114
 #, c-format
 msgid "The game stored in file `%s' (%s) is not supported by Quarry"
 msgstr "Игра, сохраненная в файле «%s» (%s) не поддерживается Quarry"
 
-#: src/gui-gtk/gtk-resume-game-dialog.c:138
+#: src/gui-gtk/gtk-resume-game-dialog.c:137
 msgid ""
 "This game appears to have been finished. Open it for viewing and/or editing "
 "instead?"
@@ -1577,51 +1631,60 @@ msgstr ""
 "Эта партия, похоже, уже была завершена. Открыть ее для просмотра и/или "
 "редактирования?"
 
-#: src/gui-gtk/gtk-resume-game-dialog.c:212
+#: src/gui-gtk/gtk-resume-game-dialog.c:211
 msgid "Resuming Game"
 msgstr "Возобновление партии"
 
-#: src/gui-gtk/gtk-resume-game-dialog.c:214
+#: src/gui-gtk/gtk-resume-game-dialog.c:213
 msgid "_Resume"
 msgstr "_Возобновить"
 
-#: src/gui-gtk/gtk-resume-game-dialog.c:230
+#: src/gui-gtk/gtk-resume-game-dialog.c:229
 msgid "Game:"
 msgstr "Игра:"
 
-#: src/gui-gtk/gtk-resume-game-dialog.c:239
+#: src/gui-gtk/gtk-resume-game-dialog.c:238
 msgid "Board size:"
 msgstr "Размер доски:"
 
-#: src/gui-gtk/gtk-resume-game-dialog.c:257
+#: src/gui-gtk/gtk-resume-game-dialog.c:256
 msgid "Handicap:"
 msgstr "Гандикап:"
 
-#: src/gui-gtk/gtk-resume-game-dialog.c:261
+#: src/gui-gtk/gtk-resume-game-dialog.c:260
 msgid "handicap|Not set"
 msgstr "Не указан"
 
-#: src/gui-gtk/gtk-resume-game-dialog.c:267
+#: src/gui-gtk/gtk-resume-game-dialog.c:266
 msgid "Komi:"
 msgstr "Коми:"
 
-#: src/gui-gtk/gtk-resume-game-dialog.c:270
+#: src/gui-gtk/gtk-resume-game-dialog.c:269
 msgid "komi|Not set"
 msgstr "Не указано"
 
-#: src/gui-gtk/gtk-resume-game-dialog.c:293
+#: src/gui-gtk/gtk-resume-game-dialog.c:292
 msgid "Filename:"
 msgstr "Название файла:"
 
-#: src/gui-gtk/gtk-resume-game-dialog.c:306
+#: src/gui-gtk/gtk-resume-game-dialog.c:305
 msgid "Compu_ter"
 msgstr "Компь_ютер"
 
-#: src/gui-gtk/quarry-save-confirmation-dialog.c:90
+#: src/gui-gtk/quarry-move-number-dialog.c:66
+#: src/gui-gtk/quarry-move-number-dialog.c:148
+msgid "Use se_quential move number"
+msgstr "Использовать _последовательный номер"
+
+#: src/gui-gtk/quarry-move-number-dialog.c:66
+msgid "_Set specific move number:"
+msgstr "_Установить конкретный номер:"
+
+#: src/gui-gtk/quarry-save-confirmation-dialog.c:89
 msgid "Close _without Saving"
 msgstr "Закрыть _без сохранения"
 
-#: src/gui-gtk/quarry-save-confirmation-dialog.c:174
+#: src/gui-gtk/quarry-save-confirmation-dialog.c:173
 #, c-format
 msgid ""
 "If you don't save, changes from the last second will be lost permanently."
@@ -1637,13 +1700,13 @@ msgstr[2] ""
 "Если вы решите не сохранять, то все изменения, совершенные за последние %d "
 "секунд, будут безвозвратно потеряны."
 
-#: src/gui-gtk/quarry-save-confirmation-dialog.c:182
+#: src/gui-gtk/quarry-save-confirmation-dialog.c:181
 msgid "If you don't save, changes from the last minute will be discarded."
 msgstr ""
 "Если вы решите не сохранять, то все изменения, совершенные за последнюю "
 "минуту, будут безвозвратно потеряны."
 
-#: src/gui-gtk/quarry-save-confirmation-dialog.c:188
+#: src/gui-gtk/quarry-save-confirmation-dialog.c:187
 #, c-format
 msgid ""
 "If you don't save, changes from the last minute and one second will be lost "
@@ -1661,7 +1724,7 @@ msgstr[2] ""
 "Если вы решите не сохранять, то все изменения, совершенные за последнюю "
 "минуту и %d секунд, будут безвозвратно потеряны."
 
-#: src/gui-gtk/quarry-save-confirmation-dialog.c:199
+#: src/gui-gtk/quarry-save-confirmation-dialog.c:198
 #, c-format
 msgid ""
 "If you don't save, changes from the last minute will be lost permanently."
@@ -1677,7 +1740,7 @@ msgstr[2] ""
 "Если вы решите не сохранять, то все изменения, совершенные за последние %d "
 "минут, будут безвозвратно потеряны."
 
-#: src/gui-gtk/quarry-save-confirmation-dialog.c:213
+#: src/gui-gtk/quarry-save-confirmation-dialog.c:212
 #, c-format
 msgid ""
 "If you don't save, changes from the last hour and one minute will be lost "
@@ -1695,7 +1758,7 @@ msgstr[2] ""
 "Если вы решите не сохранять, то все изменения, совершенные за последний час "
 "и %d минут, будут безвозвратно потеряны."
 
-#: src/gui-gtk/quarry-save-confirmation-dialog.c:225
+#: src/gui-gtk/quarry-save-confirmation-dialog.c:224
 #, c-format
 msgid "If you don't save, changes from the last hour will be lost permanently."
 msgid_plural ""
@@ -1720,7 +1783,7 @@ msgstr "_Открыть запись партии"
 
 #: src/gui-gtk/quarry-stock.c:59
 msgid "_Browse..."
-msgstr "_Просмотреть..."
+msgstr "_Просмотреть…"
 
 #: src/gui-gtk/quarry-stock.c:60
 msgid "Crea_te"
@@ -1761,6 +1824,38 @@ msgstr "_Играть"
 #: src/gui-gtk/quarry-stock.c:69
 msgid "find|_Previous"
 msgstr "_Предыдущее"
+
+#. TRANSLATORS: This is only used for non-integral scores.  You
+#. should also add translation of `points' if it is required by
+#. your language.
+#: src/board/board.c:897
+#, c-format
+msgid "Black wins by %.*f"
+msgstr "Черные выиграли %.*f очка"
+
+#. TRANSLATORS: This is only used for non-integral scores.  You
+#. should also add translation of `points' if it is required by
+#. your language.
+#: src/board/board.c:904
+#, c-format
+msgid "White wins by %.*f"
+msgstr "Белые выиграли %.*f очка"
+
+#: src/board/board.c:915
+#, c-format
+msgid "Black wins by %d"
+msgid_plural "Black wins by %d"
+msgstr[0] "Черные выиграли %d очко"
+msgstr[1] "Черные выиграли %d очка"
+msgstr[2] "Черные выиграли %d очков"
+
+#: src/board/board.c:923
+#, c-format
+msgid "White wins by %d"
+msgid_plural "White wins by %d"
+msgstr[0] "Белые выиграли %d очко"
+msgstr[1] "Белые выиграли %d очка"
+msgstr[2] "Белые выиграли %d очков"
 
 #. TRANSLATORS: Use your language's natural capitalization for the
 #. name of the game.  I.e. it doesn't have to start with a capital
@@ -1931,7 +2026,7 @@ msgstr "Octi"
 msgid "Gess"
 msgstr "Gess"
 
-#: src/board/go.c:1320
+#: src/board/go.c:1323
 #, c-format
 msgid "White: %d territory"
 msgid_plural "White: %d territory"
@@ -1939,7 +2034,7 @@ msgstr[0] "Белые: %d очко территории"
 msgstr[1] "Белые: %d очка территории"
 msgstr[2] "Белые: %d очков территории"
 
-#: src/board/go.c:1325 src/board/go.c:1347
+#: src/board/go.c:1328 src/board/go.c:1365
 #, c-format
 msgid " + %d capture"
 msgid_plural " + %d captures"
@@ -1947,13 +2042,24 @@ msgstr[0] " + %d пленник"
 msgstr[1] " + %d пленника"
 msgstr[2] " + %d пленников"
 
-#. TRANSLATORS: e.g. `` + 6.5 komi = 87.5''.
-#: src/board/go.c:1331
+#. TRANSLATORS: e.g. `` + 6.5 komi =
+#. 87.5''.  This is used only with
+#. fractional komi.
+#: src/board/go.c:1337
 #, c-format
-msgid " %c %.*f komi = %.*f\n"
-msgstr " %c %.*f коми = %.*f\n"
+msgid " %s %.*f komi = %.*f\n"
+msgstr " %s %.*f коми = %.*f\n"
 
-#: src/board/go.c:1341
+#. TRANSLATORS: e.g. `` + 6 komi = 87''.
+#: src/board/go.c:1351
+#, c-format
+msgid " %s %d komi = %d\n"
+msgid_plural " %s %d komi = %d\n"
+msgstr[0] " %s %d коми = %d\n"
+msgstr[1] " %s %d коми = %d\n"
+msgstr[2] " %s %d коми = %d\n"
+
+#: src/board/go.c:1360
 #, c-format
 msgid "Black: %d territory"
 msgid_plural "Black: %d territory"
@@ -1961,6 +2067,6 @@ msgstr[0] "Черные: %d очко территории"
 msgstr[1] "Черные: %d очка территории"
 msgstr[2] "Черные: %d очков территории"
 
-#: src/board/go.c:1366
+#: src/board/go.c:1374
 msgid "The game is draw"
-msgstr "Игра завершилсь вничью"
+msgstr "Игра завершилась вничью"
