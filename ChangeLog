@@ -1,3 +1,9 @@
+2006-03-09  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* configure.ac: Quarry version 0.1.17.
+	* NEWS: Update.
+	* TODO: Update.
+
 2006-02-11  Paul Pogonyshev  <pogonyshev@gmx.net>
 
 	* configure.ac: Add `--disable-mime-database-update' option.

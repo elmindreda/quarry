@@ -1,3 +1,12 @@
+2006-03-09  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* (Quarry version 0.1.17.)
+
+2006-03-08  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* quarry.xml: Use de-facto standard application/x-go-sgf as the
+	MIME type.  Keep text/sgf as an alias.
+
 2006-02-11  Paul Pogonyshev  <pogonyshev@gmx.net>
 
 	* Makefile.am: Install `quarry.xml' into the MIME database and
