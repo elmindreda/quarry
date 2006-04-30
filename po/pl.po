@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: Quarry 0.1.16\n"
 "Report-Msgid-Bugs-To: quarry-dev@gna.org\n"
 "POT-Creation-Date: 2006-03-09 00:05+0200\n"
-"PO-Revision-Date: 2006-01-15 13:35+0200\n"
+"PO-Revision-Date: 2006-04-16 22:40+0200\n"
 "Last-Translator: Robert Stefaniuk <kacprey@gazeta.pl>\n"
 "Language-Team: Polish <pl@li.org>\n"
 "MIME-Version: 1.1\n"
@@ -23,9 +23,9 @@ msgid ""
 "one or two characters long labels. Longer labels will not be visible "
 "immediately or at all in most clients."
 msgstr ""
-"Chociaż nazwy etykiet mogą mieć dowolną długość, lepiej używać nazw co "
-"najwyżej dwuznakowych. Dłuższe nazwy mogą być na początku niewidoczne albo "
-"niewidoczne wogóle dla większości klientów."
+"Chociaż nazwy etykiet mogą mieć dowolną długość, bezpieczniejsze są nazwy "
+"maksymalnie dwuznakowe. Dłuższe nazwy mogą być z początku niewidoczne albo "
+"niewidoczne wcale dla większości klientów."
 
 #: src/gui-gtk/gtk-add-or-edit-label-dialog.c:87
 msgid "Label _text:"
@@ -442,46 +442,40 @@ msgid "/Edit/Tools/Scori_ng Tool"
 msgstr "/Edycja/Narzędzia/Ustalanie _wyniku"
 
 #: src/gui-gtk/gtk-goban-window.c:658
-#, fuzzy
 msgid "/Edit/_Add Empty Node"
-msgstr "/Edycja/_Dodaj pusty węzeł"
+msgstr "/Edycja/Dodaj pusty _węzeł"
 
 #: src/gui-gtk/gtk-goban-window.c:663
 msgid "/Edit/Move _Branch Up"
-msgstr ""
+msgstr "/Edycja/W_yższa gałąź"
 
 #: src/gui-gtk/gtk-goban-window.c:666
 msgid "/Edit/Move Branch Do_wn"
-msgstr ""
+msgstr "/Edycja/N_iższa gałąź"
 
 #: src/gui-gtk/gtk-goban-window.c:671
 msgid "/Edit/Edit Node _Name"
-msgstr "/Edycja/Modyfikuj nazwę _węzła"
+msgstr "/Edycja/_Modyfikuj nazwę węzła"
 
 #: src/gui-gtk/gtk-goban-window.c:674
-#, fuzzy
 msgid "/Edit/Set _Move Number"
-msgstr "/Edycja/Modyfikuj nazwę _węzła"
+msgstr "/Edycja/Wstaw numer _ruchu"
 
 #: src/gui-gtk/gtk-goban-window.c:678
-#, fuzzy
 msgid "/Edit/_Player to Move"
-msgstr "/Edycja/_Usuń węzeł"
+msgstr "/Edycja/_Gracz wykonujący ruch"
 
 #: src/gui-gtk/gtk-goban-window.c:679
-#, fuzzy
 msgid "/Edit/Player to Move/_White"
-msgstr "/Edycja/_Usuń węzeł"
+msgstr "/Edycja/Gracz wykonujący ruch/_Biały"
 
 #: src/gui-gtk/gtk-goban-window.c:682
-#, fuzzy
 msgid "/Edit/Player to Move/_Black"
-msgstr "/Edycja/_Usuń węzeł"
+msgstr "/Edycja/Gracz wykonujący ruch/_Czarny"
 
 #: src/gui-gtk/gtk-goban-window.c:685
-#, fuzzy
 msgid "/Edit/Player to Move/By Game _Rules"
-msgstr "/Edycja/_Usuń węzeł"
+msgstr "/Edycja/Gracz wykonujący ruch/_Zgodnie z regułami"
 
 #: src/gui-gtk/gtk-goban-window.c:691
 msgid "/Edit/_Find"
@@ -497,12 +491,11 @@ msgstr "/Edycja/Znajdź _poprzednie"
 
 #: src/gui-gtk/gtk-goban-window.c:702
 msgid "/Edit/Game _Information"
-msgstr "/Edycja/_Informacja o grze"
+msgstr "/Edycja/In_formacja o grze"
 
 #: src/gui-gtk/gtk-goban-window.c:707
-#, fuzzy
 msgid "/Edit/Pr_eferences"
-msgstr "/Edycja/P_referencje"
+msgstr "/Edycja/Pr_eferencje"
 
 #: src/gui-gtk/gtk-goban-window.c:712
 msgid "/_View"
@@ -559,7 +552,7 @@ msgstr "/Gra/Po_ddaj"
 
 #: src/gui-gtk/gtk-goban-window.c:753
 msgid "/Play/_Adjourn Game"
-msgstr "/Gra/_Opuść grę"
+msgstr "/Gra/_Odłóż grę"
 
 #: src/gui-gtk/gtk-goban-window.c:758
 msgid "/_Go"
@@ -700,7 +693,7 @@ msgid_plural ""
 "stones of free handicap"
 msgstr[0] "%d"
 msgstr[1] ""
-"Ustaw gdziekolwiek %d(lub mniej)\n"
+"Ustaw gdziekolwiek %d (lub mniej)\n"
 "kamienie jako handikap"
 msgstr[2] ""
 "Ustaw gdziekolwiek %d (lub mniej)\n"
@@ -708,7 +701,7 @@ msgstr[2] ""
 
 #: src/gui-gtk/gtk-goban-window.c:1698
 msgid "Adjourn & Save As..."
-msgstr "Opuść grę i zapisz jako..."
+msgstr "Odłóż grę i zapisz jako..."
 
 #: src/gui-gtk/gtk-goban-window.c:1698
 msgid "Save As..."
@@ -719,8 +712,8 @@ msgid ""
 "You can later resume the game by pressing the `Resume Game' button in Quarry "
 "Control Center, or selecting `Resume Game' item from the `File' menu."
 msgstr ""
-"Możesz później dokończyć tę grę wybierając opcję „Dokończ grę” w „Centrum "
-"Sterowania Quarry”, albo wybrać „Dokończ grę” w menu „Plik”"
+"Można później dokończyć tę grę wybierając opcję „Dokończ grę” w „Centrum "
+"Sterowania Quarry”, albo „Dokończ grę” w menu „Plik”."
 
 #: src/gui-gtk/gtk-goban-window.c:1833
 #, c-format
@@ -784,9 +777,8 @@ msgid "A GUI program for Go, Amazons and Reversi board games"
 msgstr "Graficzny program do gier Go, Amazons i Reversi"
 
 #: src/gui-gtk/gtk-goban-window.c:2945
-#, fuzzy
 msgid "Copyright © 2003, 2004, 2005, 2006 Paul Pogonyshev and others"
-msgstr "Copyright © 2003, 2004, 2005 Paweł Pogonyshev i inni"
+msgstr "Copyright © 2003, 2004, 2005 Paweł Pogonyszew i inni"
 
 #: src/gui-gtk/gtk-goban-window.c:2962
 msgid "About Quarry"
@@ -834,17 +826,17 @@ msgstr[1] "%d jeńców"
 msgstr[2] "%d jeńców"
 
 #: src/gui-gtk/gtk-goban-window.c:4566
-#, fuzzy, c-format
+#, c-format
 msgid "%s %s %.*f komi"
-msgstr "%d jeniec %c %.*f komi"
+msgstr "%s %s %.*f komi"
 
 #: src/gui-gtk/gtk-goban-window.c:4577
-#, fuzzy, c-format
+#, c-format
 msgid "%s %s %d komi"
 msgid_plural "%s %s %d komi"
-msgstr[0] " %c %.*f komi = %.*f\n"
-msgstr[1] " %c %.*f komi = %.*f\n"
-msgstr[2] " %c %.*f komi = %.*f\n"
+msgstr[0] " %s %s %d komi"
+msgstr[1] " %s %s %d komi"
+msgstr[2] " %s %s %d komi"
 
 #: src/gui-gtk/gtk-goban-window.c:4593 src/gui-gtk/gtk-goban-window.c:4596
 #, c-format
@@ -934,17 +926,15 @@ msgstr "Remis"
 
 #: src/gui-gtk/gtk-goban-window.c:4915
 msgid "By Game _Rules (Game Over)"
-msgstr ""
+msgstr "Zgodnie z _regułami (koniec)"
 
 #: src/gui-gtk/gtk-goban-window.c:4919
-#, fuzzy
 msgid "By Game _Rules (Black)"
-msgstr "Reguły gry"
+msgstr "Zgodnie z _regułami (czarny)"
 
 #: src/gui-gtk/gtk-goban-window.c:4923
-#, fuzzy
 msgid "By Game _Rules (White)"
-msgstr "Reguły gry"
+msgstr "Zgodnie z _regułami (biały)"
 
 #: src/gui-gtk/gtk-goban-window.c:4965
 msgid "insert node name here"
@@ -952,7 +942,7 @@ msgstr "wprowadź nazwę dla tego węzła"
 
 #: src/gui-gtk/gtk-goban-window.c:5186
 msgid "Set Move Number"
-msgstr ""
+msgstr "Wprowadź numer ruchu"
 
 #: src/gui-gtk/gtk-goban-window.c:5550
 msgid "GTP engine is scoring..."
@@ -980,7 +970,7 @@ msgstr "Komentarz dla węzła:"
 
 #: src/gui-gtk/gtk-go-to-named-node-dialog.c:329
 msgid "comment|Empty"
-msgstr ""
+msgstr "komentarz|Brak"
 
 #: src/gui-gtk/gtk-go-to-named-node-dialog.c:332
 msgid "There is no such node"
@@ -1014,9 +1004,8 @@ msgstr "* BŁĄÐ: nieoczekiwany ID w odpowiedzi (komenda nie posiada):\n"
 #. TRANSLATORS: Don't put ellipsis here, this string will most
 #. often go to fixed-width font terminals.
 #: src/gui-gtk/gtk-gtp-client-interface.c:415
-#, fuzzy
 msgid "* WARNING: future GTP version, I don't know about it...\n"
-msgstr "* OSTRZEŻENIE: nowa, nie znana programowi wersja GTP...\n"
+msgstr "* OSTRZEŻENIE: nowa wersja GTP, nie znana mi...\n"
 
 #: src/gui-gtk/gtk-new-game-dialog.c:98
 msgid ""
@@ -1024,7 +1013,8 @@ msgid ""
 "computer player combinations may be not possible to play."
 msgstr ""
 "Pamiętaj, że większość algorytmów GTP obsługuje tylko jeden rodzaj gry. "
-"Pewne kombinacje gier i graczy nie są więc poprawne."
+"Dlatego niektóre kombinacje gier i graczy komputerowych nie mogą "
+"być użyte."
 
 #: src/gui-gtk/gtk-new-game-dialog.c:102
 msgid "Fi_xed handicap:"
@@ -1072,7 +1062,7 @@ msgstr "Ko_mputer"
 #: src/gui-gtk/gtk-new-game-dialog.c:174
 #: src/gui-gtk/gtk-resume-game-dialog.c:306
 msgid "H_uman"
-msgstr "_Czło_wiek"
+msgstr "_Człowiek"
 
 #: src/gui-gtk/gtk-new-game-dialog.c:174
 msgid "C_omputer"
@@ -1147,8 +1137,8 @@ msgid ""
 "You can always change and expand game information later. Just choose `Edit/"
 "Game Information' menu item or press `Info' button on the main toolbar."
 msgstr ""
-"Zawsze będziesz mógł rozszerzyć informacje o grze później. W tym celu "
-"wystarczy wybrać „Edycja/Informacje o grze” z menu programu, albo użyć "
+"Zawsze można rozszerzyć informacje o grze później. W tym celu "
+"wystarczy wybrać „Edycja|Informacje o grze” z menu programu, albo użyć "
 "przycisku „Informacje” z paska głównego."
 
 #: src/gui-gtk/gtk-new-game-record-dialog.c:309
@@ -1180,7 +1170,7 @@ msgid ""
 "sure you select a proper SGF file."
 msgstr ""
 "Quarry używa formatu SGF do zapisywania gier. Pliki SGF powinny raczej "
-"posiadać rozszerzenie .sgf, ale nie zawsze tak jest. Upewnij się, że  "
+"posiadać rozszerzenie „.sgf”, ale nie jest to konieczne. Upewnij się, że "
 "wybrałeś właściwy plik SGF."
 
 #: src/gui-gtk/gtk-parser-interface.c:101
@@ -1306,7 +1296,7 @@ msgstr "Tylko tekst"
 
 #: src/gui-gtk/gtk-preferences.c:792
 msgid "Show"
-msgstr "Wyświetlaj"
+msgstr "Dostępny"
 
 #: src/gui-gtk/gtk-preferences.c:799
 msgid "Name"
@@ -1353,9 +1343,8 @@ msgid "Al_ways"
 msgstr "Zaw_sze"
 
 #: src/gui-gtk/gtk-preferences.c:937
-#, fuzzy
 msgid "Aut_omatically"
-msgstr "_Automatycznie"
+msgstr "Aut_omatycznie"
 
 #: src/gui-gtk/gtk-preferences.c:937
 msgid "Ne_ver"
@@ -1376,8 +1365,8 @@ msgid ""
 "separately."
 msgstr ""
 "W trybie automatycznym drzewo ruchów pokazywane jest jedynie wtedy, gdy "
-"posiada rozgałęzienia. Możesz je jednak wyświetlać i ukrywać niezależnie dla "
-"każdego okna."
+"posiada rozgałęzienia. Można je jednak wyświetlać i ukrywać niezależnie w "
+"każdym oknie."
 
 #: src/gui-gtk/gtk-preferences.c:947
 msgid ""
@@ -1399,11 +1388,11 @@ msgstr "Podążaj za bieżącym węzłem"
 
 #: src/gui-gtk/gtk-preferences.c:1042
 msgid "Show _tooltips"
-msgstr ""
+msgstr "Pokazuj _dopiski"
 
 #: src/gui-gtk/gtk-preferences.c:1049
 msgid "Tooltips"
-msgstr ""
+msgstr "Dopiski"
 
 #: src/gui-gtk/gtk-preferences.c:1065
 msgid "Always use _UTF-8 (recommended)"
@@ -1419,7 +1408,7 @@ msgid ""
 "thus some information may be lost if you use them. Quarry also works fastest "
 "with UTF-8; this may be important if you have very large SGF files."
 msgstr ""
-"UTF-8 jest zalecane, ponieważ pozwala ono używać o wiele większej gamy "
+"UTF-8 jest zalecane, ponieważ pozwala używać o wiele większej gamy "
 "znaków, niż inne standardy kodowania. Dodatkowo, Quarry operuje szybciej na "
 "plikach zapisanych w tym standardzie. Może to mieć szczególne znaczenie przy "
 "pracy z bardzo dużymi plikami SGF."
@@ -1430,7 +1419,7 @@ msgstr "Kodowanie"
 
 #: src/gui-gtk/gtk-preferences.c:1103
 msgid "_Relative to stone size"
-msgstr "_Dopasowane do rozmiaru kamieni"
+msgstr "D_opasowany do rozmiaru kamieni"
 
 #: src/gui-gtk/gtk-preferences.c:1104
 msgid "On _white stones:"
@@ -1438,7 +1427,7 @@ msgstr "Na _białych kamieniach:"
 
 #: src/gui-gtk/gtk-preferences.c:1105
 msgid "On _black stones:"
-msgstr "Na _czarnych kamieniach:"
+msgstr "Na c_zarnych kamieniach:"
 
 #: src/gui-gtk/gtk-preferences.c:1106
 msgid "On _empty intersections:"
@@ -1446,7 +1435,7 @@ msgstr "Na _pustych przecięciach:"
 
 #: src/gui-gtk/gtk-preferences.c:1120
 msgid "_Relative to amazon size"
-msgstr "_Dopasowane do rozmiaru „amazonek”"
+msgstr "D_opasowany do rozmiaru „amazonek”"
 
 #: src/gui-gtk/gtk-preferences.c:1121
 msgid "On _white amazons:"
@@ -1454,7 +1443,7 @@ msgstr "Na _białych „amazonkach”:"
 
 #: src/gui-gtk/gtk-preferences.c:1122
 msgid "On _black amazons:"
-msgstr "Na _czarnych „amazonkach”:"
+msgstr "Na c_zarnych „amazonkach”:"
 
 #: src/gui-gtk/gtk-preferences.c:1123 src/gui-gtk/gtk-preferences.c:1182
 msgid "On _empty fields:"
@@ -1466,7 +1455,7 @@ msgstr "Wybór koloru zaciemnienia czarnych pól"
 
 #: src/gui-gtk/gtk-preferences.c:1151
 msgid "Checkerboard _pattern color:"
-msgstr "_Kolor zaciemnienia pól:"
+msgstr "Kolor zaciemnienia _pól:"
 
 #: src/gui-gtk/gtk-preferences.c:1167
 msgid "Checkerboard pattern _opacity:"
@@ -1474,7 +1463,7 @@ msgstr "_Intensywność zaciemnienia pól:"
 
 #: src/gui-gtk/gtk-preferences.c:1179
 msgid "_Relative to disk size"
-msgstr "_Dopasowane do rozmiaru dysków"
+msgstr "D_opasowany do rozmiaru dysków"
 
 #: src/gui-gtk/gtk-preferences.c:1180
 msgid "On _white disks:"
@@ -1482,7 +1471,7 @@ msgstr "Na _białych dyskach:"
 
 #: src/gui-gtk/gtk-preferences.c:1181
 msgid "On _black disks:"
-msgstr "Na _czarnych dyskach:"
+msgstr "Na c_zarnych dyskach:"
 
 #: src/gui-gtk/gtk-preferences.c:1195
 msgid "Use _texture:"
@@ -1510,7 +1499,7 @@ msgstr "Kolor naniesionych _lini:"
 
 #: src/gui-gtk/gtk-preferences.c:1345
 msgid "_Theme:"
-msgstr "_Motyw:"
+msgstr "Moty_w:"
 
 #: src/gui-gtk/gtk-preferences.c:1354
 msgid "Use theme _defaults"
@@ -1548,7 +1537,6 @@ msgstr "Znaczniki"
 msgid "Supported games:"
 msgstr "Obsługiwane gry:"
 
-# FIXME: niezrozumiałe
 #: src/gui-gtk/gtk-preferences.c:1637
 msgid "This engine comes from site configuration."
 msgstr "Ten algorytm jest skonfigurowany globalnie."
@@ -1559,9 +1547,9 @@ msgid ""
 "substituted with name and version of the engine correspondingly. By default, "
 "`%n %v' is used."
 msgstr ""
-"Możesz używać symboli specjalnych „%n” i „%v” w polu „Wyświetlana nazwa”. "
+"Można użyć symboli specjalnych „%n” i „%v” w polu „Wyświetlana nazwa”. "
 "Będą zastępowane odpowiednio: nazwą algorytmu i jego wersją. Domyślnie "
-"używana jest nazwa „%n %v”."
+"używany jest opis „%n %v”."
 
 #: src/gui-gtk/gtk-preferences.c:1908
 msgid "Modify GTP Engine Information"
@@ -1685,11 +1673,11 @@ msgstr "_Komputer"
 #: src/gui-gtk/quarry-move-number-dialog.c:66
 #: src/gui-gtk/quarry-move-number-dialog.c:148
 msgid "Use se_quential move number"
-msgstr ""
+msgstr "Użyj numeru właściwego dla _sekwencji"
 
 #: src/gui-gtk/quarry-move-number-dialog.c:66
 msgid "_Set specific move number:"
-msgstr ""
+msgstr "Wpisz _ręcznie numer ruchu"
 
 #: src/gui-gtk/quarry-save-confirmation-dialog.c:89
 msgid "Close _without Saving"
@@ -1839,7 +1827,7 @@ msgstr "_Poprzedni"
 #: src/board/board.c:897
 #, c-format
 msgid "Black wins by %.*f"
-msgstr "Czarne wygrały o %.*f"
+msgstr "Czarne wygrały o %.*f punktów"
 
 #. TRANSLATORS: This is only used for non-integral scores.  You
 #. should also add translation of `points' if it is required by
@@ -1847,23 +1835,23 @@ msgstr "Czarne wygrały o %.*f"
 #: src/board/board.c:904
 #, c-format
 msgid "White wins by %.*f"
-msgstr "Białe wygrały o %.*f"
+msgstr "Białe wygrały o %.*f punktów"
 
 #: src/board/board.c:915
-#, fuzzy, c-format
+#, c-format
 msgid "Black wins by %d"
 msgid_plural "Black wins by %d"
-msgstr[0] "Czarne wygrały o %.*f"
-msgstr[1] "Czarne wygrały o %.*f"
-msgstr[2] "Czarne wygrały o %.*f"
+msgstr[0] "Czarne wygrały o %d punkt"
+msgstr[1] "Czarne wygrały o %d punkty"
+msgstr[2] "Czarne wygrały o %d punktów"
 
 #: src/board/board.c:923
-#, fuzzy, c-format
+#, c-format
 msgid "White wins by %d"
 msgid_plural "White wins by %d"
-msgstr[0] "Białe wygrały o %.*f"
-msgstr[1] "Białe wygrały o %.*f"
-msgstr[2] "Białe wygrały o %.*f"
+msgstr[0] "Białe wygrały o %d punkt"
+msgstr[1] "Białe wygrały o %d punkty"
+msgstr[2] "Białe wygrały o %d punktów"
 
 #. TRANSLATORS: Use your language's natural capitalization for the
 #. name of the game.  I.e. it doesn't have to start with a capital
@@ -2054,18 +2042,18 @@ msgstr[2] " + %d jeńców"
 #. 87.5''.  This is used only with
 #. fractional komi.
 #: src/board/go.c:1337
-#, fuzzy, c-format
+#,  c-format
 msgid " %s %.*f komi = %.*f\n"
-msgstr " %c %.*f komi = %.*f\n"
+msgstr " %s %.*f komi = %.*f\n"
 
 #. TRANSLATORS: e.g. `` + 6 komi = 87''.
 #: src/board/go.c:1351
-#, fuzzy, c-format
+#, c-format
 msgid " %s %d komi = %d\n"
 msgid_plural " %s %d komi = %d\n"
-msgstr[0] " %c %.*f komi = %.*f\n"
-msgstr[1] " %c %.*f komi = %.*f\n"
-msgstr[2] " %c %.*f komi = %.*f\n"
+msgstr[0] " %s %d komi = %d\n"
+msgstr[1] " %s %d komi = %d\n"
+msgstr[2] " %s %d komi = %d\n"
 
 #: src/board/go.c:1360
 #, c-format
@@ -2078,14 +2066,3 @@ msgstr[2] "Czarne: %d punktów terytorium"
 #: src/board/go.c:1374
 msgid "The game is draw"
 msgstr "Gra zakończyła się remisem"
-
-#~ msgid "Au_tomatically"
-#~ msgstr "A_utomatycznie"
-
-#, fuzzy
-#~ msgid "Black wins by %.*f pts."
-#~ msgstr "Czarne wygrały o %.*f"
-
-#, fuzzy
-#~ msgid "White wins by %.*f pts."
-#~ msgstr "Białe wygrały o %.*f"
