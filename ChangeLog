@@ -1,3 +1,8 @@
+2006-04-30  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* build: Rename from `aux' to avoid conflicts with system reserved
+	word on Win32 (Cygwin, bug #5836, fastgo@gmail.com.)
+
 2006-03-09  Paul Pogonyshev  <pogonyshev@gmx.net>
 
 	* configure.ac: Quarry version 0.1.17.
