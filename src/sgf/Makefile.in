@@ -106,6 +106,8 @@ QUARRY_GTK_LIBS = @QUARRY_GTK_LIBS@
 QUARRY_WARNINGS = @QUARRY_WARNINGS@
 QUARRY_WARNINGS_GTK = @QUARRY_WARNINGS_GTK@
 RANLIB = @RANLIB@
+REGISTER_MIME_TYPES_FALSE = @REGISTER_MIME_TYPES_FALSE@
+REGISTER_MIME_TYPES_TRUE = @REGISTER_MIME_TYPES_TRUE@
 SET_MAKE = @SET_MAKE@
 SHELL = @SHELL@
 STRIP = @STRIP@
@@ -267,7 +269,7 @@ MOSTLYCLEANFILES = \
 
 subdir = src/sgf
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
-mkinstalldirs = $(SHELL) $(top_srcdir)/aux/mkinstalldirs
+mkinstalldirs = $(SHELL) $(top_srcdir)/build/mkinstalldirs
 CONFIG_HEADER = $(top_builddir)/config.h
 CONFIG_CLEAN_FILES =
 LIBRARIES = $(noinst_LIBRARIES)
@@ -306,7 +308,7 @@ sgf_test_DEPENDENCIES = libsgf.a $(top_builddir)/src/board/libboard.a \
 sgf_test_LDFLAGS =
 
 DEFAULT_INCLUDES =  -I. -I$(srcdir) -I$(top_builddir)
-depcomp = $(SHELL) $(top_srcdir)/aux/depcomp
+depcomp = $(SHELL) $(top_srcdir)/build/depcomp
 am__depfiles_maybe = depfiles
 @AMDEP_TRUE@DEP_FILES = ./$(DEPDIR)/parse-sgf-list.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/sgf-diff-utils.Po \
@@ -324,7 +326,7 @@ CCLD = $(CC)
 LINK = $(CCLD) $(AM_CFLAGS) $(CFLAGS) $(AM_LDFLAGS) $(LDFLAGS) -o $@
 DIST_SOURCES = $(libsgf_a_SOURCES) $(parse_sgf_list_SOURCES) \
 	$(sgf_diff_SOURCES) $(sgf_test_SOURCES)
-DIST_COMMON = $(srcdir)/Makefile.in $(top_srcdir)/aux/list.make \
+DIST_COMMON = $(srcdir)/Makefile.in $(top_srcdir)/build/list.make \
 	Makefile.am
 SOURCES = $(libsgf_a_SOURCES) $(nodist_libsgf_a_SOURCES) $(parse_sgf_list_SOURCES) $(sgf_diff_SOURCES) $(sgf_test_SOURCES)
 
@@ -333,7 +335,7 @@ all: $(BUILT_SOURCES)
 
 .SUFFIXES:
 .SUFFIXES: .list .h .c .o .obj .stamp
-$(srcdir)/Makefile.in: @MAINTAINER_MODE_TRUE@ Makefile.am $(top_srcdir)/aux/list.make $(top_srcdir)/configure.ac $(ACLOCAL_M4)
+$(srcdir)/Makefile.in: @MAINTAINER_MODE_TRUE@ Makefile.am $(top_srcdir)/build/list.make $(top_srcdir)/configure.ac $(ACLOCAL_M4)
 	cd $(top_srcdir) && \
 	  $(AUTOMAKE) --foreign  src/sgf/Makefile
 Makefile: @MAINTAINER_MODE_TRUE@ $(srcdir)/Makefile.in  $(top_builddir)/config.status
@@ -486,7 +488,7 @@ top_distdir = ../..
 distdir = $(top_distdir)/$(PACKAGE)-$(VERSION)
 
 distdir: $(DISTFILES)
-	$(mkinstalldirs) $(distdir)/../../aux
+	$(mkinstalldirs) $(distdir)/../../build
 	@srcdirstrip=`echo "$(srcdir)" | sed 's|.|.|g'`; \
 	topsrcdirstrip=`echo "$(top_srcdir)" | sed 's|.|.|g'`; \
 	list='$(DISTFILES)'; for file in $$list; do \

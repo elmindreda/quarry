@@ -7,7 +7,7 @@ AC_PREREQ(2.57)
 # Check if the script is running in the proper directory.  Alarm if it
 # is not.
 AC_CONFIG_SRCDIR(src/quarry.c)
-AC_CONFIG_AUX_DIR(aux)
+AC_CONFIG_AUX_DIR(build)
 
 # Initialize Automake and add maintainer mode as an option.
 AM_INIT_AUTOMAKE([foreign check-news])

@@ -107,7 +107,7 @@ COPYING-DOC.
   public domain by Paul Pogonyshev.
 
 * Files in the root directory of the distribution (this directory) and
-  `aux' directory are either licensed by different parties as free
+  `build' directory are either licensed by different parties as free
   software or are in public domain.
 
 

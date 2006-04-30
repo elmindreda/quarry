@@ -32,6 +32,10 @@
 #	Version: 0.1.2 (last updated: March 20, 2002)
 #
 
+# 2006-04-06  Paul Pogonyshev
+#
+#	Replace `aux' directory with `build'.
+
 # 2004-11-29  Paul Pogonyshev
 #
 #	Make XML installation conditional on ScrollKeeper presence.
@@ -58,7 +62,7 @@ CLEANFILES = omf_timestamp
 
 if HAVE_SCROLLKEEPER
 
-include $(top_srcdir)/aux/omf.make
+include $(top_srcdir)/build/omf.make
 
 all: omf
 

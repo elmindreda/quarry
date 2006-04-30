@@ -50,6 +50,10 @@
 #	Version: 0.1.2 (last updated: March 20, 2002)
 #
 
+# 2006-04-06  Paul Pogonyshev
+#
+#	Replace `aux' directory with `build'.
+
 # 2004-11-29  Paul Pogonyshev
 #
 #	Make XML installation conditional on ScrollKeeper presence.
@@ -185,6 +189,8 @@ QUARRY_GTK_LIBS = @QUARRY_GTK_LIBS@
 QUARRY_WARNINGS = @QUARRY_WARNINGS@
 QUARRY_WARNINGS_GTK = @QUARRY_WARNINGS_GTK@
 RANLIB = @RANLIB@
+REGISTER_MIME_TYPES_FALSE = @REGISTER_MIME_TYPES_FALSE@
+REGISTER_MIME_TYPES_TRUE = @REGISTER_MIME_TYPES_TRUE@
 SET_MAKE = @SET_MAKE@
 SHELL = @SHELL@
 STRIP = @STRIP@
@@ -258,16 +264,16 @@ CLEANFILES = omf_timestamp
 DISTCLEANFILES = *~
 subdir = help/C
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
-mkinstalldirs = $(SHELL) $(top_srcdir)/aux/mkinstalldirs
+mkinstalldirs = $(SHELL) $(top_srcdir)/build/mkinstalldirs
 CONFIG_HEADER = $(top_builddir)/config.h
 CONFIG_CLEAN_FILES =
 DIST_SOURCES =
-DIST_COMMON = $(srcdir)/Makefile.in $(top_srcdir)/aux/omf.make \
-	$(top_srcdir)/aux/xmldocs.make Makefile.am
+DIST_COMMON = $(srcdir)/Makefile.in $(top_srcdir)/build/omf.make \
+	$(top_srcdir)/build/xmldocs.make Makefile.am
 all: all-am
 
 .SUFFIXES:
-$(srcdir)/Makefile.in: @MAINTAINER_MODE_TRUE@ Makefile.am $(top_srcdir)/aux/xmldocs.make $(top_srcdir)/aux/omf.make $(top_srcdir)/configure.ac $(ACLOCAL_M4)
+$(srcdir)/Makefile.in: @MAINTAINER_MODE_TRUE@ Makefile.am $(top_srcdir)/build/xmldocs.make $(top_srcdir)/build/omf.make $(top_srcdir)/configure.ac $(ACLOCAL_M4)
 	cd $(top_srcdir) && \
 	  $(AUTOMAKE) --foreign  help/C/Makefile
 Makefile: @MAINTAINER_MODE_TRUE@ $(srcdir)/Makefile.in  $(top_builddir)/config.status
@@ -285,7 +291,7 @@ top_distdir = ../..
 distdir = $(top_distdir)/$(PACKAGE)-$(VERSION)
 
 distdir: $(DISTFILES)
-	$(mkinstalldirs) $(distdir)/../../aux
+	$(mkinstalldirs) $(distdir)/../../build
 	@srcdirstrip=`echo "$(srcdir)" | sed 's|.|.|g'`; \
 	topsrcdirstrip=`echo "$(top_srcdir)" | sed 's|.|.|g'`; \
 	list='$(DISTFILES)'; for file in $$list; do \

@@ -23,7 +23,7 @@ PARSE_LIST_FLAGS   =
 # Avoid problems with parallel builds.
 markup-theme-configuration.c: markup-theme-configuration.h
 
-include $(top_srcdir)/aux/list.make
+include $(top_srcdir)/build/list.make
 
 libguiutils_a_SOURCES =			\
 	configuration.c			\

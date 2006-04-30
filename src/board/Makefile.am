@@ -17,7 +17,7 @@ PARSE_LIST_FLAGS   =
 # Avoid problems with parallel builds.
 games.c: games.h
 
-include $(top_srcdir)/aux/list.make
+include $(top_srcdir)/build/list.make
 
 libboard_a_SOURCES =		\
 	amazons.c		\

@@ -6,7 +6,7 @@ lang	 = C
 omffile	 = quarry-C.omf
 entities = fdl.xml legal.xml
 
-include $(top_srcdir)/aux/xmldocs.make
+include $(top_srcdir)/build/xmldocs.make
 
 dist-hook: app-dist-hook
 

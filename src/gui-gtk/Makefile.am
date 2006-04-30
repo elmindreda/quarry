@@ -38,7 +38,7 @@ PARSE_LIST_FLAGS =						\
 # Avoid problems with parallel builds.
 gtk-configuration.c: gtk-configuration.h
 
-include $(top_srcdir)/aux/list.make
+include $(top_srcdir)/build/list.make
 
 
 quarry-marshal.c : $(srcdir)/quarry-marshal.glist

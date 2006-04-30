@@ -27,7 +27,7 @@ sgf-properties.c: sgf-properties.h
 
 sgf-undo-operations.c: sgf-undo-operations.h
 
-include $(top_srcdir)/aux/list.make
+include $(top_srcdir)/build/list.make
 
 libsgf_a_SOURCES =		\
 	sgf-diff-utils.c	\
