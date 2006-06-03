@@ -20,7 +20,8 @@
 \* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 
-#include "gtk-assistant.h"
+#include "quarry-assistant.h"
+
 #include "gtk-control-center.h"
 #include "gtk-help.h"
 #include "gtk-utils.h"
@@ -33,24 +34,25 @@
 #define ASSISTANT_RESPONSE_BACK	2
 
 
-typedef struct _GtkAssistantPage	GtkAssistantPage;
+typedef struct _QuarryAssistantPage	QuarryAssistantPage;
 
-struct _GtkAssistantPage {
-  GtkAssistantPageShownCallback	       shown_callback;
-  GtkAssistantPageAcceptableCallback   acceptable_callback;
+struct _QuarryAssistantPage {
+  QuarryAssistantPageShownCallback	  shown_callback;
+  QuarryAssistantPageAcceptableCallback   acceptable_callback;
 
-  const gchar			      *help_link_id;
-  GtkAssistantPageHelpLinkIDCallback   help_link_id_callback;
+  const gchar				 *help_link_id;
+  QuarryAssistantPageHelpLinkIDCallback   help_link_id_callback;
 };
 
 
-static void	gtk_assistant_class_init (GtkAssistantClass *class);
-static void	gtk_assistant_init (GtkAssistant *assistant);
+static void	quarry_assistant_class_init (QuarryAssistantClass *class);
+static void	quarry_assistant_init (QuarryAssistant *assistant);
 
-static void	gtk_assistant_update_buttons (GtkAssistant *assistant);
-static void	gtk_assistant_response (GtkDialog *dialog, gint response_id);
+static void	quarry_assistant_update_buttons (QuarryAssistant *assistant);
+static void	quarry_assistant_response (GtkDialog *dialog,
+					   gint response_id);
 
-static void	gtk_assistant_destroy (GtkObject *object);
+static void	quarry_assistant_destroy (GtkObject *object);
 
 
 static GtkDialogClass  *parent_class;
@@ -59,25 +61,26 @@ static GQuark		assistant_page_quark;
 
 
 GType
-gtk_assistant_get_type (void)
+quarry_assistant_get_type (void)
 {
   static GType assistant_type = 0;
 
   if (!assistant_type) {
     static GTypeInfo assistant_info = {
-      sizeof (GtkAssistantClass),
+      sizeof (QuarryAssistantClass),
       NULL,
       NULL,
-      (GClassInitFunc) gtk_assistant_class_init,
+      (GClassInitFunc) quarry_assistant_class_init,
       NULL,
       NULL,
-      sizeof (GtkAssistant),
+      sizeof (QuarryAssistant),
       1,
-      (GInstanceInitFunc) gtk_assistant_init,
+      (GInstanceInitFunc) quarry_assistant_init,
       NULL
     };
 
-    assistant_type = g_type_register_static (GTK_TYPE_DIALOG, "GtkAssistant",
+    assistant_type = g_type_register_static (GTK_TYPE_DIALOG,
+					     "QuarryAssistant",
 					     &assistant_info, 0);
   }
 
@@ -86,20 +89,20 @@ gtk_assistant_get_type (void)
 
 
 static void
-gtk_assistant_class_init (GtkAssistantClass *class)
+quarry_assistant_class_init (QuarryAssistantClass *class)
 {
   parent_class = g_type_class_peek_parent (class);
 
-  GTK_OBJECT_CLASS (class)->destroy = gtk_assistant_destroy;
+  GTK_OBJECT_CLASS (class)->destroy  = quarry_assistant_destroy;
 
-  GTK_DIALOG_CLASS (class)->response = gtk_assistant_response;
+  GTK_DIALOG_CLASS (class)->response = quarry_assistant_response;
 
   assistant_page_quark = g_quark_from_static_string ("quarry-assistant-page");
 }
 
 
 static void
-gtk_assistant_init (GtkAssistant *assistant)
+quarry_assistant_init (QuarryAssistant *assistant)
 {
   GtkWidget *notebook;
 
@@ -112,7 +115,8 @@ gtk_assistant_init (GtkAssistant *assistant)
   gtk_utils_standardize_dialog (&assistant->dialog, notebook);
 
   g_signal_connect_data (notebook, "switch-page",
-			 G_CALLBACK (gtk_assistant_update_buttons), assistant,
+			 G_CALLBACK (quarry_assistant_update_buttons),
+			 assistant,
 			 NULL, G_CONNECT_AFTER | G_CONNECT_SWAPPED);
 
   gtk_dialog_add_button (&assistant->dialog,
@@ -134,29 +138,29 @@ gtk_assistant_init (GtkAssistant *assistant)
 
 
 GtkWidget *
-gtk_assistant_new (const char *title, gpointer user_data)
+quarry_assistant_new (const char *title, gpointer user_data)
 {
-  GtkWidget *widget = GTK_WIDGET (g_object_new (GTK_TYPE_ASSISTANT, NULL));
+  GtkWidget *widget = GTK_WIDGET (g_object_new (QUARRY_TYPE_ASSISTANT, NULL));
 
   gtk_window_set_title (GTK_WINDOW (widget), title);
 
-  GTK_ASSISTANT (widget)->user_data = user_data;
+  QUARRY_ASSISTANT (widget)->user_data = user_data;
 
   return widget;
 }
 
 
 void
-gtk_assistant_set_user_data (GtkAssistant *assistant, gpointer user_data)
+quarry_assistant_set_user_data (QuarryAssistant *assistant, gpointer user_data)
 {
-  g_return_if_fail (GTK_IS_ASSISTANT (assistant));
+  g_return_if_fail (QUARRY_IS_ASSISTANT (assistant));
 
   assistant->user_data = user_data;
 }
 
 
 static void
-gtk_assistant_update_buttons (GtkAssistant *assistant)
+quarry_assistant_update_buttons (QuarryAssistant *assistant)
 {
   gint current_page_index
     = gtk_notebook_get_current_page (assistant->notebook);
@@ -211,7 +215,7 @@ gtk_assistant_update_buttons (GtkAssistant *assistant)
     if (assistant->help_button) {
       GtkWidget *current_page = gtk_notebook_get_nth_page (assistant->notebook,
 							   current_page_index);
-      GtkAssistantPage *page_data
+      QuarryAssistantPage *page_data
 	= g_object_get_qdata (G_OBJECT (current_page), assistant_page_quark);
 
       gtk_widget_set_sensitive (assistant->help_button,
@@ -231,13 +235,13 @@ gtk_assistant_update_buttons (GtkAssistant *assistant)
 
 
 static void
-gtk_assistant_response (GtkDialog *dialog, gint response_id)
+quarry_assistant_response (GtkDialog *dialog, gint response_id)
 {
-  GtkAssistant *assistant = GTK_ASSISTANT (dialog);
+  QuarryAssistant *assistant = QUARRY_ASSISTANT (dialog);
   GtkNotebook *notebook = assistant->notebook;
   gint current_page_index;
   GtkWidget *current_page;
-  GtkAssistantPage *page_data;
+  QuarryAssistantPage *page_data;
 
   if (response_id == GTK_RESPONSE_HELP) {
     current_page_index = gtk_notebook_get_current_page (notebook);
@@ -291,7 +295,7 @@ gtk_assistant_response (GtkDialog *dialog, gint response_id)
 
 
 static void
-gtk_assistant_destroy (GtkObject *object)
+quarry_assistant_destroy (GtkObject *object)
 {
   gtk_control_center_window_destroyed (GTK_WINDOW (object));
 
@@ -301,15 +305,16 @@ gtk_assistant_destroy (GtkObject *object)
 
 
 void
-gtk_assistant_add_page (GtkAssistant *assistant, GtkWidget *widget,
-			const gchar *icon_stock_id, const gchar *title,
-			GtkAssistantPageShownCallback shown_callback,
-			GtkAssistantPageAcceptableCallback acceptable_callback)
+quarry_assistant_add_page
+  (QuarryAssistant *assistant, GtkWidget *widget,
+   const gchar *icon_stock_id, const gchar *title,
+   QuarryAssistantPageShownCallback shown_callback,
+   QuarryAssistantPageAcceptableCallback acceptable_callback)
 {
   GtkWidget *page = widget;
-  GtkAssistantPage *page_data = g_malloc (sizeof (GtkAssistantPage));
+  QuarryAssistantPage *page_data = g_malloc (sizeof (QuarryAssistantPage));
 
-  g_return_if_fail (GTK_IS_ASSISTANT (assistant));
+  g_return_if_fail (QUARRY_IS_ASSISTANT (assistant));
   g_return_if_fail (GTK_IS_WIDGET (widget));
 
   if (icon_stock_id || title)
@@ -317,7 +322,7 @@ gtk_assistant_add_page (GtkAssistant *assistant, GtkWidget *widget,
 
   gtk_notebook_append_page (assistant->notebook, page, NULL);
   gtk_widget_show (page);
-  gtk_assistant_update_buttons (assistant);
+  quarry_assistant_update_buttons (assistant);
 
   page_data->shown_callback	   = shown_callback;
   page_data->acceptable_callback   = acceptable_callback;
@@ -330,12 +335,13 @@ gtk_assistant_add_page (GtkAssistant *assistant, GtkWidget *widget,
 
 
 void
-gtk_assistant_set_page_help_link_id (GtkAssistant *assistant, GtkWidget *page,
-				     const gchar *help_link_id)
+quarry_assistant_set_page_help_link_id (QuarryAssistant *assistant,
+					GtkWidget *page,
+					const gchar *help_link_id)
 {
-  GtkAssistantPage *page_data;
+  QuarryAssistantPage *page_data;
 
-  g_return_if_fail (GTK_IS_ASSISTANT (assistant));
+  g_return_if_fail (QUARRY_IS_ASSISTANT (assistant));
   g_return_if_fail (GTK_IS_WIDGET (page));
   g_return_if_fail (help_link_id);
 
@@ -358,13 +364,13 @@ gtk_assistant_set_page_help_link_id (GtkAssistant *assistant, GtkWidget *page,
 
 
 void
-gtk_assistant_set_page_help_link_id_callback
-  (GtkAssistant *assistant, GtkWidget *page,
-   GtkAssistantPageHelpLinkIDCallback callback)
+quarry_assistant_set_page_help_link_id_callback
+  (QuarryAssistant *assistant, GtkWidget *page,
+   QuarryAssistantPageHelpLinkIDCallback callback)
 {
-  GtkAssistantPage *page_data;
+  QuarryAssistantPage *page_data;
 
-  g_return_if_fail (GTK_IS_ASSISTANT (assistant));
+  g_return_if_fail (QUARRY_IS_ASSISTANT (assistant));
   g_return_if_fail (GTK_IS_WIDGET (page));
   g_return_if_fail (callback);
 
@@ -387,10 +393,10 @@ gtk_assistant_set_page_help_link_id_callback
 
 
 void
-gtk_assistant_set_finish_button (GtkAssistant *assistant,
-				 const gchar *stock_id)
+quarry_assistant_set_finish_button (QuarryAssistant *assistant,
+				    const gchar *stock_id)
 {
-  g_return_if_fail (GTK_IS_ASSISTANT (assistant));
+  g_return_if_fail (QUARRY_IS_ASSISTANT (assistant));
   g_return_if_fail (stock_id);
 
   gtk_widget_destroy (assistant->finish_button);

@@ -65,7 +65,6 @@ quarry-marshal.$(OBJEXT) : quarry-marshal.c quarry-marshal.h
 
 libguigtk_a_SOURCES =				\
 	gtk-add-or-edit-label-dialog.c		\
-	gtk-assistant.c				\
 	gtk-clock.c				\
 	gtk-color-button.c			\
 	gtk-control-center.c			\
@@ -95,6 +94,7 @@ libguigtk_a_SOURCES =				\
 	gtk-tile-set.c				\
 	gtk-utils.c				\
 	gui-back-end.c				\
+	quarry-assistant.c			\
 	quarry-history-text-buffer.c		\
 	quarry-message-dialog.c			\
 	quarry-move-number-dialog.c		\
@@ -104,7 +104,6 @@ libguigtk_a_SOURCES =				\
 	quarry-text-view.c			\
 						\
 	gtk-add-or-edit-label-dialog.h		\
-	gtk-assistant.h				\
 	gtk-clock.h				\
 	gtk-color-button.h			\
 	gtk-control-center.h			\
@@ -135,6 +134,7 @@ libguigtk_a_SOURCES =				\
 	gtk-tile-set.h				\
 	gtk-utils.h				\
 	gui-back-end.h				\
+	quarry-assistant.h			\
 	quarry-history-text-buffer.h		\
 	quarry-message-dialog.h			\
 	quarry-move-number-dialog.h		\

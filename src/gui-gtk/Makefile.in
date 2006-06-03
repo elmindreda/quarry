@@ -222,7 +222,6 @@ PARSE_LIST_BUILD_RULE = \
 
 libguigtk_a_SOURCES = \
 	gtk-add-or-edit-label-dialog.c		\
-	gtk-assistant.c				\
 	gtk-clock.c				\
 	gtk-color-button.c			\
 	gtk-control-center.c			\
@@ -252,6 +251,7 @@ libguigtk_a_SOURCES = \
 	gtk-tile-set.c				\
 	gtk-utils.c				\
 	gui-back-end.c				\
+	quarry-assistant.c			\
 	quarry-history-text-buffer.c		\
 	quarry-message-dialog.c			\
 	quarry-move-number-dialog.c		\
@@ -261,7 +261,6 @@ libguigtk_a_SOURCES = \
 	quarry-text-view.c			\
 						\
 	gtk-add-or-edit-label-dialog.h		\
-	gtk-assistant.h				\
 	gtk-clock.h				\
 	gtk-color-button.h			\
 	gtk-control-center.h			\
@@ -292,6 +291,7 @@ libguigtk_a_SOURCES = \
 	gtk-tile-set.h				\
 	gtk-utils.h				\
 	gui-back-end.h				\
+	quarry-assistant.h			\
 	quarry-history-text-buffer.h		\
 	quarry-message-dialog.h			\
 	quarry-move-number-dialog.h		\
@@ -343,10 +343,9 @@ libguigtk_a_AR = $(AR) cru
 libguigtk_a_DEPENDENCIES = $(top_builddir)/src/gui-utils/libguiutils.a
 am__objects_1 =
 am_libguigtk_a_OBJECTS = gtk-add-or-edit-label-dialog.$(OBJEXT) \
-	gtk-assistant.$(OBJEXT) gtk-clock.$(OBJEXT) \
-	gtk-color-button.$(OBJEXT) gtk-control-center.$(OBJEXT) \
-	gtk-file-dialog.$(OBJEXT) gtk-file-selector.$(OBJEXT) \
-	gtk-freezable-spin-button.$(OBJEXT) \
+	gtk-clock.$(OBJEXT) gtk-color-button.$(OBJEXT) \
+	gtk-control-center.$(OBJEXT) gtk-file-dialog.$(OBJEXT) \
+	gtk-file-selector.$(OBJEXT) gtk-freezable-spin-button.$(OBJEXT) \
 	gtk-game-info-dialog.$(OBJEXT) gtk-games.$(OBJEXT) \
 	gtk-goban.$(OBJEXT) gtk-goban-base.$(OBJEXT) \
 	gtk-goban-window.$(OBJEXT) \
@@ -360,7 +359,8 @@ am_libguigtk_a_OBJECTS = gtk-add-or-edit-label-dialog.$(OBJEXT) \
 	gtk-resume-game-dialog.$(OBJEXT) \
 	gtk-sgf-tree-signal-proxy.$(OBJEXT) gtk-sgf-tree-view.$(OBJEXT) \
 	gtk-tile-set.$(OBJEXT) gtk-utils.$(OBJEXT) \
-	gui-back-end.$(OBJEXT) quarry-history-text-buffer.$(OBJEXT) \
+	gui-back-end.$(OBJEXT) quarry-assistant.$(OBJEXT) \
+	quarry-history-text-buffer.$(OBJEXT) \
 	quarry-message-dialog.$(OBJEXT) \
 	quarry-move-number-dialog.$(OBJEXT) \
 	quarry-save-confirmation-dialog.$(OBJEXT) \
@@ -376,7 +376,6 @@ DEFAULT_INCLUDES =  -I. -I$(srcdir) -I$(top_builddir)
 depcomp = $(SHELL) $(top_srcdir)/build/depcomp
 am__depfiles_maybe = depfiles
 @AMDEP_TRUE@DEP_FILES = ./$(DEPDIR)/gtk-add-or-edit-label-dialog.Po \
-@AMDEP_TRUE@	./$(DEPDIR)/gtk-assistant.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/gtk-clock.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/gtk-color-button.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/gtk-configuration.Po \
@@ -406,6 +405,7 @@ am__depfiles_maybe = depfiles
 @AMDEP_TRUE@	./$(DEPDIR)/gtk-tile-set.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/gtk-utils.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/gui-back-end.Po \
+@AMDEP_TRUE@	./$(DEPDIR)/quarry-assistant.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/quarry-history-text-buffer.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/quarry-marshal.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/quarry-message-dialog.Po \
@@ -450,7 +450,6 @@ distclean-compile:
 	-rm -f *.tab.c
 
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gtk-add-or-edit-label-dialog.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gtk-assistant.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gtk-clock.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gtk-color-button.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gtk-configuration.Po@am__quote@
@@ -481,6 +480,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gtk-tile-set.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gtk-utils.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gui-back-end.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/quarry-assistant.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/quarry-history-text-buffer.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/quarry-marshal.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/quarry-message-dialog.Po@am__quote@

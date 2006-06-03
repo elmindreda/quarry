@@ -22,7 +22,6 @@
 
 #include "gtk-new-game-dialog.h"
 
-#include "gtk-assistant.h"
 #include "gtk-configuration.h"
 #include "gtk-control-center.h"
 #include "gtk-games.h"
@@ -31,6 +30,7 @@
 #include "gtk-named-vbox.h"
 #include "gtk-preferences.h"
 #include "gtk-utils.h"
+#include "quarry-assistant.h"
 #include "quarry-stock.h"
 #include "time-control.h"
 #include "sgf.h"
@@ -82,7 +82,7 @@ gtk_new_game_dialog_get_type (void)
       NULL
     };
 
-    new_game_dialog_type = g_type_register_static (GTK_TYPE_ASSISTANT,
+    new_game_dialog_type = g_type_register_static (QUARRY_TYPE_ASSISTANT,
 						   "GtkNewGameDialog",
 						   &new_game_dialog_info, 0);
   }
@@ -124,8 +124,8 @@ gtk_new_game_dialog_init (GtkNewGameDialog *dialog)
   gtk_window_set_title (GTK_WINDOW (dialog), _("New Game"));
   gtk_utils_make_window_only_horizontally_resizable (GTK_WINDOW (dialog));
 
-  gtk_assistant_set_user_data (&dialog->assistant, dialog);
-  gtk_assistant_set_finish_button (&dialog->assistant, QUARRY_STOCK_PLAY);
+  quarry_assistant_set_user_data (&dialog->assistant, dialog);
+  quarry_assistant_set_finish_button (&dialog->assistant, QUARRY_STOCK_PLAY);
 
   /* "Game & Players" page. */
 
@@ -283,11 +283,12 @@ gtk_new_game_dialog_init (GtkNewGameDialog *dialog)
     = gtk_utils_pack_in_box (GTK_TYPE_VBOX, QUARRY_SPACING_BIG,
 			     named_vbox, GTK_UTILS_FILL,
 			     hbox, GTK_UTILS_FILL, NULL);
-  gtk_assistant_add_page (&dialog->assistant, game_and_players_page,
-			  GTK_STOCK_REFRESH, _("Game & Players"), NULL, NULL);
-  gtk_assistant_set_page_help_link_id (&dialog->assistant,
-				       game_and_players_page,
-				       "new-game-dialog-game-and-players");
+  quarry_assistant_add_page (&dialog->assistant, game_and_players_page,
+			     GTK_STOCK_REFRESH, _("Game & Players"),
+			     NULL, NULL);
+  quarry_assistant_set_page_help_link_id (&dialog->assistant,
+					  game_and_players_page,
+					  "new-game-dialog-game-and-players");
   gtk_widget_show_all (game_and_players_page);
 
   if (game_index != GTK_GAME_UNSUPPORTED) {
@@ -598,15 +599,15 @@ gtk_new_game_dialog_init (GtkNewGameDialog *dialog)
   }
 
   /* Finally, add the game rules notebook as an assistant page. */
-  gtk_assistant_add_page (&dialog->assistant, games_notebook,
-			  GTK_STOCK_PREFERENCES, _("Game Rules"),
-			  ((GtkAssistantPageShownCallback)
-			   show_game_specific_rules),
-			  ((GtkAssistantPageAcceptableCallback)
-			   instantiate_players));
-  gtk_assistant_set_page_help_link_id_callback
+  quarry_assistant_add_page (&dialog->assistant, games_notebook,
+			     GTK_STOCK_PREFERENCES, _("Game Rules"),
+			     ((QuarryAssistantPageShownCallback)
+			      show_game_specific_rules),
+			     ((QuarryAssistantPageAcceptableCallback)
+			      instantiate_players));
+  quarry_assistant_set_page_help_link_id_callback
     (&dialog->assistant, games_notebook,
-     (GtkAssistantPageHelpLinkIDCallback) get_game_rules_help_link_id);
+     (QuarryAssistantPageHelpLinkIDCallback) get_game_rules_help_link_id);
   gtk_widget_show_all (games_notebook);
 }
 
