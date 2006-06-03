@@ -1,3 +1,11 @@
+2006-06-02  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* gui-gtk/quarry-assistant.c: Rename from `gtk-assistant.c' to
+	make way for actual GtkAssistant of GTK+ 2.10 and up.  Rename
+	functions etc. as appropriate.  (Suggested by David Gómez.)
+
+	* gui-gtk/quarry-assistant.h: Rename from `gtk-assistant.h'.
+
 2006-03-09  Paul Pogonyshev  <pogonyshev@gmx.net>
 
 	* (Quarry version 0.1.17.)
