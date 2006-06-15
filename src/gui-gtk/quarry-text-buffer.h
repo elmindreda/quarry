@@ -64,6 +64,9 @@ struct _QuarryTextBuffer {
   guint			      last_assigned_state_index;
   guint			      unmodified_state_index;
 
+  guint			      is_undoing_or_redoing   : 1;
+  guint			      block_all_modifications : 1;
+
   glong			      last_modification_time;
   glong			      previous_modification_time;
 };
@@ -80,6 +83,8 @@ GType		 quarry_text_buffer_get_type (void);
 
 GtkTextBuffer *	 quarry_text_buffer_new (GtkTextTagTable *tag_table);
 
+gboolean	 quarry_text_buffer_is_undoing_or_redoing
+		   (const QuarryTextBuffer *buffer);
 void		 quarry_text_buffer_undo
 		   (QuarryTextBuffer *buffer,
 		    const QuarryTextBufferUndoEntry *undo_entry);
