@@ -1,3 +1,39 @@
+2006-06-15  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* gui-gtk/quarry-text-buffer.c (quarry_text_buffer_init):
+	Initialize new fields `is_undoing_or_redoing' and
+	`block_all_modifications'.  Connect new function
+	quarry_text_buffer_modification_guard() to `delete-range',
+	`insert-text', `apply-tag' and `remove-tag' signals.
+	(quarry_text_buffer_delete_range): Don't touch state index fields
+	when `is_undoing_or_redoing' is true.  Remove all tags first, so
+	that appropriate undo operations are recorded.  Reset
+	`block_all_modifications'.
+	(quarry_text_buffer_insert_text): Likewise for state indices and
+	`block_all_modifications'.  Ensure that inherited tags are
+	recorded as buffer modifications.
+	(quarry_text_buffer_apply_tag): Implement.
+	(quarry_text_buffer_remove_tag): Implement.
+	(quarry_text_buffer_modification_guard)
+	(quarry_text_buffer_is_undoing_or_redoing): New functions.
+	(quarry_text_buffer_undo): Use new undo_or_redo () function.
+	(quarry_text_buffer_redo): Likewise.
+	(undo_or_redo): New function, code of quarry_text_buffer_undo()
+	and quarry_text_buffer_redo() conditioned on `undo' parameter.
+	Don't save `last_assigned_state_index' (not modified now).  Set
+	`is_undoing_or_redoing' to TRUE while in this function.
+	(quarry_text_buffer_combine_undo_entries): Combine entries with
+	tag operations too (but don't count them when deciding whether to
+	combine at all.)
+	(get_text_operation, adjust_operation_offsets): New functions.
+	(add_operation): Pass `undo_entry' instead of `buffer' for
+	consistency.
+	(delete_operation): New function.
+	(insert_text): Remove all tags from the newly inserted text to
+	prevent tag inheriting from accidentally spoiling undo/redo
+	consistency.
+	(apply_tag, remove_tag): New functions.
+
 2006-06-02  Paul Pogonyshev  <pogonyshev@gmx.net>
 
 	* gui-gtk/quarry-assistant.c: Rename from `gtk-assistant.c' to
