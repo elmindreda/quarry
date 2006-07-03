@@ -63,6 +63,7 @@
 #include "quarry-move-number-dialog.h"
 #include "quarry-save-confirmation-dialog.h"
 #include "quarry-stock.h"
+#include "quarry-text-buffer.h"
 #include "gui-utils.h"
 #include "time-control.h"
 #include "gtp-client.h"
@@ -150,6 +151,22 @@ enum {
 };
 
 
+typedef struct _GtkGobanWindowUndoEntryData	GtkGobanWindowUndoEntryData;
+typedef struct _GtkGobanWindowStateData		GtkGobanWindowStateData;
+
+struct _GtkGobanWindowUndoEntryData {
+  GtkGobanWindow	     *goban_window;
+  QuarryTextBufferUndoEntry  *undo_entry;
+};
+
+struct _GtkGobanWindowStateData {
+  GtkGobanWindow	     *goban_window;
+  QuarryTextBufferState	      state_before;
+  QuarryTextBufferState	      state_after;
+  const SgfNode		     *sgf_node_after;
+};
+
+
 static void	 gtk_goban_window_class_init (GtkGobanWindowClass *class);
 static void	 gtk_goban_window_init (GtkGobanWindow *goban_window);
 
@@ -173,6 +190,8 @@ static char *	 suggest_filename (GtkGobanWindow *goban_window);
 static void	 save_file_as_response (GtkWidget *file_dialog,
 					gint response_id,
 					GtkGobanWindow *goban_window);
+static gboolean  do_save_collection (GtkGobanWindow *goban_window,
+				     const gchar *filename);
 static void	 game_has_been_adjourned (GtkGobanWindow *goban_window);
 
 static void	 gtk_goban_window_close (GtkGobanWindow *goban_window);
@@ -322,7 +341,10 @@ static int	 find_variation_to_switch_to (GtkGobanWindow *goban_window,
 					      SgfDirection direction);
 
 static void	 update_children_for_new_node (GtkGobanWindow *goban_window,
-					       gboolean forced);
+					       gboolean forced,
+					       gboolean text_handled);
+static void	 set_comment_and_node_name (GtkGobanWindow *goban_window,
+					    const SgfNode *sgf_node);
 
 static void	 update_game_information (GtkGobanWindow *goban_window);
 static void	 update_window_title (GtkGobanWindow *goban_window);
@@ -353,8 +375,27 @@ static void	 text_buffer_mark_set (GtkTextBuffer *text_buffer,
 				       GtkTextIter *new_position_iterator,
 				       GtkTextMark *mark,
 				       GtkGobanWindow *goban_window);
+static void	 text_buffer_end_user_action (GtkTextBuffer *text_buffer,
+					      GtkGobanWindow *goban_window);
+static gboolean	 text_buffer_receive_undo_entry
+		   (QuarryTextBuffer *text_buffer,
+		    QuarryTextBufferUndoEntry *undo_entry,
+		    GtkGobanWindow *goban_window);
 
-static void	 fetch_comment_and_node_name (GtkGobanWindow *goban_window,
+static void	 text_buffer_undo
+		   (GtkGobanWindowUndoEntryData *undo_entry_data);
+static void	 text_buffer_redo
+		   (GtkGobanWindowUndoEntryData *undo_entry_data);
+
+static void	 text_buffer_set_state_undo
+		   (GtkGobanWindowStateData *state_data);
+static void	 text_buffer_set_state_redo
+		   (GtkGobanWindowStateData *state_data);
+
+static QuarryTextBufferState *
+		 update_comment_and_node_name_if_needed
+		   (GtkGobanWindow *goban_window, gboolean for_current_node);
+static gboolean	 fetch_comment_and_node_name (GtkGobanWindow *goban_window,
 					      gboolean for_current_node);
 
 static void	 set_move_number (GtkGobanWindow *goban_window);
@@ -491,6 +532,17 @@ static GtkWindow	*about_dialog = NULL;
 static GtkTextTag	*node_name_tag;
 static GtkTextTag	*separator_tag;
 static GtkTextTagTable	*node_name_tag_table;
+
+
+static const SgfCustomUndoHistoryEntryData  quarry_text_buffer_undo_entry_data
+  = { (SgfCustomOperationEntryFunction) text_buffer_undo,
+      (SgfCustomOperationEntryFunction) text_buffer_redo,
+      (SgfCustomOperationEntryFunction) g_free };
+
+static const SgfCustomUndoHistoryEntryData  quarry_text_buffer_state_data
+  = { (SgfCustomOperationEntryFunction) text_buffer_set_state_undo,
+      (SgfCustomOperationEntryFunction) text_buffer_set_state_redo,
+      (SgfCustomOperationEntryFunction) g_free };
 
 
 GType
@@ -955,7 +1007,7 @@ gtk_goban_window_init (GtkGobanWindow *goban_window)
 			     NULL);
 
   /* Multipurpose text view and its text buffer. */
-  goban_window->text_buffer = gtk_text_buffer_new (node_name_tag_table);
+  goban_window->text_buffer = quarry_text_buffer_new (node_name_tag_table);
 
   g_signal_connect (goban_window->text_buffer, "insert-text",
 		    G_CALLBACK (text_buffer_insert_text), goban_window);
@@ -964,6 +1016,10 @@ gtk_goban_window_init (GtkGobanWindow *goban_window)
 			  goban_window);
   g_signal_connect (goban_window->text_buffer, "mark-set",
 		    G_CALLBACK (text_buffer_mark_set), goban_window);
+  g_signal_connect (goban_window->text_buffer, "end-user-action",
+		    G_CALLBACK (text_buffer_end_user_action), goban_window);
+  g_signal_connect (goban_window->text_buffer, "receive-undo-entry",
+		    G_CALLBACK (text_buffer_receive_undo_entry), goban_window);
 
   text_view = gtk_text_view_new_with_buffer (goban_window->text_buffer);
   goban_window->text_view = GTK_TEXT_VIEW (text_view);
@@ -1592,7 +1648,7 @@ do_enter_game_mode (GtkGobanWindow *goban_window)
   }
 
   goban_window->last_displayed_node = NULL;
-  update_children_for_new_node (goban_window, TRUE);
+  update_children_for_new_node (goban_window, TRUE, FALSE);
 
   if (USER_IS_TO_PLAY (goban_window) && !goban_window->pending_free_handicap)
     start_clock_if_needed (goban_window);
@@ -1674,14 +1730,8 @@ static void
 gtk_goban_window_save (GtkGobanWindow *goban_window, guint callback_action)
 {
   if (callback_action != GTK_GOBAN_WINDOW_SAVE_AS && goban_window->filename) {
-    fetch_comment_and_node_name (goban_window, TRUE);
-    sgf_write_file (goban_window->filename, goban_window->sgf_collection,
-		    sgf_configuration.force_utf8);
-
-    sgf_collection_set_unmodified (goban_window->sgf_collection);
-    goban_window->time_of_first_modification = 0;
-
-    if (callback_action == GTK_GOBAN_WINDOW_ADJOURN)
+    if (do_save_collection (goban_window, goban_window->filename)
+	&& callback_action == GTK_GOBAN_WINDOW_ADJOURN)
       game_has_been_adjourned (goban_window);
   }
   else {
@@ -1791,10 +1841,7 @@ save_file_as_response (GtkWidget *file_dialog, gint response_id,
   if (response_id == GTK_RESPONSE_OK) {
     gchar *filename = gtk_file_dialog_get_filename (file_dialog);
 
-    fetch_comment_and_node_name (goban_window, TRUE);
-
-    if (sgf_write_file (filename, goban_window->sgf_collection,
-			sgf_configuration.force_utf8)) {
+    if (do_save_collection (goban_window, filename)) {
       g_free (goban_window->filename);
       goban_window->filename = filename;
 
@@ -1802,12 +1849,6 @@ save_file_as_response (GtkWidget *file_dialog, gint response_id,
 	game_has_been_adjourned (goban_window);
 	return;
       }
-
-      /* This should always update window title through
-       * collection_modification_state_changed().
-       */
-      sgf_collection_set_unmodified (goban_window->sgf_collection);
-      goban_window->time_of_first_modification = 0;
     }
     else
       g_free (filename);
@@ -1817,6 +1858,39 @@ save_file_as_response (GtkWidget *file_dialog, gint response_id,
       && (response_id == GTK_RESPONSE_OK
 	  || response_id == GTK_RESPONSE_CANCEL))
     gtk_widget_destroy (file_dialog);
+}
+
+
+static gboolean
+do_save_collection (GtkGobanWindow *goban_window, const gchar *filename)
+{
+  int result;
+  SgfGameTree *sgf_tree = goban_window->current_tree;
+  SgfUndoHistory *undo_history = sgf_tree->undo_history;
+
+  /* Fetch comment and node name, but ensure that SGF properties are
+   * changed only for the call to sgf_write_file(), by undo history
+   * swapping.
+   */
+
+  sgf_tree->undo_history = sgf_undo_history_new (sgf_tree);
+  fetch_comment_and_node_name (goban_window, TRUE);
+
+  result = sgf_write_file (filename, goban_window->sgf_collection,
+			   sgf_configuration.force_utf8);
+
+  if (sgf_utils_can_undo (sgf_tree))
+    sgf_utils_undo (sgf_tree);
+
+  sgf_undo_history_delete (sgf_tree->undo_history, sgf_tree);
+  sgf_tree->undo_history = undo_history;
+
+  if (result) {
+    sgf_collection_set_unmodified (goban_window->sgf_collection);
+    goban_window->time_of_first_modification = 0;
+  }
+
+  return result;
 }
 
 
@@ -3209,21 +3283,26 @@ handle_go_scoring_results (GtkGobanWindow *goban_window)
   go_score_game (current_tree->board, goban_window->dead_stones, komi,
 		 &score, &detailed_score, &black_territory, &white_territory);
 
-  sgf_node_append_text_property (current_tree->current_node, current_tree,
-				 SGF_COMMENT,
-				 string_buffer_steal_string (&detailed_score),
-				 "\n\n----------------\n\n");
+  sgf_utils_begin_action (current_tree);
 
-  sgf_node_add_list_of_point_property (current_tree->current_node,
-				       current_tree,
-				       SGF_BLACK_TERRITORY, black_territory,
-				       1);
-  sgf_node_add_list_of_point_property (current_tree->current_node,
-				       current_tree,
-				       SGF_WHITE_TERRITORY, white_territory,
-				       1);
+  fetch_comment_and_node_name (goban_window, TRUE);
 
-  sgf_node_add_score_result (game_info_node, current_tree, score, 1);
+  sgf_utils_append_text_property (current_tree->current_node, current_tree,
+				  SGF_COMMENT,
+				  string_buffer_steal_string (&detailed_score),
+				  "\n\n----------------\n\n");
+  set_comment_and_node_name (goban_window, current_tree->current_node);
+
+  sgf_utils_set_list_of_point_property (current_tree->current_node,
+					current_tree,
+					SGF_BLACK_TERRITORY, black_territory);
+  sgf_utils_set_list_of_point_property (current_tree->current_node,
+					current_tree,
+					SGF_WHITE_TERRITORY, white_territory);
+
+  sgf_utils_set_score_result (game_info_node, current_tree, score);
+
+  sgf_utils_end_action (current_tree);
 
   g_free (goban_window->dead_stones);
   goban_window->dead_stones = NULL;
@@ -3249,8 +3328,11 @@ set_current_tree (GtkGobanWindow *goban_window, SgfGameTree *sgf_tree)
 
   /* Won't work from update_children_for_new_node() below, because the
    * tree is being changed.
+   *
+   * FIXME: Doesn't really work currently.  Not important yet, since
+   *	    we don't support switching the current tree anyway.
    */
-  fetch_comment_and_node_name (goban_window, TRUE);
+  update_comment_and_node_name_if_needed (goban_window, TRUE);
 
   gtk_sgf_tree_signal_proxy_attach (sgf_tree);
 
@@ -3265,7 +3347,7 @@ set_current_tree (GtkGobanWindow *goban_window, SgfGameTree *sgf_tree)
 		     time_control_new_from_sgf_node (sgf_tree->root));
 
   update_game_information (goban_window);
-  update_children_for_new_node (goban_window, TRUE);
+  update_children_for_new_node (goban_window, TRUE, FALSE);
   undo_or_redo_availability_changed (NULL, goban_window);
 
   gtk_sgf_tree_view_set_sgf_tree (goban_window->sgf_tree_view, sgf_tree);
@@ -3317,7 +3399,10 @@ reenter_current_node (GtkGobanWindow *goban_window)
 			  &goban_window->sgf_board_state);
   }
 
-  update_children_for_new_node (goban_window, TRUE);
+  /* `text_handled' is set to TRUE to avoid spoiling undo/redo history
+   * and text buffer contents.
+   */
+  update_children_for_new_node (goban_window, TRUE, TRUE);
 }
 
 
@@ -3379,7 +3464,7 @@ play_pass_move (GtkGobanWindow *goban_window)
   if (goban_window->in_game_mode && IS_DISPLAYING_GAME_NODE (goban_window))
     move_has_been_played (goban_window);
 
-  update_children_for_new_node (goban_window, TRUE);
+  update_children_for_new_node (goban_window, TRUE, FALSE);
 }
 
 
@@ -3413,13 +3498,12 @@ do_resign_game (GtkGobanWindow *goban_window)
 
   leave_game_mode (goban_window);
 
-  sgf_node_add_text_property (game_info_node, goban_window->current_tree,
-			      SGF_RESULT,
-			      utils_cprintf ("%c+Resign", other_color_char),
-			      1);
+  sgf_utils_set_text_property (game_info_node, goban_window->current_tree,
+			       SGF_RESULT,
+			       utils_cprintf ("%c+Resign", other_color_char));
 
   sgf_utils_append_variation (goban_window->current_tree, EMPTY);
-  update_children_for_new_node (goban_window, TRUE);
+  update_children_for_new_node (goban_window, TRUE, FALSE);
 }
 
 
@@ -3607,7 +3691,7 @@ playing_mode_goban_clicked (GtkGobanWindow *goban_window,
       if (goban_window->in_game_mode && IS_DISPLAYING_GAME_NODE (goban_window))
 	move_has_been_played (goban_window);
 
-      update_children_for_new_node (goban_window, TRUE);
+      update_children_for_new_node (goban_window, TRUE, FALSE);
     }
 
     break;
@@ -3625,7 +3709,7 @@ playing_mode_goban_clicked (GtkGobanWindow *goban_window,
 					   goban_window->node_to_switch_to);
       just_changed_node (goban_window);
 
-      update_children_for_new_node (goban_window, TRUE);
+      update_children_for_new_node (goban_window, TRUE, FALSE);
     }
     else
       cancel_amazons_move (goban_window);
@@ -3744,7 +3828,7 @@ setup_mode_goban_clicked (GtkGobanWindow *goban_window,
 
   if (sgf_utils_apply_setup_changes (goban_window->current_tree,
 				     goban_window->goban->grid))
-    update_children_for_new_node (goban_window, TRUE);
+    update_children_for_new_node (goban_window, TRUE, FALSE);
 }
 
 
@@ -4013,7 +4097,7 @@ label_mode_goban_clicked (GtkGobanWindow *goban_window,
   if (sgf_utils_set_list_of_label_property (current_node,
 					    goban_window->current_tree,
 					    SGF_LABEL, new_label_list))
-    update_children_for_new_node (goban_window, TRUE);
+    update_children_for_new_node (goban_window, TRUE, FALSE);
 }
 
 
@@ -4274,7 +4358,7 @@ navigate_goban (GtkGobanWindow *goban_window,
   }
 
   just_changed_node (goban_window);
-  update_children_for_new_node (goban_window, TRUE);
+  update_children_for_new_node (goban_window, TRUE, FALSE);
 }
 
 
@@ -4285,7 +4369,7 @@ switch_to_given_node (GtkGobanWindow *goban_window, SgfNode *sgf_node)
   sgf_utils_switch_to_given_node (goban_window->current_tree, sgf_node);
   just_changed_node (goban_window);
 
-  update_children_for_new_node (goban_window, FALSE);
+  update_children_for_new_node (goban_window, FALSE, FALSE);
 }
 
 
@@ -4314,20 +4398,24 @@ find_variation_to_switch_to (GtkGobanWindow *goban_window,
 
 
 static void
-update_children_for_new_node (GtkGobanWindow *goban_window, gboolean forced)
+update_children_for_new_node (GtkGobanWindow *goban_window, gboolean forced,
+			      gboolean text_handled)
 {
   const SgfBoardState *const board_state = &goban_window->sgf_board_state;
   SgfGameTree *current_tree = goban_window->current_tree;
   SgfNode *current_node = current_tree->current_node;
+  QuarryTextBufferState *text_buffer_state = NULL;
   char goban_markup[BOARD_GRID_SIZE];
-  const char *comment;
-  const char *node_name;
 
   if (!forced && current_node == goban_window->last_displayed_node)
     return;
 
-  if (goban_window->last_displayed_node)
-    fetch_comment_and_node_name (goban_window, FALSE);
+  if (goban_window->last_displayed_node
+      && goban_window->last_displayed_node != current_node
+      && !text_handled) {
+    text_buffer_state = update_comment_and_node_name_if_needed (goban_window,
+								FALSE);
+  }
 
   reset_amazons_move_data (goban_window);
 
@@ -4370,15 +4458,13 @@ update_children_for_new_node (GtkGobanWindow *goban_window, gboolean forced)
   update_game_specific_information (goban_window);
   update_move_information (goban_window);
 
-  comment   = sgf_node_get_text_property_value (current_node, SGF_COMMENT);
-  node_name = sgf_node_get_text_property_value (current_node, SGF_NODE_NAME);
+  if (goban_window->last_displayed_node != current_node && !text_handled)
+    set_comment_and_node_name (goban_window, current_node);
 
-  goban_window->node_name_inserted = FALSE;
-  gtk_utils_set_text_buffer_text (goban_window->text_buffer, comment);
-  if (node_name)
-    insert_node_name (goban_window, node_name);
-
-  gtk_text_buffer_set_modified (goban_window->text_buffer, FALSE);
+  if (text_buffer_state) {
+    quarry_text_buffer_get_state (QUARRY_TEXT_BUFFER (goban_window->text_buffer),
+				  text_buffer_state);
+  }
 
   if (!goban_window->in_game_mode) {
     int k;
@@ -4412,6 +4498,29 @@ update_children_for_new_node (GtkGobanWindow *goban_window, gboolean forced)
   goban_window->switching_y = NULL_Y;
 
   goban_window->last_displayed_node = current_node;
+}
+
+
+static void
+set_comment_and_node_name (GtkGobanWindow *goban_window,
+			   const SgfNode *sgf_node)
+{
+  const char *comment = sgf_node_get_text_property_value (sgf_node,
+							  SGF_COMMENT);
+  const char *node_name = sgf_node_get_text_property_value (sgf_node,
+							    SGF_NODE_NAME);
+
+  gtk_utils_block_signal_handlers (goban_window->text_buffer,
+				   text_buffer_receive_undo_entry);
+
+  goban_window->node_name_inserted = FALSE;
+  gtk_utils_set_text_buffer_text (goban_window->text_buffer, comment);
+
+  if (node_name)
+    insert_node_name (goban_window, node_name);
+
+  gtk_utils_unblock_signal_handlers (goban_window->text_buffer,
+				     text_buffer_receive_undo_entry);
 }
 
 
@@ -4657,7 +4766,7 @@ update_move_information (const GtkGobanWindow *goban_window)
   if (!result_is_final
       && !board_is_game_over (goban_window->board, RULE_SET_DEFAULT,
 			      goban_window->sgf_board_state.color_to_play)) {
-    string_buffer_cat_string (&buffer, 
+    string_buffer_cat_string (&buffer,
 			      ((goban_window->sgf_board_state.color_to_play
 				== BLACK)
 			       ? _("; black to play") : _("; white to play")));
@@ -4938,6 +5047,8 @@ insert_node_name (GtkGobanWindow *goban_window, const gchar *node_name)
 
   GtkTextIter start_iterator;
 
+  gtk_text_buffer_begin_user_action (goban_window->text_buffer);
+
   gtk_text_buffer_get_start_iter (goban_window->text_buffer, &start_iterator);
 
   gtk_text_buffer_insert_with_tags (goban_window->text_buffer, &start_iterator,
@@ -4946,7 +5057,7 @@ insert_node_name (GtkGobanWindow *goban_window, const gchar *node_name)
 				    &node_name_and_comment_separator, 1,
 				    node_name_tag, separator_tag, NULL);
 
-  goban_window->node_name_inserted = TRUE;
+  gtk_text_buffer_end_user_action (goban_window->text_buffer);
 }
 
 
@@ -4983,64 +5094,68 @@ text_buffer_insert_text (GtkTextBuffer *text_buffer,
 			 const gchar *text, guint length,
 			 GtkGobanWindow *goban_window)
 {
+  gint paragraph_delimiter_index;
+  gint next_paragraph_start;
+  gchar *new_text;
+  gchar *new_text_pointer;
+  gboolean first_time = TRUE;
+
   /* We only need to do anything if there is a node name in the buffer
-   * and we are inserting something into it.
+   * and we are inserting something into it.  Also don't accidentally
+   * stop signal emission during undoing or redoing.
    */
-  if (goban_window->node_name_inserted
-      && gtk_text_iter_get_line (insertion_iterator) == 0) {
-    gint paragraph_delimiter_index;
-    gint next_paragraph_start;
-    gchar *new_text;
-    gchar *new_text_pointer;
-    gboolean first_time = TRUE;
+  if (!goban_window->node_name_inserted
+      || gtk_text_iter_get_line (insertion_iterator) > 0
+      || quarry_text_buffer_is_undoing_or_redoing (QUARRY_TEXT_BUFFER
+						   (text_buffer)))
+    return;
 
-    /* Don't insert paragraph terminators in the node name.  If there
-     * are any, replace them with spaces and re-emit this signal.
+  /* Don't insert paragraph terminators in the node name.  If there
+   * are any, replace them with spaces and re-emit this signal.
+   */
+
+  pango_find_paragraph_boundary (text, length, &paragraph_delimiter_index,
+				 &next_paragraph_start);
+  if (paragraph_delimiter_index == length)
+    return;
+
+  /* We will not expand the text, only maybe shrink it. */
+  new_text	   = g_malloc (length);
+  new_text_pointer = new_text;
+
+  do {
+    if (paragraph_delimiter_index > 0) {
+      memcpy (new_text_pointer, text, paragraph_delimiter_index);
+      new_text_pointer += paragraph_delimiter_index;
+    }
+
+    /* Insert a space if the paragraph was non-empty, or the
+     * paragraph delimiter is at the very beginning/end of the
+     * text.
      */
+    if (paragraph_delimiter_index > 0
+	|| first_time || next_paragraph_start == length)
+      *new_text_pointer++ = ' ';
 
+    text   += next_paragraph_start;
+    length -= next_paragraph_start;
+
+    first_time = FALSE;
     pango_find_paragraph_boundary (text, length, &paragraph_delimiter_index,
 				   &next_paragraph_start);
-    if (paragraph_delimiter_index == length)
-      return;
+  } while (paragraph_delimiter_index < length);
 
-    /* We will not expand the text, only maybe shrink it. */
-    new_text	     = g_malloc (length);
-    new_text_pointer = new_text;
+  g_signal_stop_emission_by_name (text_buffer, "insert-text");
 
-    do {
-      if (paragraph_delimiter_index > 0) {
-	memcpy (new_text_pointer, text, paragraph_delimiter_index);
-	new_text_pointer += paragraph_delimiter_index;
-      }
-
-      /* Insert a space if the paragraph was non-empty, or the
-       * paragraph delimiter is at the very beginning/end of the
-       * text.
-       */
-      if (paragraph_delimiter_index > 0
-	  || first_time || next_paragraph_start == length)
-	*new_text_pointer++ = ' ';
-
-      text   += next_paragraph_start;
-      length -= next_paragraph_start;
-
-      first_time = FALSE;
-      pango_find_paragraph_boundary (text, length, &paragraph_delimiter_index,
-				     &next_paragraph_start);
-    } while (paragraph_delimiter_index < length);
-
-    g_signal_stop_emission_by_name (text_buffer, "insert-text");
-
-    /* Block ourselves: there will not be any paragraphs this time. */
-    g_signal_handlers_block_by_func (text_buffer, text_buffer_insert_text,
+  /* Block ourselves: there will not be any paragraphs this time. */
+  g_signal_handlers_block_by_func (text_buffer, text_buffer_insert_text,
+				   goban_window);
+  gtk_text_buffer_insert (text_buffer, insertion_iterator,
+			  new_text, new_text_pointer - new_text);
+  g_signal_handlers_unblock_by_func (text_buffer, text_buffer_insert_text,
 				     goban_window);
-    gtk_text_buffer_insert (text_buffer, insertion_iterator,
-			    new_text, new_text_pointer - new_text);
-    g_signal_handlers_unblock_by_func (text_buffer, text_buffer_insert_text,
-				       goban_window);
 
-    g_free (new_text);
-  }
+  g_free (new_text);
 }
 
 
@@ -5050,19 +5165,22 @@ text_buffer_after_insert_text (GtkTextBuffer *text_buffer,
 			       const gchar *text, guint length,
 			       GtkGobanWindow *goban_window)
 {
-  if (goban_window->node_name_inserted
-      && (gtk_text_iter_get_offset (insertion_iterator)
-	  == g_utf8_strlen (text, length))) {
-    GtkTextIter start_iterator;
+  GtkTextIter start_iterator;
 
-    /* If we have inserted text before the node name, apply the node
-     * name tag to it.  Note that `insertion_iterator' has been moved
-     * to inserted text end by now.
-     */
-    gtk_text_buffer_get_start_iter (text_buffer, &start_iterator);
-    gtk_text_buffer_apply_tag (text_buffer, node_name_tag,
-			       &start_iterator, insertion_iterator);
-  }
+  if (!goban_window->node_name_inserted
+      || (gtk_text_iter_get_offset (insertion_iterator)
+	  != g_utf8_strlen (text, length))
+      || quarry_text_buffer_is_undoing_or_redoing (QUARRY_TEXT_BUFFER
+						   (text_buffer)))
+    return;
+
+  /* We have inserted text before the node name.  Apply the node name
+   * tag to it.  Note that `insertion_iterator' has been moved to
+   * inserted text end by now.
+   */
+  gtk_text_buffer_get_start_iter (text_buffer, &start_iterator);
+  gtk_text_buffer_apply_tag (text_buffer, node_name_tag,
+			     &start_iterator, insertion_iterator);
 }
 
 
@@ -5071,106 +5189,277 @@ text_buffer_mark_set (GtkTextBuffer *text_buffer,
 		      GtkTextIter *new_position_iterator, GtkTextMark *mark,
 		      GtkGobanWindow *goban_window)
 {
-  /* If we have node name inserted in the text buffer, but it has
-   * become empty and the cursor is somewhere else, remove the node
-   * name from the buffer.
+  GtkTextIter start_iterator;
+  GtkTextIter bound_iterator;
+  GtkTextIter node_name_end_iterator;
+
+  if (!goban_window->node_name_inserted
+      || mark != gtk_text_buffer_get_insert (text_buffer)
+      || gtk_text_iter_get_line (new_position_iterator) == 0
+      || quarry_text_buffer_is_undoing_or_redoing (QUARRY_TEXT_BUFFER
+						   (text_buffer)))
+    return;
+
+  gtk_text_buffer_get_start_iter (text_buffer, &start_iterator);
+  if (gtk_text_iter_get_char (&start_iterator) != '\n')
+    return;
+
+  gtk_text_buffer_get_iter_at_mark (text_buffer, &bound_iterator,
+				    (gtk_text_buffer_get_selection_bound
+				     (text_buffer)));
+  if (gtk_text_iter_get_line (&bound_iterator) == 0)
+    return;
+
+  /* We have node name inserted in the text buffer, but it has become
+   * empty and the cursor is somewhere else.  Remove the node name
+   * from the buffer.
    */
-  if (goban_window->node_name_inserted
-      && mark == gtk_text_buffer_get_insert (text_buffer)
-      && gtk_text_iter_get_line (new_position_iterator) > 0) {
-    GtkTextIter start_iterator;
-    GtkTextIter bound_iterator;
-    GtkTextIter node_name_end_iterator;
 
-    gtk_text_buffer_get_start_iter (text_buffer, &start_iterator);
-    if (gtk_text_iter_get_char (&start_iterator) != '\n')
-      return;
+  node_name_end_iterator = start_iterator;
+  gtk_text_iter_forward_char (&node_name_end_iterator);
 
-    gtk_text_buffer_get_iter_at_mark (text_buffer, &bound_iterator,
-				      (gtk_text_buffer_get_selection_bound
-				       (text_buffer)));
-    if (gtk_text_iter_get_line (&bound_iterator) == 0)
-      return;
+  gtk_text_buffer_delete (text_buffer, &start_iterator,
+			  &node_name_end_iterator);
+}
 
-    node_name_end_iterator = start_iterator;
-    gtk_text_iter_forward_char (&node_name_end_iterator);
 
-    gtk_text_buffer_delete (text_buffer, &start_iterator,
-			    &node_name_end_iterator);
-    goban_window->node_name_inserted = FALSE;
+static void
+text_buffer_end_user_action (GtkTextBuffer *text_buffer,
+			     GtkGobanWindow *goban_window)
+{
+  GtkTextIter start_iterator;
+  GSList *tags;
+
+  gtk_text_buffer_get_start_iter (text_buffer, &start_iterator);
+  tags = gtk_text_iter_get_tags (&start_iterator);
+
+  goban_window->node_name_inserted = (g_slist_find (tags, node_name_tag)
+				      != NULL);
+
+  g_slist_free (tags);
+}
+
+
+static gboolean
+text_buffer_receive_undo_entry (QuarryTextBuffer *text_buffer,
+				QuarryTextBufferUndoEntry *undo_entry,
+				GtkGobanWindow *goban_window)
+{
+  SgfGameTree *game_tree = goban_window->current_tree;
+  SgfNode *node = game_tree->current_node;
+  GtkGobanWindowUndoEntryData *undo_entry_data;
+
+  if (game_tree->undo_history
+      && (sgf_undo_history_is_last_applied_entry_single
+	  (game_tree->undo_history))
+      && (sgf_undo_history_check_last_applied_custom_entry_type
+	  (game_tree->undo_history, &quarry_text_buffer_undo_entry_data))) {
+    undo_entry_data = ((GtkGobanWindowUndoEntryData *)
+		       (sgf_undo_history_get_last_applied_custom_entry_data
+			(game_tree->undo_history)));
+
+    if (quarry_text_buffer_combine_undo_entries (text_buffer,
+						 undo_entry_data->undo_entry,
+						 undo_entry)) {
+      /* Entries combined.  Return now. */
+      return TRUE;
+    }
+  }
+
+  undo_entry_data = g_malloc (sizeof (GtkGobanWindowUndoEntryData));
+
+  /* Set to NULL so that quarry_text_buffer_redo() is not called this
+   * time (it shouldn't.)
+   */
+  undo_entry_data->goban_window = NULL;
+  undo_entry_data->undo_entry   = undo_entry;
+
+  sgf_utils_apply_custom_undo_entry (game_tree,
+				     &quarry_text_buffer_undo_entry_data,
+				     undo_entry_data, node);
+
+  undo_entry_data->goban_window = goban_window;
+
+  return TRUE;
+}
+
+
+static void
+text_buffer_undo (GtkGobanWindowUndoEntryData *undo_entry_data)
+{
+  if (undo_entry_data->goban_window) {
+    quarry_text_buffer_undo ((QUARRY_TEXT_BUFFER
+			      (undo_entry_data->goban_window->text_buffer)),
+			     undo_entry_data->undo_entry);
+    undo_entry_data->goban_window->text_buffer_modified = TRUE;
   }
 }
 
 
 static void
-fetch_comment_and_node_name (GtkGobanWindow *goban_window,
-			     gboolean for_current_node)
+text_buffer_redo (GtkGobanWindowUndoEntryData *undo_entry_data)
 {
-  if (gtk_text_buffer_get_modified (goban_window->text_buffer)) {
-    SgfGameTree *current_tree = goban_window->current_tree;
-    SgfNode *node = (for_current_node
-		     ? current_tree->current_node
-		     : goban_window->last_displayed_node);
+  if (undo_entry_data->goban_window) {
+    quarry_text_buffer_redo ((QUARRY_TEXT_BUFFER
+			      (undo_entry_data->goban_window->text_buffer)),
+			     undo_entry_data->undo_entry);
+    undo_entry_data->goban_window->text_buffer_modified = TRUE;
+  }
+}
+
+
+static void
+text_buffer_set_state_undo (GtkGobanWindowStateData *state_data)
+{
+  if (state_data->goban_window) {
+    GtkTextBuffer *text_buffer = state_data->goban_window->text_buffer;
     GtkTextIter start_iterator;
     GtkTextIter end_iterator;
-    gchar *new_comment;
-    gchar *new_node_name = NULL;
-    char *normalized_comment;
-    char *normalized_node_name;
-    SgfGameTreeState current_tree_state;
+
+    gtk_utils_block_signal_handlers (text_buffer,
+				     text_buffer_receive_undo_entry);
+
+    gtk_text_buffer_get_bounds (text_buffer, &start_iterator, &end_iterator);
+    gtk_text_buffer_delete (text_buffer, &start_iterator, &end_iterator);
+
+    gtk_utils_unblock_signal_handlers (text_buffer,
+				       text_buffer_receive_undo_entry);
+
+    quarry_text_buffer_set_state (QUARRY_TEXT_BUFFER (text_buffer),
+				  &state_data->state_before);
+  }
+}
+
+
+static void
+text_buffer_set_state_redo (GtkGobanWindowStateData *state_data)
+{
+  if (state_data->goban_window) {
+    set_comment_and_node_name (state_data->goban_window,
+			       state_data->sgf_node_after);
+
+    quarry_text_buffer_set_state
+      (QUARRY_TEXT_BUFFER (state_data->goban_window->text_buffer),
+       &state_data->state_after);
+  }
+}
+
+
+static QuarryTextBufferState *
+update_comment_and_node_name_if_needed (GtkGobanWindow *goban_window,
+					gboolean for_current_node)
+{
+  SgfGameTree *current_tree = goban_window->current_tree;
+  SgfGameTreeState current_tree_state;
+  QuarryTextBufferState *text_buffer_state = NULL;
+
+  if (!current_tree)
+    return NULL;
+
+  /* This is needed to suppress node changing signals.  They are not
+   * needed here and get in our way when `for_current_node' is FALSE.
+   */
+  sgf_game_tree_get_state (current_tree, &current_tree_state);
+  gtk_sgf_tree_signal_proxy_push_tree_state (current_tree,
+					     &current_tree_state);
+
+  /* FIXME: This action is separate from real text activity in the
+   *	    buffer and is undone/redone separately too.  It is unclear
+   *	    how to fix it now; maybe a ``don't stop on this action''
+   *	    flag?
+   */
+
+  sgf_utils_begin_action (current_tree);
+
+  if (fetch_comment_and_node_name (goban_window, for_current_node)) {
+    GtkGobanWindowStateData *buffer_state
+      = g_malloc (sizeof (GtkGobanWindowStateData));
+    GtkTextIter start_iterator;
+    GtkTextIter end_iterator;
 
     gtk_text_buffer_get_bounds (goban_window->text_buffer,
 				&start_iterator, &end_iterator);
+    gtk_text_buffer_begin_user_action (goban_window->text_buffer);
+    gtk_text_buffer_delete (goban_window->text_buffer,
+			    &start_iterator, &end_iterator);
+    gtk_text_buffer_end_user_action (goban_window->text_buffer);
 
-    if (goban_window->node_name_inserted) {
-      GtkTextIter second_line_iterator;
+    buffer_state->goban_window = NULL;
 
-      gtk_text_buffer_get_iter_at_line (goban_window->text_buffer,
-					&second_line_iterator, 1);
-      new_comment = gtk_text_iter_get_text (&second_line_iterator,
-					    &end_iterator);
+    quarry_text_buffer_get_state
+      (QUARRY_TEXT_BUFFER (goban_window->text_buffer),
+       &buffer_state->state_before);
+    buffer_state->sgf_node_after = current_tree->current_node;
 
-      gtk_text_iter_backward_char (&second_line_iterator);
-      new_node_name = gtk_text_iter_get_text (&start_iterator,
-					      &second_line_iterator);
-    }
-    else
-      new_comment = gtk_text_iter_get_text (&start_iterator, &end_iterator);
+    sgf_utils_apply_custom_undo_entry (current_tree,
+				       &quarry_text_buffer_state_data,
+				       buffer_state, NULL);
 
-    normalized_comment   = sgf_utils_normalize_text (new_comment, 0);
-    normalized_node_name = (new_node_name
-			    ? sgf_utils_normalize_text (new_node_name, 1)
-			    : NULL);
-
-    /* This is needed to suppress node changing signals.  They are not
-     * needed here and get in our way when `for_current_node' is
-     * FALSE.
-     */
-    sgf_game_tree_get_state (current_tree, &current_tree_state);
-    gtk_sgf_tree_signal_proxy_push_tree_state (current_tree,
-					       &current_tree_state);
-
-    /* FIXME: This makes undo/redo buttons behave weirdly.  Make
-     *	      changes to these fields saved just as they are made, not
-     *	      when the current node changes.  Difficult, but must be
-     *	      done in 0.1.17!
-     */
-    sgf_utils_set_text_property (node, current_tree,
-				 SGF_COMMENT, normalized_comment);
-    sgf_utils_set_text_property (node, current_tree,
-				 SGF_NODE_NAME, normalized_node_name);
-
-    /* In case we switched to `node' and it is different. */
-    sgf_utils_switch_to_given_node (current_tree,
-				    current_tree_state.current_node);
-
-    gtk_sgf_tree_signal_proxy_pop_tree_state (current_tree, NULL);
-
-    g_free (new_comment);
-    g_free (new_node_name);
-
-    gtk_text_buffer_set_modified (goban_window->text_buffer, FALSE);
+    buffer_state->goban_window = goban_window;
+    text_buffer_state	       = &buffer_state->state_after;
   }
+
+  sgf_utils_end_action (current_tree);
+
+  /* In case we switched to `node' and it is different. */
+  sgf_utils_switch_to_given_node (current_tree,
+				  current_tree_state.current_node);
+
+  gtk_sgf_tree_signal_proxy_pop_tree_state (current_tree, NULL);
+
+  return text_buffer_state;
+}
+
+
+static gboolean
+fetch_comment_and_node_name (GtkGobanWindow *goban_window,
+			     gboolean for_current_node)
+{
+  SgfGameTree *current_tree = goban_window->current_tree;
+  SgfNode *node = (for_current_node
+		   ? current_tree->current_node
+		   : goban_window->last_displayed_node);
+  gchar *new_comment;
+  gchar *new_node_name = NULL;
+  char *normalized_comment;
+  char *normalized_node_name;
+  GtkTextIter start_iterator;
+  GtkTextIter end_iterator;
+  gboolean any_changes;
+
+  gtk_text_buffer_get_bounds (goban_window->text_buffer,
+			      &start_iterator, &end_iterator);
+
+  if (goban_window->node_name_inserted) {
+    GtkTextIter second_line_iterator;
+
+    gtk_text_buffer_get_iter_at_line (goban_window->text_buffer,
+				      &second_line_iterator, 1);
+    new_comment = gtk_text_iter_get_text (&second_line_iterator,
+					  &end_iterator);
+
+    gtk_text_iter_backward_char (&second_line_iterator);
+    new_node_name = gtk_text_iter_get_text (&start_iterator,
+					    &second_line_iterator);
+  }
+  else
+    new_comment = gtk_text_iter_get_text (&start_iterator, &end_iterator);
+
+  normalized_comment   = sgf_utils_normalize_text (new_comment, 0);
+  normalized_node_name = (new_node_name
+			  ? sgf_utils_normalize_text (new_node_name, 1)
+			  : NULL);
+
+  any_changes = (sgf_utils_set_text_property (node, current_tree,
+					      SGF_COMMENT, normalized_comment)
+		 || sgf_utils_set_text_property (node, current_tree,
+						 SGF_NODE_NAME,
+						 normalized_node_name));
+
+  g_free (new_comment);
+  g_free (new_node_name);
+
+  return any_changes;
 }
 
 
@@ -5253,7 +5542,7 @@ set_player_to_move (GtkGobanWindow *goban_window, guint callback_action,
     sgf_utils_end_action (game_tree);
 
     if (created_new_node)
-      update_children_for_new_node (goban_window, FALSE);
+      update_children_for_new_node (goban_window, FALSE, FALSE);
     else if (player_to_move_changed) {
       update_move_information (goban_window);
       update_set_player_to_move_commands (goban_window);
@@ -5579,8 +5868,8 @@ move_has_been_played (GtkGobanWindow *goban_window)
 	char *result = utils_duplicate_string (move_node->move_color == BLACK
 					       ? "B+" : "W+");
 
-	sgf_node_add_text_property (game_info_node, goban_window->current_tree,
-				    SGF_RESULT, result, 1);
+	sgf_utils_set_text_property (game_info_node, goban_window->current_tree,
+				     SGF_RESULT, result);
       }
 
       break;
@@ -5591,8 +5880,8 @@ move_has_been_played (GtkGobanWindow *goban_window)
 	int num_white_disks;
 
 	reversi_count_disks (board, &num_black_disks, &num_white_disks);
-	sgf_node_add_score_result (game_info_node, goban_window->current_tree,
-				   num_black_disks - num_white_disks, 1);
+	sgf_utils_set_score_result (game_info_node, goban_window->current_tree,
+				    num_black_disks - num_white_disks);
       }
 
       break;
@@ -5760,7 +6049,7 @@ move_has_been_generated (GtpClient *client, int successful,
     move_has_been_played (goban_window);
 
     if (IS_DISPLAYING_GAME_NODE (goban_window))
-      update_children_for_new_node (goban_window, TRUE);
+      update_children_for_new_node (goban_window, TRUE, FALSE);
     else {
       gtk_sgf_tree_signal_proxy_pop_tree_state (current_tree,
 						&goban_window->game_position);
@@ -5825,12 +6114,12 @@ player_is_out_of_time (GtkClock *clock, GtkGobanWindow *goban_window)
 
   leave_game_mode (goban_window);
 
-  sgf_node_add_text_property (game_info_node, goban_window->current_tree,
-			      SGF_RESULT,
-			      utils_cprintf ("%c+Time", winner_color_char), 1);
+  sgf_utils_set_text_property (game_info_node, goban_window->current_tree,
+			       SGF_RESULT,
+			       utils_cprintf ("%c+Time", winner_color_char));
 
   sgf_utils_append_variation (goban_window->current_tree, EMPTY);
-  update_children_for_new_node (goban_window, TRUE);
+  update_children_for_new_node (goban_window, TRUE, FALSE);
 }
 
 
@@ -5840,16 +6129,22 @@ player_is_out_of_time (GtkClock *clock, GtkGobanWindow *goban_window)
 static void
 undo_operation (GtkGobanWindow *goban_window)
 {
+  goban_window->text_buffer_modified = FALSE;
   sgf_utils_undo (goban_window->current_tree);
-  update_children_for_new_node (goban_window, TRUE);
+
+  update_children_for_new_node (goban_window, TRUE,
+				goban_window->text_buffer_modified);
 }
 
 
 static void
 redo_operation (GtkGobanWindow *goban_window)
 {
+  goban_window->text_buffer_modified = FALSE;
   sgf_utils_redo (goban_window->current_tree);
-  update_children_for_new_node (goban_window, TRUE);
+
+  update_children_for_new_node (goban_window, TRUE,
+				goban_window->text_buffer_modified);
 }
 
 
@@ -5857,7 +6152,7 @@ static void
 append_empty_variation (GtkGobanWindow *goban_window)
 {
   sgf_utils_append_variation (goban_window->current_tree, EMPTY);
-  update_children_for_new_node (goban_window, TRUE);
+  update_children_for_new_node (goban_window, TRUE, FALSE);
 }
 
 
@@ -5879,7 +6174,7 @@ static void
 delete_current_node (GtkGobanWindow *goban_window)
 {
   sgf_utils_delete_current_node (goban_window->current_tree);
-  update_children_for_new_node (goban_window, TRUE);
+  update_children_for_new_node (goban_window, TRUE, FALSE);
 }
 
 

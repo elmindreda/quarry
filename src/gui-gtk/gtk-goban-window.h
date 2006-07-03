@@ -90,6 +90,7 @@ struct _GtkGobanWindow {
   GtkWidget		  *cancel_button;
   GtkTextView		  *text_view;
   GtkTextBuffer		  *text_buffer;
+  gboolean		   text_buffer_modified;
   gboolean		   node_name_inserted;
   GtkPaned		  *vpaned;
   GtkSgfTreeView	  *sgf_tree_view;
