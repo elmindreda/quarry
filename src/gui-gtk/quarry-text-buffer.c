@@ -813,9 +813,14 @@ quarry_text_buffer_combine_undo_entries
    * from `current_undo_entry' to the end of `previous_undo_entry'.
    */
   if (!quarry_text_buffer_undo_entry_is_empty (current_undo_entry)) {
-    previous_undo_entry->last->next     = current_undo_entry->first;
-    current_undo_entry->first->previous = previous_undo_entry->last;
-    previous_undo_entry->last		= current_undo_entry->last;
+    if (quarry_text_buffer_undo_entry_is_empty (previous_undo_entry))
+      previous_undo_entry->first = current_undo_entry->first;
+    else {
+      previous_undo_entry->last->next     = current_undo_entry->first;
+      current_undo_entry->first->previous = previous_undo_entry->last;
+    }
+
+    previous_undo_entry->last = current_undo_entry->last;
   }
 
   /* Delete the `current_undo_entry'. */
@@ -824,6 +829,37 @@ quarry_text_buffer_combine_undo_entries
   quarry_text_buffer_undo_entry_delete (current_undo_entry);
 
   return TRUE;
+}
+
+
+void
+quarry_text_buffer_get_state (QuarryTextBuffer *buffer,
+			      QuarryTextBufferState *state)
+{
+  g_return_if_fail (QUARRY_IS_TEXT_BUFFER (buffer));
+  g_return_if_fail (state);
+
+  state->state_index		= buffer->state_index;
+  state->unmodified_state_index = buffer->unmodified_state_index;
+}
+
+
+void
+quarry_text_buffer_set_state (QuarryTextBuffer *buffer,
+			      const QuarryTextBufferState *state)
+{
+  g_return_if_fail (QUARRY_IS_TEXT_BUFFER (buffer));
+  g_return_if_fail (state);
+  g_return_if_fail (buffer->current_undo_entry == NULL
+		    && !buffer->is_undoing_or_redoing);
+
+  buffer->state_index		 = state->state_index;
+  buffer->unmodified_state_index = state->unmodified_state_index;
+
+  /* This a semi-hackish way to prevent undo entry combinations, see
+   * quarry_text_buffer_combine_undo_entries().
+   */
+  buffer->last_modification_time = 0;
 }
 
 

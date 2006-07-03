@@ -79,6 +79,14 @@ struct _QuarryTextBufferClass {
 };
 
 
+typedef struct _QuarryTextBufferState		QuarryTextBufferState;
+
+struct _QuarryTextBufferState {
+  guint			      state_index;
+  guint			      unmodified_state_index;
+};
+
+
 GType		 quarry_text_buffer_get_type (void);
 
 GtkTextBuffer *	 quarry_text_buffer_new (GtkTextTagTable *tag_table);
@@ -96,6 +104,12 @@ gboolean	 quarry_text_buffer_combine_undo_entries
 		   (QuarryTextBuffer *buffer,
 		    QuarryTextBufferUndoEntry *previous_undo_entry,
 		    QuarryTextBufferUndoEntry *current_undo_entry);
+
+void		 quarry_text_buffer_get_state (QuarryTextBuffer *buffer,
+					       QuarryTextBufferState *state);
+void		 quarry_text_buffer_set_state
+		   (QuarryTextBuffer *buffer,
+		    const QuarryTextBufferState *state);
 
 
 QuarryTextBufferUndoEntry *
