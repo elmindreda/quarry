@@ -60,6 +60,8 @@ typedef struct _SgfChangePropertyOperationEntry
 typedef struct _SgfChangeRealPropertyOperationEntry
 		SgfChangeRealPropertyOperationEntry;
 
+typedef struct _SgfCustomOperationEntry		SgfCustomOperationEntry;
+
 struct _SgfNodeOperationEntry {
   SgfUndoHistoryEntry	entry;
 
@@ -103,6 +105,15 @@ struct _SgfChangeRealPropertyOperationEntry {
   SgfNode	       *node;
   SgfProperty	       *property;
   double		value;
+};
+
+struct _SgfCustomOperationEntry {
+  SgfUndoHistoryEntry	entry;
+
+  const SgfCustomUndoHistoryEntryData  *entry_data;
+  void		       *user_data;
+
+  SgfNode	       *node_to_switch_to;
 };
 
 
@@ -158,6 +169,11 @@ DECLARE_UNDO_OR_REDO_FUNCTION (sgf_operation_change_real_property_do_change);
 #endif
 
 
+DECLARE_UNDO_OR_REDO_FUNCTION (sgf_operation_custom_undo);
+DECLARE_UNDO_OR_REDO_FUNCTION (sgf_operation_custom_redo);
+DECLARE_FREE_DATA_FUNCTION (sgf_operation_custom_free_data);
+
+
 void		       sgf_utils_apply_undo_history_entry
 			 (SgfGameTree *tree, SgfUndoHistoryEntry *entry);
 
@@ -182,6 +198,10 @@ SgfUndoHistoryEntry *  sgf_change_property_undo_history_entry_new
 SgfUndoHistoryEntry *  sgf_change_real_property_undo_history_entry_new
 			 (SgfNode *node, SgfProperty *property,
 			  double new_value);
+
+SgfUndoHistoryEntry *  sgf_custom_undo_history_entry_new
+			 (const SgfCustomUndoHistoryEntryData *entry_data,
+			  void *user_data, SgfNode *node_to_switch_to);
 
 
 #endif /* QUARRY_SGF_UNDO_H */

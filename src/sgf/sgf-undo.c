@@ -120,6 +120,53 @@ sgf_undo_history_delete (SgfUndoHistory *history, SgfGameTree *tree)
 }
 
 
+int
+sgf_undo_history_is_last_applied_entry_single (const SgfUndoHistory *history)
+{
+  assert (history);
+
+  if (history->last_applied_entry) {
+    return (history->last_applied_entry->is_last_in_action
+	    && (!history->last_applied_entry->previous
+		|| history->last_applied_entry->previous->is_last_in_action));
+  }
+  else
+    return 0;
+}
+
+
+int
+sgf_undo_history_check_last_applied_custom_entry_type
+  (const SgfUndoHistory *history,
+   const SgfCustomUndoHistoryEntryData *entry_data)
+{
+  const SgfCustomOperationEntry *custom_entry;
+
+  assert (history);
+  assert (entry_data);
+
+  custom_entry = (const SgfCustomOperationEntry *) history->last_applied_entry;
+
+  return (custom_entry
+	  && custom_entry->entry.operation_index == SGF_OPERATION_CUSTOM
+	  && custom_entry->entry_data == entry_data);
+}
+
+
+void *
+sgf_undo_history_get_last_applied_custom_entry_data
+  (const SgfUndoHistory *history)
+{
+  assert (history);
+  assert (history->last_applied_entry);
+  assert (history->last_applied_entry->operation_index
+	  == SGF_OPERATION_CUSTOM);
+
+  return (((const SgfCustomOperationEntry *) history->last_applied_entry)
+	  ->user_data);
+}
+
+
 void
 sgf_undo_history_set_notification_callback
   (SgfUndoHistory *history,
@@ -378,6 +425,23 @@ sgf_change_real_property_undo_history_entry_new (SgfNode *node,
 }
 
 #endif /* SGF_REAL_VALUES_ALLOCATED_SEPARATELY */
+
+
+SgfUndoHistoryEntry *
+sgf_custom_undo_history_entry_new
+  (const SgfCustomUndoHistoryEntryData *entry_data, void *user_data,
+   SgfNode *node_to_switch_to)
+{
+  SgfCustomOperationEntry *operation_data
+    = utils_malloc (sizeof (SgfCustomOperationEntry));
+
+  operation_data->entry.operation_index = SGF_OPERATION_CUSTOM;
+  operation_data->entry_data		= entry_data;
+  operation_data->user_data		= user_data;
+  operation_data->node_to_switch_to	= node_to_switch_to;
+
+  return (SgfUndoHistoryEntry *) operation_data;
+}
 
 
 inline static void
@@ -911,6 +975,45 @@ sgf_operation_change_real_property_do_change (SgfUndoHistoryEntry *entry,
 }
 
 #endif
+
+
+void
+sgf_operation_custom_undo (SgfUndoHistoryEntry *entry, SgfGameTree *tree)
+{
+  SgfCustomOperationEntry *custom_entry = (SgfCustomOperationEntry *) entry;
+
+  if (custom_entry->entry_data->undo)
+    custom_entry->entry_data->undo (custom_entry->user_data, tree);
+
+  if (custom_entry->node_to_switch_to)
+    tree->node_to_switch_to = custom_entry->node_to_switch_to;
+}
+
+
+void
+sgf_operation_custom_redo (SgfUndoHistoryEntry *entry, SgfGameTree *tree)
+{
+  SgfCustomOperationEntry *custom_entry = (SgfCustomOperationEntry *) entry;
+
+  if (custom_entry->entry_data->redo)
+    custom_entry->entry_data->redo (custom_entry->user_data, tree);
+
+  if (custom_entry->node_to_switch_to)
+    tree->node_to_switch_to = custom_entry->node_to_switch_to;
+}
+
+
+void
+sgf_operation_custom_free_data  (SgfUndoHistoryEntry *entry, int is_applied,
+				 SgfGameTree *tree)
+{
+  SgfCustomOperationEntry *custom_entry = (SgfCustomOperationEntry *) entry;
+
+  UNUSED (is_applied);
+
+  if (custom_entry->entry_data->free_data)
+    custom_entry->entry_data->free_data (custom_entry->user_data, tree);
+}
 
 
 inline static SgfNode **
