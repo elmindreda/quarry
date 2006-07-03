@@ -1,3 +1,66 @@
+2006-07-03  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* gui-gtk/gtk-goban-window.c (gtk_goban_window_init): Create
+	QuarryTextBuffer to receive undo entries.  Bind `end-user-action'
+	and `receive-undo-entry' signals.
+	(do_save_collection): New function, partly broken out common part
+	of gtk_goban_window_save() and save_file_as_response().
+	(handle_go_scoring_results): Wrap everything in SGF action.  Use
+	sgf_utils_*() function, which honor undo histories.  Use
+	fetch_comment_and_node_name() and set_comment_and_node_name()
+	around comment change.
+	(set_current_tree): Call new function
+	update_comment_and_node_name_if_needed() instead of
+	fetch_comment_and_node_name().
+	(do_resign_game): Use sgf_utils_*() function, which honor undo
+	histories.
+	(update_children_for_new_node): Add `text_handled' argument.  Call
+	update_children_for_new_node() instead of
+	fetch_comment_and_node_name().  Save buffer state after inserting
+	new node's comment and node name, if asked.
+	(set_comment_and_node_name): New function, broken out of
+	update_children_for_new_node().
+	(insert_node_name): Wrap all operations in one user action so that
+	undo entry is correct.
+	(text_buffer_insert_text): Don't do anything if buffer is undoing
+	or redoing.
+	(text_buffer_after_insert_text): Likewise.
+	(text_buffer_mark_set): Likewise.
+	(text_buffer_end_user_action): New function, set
+	`node_name_inserted' here only.
+	(text_buffer_receive_undo_entry): New function.
+	(text_buffer_undo, text_buffer_redo, text_buffer_set_state_undo)
+	(text_buffer_set_state_redo): New functions.
+	(update_comment_and_node_name_if_needed): New function, partly
+	broken out of fetch_comment_and_node_name().
+	(move_has_been_played): Use sgf_utils_*() function, which honor
+	undo histories.
+	(player_is_out_of_time): Likewise.
+
+	* gui-gtk/quarry-text-buffer.c
+	(quarry_text_buffer_combine_undo_entries): Fix for the case when
+	`previous_undo_entry' becomes empty.
+	(quarry_text_buffer_get_state, quarry_text_buffer_set_state): New
+	functions.
+
+	* sgf/sgf-utils.c
+	(sgf_utils_append_text_property): Rename from
+	sgf_node_append_text_property() and modify to honor undo
+	histories.
+	(sgf_utils_set_score_result): Likewise, rename from
+	sgf_node_add_score_result().
+	(sgf_utils_apply_custom_undo_entry): New function.
+
+	* sgf/sgf-undo.c (sgf_undo_history_is_last_applied_entry_single)
+	(sgf_undo_history_check_last_applied_custom_entry_type)
+	(sgf_undo_history_get_last_applied_custom_entry_data): New
+	functions.
+	(sgf_custom_undo_history_entry_new)
+	(sgf_operation_custom_undo, sgf_operation_custom_redo)
+	(sgf_operation_custom_free_data): New functions.
+
+	* sgf/sgf-undo-operations.list: Add `SGF_OPERATION_CUSTOM'.
+
 2006-06-15  Paul Pogonyshev  <pogonyshev@gmx.net>
 
 	* gui-gtk/quarry-text-buffer.c (quarry_text_buffer_init):
