@@ -27,6 +27,7 @@
 #include "utils.h"
 
 #include <assert.h>
+#include <math.h>
 
 #ifdef HAVE_MEMORY_H
 #include <memory.h>
@@ -709,6 +710,61 @@ sgf_utils_set_list_of_label_property (SgfNode *node, SgfGameTree *tree,
 }
 
 
+/* Add a text property to a given node.  If such a property already
+ * exists, don't overwrite its value, but instead append new value to
+ * the old one, putting `separator' in between.  If this property
+ * doesn't yet exist, the `separator' is not used.  If `separator' is
+ * NULL, then "\n\n" is used.
+ *
+ * Return non-zero if the value is appended (zero if added).
+ */
+int
+sgf_utils_append_text_property (SgfNode *node, SgfGameTree *tree, SgfType type,
+				char *text, const char *separator)
+{
+  const char *existing_text;
+
+  assert (node);
+  assert (property_info[type].value_type == SGF_SIMPLE_TEXT
+	  || property_info[type].value_type == SGF_FAKE_SIMPLE_TEXT
+	  || property_info[type].value_type == SGF_TEXT);
+
+  existing_text = sgf_node_get_text_property_value (node, type);
+
+  if (existing_text) {
+    char *text_to_free = text;
+
+    text = utils_cat_strings (utils_duplicate_string (existing_text),
+			      (separator ? separator : "\n\n"), text, NULL);
+    utils_free (text_to_free);
+  }
+
+  return do_set_pointer_property (node, tree, type, strings_are_equal, text);
+}
+
+
+int
+sgf_utils_set_score_result (SgfNode *node, SgfGameTree *tree, double score)
+{
+  char *result;
+
+  if (score < -0.000005 || 0.000005 < score) {
+    char color_who_won = (score > 0.0 ? 'B' : 'W');
+
+    if (tree->game == GAME_GO
+	&& fabs (score - floor (score + 0.000005)) >= 0.000005)
+      result = utils_cprintf ("%c+%.f", color_who_won, fabs (score));
+    else
+      result = utils_cprintf ("%c+%d", color_who_won, (int) fabs (score));
+  }
+  else
+    result = utils_duplicate_string ("Draw");
+
+  return do_set_pointer_property (node, tree, SGF_RESULT,
+				  strings_are_equal, result);
+}
+
+
 int
 sgf_utils_set_time_left (SgfNode *node, SgfGameTree *tree,
 			 int color, double time_left, int moves_left)
@@ -741,6 +797,25 @@ sgf_utils_set_time_left (SgfNode *node, SgfGameTree *tree,
   }
 
   return 1;
+}
+
+
+void
+sgf_utils_apply_custom_undo_entry
+  (SgfGameTree *tree, const SgfCustomUndoHistoryEntryData *entry_data,
+   void *user_data, SgfNode *node_to_switch_to)
+{
+  SgfUndoHistoryEntry *entry;
+
+  assert (tree);
+  assert (entry_data);
+
+  entry = sgf_custom_undo_history_entry_new (entry_data, user_data,
+					     node_to_switch_to);
+
+  sgf_utils_begin_action (tree);
+  sgf_utils_apply_undo_history_entry (tree, entry);
+  sgf_utils_end_action (tree);
 }
 
 

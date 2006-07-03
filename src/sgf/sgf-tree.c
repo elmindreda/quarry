@@ -27,7 +27,6 @@
 #include "utils.h"
 
 #include <assert.h>
-#include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -1104,65 +1103,6 @@ sgf_node_add_pointer_property (SgfNode *node, SgfGameTree *tree,
   }
 
   return 0;
-}
-
-
-int
-sgf_node_add_score_result (SgfNode *node, SgfGameTree *tree,
-			   double score, int overwrite)
-{
-  char *result;
-
-  if (score < -0.000005 || 0.000005 < score) {
-    char color_who_won = (score > 0.0 ? 'B' : 'W');
-
-    if (tree->game == GAME_GO
-	&& fabs (score - floor (score + 0.000005)) >= 0.000005)
-      result = utils_cprintf ("%c+%.f", color_who_won, fabs (score));
-    else
-      result = utils_cprintf ("%c+%d", color_who_won, (int) fabs (score));
-  }
-  else
-    result = utils_duplicate_string ("Draw");
-
-  return sgf_node_add_text_property (node, tree, SGF_RESULT, result,
-				     overwrite);
-}
-
-
-/* Add a text property to a given node.  If such a property already
- * exists, don't overwrite its value, but instead append new value to
- * the old one, putting `separator' in between.  If this property
- * doesn't yet exist, the `separator' is not used.  If `separator' is
- * NULL, then "\n\n" is used.
- *
- * Return non-zero if the value is appended (zero if added).
- */
-int
-sgf_node_append_text_property (SgfNode *node, SgfGameTree *tree,
-			       SgfType type, char *text, const char *separator)
-{
-  SgfProperty **link;
-
-  assert (node);
-  assert (property_info[type].value_type == SGF_SIMPLE_TEXT
-	  || property_info[type].value_type == SGF_FAKE_SIMPLE_TEXT
-	  || property_info[type].value_type == SGF_TEXT);
-
-  if (!sgf_node_find_property (node, type, &link)) {
-    *link = sgf_property_new (tree, type, *link);
-    (*link)->value.memory_block = text;
-
-    return 0;
-  }
-
-  (*link)->value.memory_block = utils_cat_strings ((*link)->value.memory_block,
-						   (separator
-						    ? separator : "\n\n"),
-						   text, NULL);
-  utils_free (text);
-
-  return 1;
 }
 
 

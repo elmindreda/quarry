@@ -95,41 +95,47 @@ typedef enum {
 } SgfGameTreeNotificationCode;
 
 
-typedef struct _SgfVector		SgfVector;
-typedef struct _SgfVectorList		SgfVectorList;
+typedef struct _SgfVector			SgfVector;
+typedef struct _SgfVectorList			SgfVectorList;
 
-typedef struct _SgfLabel		SgfLabel;
-typedef struct _SgfLabelList		SgfLabelList;
+typedef struct _SgfLabel			SgfLabel;
+typedef struct _SgfLabelList			SgfLabelList;
 
-typedef struct _SgfFigureDescription	SgfFigureDescription;
+typedef struct _SgfFigureDescription		SgfFigureDescription;
 
-typedef union  _SgfValue		SgfValue;
-typedef struct _SgfProperty		SgfProperty;
+typedef union  _SgfValue			SgfValue;
+typedef struct _SgfProperty			SgfProperty;
 
-typedef struct _SgfNode			SgfNode;
-typedef struct _SgfNodeGeneric		SgfNodeGeneric;
-typedef struct _SgfNodeGeneric		SgfNodeGo;
-typedef struct _SgfNodeGeneric		SgfNodeReversi;
-typedef struct _SgfNodeAmazons		SgfNodeAmazons;
+typedef struct _SgfNode				SgfNode;
+typedef struct _SgfNodeGeneric			SgfNodeGeneric;
+typedef struct _SgfNodeGeneric			SgfNodeGo;
+typedef struct _SgfNodeGeneric			SgfNodeReversi;
+typedef struct _SgfNodeAmazons			SgfNodeAmazons;
 
-typedef struct _SgfBoardState		SgfBoardState;
+typedef struct _SgfBoardState			SgfBoardState;
 
-typedef struct _SgfUndoHistoryEntry	SgfUndoHistoryEntry;
-typedef struct _SgfUndoHistory		SgfUndoHistory;
+typedef struct _SgfUndoHistoryEntry		SgfUndoHistoryEntry;
+typedef struct _SgfUndoHistory			SgfUndoHistory;
 
 typedef void (* SgfUndoHistoryNotificationCallback)
   (SgfUndoHistory *undo_history, void *user_data);
 
-typedef struct _SgfGameTreeMapData	SgfGameTreeMapData;
-typedef struct _SgfGameTreeMapLine	SgfGameTreeMapLine;
-typedef struct _SgfGameTree		SgfGameTree;
+typedef struct _SgfGameTree			SgfGameTree;
+
+typedef void (* SgfCustomOperationEntryFunction) (SgfGameTree *tree,
+						  void *user_data);
+
+typedef struct _SgfCustomUndoHistoryEntryData	SgfCustomUndoHistoryEntryData;
+
+typedef struct _SgfGameTreeMapData		SgfGameTreeMapData;
+typedef struct _SgfGameTreeMapLine		SgfGameTreeMapLine;
 
 typedef void (* SgfGameTreeNotificationCallback)
   (SgfGameTree *tree, SgfGameTreeNotificationCode notification_code,
    void *user_data);
 
 
-typedef struct _SgfCollection		SgfCollection;
+typedef struct _SgfCollection			SgfCollection;
 
 typedef void (* SgfCollectionNotificationCallback) (SgfCollection *collection,
 						    void *user_data);
@@ -330,6 +336,13 @@ struct _SgfUndoHistory {
 
   SgfUndoHistoryNotificationCallback  notification_callback;
   void			 *user_data;
+};
+
+
+struct _SgfCustomUndoHistoryEntryData {
+  SgfCustomOperationEntryFunction   undo;
+  SgfCustomOperationEntryFunction   redo;
+  SgfCustomOperationEntryFunction   free_data;
 };
 
 
@@ -608,16 +621,6 @@ int		 sgf_node_add_pointer_property (SgfNode *node,
 				 (overwrite))
 
 
-int		 sgf_node_add_score_result (SgfNode *node, SgfGameTree *tree,
-					    double score, int overwrite);
-
-int		 sgf_node_append_text_property (SgfNode *node,
-						SgfGameTree *tree,
-						SgfType type,
-						char *text,
-						const char *separator);
-
-
 int		 sgf_node_delete_property (SgfNode *node, SgfGameTree *tree,
 					   SgfType type);
 
@@ -855,10 +858,21 @@ int	      sgf_utils_set_list_of_label_property (SgfNode *node,
 #define sgf_utils_set_color_property(node, tree, type, color)		\
   sgf_utils_set_number_property ((node), (tree), (type), (color))
 
+int	      sgf_utils_append_text_property (SgfNode *node, SgfGameTree *tree,
+					      SgfType type, char *text,
+					      const char *separator);
 
+
+int	       sgf_utils_set_score_result (SgfNode *node, SgfGameTree *tree,
+					   double score);
 int	      sgf_utils_set_time_left (SgfNode *node, SgfGameTree *tree,
 				       int color,
 				       double time_left, int moves_left);
+
+void	      sgf_utils_apply_custom_undo_entry
+		(SgfGameTree *tree,
+		 const SgfCustomUndoHistoryEntryData *entry_data,
+		 void *user_data, SgfNode *node_to_switch_to);
 
 int	      sgf_utils_get_node_move_number (const SgfNode *node,
 					      const SgfGameTree *tree);
@@ -912,6 +926,14 @@ void		  sgf_undo_history_set_notification_callback
 		    (SgfUndoHistory *history,
 		     SgfUndoHistoryNotificationCallback notification_callback,
 		     void *user_data);
+
+int		  sgf_undo_history_is_last_applied_entry_single
+		    (const SgfUndoHistory *history);
+int		  sgf_undo_history_check_last_applied_custom_entry_type
+		    (const SgfUndoHistory *history,
+		     const SgfCustomUndoHistoryEntryData *entry_data);
+void *		  sgf_undo_history_get_last_applied_custom_entry_data
+		    (const SgfUndoHistory *history);
 
 void		  sgf_utils_begin_action (SgfGameTree *tree);
 void		  sgf_utils_end_action (SgfGameTree *tree);
