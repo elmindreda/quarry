@@ -79,5 +79,10 @@ operations  SgfUndoOperation sgf_undo_operations {
 		NULL
 @endif
 
+  SGF_OPERATION_CUSTOM
+		sgf_operation_custom_undo
+		sgf_operation_custom_redo
+		sgf_operation_custom_free_data
+
   + SGF_NUM_OPERATIONS
 }
