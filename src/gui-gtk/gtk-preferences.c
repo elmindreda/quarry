@@ -1036,7 +1036,7 @@ create_game_tree_page (void)
 			     NULL);
   gtk_named_vbox_set_label_text
     (GTK_NAMED_VBOX (track_current_node_named_vbox),
-     _("Track Tree's Current Node"));
+     _("Track Tree\342\200\231s Current Node"));
 
   tooltips_check_button
     = gtk_check_button_new_with_mnemonic (_("Show _tooltips"));
@@ -1267,10 +1267,10 @@ create_background_table (GtkGameIndex game_index, gint num_table_rows)
   gtk_table_attach (table, file_selector,
 		    1, 2, 0, 1, GTK_EXPAND | GTK_FILL, 0, 0, 0);
 
-  button = gtk_utils_create_browse_button (FALSE, file_selector, FALSE,
-					   _("Choose a Background Texture..."),
-					   update_board_background_texture,
-					   GINT_TO_POINTER (game_index));
+  button = (gtk_utils_create_browse_button
+	    (FALSE, file_selector, FALSE,
+	     _("Choose a Background Texture\342\200\246"),
+	     update_board_background_texture, GINT_TO_POINTER (game_index)));
   gtk_utils_set_sensitive_on_toggle (GTK_TOGGLE_BUTTON (radio_buttons[0]),
 				     button, FALSE);
 
@@ -1857,9 +1857,11 @@ static void
 gtk_gtp_engine_dialog_present (gpointer new_engine)
 {
   static const gchar *hint_text
-    = N_("You can use `%n' and `%v' strings in <i>Screen name</i> field. "
-	 "They will substituted with name and version of the engine "
-	 "correspondingly. By default, `%n %v' is used.");
+    = N_("You can use \342\200\230%n\342\200\231 and "
+	 "\342\200\230%v\342\200\231 strings in <i>Screen name</i> field. "
+	 "They will be substituted with name and version of the engine "
+	 "correspondingly. By default, "
+	 "\342\200\230%n %v\342\200\231 is used.");
 
   GtpEngineListItem *engine_data = NULL;
   GtkEngineDialogData *data;
@@ -1958,7 +1960,7 @@ gtk_gtp_engine_dialog_present (gpointer new_engine)
   button
     = gtk_utils_create_browse_button (TRUE,
 				      GTK_WIDGET (data->command_line_entry),
-				      TRUE, _("Choose GTP Engine..."),
+				      TRUE, _("Choose GTP Engine\342\200\246"),
 				      NULL, NULL);
   gtk_table_attach (table, button, 2, 3, 0, 1, GTK_FILL, 0, 0, 0);
 
@@ -2015,8 +2017,9 @@ gtk_gtp_engine_dialog_response (GtkWindow *window, gint response_id,
       if (data->client) {
 	data->progress_dialog
 	  = gtk_progress_dialog_new (window, "Quarry",
-				     _("Querying engine's "
-				       "name, version and known commands..."),
+				     _("Querying engine\342\200\231s "
+				       "name, version "
+				       "and known commands\342\200\246"),
 				     show_progress_dialog,
 				     ((GtkProgressDialogCallback)
 				      cancel_engine_query),
@@ -2037,9 +2040,9 @@ gtk_gtp_engine_dialog_response (GtkWindow *window, gint response_id,
 	  = quarry_message_dialog_new (window, GTK_BUTTONS_OK,
 				       GTK_STOCK_DIALOG_ERROR,
 				       _("Please make sure you typed "
-					 "engine's filename correctly and "
-					 "that you have permission to "
-					 "execute it."),
+					 "engine\342\200\231s filename "
+					 "correctly and that you have "
+					 "permission to execute it."),
 				       error->message);
 
 	g_error_free (error);
@@ -2075,7 +2078,7 @@ client_initialized (GtpClient *client, void *user_data)
 
   gtp_client_quit (client);
   gtk_label_set_text (GTK_PROGRESS_DIALOG (progress_dialog)->label,
-		      _("Waiting for the engine to quit..."));
+		      _("Waiting for the engine to quit\342\200\246"));
 }
 
 
@@ -2181,7 +2184,7 @@ client_deleted (GtpClient *client, GError *shutdown_reason, void *user_data)
       static const gchar *hint
 	= N_("The engine might have crashed, quit prematurely or "
 	     "disconnected. Please verify command line, including options, "
-	     "and consult engine's documentation if needed.");
+	     "and consult engine\342\200\231s documentation if needed.");
 
       gtk_progress_dialog_recover_parent
 	(GTK_PROGRESS_DIALOG (progress_dialog));
@@ -3008,9 +3011,10 @@ gtk_preferences_instantiate_selected_engine (GtkEngineChain *engine_chain,
       GtkWidget *error_dialog
 	= quarry_message_dialog_new (engine_chain->parent_window,
 				     GTK_BUTTONS_OK, GTK_STOCK_DIALOG_ERROR,
-				     _("Perhaps engine's binary has been "
-				       "deleted or changed. You will probably "
-				       "need to alter engine's command line "
+				     _("Perhaps engine\342\200\231s binary "
+				       "has been deleted or changed. You will "
+				       "probably need to alter "
+				       "engine\342\200\231s command line "
 				       "in the Preferences dialog."),
 				     error->message);
 

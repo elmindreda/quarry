@@ -297,8 +297,9 @@ gtk_new_game_record_dialog_init (GtkNewGameRecordDialog *dialog)
 
   label = (gtk_utils_create_left_aligned_label
 	   (_("You can always change and expand game information later. "
-	      "Just choose `Edit/Game Information' menu item or press "
-	      "`Info' button on the main toolbar.")));
+	      "Just choose \342\200\230Edit/Game Information\342\200\231 "
+	      "menu item or press \342\200\230Info\342\200\231 button on "
+	      "the main toolbar.")));
   gtk_label_set_line_wrap (GTK_LABEL (label), TRUE);
 
   game_info_named_vbox = gtk_utils_pack_in_box (GTK_TYPE_NAMED_VBOX,

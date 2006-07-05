@@ -279,7 +279,7 @@ check_if_overwriting_file (GtkWidget *dialog, const gchar *filename)
       = N_("Note that all information in the existing file will be lost "
 	   "permanently if you choose to overwrite it.");
     static const gchar *message_format_string
-      = N_("File named `%s' already exists. "
+      = N_("File named \342\200\230%s\342\200\231 already exists. "
 	   "Do you want to overwrite it with the one you are saving?");
 
     gchar *filename_in_utf8 = g_filename_to_utf8 (filename, -1,

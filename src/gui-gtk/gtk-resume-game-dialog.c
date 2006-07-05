@@ -88,7 +88,8 @@ gtk_resume_game (void)
 {
   static GtkWindow *resume_game_dialog = NULL;
 
-  gtk_parser_interface_present (&resume_game_dialog, _("Resume Game..."),
+  gtk_parser_interface_present (&resume_game_dialog,
+				_("Resume Game\342\200\246"),
 				analyze_game_to_be_resumed);
 }
 
@@ -111,7 +112,8 @@ analyze_game_to_be_resumed (SgfCollection *sgf_collection,
       = quarry_message_dialog_new (NULL, GTK_BUTTONS_OK,
 				   GTK_STOCK_DIALOG_ERROR,
 				   NULL,
-				   _("The game stored in file `%s' (%s) "
+				   _("The game stored in file "
+				     "\342\200\230%s\342\200\231 (%s) "
 				     "is not supported by Quarry"),
 				   filename_in_utf8,
 				   _(game_info[sgf_tree->game].name));

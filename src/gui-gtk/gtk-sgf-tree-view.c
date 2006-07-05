@@ -1339,7 +1339,7 @@ append_limited_text (StringBuffer *buffer, const char *text,
   string_buffer_cat_as_string (buffer, text, g_utf8_next_char (scan) - text);
 
   /* Append ellipsis to indicate text truncation. */
-  string_buffer_cat_string (buffer, "\xe2\x80\xa6");
+  string_buffer_cat_string (buffer, "\342\200\246");
 }
 
 

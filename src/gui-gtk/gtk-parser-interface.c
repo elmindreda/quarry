@@ -55,9 +55,11 @@
 #endif
 
 
-static const gchar *reading_error = N_("Error reading file `%s'");
-static const gchar *not_sgf_file_error =
-  N_("File `%s' doesn't appear to be a valid SGF file");
+static const gchar *reading_error
+  = N_("Error reading file \342\200\230%s\342\200\231");
+static const gchar *not_sgf_file_error
+  = N_("File \342\200\230%s\342\200\231 doesn\342\200\231t "
+       "appear to be a valid SGF file");
 
 static const gchar *reading_error_hint =
   N_("Please check that the file exists "
@@ -65,8 +67,9 @@ static const gchar *reading_error_hint =
 
 static const gchar *not_sgf_file_error_hint =
   N_("Quarry uses SGF file format for storing game records. SGF files would "
-     "normally have `sgf' extension, but that's not necessarily true. Please "
-     "make sure you select a proper SGF file.");
+     "normally have \342\200\230sgf\342\200\231 extension, "
+     "but that\342\200\231s not necessarily true. Please make sure "
+     "you select a proper SGF file.");
 
 
 static void	 open_file_response (GtkWidget *file_dialog,
@@ -96,10 +99,9 @@ gtk_parser_interface_present (GtkWindow **dialog_window, const gchar *title,
     dialog_window = &open_sgf_file_dialog;
 
   if (*dialog_window == NULL) {
-    GtkWidget *file_dialog = gtk_file_dialog_new ((title
-						   ? title
-						   : _("Open SGF File...")),
-						  NULL, TRUE, GTK_STOCK_OPEN);
+    GtkWidget *file_dialog
+      = gtk_file_dialog_new (title ? title : _("Open SGF File\342\200\246"),
+			     NULL, TRUE, GTK_STOCK_OPEN);
 
     g_signal_connect (file_dialog, "response",
 		      G_CALLBACK (open_file_response), callback);
@@ -189,7 +191,9 @@ gtk_parse_sgf_file (const char *filename, GtkWindow *parent,
 
   filename_in_utf8 = g_filename_to_utf8 (absolute_filename, -1,
 					 NULL, NULL, NULL);
-  label_text = g_strdup_printf (_("Parsing file `%s'..."), filename_in_utf8);
+  label_text = g_strdup_printf (_("Parsing file "
+				  "\342\200\230%s\342\200\231\342\200\246"),
+				filename_in_utf8);
   g_free (filename_in_utf8);
 
   data->progress_dialog
