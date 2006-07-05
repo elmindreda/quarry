@@ -1,3 +1,28 @@
+2006-07-06  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* gui-gtk/gtk-goban-window.c (gtk_goban_window_init): Add
+	"File/Export..." submenu.
+	(export_ascii_diagram, export_senseis_library_diagram)
+	(do_export_diagram): New functions.
+	(update_commands_sensitivity): Make "Export.../Sensei's Library
+	Diagram" item sensitive only for Go trees.
+
+	* sgf/sgf-utils.c (sgf_utils_export_position_as_ascii)
+	(sgf_utils_export_position_as_senseis_library_diagram)
+	(add_horizontal_coordinates, add_horizontal_line): New functions.
+
+2006-07-05  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* gui-gtk/gtk-file-dialog.c: Use proper punctuation.
+	* gui-gtk/gtk-goban-window.c: Likewise.
+	* gui-gtk/gtk-new-game-record-dialog.c: Likewise.
+	* gui-gtk/gtk-parser-interface.c: Likewise.
+	* gui-gtk/gtk-preferences.c: Likewise.
+	* gui-gtk/gtk-resume-game-dialog.c: Likewise.
+	* gui-gtk/gtk-sgf-tree-view.c: Likewise.
+	* gui-gtk/quarry-save-confirmation-dialog.c: Likewise.
+	* gui-gtk/quarry-stock.c: Likewise.
+
 2006-07-03  Paul Pogonyshev  <pogonyshev@gmx.net>
 
 	* gui-gtk/gtk-goban-window.c (gtk_goban_window_init): Create
