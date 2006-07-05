@@ -194,6 +194,12 @@ static gboolean  do_save_collection (GtkGobanWindow *goban_window,
 				     const gchar *filename);
 static void	 game_has_been_adjourned (GtkGobanWindow *goban_window);
 
+static void	 export_ascii_diagram (GtkGobanWindow *goban_window);
+static void	 export_senseis_library_diagram (GtkGobanWindow *goban_window);
+static void	 do_export_diagram (GtkGobanWindow *goban_window,
+				    char *diagram_string,
+				    const gchar *message);
+
 static void	 gtk_goban_window_close (GtkGobanWindow *goban_window);
 
 static void	 show_find_dialog (GtkGobanWindow *goban_window);
@@ -641,6 +647,16 @@ gtk_goban_window_init (GtkGobanWindow *goban_window)
     { N_("/File/Save _as\342\200\246"),		"<shift><ctrl>S",
       gtk_goban_window_save,			GTK_GOBAN_WINDOW_SAVE_AS,
       "<StockItem>",				GTK_STOCK_SAVE_AS },
+
+    { N_("/File/_Export\342\200\246"), NULL, NULL, 0, "<Branch>" },
+    { N_("/File/Export\342\200\246/_ASCII Diagram"), NULL,
+      export_ascii_diagram,			0,
+      "<Item>" },
+    { N_("/File/Export\342\200\246/_Sensei\342\200\231s Library Diagram"),
+      NULL,
+      export_senseis_library_diagram,		0,
+      "<Item>" },
+
     { N_("/File/"), NULL, NULL, 0, "<Separator>" },
 
     { N_("/File/_Close"),			"<ctrl>W",
@@ -1920,6 +1936,61 @@ game_has_been_adjourned (GtkGobanWindow *goban_window)
   g_free (filename_in_utf8);
 
   gtk_widget_destroy (GTK_WIDGET (goban_window));
+}
+
+
+static void
+export_ascii_diagram (GtkGobanWindow *goban_window)
+{
+  static const gchar *message
+    = N_("ASCII diagram has been exported to clipboard");
+
+  do_export_diagram
+    (goban_window,
+     sgf_utils_export_position_as_ascii (goban_window->current_tree),
+     _(message));
+}
+
+
+static void
+export_senseis_library_diagram (GtkGobanWindow *goban_window)
+{
+  static const gchar *message
+    = N_("Sensei\342\200\231s Library diagram has been exported to clipboard");
+
+  do_export_diagram
+    (goban_window,
+     (sgf_utils_export_position_as_senseis_library_diagram
+      (goban_window->current_tree)),
+     _(message));
+}
+
+
+static void
+do_export_diagram (GtkGobanWindow *goban_window, char *diagram_string,
+		   const gchar *message)
+{
+  static const gchar *hint
+    = N_("You can usually paste the diagram in another application using "
+	 "\342\200\230Ctrl+C\342\200\231 key combination or by selecting "
+	 "appropriate menu item.");
+
+  int diagram_string_length = strlen (diagram_string);
+  GtkWidget *message_dialog;
+
+  gtk_clipboard_set_text (gtk_clipboard_get (gdk_atom_intern ("CLIPBOARD",
+							      FALSE)),
+			  diagram_string, diagram_string_length);
+  gtk_clipboard_set_text (gtk_clipboard_get (gdk_atom_intern ("PRIMARY",
+							      FALSE)),
+			  diagram_string, diagram_string_length);
+  utils_free (diagram_string);
+
+  message_dialog = quarry_message_dialog_new (GTK_WINDOW (goban_window),
+					      GTK_BUTTONS_OK,
+					      GTK_STOCK_DIALOG_INFO,
+					      _(hint), message);
+  gtk_utils_show_and_forget_dialog (GTK_DIALOG (message_dialog));
 }
 
 
@@ -4857,6 +4928,11 @@ update_commands_sensitivity (const GtkGobanWindow *goban_window)
 					   && !is_in_special_mode);
   gboolean next_variation_sensitive	= (current_node->next != NULL
 					   && !is_in_special_mode);
+
+  /* "File" submenu, */
+  gtk_utils_set_menu_items_sensitive
+    (goban_window->item_factory, goban_window->current_tree->game == GAME_GO,
+     "/File/Export\342\200\246/Sensei\342\200\231s Library Diagram", NULL);
 
   /* "Edit" submenu. */
   gtk_utils_set_menu_items_sensitive (goban_window->item_factory,
