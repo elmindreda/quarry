@@ -24,6 +24,7 @@
 #include "sgf-privates.h"
 #include "sgf-undo.h"
 #include "board.h"
+#include "game-info.h"
 #include "utils.h"
 
 #include <assert.h>
@@ -37,6 +38,11 @@
 typedef int (* ValuesComparator) (const void *first_value,
 				  const void *second_value);
 
+
+static void	add_horizontal_coordinates (const SgfGameTree *tree,
+					    StringBuffer *buffer);
+static void	add_horizontal_line (const SgfGameTree *tree,
+				     StringBuffer *buffer, int sensei_style);
 
 static void	do_enter_tree (SgfGameTree *tree, SgfNode *down_to);
 
@@ -1260,6 +1266,250 @@ sgf_utils_normalize_text (const char *text, int is_simple_text)
 
   *scan = 0;
   return utils_realloc (buffer.string, (scan + 1) - buffer.string);
+}
+
+
+char *
+sgf_utils_export_position_as_ascii (const SgfGameTree *tree)
+{
+  StringBuffer result;
+  BoardPoint hoshi_points[9];
+  int num_hoshi_points = 0;
+  int x;
+  int y;
+
+  assert (tree);
+  assert (tree->board);
+  assert (tree->board_state);
+
+  if (tree->game == GAME_GO) {
+    num_hoshi_points = go_get_hoshi_points (tree->board_width,
+					    tree->board_height,
+					    hoshi_points);
+  }
+
+  string_buffer_init (&result, 0x400, 0x200);
+
+  add_horizontal_coordinates (tree, &result);
+  add_horizontal_line (tree, &result, 0);
+
+  for (y = 0; y < tree->board_height; y++) {
+    int vertical_coordinate
+      = (game_info[tree->game].reversed_vertical_coordinates
+	 ? tree->board_height - y : y + 1);
+
+    string_buffer_printf (&result, "%*d |",
+			  tree->board_height < 10 ? 1 : 2,
+			  vertical_coordinate);
+
+    if (tree->board_state->last_move_x != 0
+	|| tree->board_state->last_move_y != y)
+      string_buffer_add_character (&result, ' ');
+    else
+      string_buffer_add_character (&result, '(');
+
+    for (x = 0; x < tree->board_width; x++) {
+      char character = '.';
+
+      switch (tree->board->grid[POSITION (x, y)]) {
+      case EMPTY:
+	{
+	  int k;
+
+	  for (k = 0; k < num_hoshi_points; k++) {
+	    if (x == hoshi_points[k].x && y == hoshi_points[k].y) {
+	      character = '+';
+	      break;
+	    }
+	  }
+	}
+
+	break;
+
+      case BLACK:
+	character = 'X';
+	break;
+
+      case WHITE:
+	character = 'O';
+	break;
+
+      case SPECIAL_ON_GRID_VALUE:
+	character = '=';
+	break;
+
+      default:
+	assert (0);
+      }
+
+      string_buffer_add_character (&result, character);
+
+      if ((tree->board_state->last_move_x != x
+	   && tree->board_state->last_move_x != x + 1)
+	  || tree->board_state->last_move_y != y)
+	string_buffer_add_character (&result, ' ');
+      else {
+	if (tree->board_state->last_move_x == x)
+	  string_buffer_add_character (&result, ')');
+	else
+	  string_buffer_add_character (&result, '(');
+      }
+    }
+
+    string_buffer_printf (&result, "| %-*d\n",
+			  tree->board_height < 10 ? 1 : 2,
+			  vertical_coordinate);
+  }
+
+  add_horizontal_line (tree, &result, 0);
+  add_horizontal_coordinates (tree, &result);
+
+  return string_buffer_steal_string (&result);
+}
+
+
+char *
+sgf_utils_export_position_as_senseis_library_diagram (const SgfGameTree *tree)
+{
+  StringBuffer result;
+  const SgfBoardState *board_state;
+  const BoardPositionList* circle_mark;
+  const BoardPositionList* square_mark;
+  const SgfLabelList *labels;
+  int x;
+  int y;
+
+  assert (tree);
+  assert (tree->game == GAME_GO);
+  assert (tree->board);
+  assert (tree->board_state);
+  assert (tree->current_node);
+
+  board_state = tree->board_state;
+  circle_mark = sgf_node_get_list_of_point_property_value (tree->current_node,
+							   SGF_CIRCLE);
+  square_mark = sgf_node_get_list_of_point_property_value (tree->current_node,
+							   SGF_SQUARE);
+  labels      = sgf_node_get_list_of_label_property_value (tree->current_node,
+							   SGF_LABEL);
+
+  string_buffer_init (&result, 0x400, 0x200);
+
+  string_buffer_add_characters (&result, '$', 2);
+
+  if (board_state->last_move_node) {
+    string_buffer_add_character
+      (&result, board_state->last_move_node->move_color == BLACK ? 'B' : 'W');
+  }
+
+  string_buffer_cat_string (&result, " \n");
+
+  add_horizontal_line (tree, &result, 1);
+
+  for (y = 0; y < tree->board_height; y++) {
+    string_buffer_cat_string (&result, "$$ |");
+
+    for (x = 0; x < tree->board_width; x++) {
+      static const char *characters = ".CSXB#OW@1";
+
+      int pos = POSITION (x, y);
+      const char *character;
+
+      string_buffer_add_character (&result, ' ');
+
+      if (tree->board->grid[pos] == EMPTY) {
+	if (labels) {
+	  BoardPoint point = { x, y };
+	  const char *label = sgf_label_list_get_label (labels, point);
+
+	  if (label
+	      && (('a' <= label[0] && label[0] <= 'z')
+		  || ('A' <= label[0] && label[0] <= 'Z'))
+	      && !label[1]) {
+	    char label_character = label[0];
+
+	    if ('A' <= label_character && label_character <= 'Z')
+	      label_character -= 'A' - 'a';
+
+	    string_buffer_add_character (&result, label_character);
+	    continue;
+	  }
+	}
+
+	character = characters;
+      }
+      else {
+	switch (tree->board->grid[pos]) {
+	case BLACK:
+	  character = characters + 3;
+	  break;
+
+	case WHITE:
+	  character = characters + 6;
+	  break;
+
+	default:
+	  assert (0);
+	}
+      }
+
+      if (circle_mark
+	  && board_position_list_find_position (circle_mark, pos) != -1)
+	character += 1;
+      else if (square_mark
+	       && board_position_list_find_position (square_mark, pos) != -1)
+	character += 2;
+      else if (IS_STONE (tree->board->grid[pos])
+	       && tree->board_state->last_move_x == x
+	       && tree->board_state->last_move_y == y)
+	character = characters + 9;
+
+      string_buffer_add_character (&result, *character);
+    }
+
+    string_buffer_cat_string (&result, " |\n");
+  }
+
+  add_horizontal_line (tree, &result, 1);
+
+  return string_buffer_steal_string (&result);
+}
+
+
+static void
+add_horizontal_coordinates (const SgfGameTree *tree, StringBuffer *buffer)
+{
+  int x;
+
+  string_buffer_add_characters (buffer, ' ', tree->board_height < 10 ? 3 : 4);
+
+  for (x = 0; x < tree->board_width; x++) {
+    char coordinate_character
+      = game_info[tree->game].horizontal_coordinates[x];
+
+    string_buffer_add_character (buffer, ' ');
+    string_buffer_add_character (buffer, coordinate_character);
+  }
+
+  string_buffer_add_character (buffer, '\n');
+}
+
+
+static void
+add_horizontal_line (const SgfGameTree *tree, StringBuffer *buffer,
+		     int sensei_style)
+{
+  if (sensei_style)
+    string_buffer_cat_string (buffer, "$$ ");
+  else {
+    string_buffer_add_characters (buffer, ' ',
+				  tree->board_height < 10 ? 2 : 3);
+  }
+
+  string_buffer_add_character (buffer, '+');
+  string_buffer_add_characters (buffer, '-', 2 * tree->board_width + 1);
+  string_buffer_add_character (buffer, '+');
+  string_buffer_add_character (buffer, '\n');
 }
 
 

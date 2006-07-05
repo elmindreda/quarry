@@ -914,6 +914,10 @@ void	      sgf_utils_add_free_handicap_stones
 
 char *	      sgf_utils_normalize_text (const char *text, int is_simple_text);
 
+char *	      sgf_utils_export_position_as_ascii (const SgfGameTree *tree);
+char *	      sgf_utils_export_position_as_senseis_library_diagram
+		(const SgfGameTree *tree);
+
 
 
 /* `sgf-undo.c' global functions. */
