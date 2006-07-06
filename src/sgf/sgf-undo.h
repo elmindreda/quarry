@@ -82,6 +82,7 @@ struct _SgfChangeNodeInlinedColorOperationEntry {
 
   SgfNode	       *node;
   int			color;
+  int			side_effect;
 };
 
 struct _SgfPropertyOperationEntry {
@@ -89,6 +90,7 @@ struct _SgfPropertyOperationEntry {
 
   SgfNode	       *node;
   SgfProperty	       *property;
+  int			side_effect;
 };
 
 struct _SgfChangePropertyOperationEntry {
@@ -97,6 +99,7 @@ struct _SgfChangePropertyOperationEntry {
   SgfNode	       *node;
   SgfProperty	       *property;
   SgfValue		value;
+  int			side_effect;
 };
 
 struct _SgfChangeRealPropertyOperationEntry {
@@ -105,6 +108,7 @@ struct _SgfChangeRealPropertyOperationEntry {
   SgfNode	       *node;
   SgfProperty	       *property;
   double		value;
+  int			side_effect;
 };
 
 struct _SgfCustomOperationEntry {
@@ -186,18 +190,18 @@ SgfUndoHistoryEntry *  sgf_swap_nodes_undo_history_entry_new (SgfNode *node1,
 							      SgfNode *node2);
 SgfUndoHistoryEntry *  sgf_change_node_inlined_color_undo_history_entry_new
 			 (SgfNode *node, SgfUndoOperation operation,
-			  int new_color);
+			  int new_color, int side_effect);
 
 SgfUndoHistoryEntry *  sgf_new_property_undo_history_entry_new
 			 (SgfGameTree *tree, SgfNode *node, SgfProperty **link,
-			  SgfType type);
+			  SgfType type, int side_effect);
 SgfUndoHistoryEntry *  sgf_delete_property_undo_history_entry_new
-			 (SgfNode *node, SgfProperty *property);
+			 (SgfNode *node, SgfProperty *property, int side_effect);
 SgfUndoHistoryEntry *  sgf_change_property_undo_history_entry_new
-			 (SgfNode *node, SgfProperty *property);
+			 (SgfNode *node, SgfProperty *property, int side_effect);
 SgfUndoHistoryEntry *  sgf_change_real_property_undo_history_entry_new
 			 (SgfNode *node, SgfProperty *property,
-			  double new_value);
+			  double new_value, int side_effect);
 
 SgfUndoHistoryEntry *  sgf_custom_undo_history_entry_new
 			 (const SgfCustomUndoHistoryEntryData *entry_data,

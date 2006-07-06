@@ -348,7 +348,7 @@ sgf_swap_nodes_undo_history_entry_new (SgfNode *node1, SgfNode *node2)
 
 SgfUndoHistoryEntry *
 sgf_change_node_inlined_color_undo_history_entry_new
-  (SgfNode *node, SgfUndoOperation operation, int new_color)
+  (SgfNode *node, SgfUndoOperation operation, int new_color, int side_effect)
 {
   SgfChangeNodeInlinedColorOperationEntry *operation_data
     = utils_malloc (sizeof (SgfChangeNodeInlinedColorOperationEntry));
@@ -356,6 +356,7 @@ sgf_change_node_inlined_color_undo_history_entry_new
   operation_data->entry.operation_index = operation;
   operation_data->node			= node;
   operation_data->color			= new_color;
+  operation_data->side_effect		= side_effect;
 
   return (SgfUndoHistoryEntry *) operation_data;
 }
@@ -363,7 +364,8 @@ sgf_change_node_inlined_color_undo_history_entry_new
 
 SgfUndoHistoryEntry *
 sgf_new_property_undo_history_entry_new (SgfGameTree *tree, SgfNode *node,
-					 SgfProperty **link, SgfType type)
+					 SgfProperty **link, SgfType type,
+					 int side_effect)
 {
   SgfPropertyOperationEntry *operation_data
     = utils_malloc (sizeof (SgfPropertyOperationEntry));
@@ -371,6 +373,7 @@ sgf_new_property_undo_history_entry_new (SgfGameTree *tree, SgfNode *node,
   operation_data->entry.operation_index = SGF_OPERATION_NEW_PROPERTY;
   operation_data->node			= node;
   operation_data->property		= sgf_property_new (tree, type, *link);
+  operation_data->side_effect		= side_effect;
 
   return (SgfUndoHistoryEntry *) operation_data;
 }
@@ -378,7 +381,8 @@ sgf_new_property_undo_history_entry_new (SgfGameTree *tree, SgfNode *node,
 
 SgfUndoHistoryEntry *
 sgf_delete_property_undo_history_entry_new (SgfNode *node,
-					    SgfProperty *property)
+					    SgfProperty *property,
+					    int side_effect)
 {
   SgfPropertyOperationEntry *operation_data
     = utils_malloc (sizeof (SgfPropertyOperationEntry));
@@ -386,6 +390,7 @@ sgf_delete_property_undo_history_entry_new (SgfNode *node,
   operation_data->entry.operation_index = SGF_OPERATION_DELETE_PROPERTY;
   operation_data->node			= node;
   operation_data->property		= property;
+  operation_data->side_effect		= side_effect;
 
   return (SgfUndoHistoryEntry *) operation_data;
 }
@@ -393,7 +398,8 @@ sgf_delete_property_undo_history_entry_new (SgfNode *node,
 
 SgfUndoHistoryEntry *
 sgf_change_property_undo_history_entry_new (SgfNode *node,
-					    SgfProperty *property)
+					    SgfProperty *property,
+					    int side_effect)
 {
   SgfChangePropertyOperationEntry *operation_data
     = utils_malloc (sizeof (SgfChangePropertyOperationEntry));
@@ -401,6 +407,7 @@ sgf_change_property_undo_history_entry_new (SgfNode *node,
   operation_data->entry.operation_index = SGF_OPERATION_CHANGE_PROPERTY;
   operation_data->node			= node;
   operation_data->property		= property;
+  operation_data->side_effect		= side_effect;
 
   return (SgfUndoHistoryEntry *) operation_data;
 }
@@ -411,7 +418,8 @@ sgf_change_property_undo_history_entry_new (SgfNode *node,
 SgfUndoHistoryEntry *
 sgf_change_real_property_undo_history_entry_new (SgfNode *node,
 						 SgfProperty *property,
-						 double new_value)
+						 double new_value,
+						 int side_effect)
 {
   SgfChangeRealPropertyOperationEntry *operation_data
     = utils_malloc (sizeof (SgfChangeRealPropertyOperationEntry));
@@ -420,6 +428,7 @@ sgf_change_real_property_undo_history_entry_new (SgfNode *node,
   operation_data->node			= node;
   operation_data->property		= property;
   operation_data->value			= new_value;
+  operation_data->side_effect		= side_effect;
 
   return (SgfUndoHistoryEntry *) operation_data;
 }
@@ -755,7 +764,8 @@ sgf_operation_change_node_move_color_do_change (SgfUndoHistoryEntry *entry,
     = (SgfChangeNodeInlinedColorOperationEntry *) entry;
   int temp_color;
 
-  tree->node_to_switch_to = color_entry->node;
+  if (!color_entry->side_effect)
+    tree->node_to_switch_to = color_entry->node;
 
   temp_color			= color_entry->node->move_color;
   color_entry->node->move_color = color_entry->color;
@@ -793,7 +803,8 @@ sgf_operation_add_property (SgfUndoHistoryEntry *entry, SgfGameTree *tree)
   SgfNode     *node	= ((SgfPropertyOperationEntry *) entry)->node;
   SgfProperty *property = ((SgfPropertyOperationEntry *) entry)->property;
 
-  tree->node_to_switch_to = node;
+  if (!((SgfPropertyOperationEntry *) entry)->side_effect)
+    tree->node_to_switch_to = node;
 
   * find_property_link (node, property->next) = property;
 }
@@ -805,7 +816,8 @@ sgf_operation_delete_property (SgfUndoHistoryEntry *entry, SgfGameTree *tree)
   SgfNode     *node	= ((SgfPropertyOperationEntry *) entry)->node;
   SgfProperty *property = ((SgfPropertyOperationEntry *) entry)->property;
 
-  tree->node_to_switch_to = node;
+  if (!((SgfPropertyOperationEntry *) entry)->side_effect)
+    tree->node_to_switch_to = node;
 
   * find_property_link (node, property) = property->next;
 }
@@ -847,7 +859,8 @@ sgf_operation_change_property_do_change (SgfUndoHistoryEntry *entry,
   SgfProperty *property = change_entry->property;
   SgfValue    *value	= &change_entry->value;
 
-  tree->node_to_switch_to = node;
+  if (!change_entry->side_effect)
+    tree->node_to_switch_to = node;
 
   switch (property_info[property->type].value_type) {
   case SGF_NUMBER:
@@ -967,7 +980,8 @@ sgf_operation_change_real_property_do_change (SgfUndoHistoryEntry *entry,
   SgfProperty *property = change_entry->property;
   double temp_value;
 
-  tree->node_to_switch_to = node;
+  if (!change_entry->side_effect)
+    tree->node_to_switch_to = node;
 
   temp_value		= *property->value.real;
   *property->value.real = change_entry->value;
