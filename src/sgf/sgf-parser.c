@@ -358,7 +358,9 @@ parse_buffer (SgfParsingData *data,
   else
     data->bytes_parsed = &dummy_bytes_parsed;
 
-  data->cancelled = 0;
+  data->file_error = 0;
+  data->cancelled  = 0;
+
   if (cancellation_flag)
     data->cancellation_flag = cancellation_flag;
   else {
@@ -419,7 +421,10 @@ parse_buffer (SgfParsingData *data,
     sgf_collection_delete (*collection);
     *collection = NULL;
 
-    return data->cancelled ? SGF_PARSING_CANCELLED : SGF_INVALID_FILE;
+    if (data->file_error)
+      return SGF_ERROR_READING_FILE;
+    else
+      return data->cancelled ? SGF_PARSING_CANCELLED : SGF_INVALID_FILE;
   }
 
   if (string_list_is_empty (*error_list)) {
@@ -861,11 +866,17 @@ refresh_buffer (SgfParsingData *data)
     data->buffer_refresh_point = data->buffer_end;
   }
 
-  /* FIXME: add less severe handling of errors. */
   if (fread ((data->buffer + 1) + unused_bytes, bytes_to_read, 1,
 	     data->file)
-      != 1)
-    assert (0);
+      != 1) {
+    data->file_error	       = 1;
+    data->cancelled	       = 1;
+    data->buffer_end	       = data->buffer_pointer;
+    data->buffer_refresh_point = data->buffer_end;
+    data->token		       = SGF_END;
+
+    return;
+  }
 
   data->buffer_pointer	       = data->buffer + 1;
   data->file_bytes_remaining  -= bytes_to_read;
@@ -893,11 +904,17 @@ expand_buffer (SgfParsingData *data)
 				data->buffer_size + buffer_increase);
   data->buffer_pointer = data->buffer + data->buffer_size;
 
-  /* FIXME: add less severe handling of errors. */
   if (fread ((char *) data->buffer + data->buffer_size,
 	     buffer_increase, 1, data->file)
-      != 1)
-    assert (0);
+      != 1) {
+    data->file_error	       = 1;
+    data->cancelled	       = 1;
+    data->buffer_end	       = data->buffer_pointer;
+    data->buffer_refresh_point = data->buffer_end;
+    data->token		       = SGF_END;
+
+    return;
+  }
 
   data->buffer_size		  += buffer_increase;
   data->buffer_end		   = data->buffer + data->buffer_size;

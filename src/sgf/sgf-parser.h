@@ -56,6 +56,8 @@ struct _SgfParsingData {
   int		       buffer_refresh_margin;
   const char	      *buffer_refresh_point;
 
+  int		       file_error;
+
   const int	      *cancellation_flag;
   int		       cancelled;
 
