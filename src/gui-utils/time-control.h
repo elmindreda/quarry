@@ -67,10 +67,11 @@ void		time_control_dispose (TimeControl *time_control);
 
 void		time_control_save_settings_in_sgf_node
 		  (const TimeControl *time_control,
-		   SgfNode *sgf_node, SgfGameTree *sgf_tree);
+		   SgfNode *sgf_node, SgfGameTree *sgf_tree, int side_effect);
 void		time_control_save_state_in_sgf_node
 		  (const TimeControl *time_control,
-		   SgfNode *sgf_node, SgfGameTree *sgf_tree, int color);
+		   SgfNode *sgf_node, SgfGameTree *sgf_tree, int color,
+		   int side_effect);
 
 void		time_control_apply_defaults_if_needed
 		  (const TimeControl *time_control,

@@ -146,7 +146,7 @@ time_control_dispose (TimeControl *time_control)
 void
 time_control_save_settings_in_sgf_node (const TimeControl *time_control,
 					SgfNode *sgf_node,
-					SgfGameTree *sgf_tree)
+					SgfGameTree *sgf_tree, int side_effect)
 {
   assert (time_control);
   assert (sgf_node);
@@ -167,12 +167,12 @@ time_control_save_settings_in_sgf_node (const TimeControl *time_control,
 					    time_control->overtime_length);
     }
 
-    sgf_node_add_text_property (sgf_node, sgf_tree, SGF_TIME_LIMIT,
-				utils_cprintf ("%d.0",
-					       time_control->main_time),
-				1);
-    sgf_node_add_text_property (sgf_node, sgf_tree, SGF_OVERTIME,
-				overtime_description, 1);
+    sgf_utils_set_text_property (sgf_node, sgf_tree, SGF_TIME_LIMIT,
+				 utils_cprintf ("%d.0",
+						time_control->main_time),
+				 side_effect);
+    sgf_utils_set_text_property (sgf_node, sgf_tree, SGF_OVERTIME,
+				 overtime_description, side_effect);
   }
 }
 
@@ -180,7 +180,7 @@ time_control_save_settings_in_sgf_node (const TimeControl *time_control,
 void
 time_control_save_state_in_sgf_node (const TimeControl *time_control,
 				     SgfNode *sgf_node, SgfGameTree *sgf_tree,
-				     int color)
+				     int color, int side_effect)
 {
   double seconds_left;
   int moves_to_play;
@@ -194,7 +194,7 @@ time_control_save_state_in_sgf_node (const TimeControl *time_control,
   seconds_left = time_control_get_time_left (time_control, &moves_to_play);
   sgf_utils_set_time_left (sgf_node, sgf_tree, color,
 			   floor (seconds_left * 1000.0 + 0.5) / 1000.0,
-			   moves_to_play);
+			   moves_to_play, side_effect);
 }
 
 
