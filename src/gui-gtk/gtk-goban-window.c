@@ -507,7 +507,7 @@ static GtkUtilsToolbarEntry navigation_toolbar_forward = {
 };
 
 static GtkUtilsToolbarEntry navigation_toolbar_variation_end = {
-  N_("End"),	N_("Go to the current variation\342\200\231s last node"),
+  N_("End"),	N_("Go to the current variation's last node"),
   GTK_STOCK_GOTO_LAST,
   (GtkUtilsToolbarEntryCallback) navigate_goban, GOBAN_NAVIGATE_VARIATION_END
 };
@@ -625,248 +625,247 @@ gtk_goban_window_init (GtkGobanWindow *goban_window)
 {
   static GtkItemFactoryEntry menu_entries[] = {
     { N_("/_File"), NULL, NULL, 0, "<Branch>" },
-    { N_("/File/_New Game\342\200\246"),	"<ctrl>N",
-      gtk_new_game_dialog_present,		0,
-      "<StockItem>",				GTK_STOCK_NEW },
-    { N_("/File/Ne_w Game Record\342\200\246"), "<shift><ctrl>N",
-      gtk_new_game_record_dialog_present,	0,
+    { N_("/File/_New Game..."),		"<ctrl>N",
+      gtk_new_game_dialog_present,	0,
+      "<StockItem>",			GTK_STOCK_NEW },
+    { N_("/File/Ne_w Game Record..."),	"<shift><ctrl>N",
+      gtk_new_game_record_dialog_present, 0,
       "<Item>" },
     { N_("/File/"), NULL, NULL, 0, "<Separator>" },
 
-    { N_("/File/_Open\342\200\246"),		"<ctrl>O",
-      gtk_parser_interface_present_default,	0,
-      "<StockItem>",				GTK_STOCK_OPEN },
-    { N_("/File/_Resume Game\342\200\246"),	"",
-      gtk_resume_game,				0,
+    { N_("/File/_Open..."),		"<ctrl>O",
+      gtk_parser_interface_present_default, 0,
+      "<StockItem>",			GTK_STOCK_OPEN },
+    { N_("/File/_Resume Game..."),	"",
+      gtk_resume_game,			0,
       "<Item>" },
-    { N_("/File/"), NULL, NULL, 0, "<Separator>" },
 
-    { N_("/File/_Save"),			"<ctrl>S",
-      gtk_goban_window_save,			GTK_GOBAN_WINDOW_SAVE,
-      "<StockItem>",				GTK_STOCK_SAVE },
-    { N_("/File/Save _as\342\200\246"),		"<shift><ctrl>S",
-      gtk_goban_window_save,			GTK_GOBAN_WINDOW_SAVE_AS,
-      "<StockItem>",				GTK_STOCK_SAVE_AS },
-
-    { N_("/File/_Export\342\200\246"), NULL, NULL, 0, "<Branch>" },
-    { N_("/File/Export\342\200\246/_ASCII Diagram"), NULL,
-      export_ascii_diagram,			0,
+    { N_("/File/_Export..."), NULL, NULL, 0, "<Branch>" },
+    { N_("/File/Export.../_ASCII Diagram"), NULL,
+      export_ascii_diagram,		0,
       "<Item>" },
-    { N_("/File/Export\342\200\246/_Sensei\342\200\231s Library Diagram"),
-      NULL,
+    { N_("/File/Export.../_Sensei's Library Diagram"), NULL,
       export_senseis_library_diagram,		0,
       "<Item>" },
 
     { N_("/File/"), NULL, NULL, 0, "<Separator>" },
 
-    { N_("/File/_Close"),			"<ctrl>W",
-      gtk_goban_window_close,			0,
-      "<StockItem>",				GTK_STOCK_CLOSE },
-    { N_("/File/_Quit"),			"<ctrl>Q",
-      gtk_control_center_quit,			0,
-      "<StockItem>",				GTK_STOCK_QUIT },
+    { N_("/File/_Save"),		"<ctrl>S",
+      gtk_goban_window_save,		GTK_GOBAN_WINDOW_SAVE,
+      "<StockItem>",			GTK_STOCK_SAVE },
+    { N_("/File/Save _As..."),		"<shift><ctrl>S",
+      gtk_goban_window_save,		GTK_GOBAN_WINDOW_SAVE_AS,
+      "<StockItem>",			GTK_STOCK_SAVE_AS },
+    { N_("/File/"), NULL, NULL, 0, "<Separator>" },
+
+    { N_("/File/_Close"),		"<ctrl>W",
+      gtk_goban_window_close,		0,
+      "<StockItem>",			GTK_STOCK_CLOSE },
+    { N_("/File/_Quit"),		"<ctrl>Q",
+      gtk_control_center_quit,		0,
+      "<StockItem>",			GTK_STOCK_QUIT },
 
 
     { N_("/_Edit"), NULL, NULL, 0, "<Branch>" },
-    { N_("/Edit/_Undo"),			"<ctrl>Z",
-      undo_operation,				0,
-      "<StockItem>",				GTK_STOCK_UNDO },
-    { N_("/Edit/_Redo"),			"<shift><ctrl>Z",
-      redo_operation,				0,
-      "<StockItem>",				GTK_STOCK_REDO },
+    { N_("/Edit/_Undo"),		"<ctrl>Z",
+      undo_operation,			0,
+      "<StockItem>",			GTK_STOCK_UNDO },
+    { N_("/Edit/_Redo"),		"<shift><ctrl>Z",
+      redo_operation,			0,
+      "<StockItem>",			GTK_STOCK_REDO },
     { N_("/Edit/"), NULL, NULL, 0, "<Separator>" },
 
-    { N_("/Edit/_Delete Node"),			"<alt>Delete",
-      delete_current_node,			0,
-      "<StockItem>",				GTK_STOCK_DELETE },
-    { N_("/Edit/Delete Node\342\200\231s _Children"), "<shift><alt>Delete",
-      delete_current_node_children,		0,
+    { N_("/Edit/_Delete Node"),		"<alt>Delete",
+      delete_current_node,		0,
+      "<StockItem>",			GTK_STOCK_DELETE },
+    { N_("/Edit/Delete Node's _Children"), "<shift><alt>Delete",
+      delete_current_node_children,	0,
       "<Item>" },
     { N_("/Edit/"), NULL, NULL, 0, "<Separator>" },
 
 
     { N_("/Edit/_Tools"), NULL, NULL, 0, "<Branch>" },
-    { N_("/Edit/Tools/_Move Tool"),		"<ctrl>M",
-      activate_move_tool,			0,
+    { N_("/Edit/Tools/_Move Tool"),	"<ctrl>M",
+      activate_move_tool,		0,
       "<RadioItem>" },
-    { N_("/Edit/Tools/_Setup Tool"),		"<ctrl><alt>S",
-      activate_setup_tool,			0,
+    { N_("/Edit/Tools/_Setup Tool"),	"<ctrl><alt>S",
+      activate_setup_tool,		0,
       "/Edit/Tools/Move Tool" },
     { N_("/Edit/Tools/"), NULL, NULL, 0, "<Separator>" },
 
-    { N_("/Edit/Tools/C_ross Markup"),		"<ctrl>1",
-      activate_markup_tool,			SGF_MARKUP_CROSS,
+    { N_("/Edit/Tools/C_ross Markup"),	"<ctrl>1",
+      activate_markup_tool,		SGF_MARKUP_CROSS,
       "/Edit/Tools/Setup Tool" },
-    { N_("/Edit/Tools/_Circle Markup"),		"<ctrl>2",
-      activate_markup_tool,			SGF_MARKUP_CIRCLE,
+    { N_("/Edit/Tools/_Circle Markup"), "<ctrl>2",
+      activate_markup_tool,		SGF_MARKUP_CIRCLE,
       "/Edit/Tools/Cross Markup" },
-    { N_("/Edit/Tools/S_quare Markup"),		"<ctrl>3",
-      activate_markup_tool,			SGF_MARKUP_SQUARE,
+    { N_("/Edit/Tools/S_quare Markup"), "<ctrl>3",
+      activate_markup_tool,		SGF_MARKUP_SQUARE,
       "/Edit/Tools/Circle Markup" },
-    { N_("/Edit/Tools/_Triangle Markup"),	"<ctrl>4",
-      activate_markup_tool,			SGF_MARKUP_TRIANGLE,
+    { N_("/Edit/Tools/_Triangle Markup"), "<ctrl>4",
+      activate_markup_tool,		SGF_MARKUP_TRIANGLE,
       "/Edit/Tools/Square Markup" },
-    { N_("/Edit/Tools/S_elected Markup"),	"<ctrl>5",
-      activate_markup_tool,			SGF_MARKUP_SELECTED,
+    { N_("/Edit/Tools/S_elected Markup"), "<ctrl>5",
+      activate_markup_tool,		SGF_MARKUP_SELECTED,
       "/Edit/Tools/Triangle Markup" },
     { N_("/Edit/Tools/"), NULL, NULL, 0, "<Separator>" },
 
-    { N_("/Edit/Tools/_Label Tool"),		"<ctrl>6",
-      activate_label_tool,		     GTK_GOBAN_WINDOW_TEXT_LABELS_MODE,
+    { N_("/Edit/Tools/_Label Tool"),	"<ctrl>6",
+      activate_label_tool,		GTK_GOBAN_WINDOW_TEXT_LABELS_MODE,
       "/Edit/Tools/Selected Markup" },
-    { N_("/Edit/Tools/_Number Tool"),		"<ctrl>7",
-      activate_label_tool,		  GTK_GOBAN_WINDOW_NUMERIC_LABELS_MODE,
+    { N_("/Edit/Tools/_Number Tool"),	"<ctrl>7",
+      activate_label_tool,		GTK_GOBAN_WINDOW_NUMERIC_LABELS_MODE,
       "/Edit/Tools/Label Tool" },
     { N_("/Edit/Tools/"), NULL, NULL, 0, "<Separator>" },
 
-    { N_("/Edit/Tools/Scori_ng Tool"),		NULL,
-      activate_scoring_tool,			0,
+    { N_("/Edit/Tools/Scori_ng Tool"),	NULL,
+      activate_scoring_tool,		0,
       "/Edit/Tools/Number Tool" },
 
-    { N_("/Edit/_Add Empty Node"),		NULL,
-      append_empty_variation,			0,
+    { N_("/Edit/_Add Empty Node"),	NULL,
+      append_empty_variation,		0,
       "<Item>" },
     { N_("/Edit/"), NULL, NULL, 0, "<Separator>" },
 
-    { N_("/Edit/Move _Branch Up"),		NULL,
-      swap_adjacent_branches,			TRUE,
+    { N_("/Edit/Move _Branch Up"),	NULL,
+      swap_adjacent_branches,		TRUE,
       "<Item>" },
-    { N_("/Edit/Move Branch Do_wn"),		NULL,
-      swap_adjacent_branches,			FALSE,
+    { N_("/Edit/Move Branch Do_wn"),	NULL,
+      swap_adjacent_branches,		FALSE,
       "<Item>" },
     { N_("/Edit/"), NULL, NULL, 0, "<Separator>" },
 
-    { N_("/Edit/Edit Node _Name"),		"<ctrl><alt>N",
-      select_node_name,				0,
+    { N_("/Edit/Edit Node _Name"),	"<ctrl><alt>N",
+      select_node_name,			0,
       "<Item>" },
-    { N_("/Edit/Set _Move Number"),		NULL,
-      set_move_number,				0,
+    { N_("/Edit/Set _Move Number"),	NULL,
+      set_move_number,			0,
       "<Item>" },
 
     { N_("/Edit/_Player to Move"), NULL, NULL, 0, "<Branch>" },
-    { N_("/Edit/Player to Move/_White"),	NULL,
-      set_player_to_move,			WHITE,
+    { N_("/Edit/Player to Move/_White"), NULL,
+      set_player_to_move,		WHITE,
       "<RadioItem>" },
-    { N_("/Edit/Player to Move/_Black"),	NULL,
-      set_player_to_move,			BLACK,
+    { N_("/Edit/Player to Move/_Black"), NULL,
+      set_player_to_move,		BLACK,
       "/Edit/Player to Move/White" },
     { N_("/Edit/Player to Move/By Game _Rules"), NULL,
-      set_player_to_move,			EMPTY,
+      set_player_to_move,		EMPTY,
       "/Edit/Player to Move/Black" },
 
     { N_("/Edit/"), NULL, NULL, 0, "<Separator>" },
 
-    { N_("/Edit/_Find"),			"<ctrl>F",
-      show_find_dialog,				0,
-      "<StockItem>",				GTK_STOCK_FIND },
-    { N_("/Edit/Find Ne_xt"),			"<ctrl>G",
-      (GtkItemFactoryCallback) do_find_text,	GTK_GOBAN_WINDOW_FIND_NEXT,
+    { N_("/Edit/_Find"),		"<ctrl>F",
+      show_find_dialog,			0,
+      "<StockItem>",			GTK_STOCK_FIND },
+    { N_("/Edit/Find Ne_xt"),		"<ctrl>G",
+      (GtkItemFactoryCallback) do_find_text, GTK_GOBAN_WINDOW_FIND_NEXT,
       "<Item>" },
-    { N_("/Edit/Find Pre_vious"),		"<shift><ctrl>G",
-      (GtkItemFactoryCallback) do_find_text,	GTK_GOBAN_WINDOW_FIND_PREVIOUS,
+    { N_("/Edit/Find Pre_vious"),	"<shift><ctrl>G",
+      (GtkItemFactoryCallback) do_find_text, GTK_GOBAN_WINDOW_FIND_PREVIOUS,
       "<Item>" },
     { N_("/Edit/"), NULL, NULL, 0, "<Separator>" },
 
-    { N_("/Edit/Game _Information"),		"<alt>Return",
-      show_game_information_dialog,		0,
-      "<StockItem>",				GTK_STOCK_PROPERTIES },
+    { N_("/Edit/Game _Information"),	"<alt>Return",
+      show_game_information_dialog,	0,
+      "<StockItem>",			GTK_STOCK_PROPERTIES },
     { N_("/Edit/"), NULL, NULL, 0, "<Separator>" },
 
-    { N_("/Edit/Pr_eferences"),			NULL,
-      show_preferences_dialog,			0,
-      "<StockItem>",				GTK_STOCK_PREFERENCES },
+    { N_("/Edit/Pr_eferences"),		NULL,
+      show_preferences_dialog,		0,
+      "<StockItem>",			GTK_STOCK_PREFERENCES },
 
 
     { N_("/_View"), NULL, NULL, 0, "<Branch>" },
-    { N_("/View/_Main Toolbar"),		NULL,
-      show_or_hide_main_toolbar,		0,
+    { N_("/View/_Main Toolbar"),	NULL,
+      show_or_hide_main_toolbar,	0,
       "<CheckItem>" },
-    { N_("/View/_Editing Toolbar"),		NULL,
-      show_or_hide_editing_toolbar,		0,
+    { N_("/View/_Editing Toolbar"),	NULL,
+      show_or_hide_editing_toolbar,	0,
       "<CheckItem>" },
-    { N_("/View/_Navigation Toolbar"),		NULL,
-      show_or_hide_navigation_toolbar,		0,
-      "<CheckItem>" },
-    { N_("/View/"), NULL, NULL, 0, "<Separator>" },
-
-    { N_("/View/_Game Action Buttons"),		NULL,
-      show_or_hide_game_action_buttons,		0,
+    { N_("/View/_Navigation Toolbar"),	NULL,
+      show_or_hide_navigation_toolbar,	0,
       "<CheckItem>" },
     { N_("/View/"), NULL, NULL, 0, "<Separator>" },
 
-    { N_("/View/Game _Tree"),			NULL,
-      show_or_hide_sgf_tree_view,		GTK_GOBAN_WINDOW_TOGGLE_CHILD,
+    { N_("/View/_Game Action Buttons"),	NULL,
+      show_or_hide_game_action_buttons,	0,
       "<CheckItem>" },
-    { N_("/View/_Recenter on Current Node"),	"<ctrl><alt>C",
-      recenter_sgf_tree_view,			0,
+    { N_("/View/"), NULL, NULL, 0, "<Separator>" },
+
+    { N_("/View/Game _Tree"),		NULL,
+      show_or_hide_sgf_tree_view,	GTK_GOBAN_WINDOW_TOGGLE_CHILD,
+      "<CheckItem>" },
+    { N_("/View/_Recenter on Current Node"), "<ctrl><alt>C",
+      recenter_sgf_tree_view,		0,
       "<Item>" },
     { N_("/View/"), NULL, NULL, 0, "<Separator>" },
 
-    { N_("/View/_Control Center"),		NULL,
-      gtk_control_center_present,		0,
+    { N_("/View/_Control Center"),	NULL,
+      gtk_control_center_present,	0,
       "<Item>" },
 
 
     { N_("/_Play"), NULL, NULL, 0, "<Branch>" },
-    { N_("/Play/_Pass"),			NULL,
-      play_pass_move,				0,
+    { N_("/Play/_Pass"),		NULL,
+      play_pass_move,			0,
       "<Item>" },
     { N_("/Play/"), NULL, NULL, 0, "<Separator>" },
 
-    { N_("/Play/_Resign"),			NULL,
-      resign_game,				0,
+    { N_("/Play/_Resign"),		NULL,
+      resign_game,			0,
       "<Item>" },
     { N_("/Play/"), NULL, NULL, 0, "<Separator>" },
 
-    { N_("/Play/_Adjourn Game"),		"",
-      gtk_goban_window_save,			GTK_GOBAN_WINDOW_ADJOURN,
-      "<StockItem>",				GTK_STOCK_SAVE },
+    { N_("/Play/_Adjourn Game"),	"",
+      gtk_goban_window_save,		GTK_GOBAN_WINDOW_ADJOURN,
+      "<StockItem>",			GTK_STOCK_SAVE },
 
 
     { N_("/_Go"), NULL, NULL, 0, "<Branch>" },
-    { N_("/Go/_Previous Node"),			"<alt>Left",
-      navigate_goban,				GOBAN_NAVIGATE_BACK,
-      "<StockItem>",				GTK_STOCK_GO_BACK },
-    { N_("/Go/_Next Node"),			"<alt>Right",
-      navigate_goban,				GOBAN_NAVIGATE_FORWARD,
-      "<StockItem>",				GTK_STOCK_GO_FORWARD },
-    { N_("/Go/Ten Nodes _Backward"),		"<alt>Page_Up",
-      navigate_goban,				GOBAN_NAVIGATE_BACK_FAST,
+    { N_("/Go/_Previous Node"),		"<alt>Left",
+      navigate_goban,			GOBAN_NAVIGATE_BACK,
+      "<StockItem>",			GTK_STOCK_GO_BACK },
+    { N_("/Go/_Next Node"),		"<alt>Right",
+      navigate_goban,			GOBAN_NAVIGATE_FORWARD,
+      "<StockItem>",			GTK_STOCK_GO_FORWARD },
+    { N_("/Go/Ten Nodes _Backward"),	"<alt>Page_Up",
+      navigate_goban,			GOBAN_NAVIGATE_BACK_FAST,
       "<Item>" },
-    { N_("/Go/Ten Nodes _Forward"),		"<alt>Page_Down",
-      navigate_goban,				GOBAN_NAVIGATE_FORWARD_FAST,
+    { N_("/Go/Ten Nodes _Forward"),	"<alt>Page_Down",
+      navigate_goban,			GOBAN_NAVIGATE_FORWARD_FAST,
       "<Item>" },
     { N_("/Go/"), NULL, NULL, 0, "<Separator>" },
 
-    { N_("/Go/_Root Node"),			"<alt>Home",
-      navigate_goban,				GOBAN_NAVIGATE_ROOT,
-      "<StockItem>",				GTK_STOCK_GOTO_FIRST },
-    { N_("/Go/Variation _Last Node"),		"<alt>End",
-      navigate_goban,				GOBAN_NAVIGATE_VARIATION_END,
-      "<StockItem>",				GTK_STOCK_GOTO_LAST },
+    { N_("/Go/_Root Node"),		"<alt>Home",
+      navigate_goban,			GOBAN_NAVIGATE_ROOT,
+      "<StockItem>",			GTK_STOCK_GOTO_FIRST },
+    { N_("/Go/Variation _Last Node"),	"<alt>End",
+      navigate_goban,			 GOBAN_NAVIGATE_VARIATION_END,
+      "<StockItem>",			GTK_STOCK_GOTO_LAST },
     { N_("/Go/"), NULL, NULL, 0, "<Separator>" },
 
-    { N_("/Go/Pre_vious Variation"),		"<alt>Up",
-      navigate_goban,			     GOBAN_NAVIGATE_PREVIOUS_VARIATION,
-      "<StockItem>",				GTK_STOCK_GO_UP },
-    { N_("/Go/Ne_xt Variation"),		"<alt>Down",
-      navigate_goban,				GOBAN_NAVIGATE_NEXT_VARIATION,
-      "<StockItem>",				GTK_STOCK_GO_DOWN },
+    { N_("/Go/Pre_vious Variation"),	"<alt>Up",
+      navigate_goban,			GOBAN_NAVIGATE_PREVIOUS_VARIATION,
+      "<StockItem>",			GTK_STOCK_GO_UP },
+    { N_("/Go/Ne_xt Variation"),	"<alt>Down",
+      navigate_goban,			GOBAN_NAVIGATE_NEXT_VARIATION,
+      "<StockItem>",			GTK_STOCK_GO_DOWN },
 
 #ifdef GTK_TYPE_GO_TO_NAMED_NODE_DIALOG
     { N_("/Go/"), NULL, NULL, 0, "<Separator>" },
-    { N_("/Go/_Go to Named Node\342\200\246"),	NULL,
-      show_go_to_named_node_dialog,		0,
-      "<StockItem>",				GTK_STOCK_JUMP_TO },
+    { N_("/Go/_Go to Named Node..."),	NULL,
+      show_go_to_named_node_dialog,	0,
+      "<StockItem>",			GTK_STOCK_JUMP_TO },
 #endif
 
 
     { N_("/_Help"), NULL, NULL, 0, "<Branch>" },
-    { N_("/Help/_Contents"),			"F1",
-      show_help_contents,			0,
-      "<StockItem>",				GTK_STOCK_HELP },
-    { N_("/Help/_About"),			NULL,
-      show_about_dialog,			0,
+    { N_("/Help/_Contents"),		"F1",
+      show_help_contents,		0,
+      "<StockItem>",			GTK_STOCK_HELP },
+    { N_("/Help/_About"),		NULL,
+      show_about_dialog,		0,
       QUARRY_STOCK_MENU_ITEM_ABOUT }
   };
 
@@ -1425,8 +1424,7 @@ gtk_goban_window_stops_closing (GtkGobanWindow *goban_window)
 	= (quarry_save_confirmation_dialog_new
 	   (GTK_WINDOW (goban_window),
 	    goban_window->time_of_first_modification,
-	    _("Save changes to game record \342\200\230%s\342\200\231 "
-	      "before closing?"),
+	    _("Save changes to game record `%s' before closing?"),
 	    filename_in_utf8));
       g_free (filename_in_utf8);
     }
@@ -1762,8 +1760,7 @@ gtk_goban_window_save (GtkGobanWindow *goban_window, guint callback_action)
 
       goban_window->save_as_dialog
 	= gtk_file_dialog_new ((adjourning_game
-				? _("Adjourn & Save as\342\200\246")
-				: _("Save as\342\200\246")),
+				? _("Adjourn & Save As...") : _("Save As...")),
 			       GTK_WINDOW (goban_window),
 			       FALSE, GTK_STOCK_SAVE);
 
@@ -1916,16 +1913,14 @@ static void
 game_has_been_adjourned (GtkGobanWindow *goban_window)
 {
   static const gchar *hint
-    = N_("You can later resume the game by pressing "
-	 "the \342\200\230Resume Game\342\200\231 button "
-	 "in Quarry Control Center, or selecting "
-	 "\342\200\230Resume Game\342\200\231 item "
-	 "from the \342\200\230File\342\200\231 menu.");
+    = N_("You can later resume the game by pressing the `Resume Game' button "
+	 "in Quarry Control Center, or selecting `Resume Game' item from "
+	 "the `File' menu.");
 
   gchar *filename_in_utf8 = g_filename_to_utf8 (goban_window->filename, -1,
 						NULL, NULL, NULL);
-  gchar *message = g_strdup_printf (_("The game is adjourned and saved "
-				      "in file \342\200\230%s\342\200\231"),
+  gchar *message = g_strdup_printf (_("The game is adjourned and "
+				      "saved in file `%s'"),
 				    filename_in_utf8);
   GtkWidget *information_dialog
     = quarry_message_dialog_new (NULL, GTK_BUTTONS_OK, GTK_STOCK_DIALOG_INFO,
@@ -1956,7 +1951,7 @@ static void
 export_senseis_library_diagram (GtkGobanWindow *goban_window)
 {
   static const gchar *message
-    = N_("Sensei\342\200\231s Library diagram has been exported to clipboard");
+    = N_("Sensei's Library diagram has been exported to clipboard");
 
   do_export_diagram
     (goban_window,
@@ -1972,8 +1967,7 @@ do_export_diagram (GtkGobanWindow *goban_window, char *diagram_string,
 {
   static const gchar *hint
     = N_("You can usually paste the diagram in another application using "
-	 "\342\200\230Ctrl+C\342\200\231 key combination or by selecting "
-	 "appropriate menu item.");
+	 "`Ctrl+C' key combination or by selecting appropriate menu item.");
 
   int diagram_string_length = strlen (diagram_string);
   GtkWidget *message_dialog;
@@ -3365,17 +3359,19 @@ handle_go_scoring_results (GtkGobanWindow *goban_window)
   sgf_utils_append_text_property (current_tree->current_node, current_tree,
 				  SGF_COMMENT,
 				  string_buffer_steal_string (&detailed_score),
-				  "\n\n----------------\n\n");
+				  "\n\n----------------\n\n", 0);
   set_comment_and_node_name (goban_window, current_tree->current_node);
 
   sgf_utils_set_list_of_point_property (current_tree->current_node,
 					current_tree,
-					SGF_BLACK_TERRITORY, black_territory);
+					SGF_BLACK_TERRITORY, black_territory,
+					0);
   sgf_utils_set_list_of_point_property (current_tree->current_node,
 					current_tree,
-					SGF_WHITE_TERRITORY, white_territory);
+					SGF_WHITE_TERRITORY, white_territory,
+					0);
 
-  sgf_utils_set_score_result (game_info_node, current_tree, score);
+  sgf_utils_set_score_result (game_info_node, current_tree, score, 1);
 
   sgf_utils_end_action (current_tree);
 
@@ -3575,7 +3571,8 @@ do_resign_game (GtkGobanWindow *goban_window)
 
   sgf_utils_set_text_property (game_info_node, goban_window->current_tree,
 			       SGF_RESULT,
-			       utils_cprintf ("%c+Resign", other_color_char));
+			       utils_cprintf ("%c+Resign", other_color_char),
+			       1);
 
   sgf_utils_append_variation (goban_window->current_tree, EMPTY);
   update_children_for_new_node (goban_window, TRUE, FALSE);
@@ -3902,7 +3899,7 @@ setup_mode_goban_clicked (GtkGobanWindow *goban_window,
   }
 
   if (sgf_utils_apply_setup_changes (goban_window->current_tree,
-				     goban_window->goban->grid))
+				     goban_window->goban->grid, 0))
     update_children_for_new_node (goban_window, TRUE, FALSE);
 }
 
@@ -4016,7 +4013,7 @@ markup_mode_goban_clicked (GtkGobanWindow *goban_window,
   }
 
   sgf_utils_apply_markup_changes (goban_window->current_tree,
-				  goban_window->goban->sgf_markup);
+				  goban_window->goban->sgf_markup, 0);
 }
 
 
@@ -4171,7 +4168,7 @@ label_mode_goban_clicked (GtkGobanWindow *goban_window,
 
   if (sgf_utils_set_list_of_label_property (current_node,
 					    goban_window->current_tree,
-					    SGF_LABEL, new_label_list))
+					    SGF_LABEL, new_label_list, 0))
     update_children_for_new_node (goban_window, TRUE, FALSE);
 }
 
@@ -4537,8 +4534,8 @@ update_children_for_new_node (GtkGobanWindow *goban_window, gboolean forced,
     set_comment_and_node_name (goban_window, current_node);
 
   if (text_buffer_state) {
-    quarry_text_buffer_get_state
-      (QUARRY_TEXT_BUFFER (goban_window->text_buffer), text_buffer_state);
+    quarry_text_buffer_get_state (QUARRY_TEXT_BUFFER (goban_window->text_buffer),
+				  text_buffer_state);
   }
 
   if (!goban_window->in_game_mode) {
@@ -4932,7 +4929,7 @@ update_commands_sensitivity (const GtkGobanWindow *goban_window)
   /* "File" submenu, */
   gtk_utils_set_menu_items_sensitive
     (goban_window->item_factory, goban_window->current_tree->game == GAME_GO,
-     "/File/Export\342\200\246/Sensei\342\200\231s Library Diagram", NULL);
+     "/File/Export.../Sensei's Library Diagram", NULL);
 
   /* "Edit" submenu. */
   gtk_utils_set_menu_items_sensitive (goban_window->item_factory,
@@ -4959,9 +4956,7 @@ update_commands_sensitivity (const GtkGobanWindow *goban_window)
   gtk_utils_set_menu_items_sensitive (goban_window->item_factory,
 				      (!goban_window->in_game_mode
 				       && current_node->child != NULL),
-				      ("/Edit/Delete Node\342\200\231s "
-				       "Children"),
-				      NULL);
+				      "/Edit/Delete Node's Children", NULL);
 
   gtk_utils_set_menu_items_sensitive (goban_window->item_factory,
 				      /* FIXME: Not strictly following
@@ -5062,8 +5057,7 @@ update_commands_sensitivity (const GtkGobanWindow *goban_window)
 #ifdef GTK_TYPE_GO_TO_NAMED_NODE_DIALOG
   gtk_utils_set_menu_items_sensitive (goban_window->item_factory,
 				      !is_in_special_mode,
-				      "/Go/Go to Named Node\342\200\246",
-				      NULL);
+				      "/Go/Go to Named Node...", NULL);
 #endif
 }
 
@@ -5533,11 +5527,12 @@ fetch_comment_and_node_name (GtkGobanWindow *goban_window,
 			  ? sgf_utils_normalize_text (new_node_name, 1)
 			  : NULL);
 
-  any_changes = (sgf_utils_set_text_property (node, current_tree,
-					      SGF_COMMENT, normalized_comment)
-		 || sgf_utils_set_text_property (node, current_tree,
-						 SGF_NODE_NAME,
-						 normalized_node_name));
+  any_changes
+    = (sgf_utils_set_text_property (node, current_tree,
+				    SGF_COMMENT, normalized_comment, 0)
+       || sgf_utils_set_text_property (node, current_tree,
+				       SGF_NODE_NAME, normalized_node_name,
+				       0));
 
   g_free (new_comment);
   g_free (new_node_name);
@@ -5580,7 +5575,7 @@ set_move_number (GtkGobanWindow *goban_window)
     if (quarry_move_number_dialog_get_use_sequential_move_number
 	(move_number_dialog)) {
       made_changes = sgf_utils_delete_property (game_tree->current_node,
-						game_tree, SGF_MOVE_NUMBER);
+						game_tree, SGF_MOVE_NUMBER, 0);
     }
     else {
       move_number = (quarry_move_number_dialog_get_specific_move_number
@@ -5588,7 +5583,7 @@ set_move_number (GtkGobanWindow *goban_window)
       made_changes = sgf_utils_set_number_property (game_tree->current_node,
 						    game_tree,
 						    SGF_MOVE_NUMBER,
-						    move_number);
+						    move_number, 0);
     }
 
     if (made_changes)
@@ -5620,7 +5615,7 @@ set_player_to_move (GtkGobanWindow *goban_window, guint callback_action,
 
     player_to_move_changed = sgf_utils_set_color_property (node, game_tree,
 							   SGF_TO_PLAY,
-							   callback_action);
+							   callback_action, 0);
 
     sgf_utils_end_action (game_tree);
 
@@ -5869,7 +5864,7 @@ move_has_been_played (GtkGobanWindow *goban_window)
 
     time_control_save_state_in_sgf_node (time_control,
 					 move_node, goban_window->current_tree,
-					 move_node->move_color);
+					 move_node->move_color, 0);
   }
 
   if (GTP_ENGINE_CAN_PLAY_MOVES (goban_window,
@@ -5917,10 +5912,13 @@ move_has_been_played (GtkGobanWindow *goban_window)
 	    goban_window->engine_scoring_cancelled = FALSE;
 	    goban_window->scoring_progress_dialog
 	      = ((GtkProgressDialog *)
-		 (gtk_progress_dialog_new
-		  (NULL, "Quarry", _("GTP engine is scoring\342\200\246"),
-		   NULL, ((GtkProgressDialogCallback) cancel_scoring),
-		   goban_window)));
+		 gtk_progress_dialog_new (NULL,
+					  "Quarry",
+					  _("GTP engine is scoring..."),
+					  NULL,
+					  ((GtkProgressDialogCallback)
+					   cancel_scoring),
+					  goban_window));
 	    gtk_progress_dialog_set_fraction ((goban_window
 					       ->scoring_progress_dialog),
 					      0.0, NULL);
@@ -5950,7 +5948,7 @@ move_has_been_played (GtkGobanWindow *goban_window)
 
 	sgf_utils_set_text_property (game_info_node,
 				     goban_window->current_tree,
-				     SGF_RESULT, result);
+				     SGF_RESULT, result, 1);
       }
 
       break;
@@ -5962,7 +5960,7 @@ move_has_been_played (GtkGobanWindow *goban_window)
 
 	reversi_count_disks (board, &num_black_disks, &num_white_disks);
 	sgf_utils_set_score_result (game_info_node, goban_window->current_tree,
-				    num_black_disks - num_white_disks);
+				    num_black_disks - num_white_disks, 1);
       }
 
       break;
@@ -6197,7 +6195,8 @@ player_is_out_of_time (GtkClock *clock, GtkGobanWindow *goban_window)
 
   sgf_utils_set_text_property (game_info_node, goban_window->current_tree,
 			       SGF_RESULT,
-			       utils_cprintf ("%c+Time", winner_color_char));
+			       utils_cprintf ("%c+Time", winner_color_char),
+			       1);
 
   sgf_utils_append_variation (goban_window->current_tree, EMPTY);
   update_children_for_new_node (goban_window, TRUE, FALSE);

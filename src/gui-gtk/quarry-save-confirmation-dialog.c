@@ -170,40 +170,35 @@ update_secondary_text (QuarrySaveConfirmationDialog *dialog)
   /* The ranges are taken from gedit code. */
   if (num_seconds_elapsed < 55) {
     secondary_text
-      = g_strdup_printf (ngettext ("If you don\342\200\231t save, "
-				   "changes from the last second "
-				   "will be lost permanently.",
-				   "If you don\342\200\231t save, "
-				   "changes from the last %d seconds "
-				   "will be lost permanently.",
+      = g_strdup_printf (ngettext ("If you don't save, changes from the last "
+				   "second will be lost permanently.",
+				   "If you don't save, changes from the last "
+				   "%d seconds will be lost permanently.",
 				   num_seconds_elapsed),
 			 (gint) num_seconds_elapsed);
   }
   else if (num_seconds_elapsed < 60 + 15) {
-    secondary_text = g_strdup (_("If you don\342\200\231t save, "
-				 "changes from the last minute "
-				 "will be discarded."));
+    secondary_text = g_strdup (_("If you don't save, changes from the last "
+				 "minute will be discarded."));
   }
   else if (num_seconds_elapsed < 60 + 50) {
     /* TRANSLATORS: Cannot be one minute one second, actually. */
     secondary_text
-      = g_strdup_printf (ngettext ("If you don\342\200\231t save, "
-				   "changes from the last minute and "
-				   "one second will be lost permanently.",
-				   "If you don\342\200\231t save, "
-				   "changes from the last minute and "
-				   "%d seconds will be lost permanently.",
+      = g_strdup_printf (ngettext ("If you don't save, changes from the last "
+				   "minute and one second will be lost "
+				   "permanently.",
+				   "If you don't save, changes from the last "
+				   "minute and %d seconds will be lost "
+				   "permanently.",
 				   num_seconds_elapsed - 60),
 			 (gint) (num_seconds_elapsed - 60));
   }
   else if (num_seconds_elapsed < 60 * 60) {
     secondary_text
-      = g_strdup_printf (ngettext ("If you don\342\200\231t save, "
-				   "changes from the last minute "
-				   "will be lost permanently.",
-				   "If you don\342\200\231t save, "
-				   "changes from the last %d minutes "
-				   "will be lost permanently.",
+      = g_strdup_printf (ngettext ("If you don't save, changes from the last "
+				   "minute will be lost permanently.",
+				   "If you don't save, changes from the last "
+				   "%d minutes will be lost permanently.",
 				   num_seconds_elapsed / 60),
 			 (gint) (num_seconds_elapsed / 60));
   }
@@ -214,24 +209,22 @@ update_secondary_text (QuarrySaveConfirmationDialog *dialog)
 
     /* TRANSLATORS: Cannot be one hour one minute, actually. */
     secondary_text
-      = g_strdup_printf (ngettext ("If you don\342\200\231t save, "
-				   "changes from the last hour and one minute "
-				   "will be lost permanently.",
-				   "If you don\342\200\231t save, "
-				   "changes from the last hour and %d minutes "
-				   "will be lost permanently.",
+      = g_strdup_printf (ngettext ("If you don't save, changes from the last "
+				   "hour and one minute will be lost "
+				   "permanently.",
+				   "If you don't save, changes from the last "
+				   "hour and %d minutes will be lost "
+				   "permanently.",
 				   minutes),
 			 minutes);
     
   }
   else {
     secondary_text
-      = g_strdup_printf (ngettext ("If you don\342\200\231t save, "
-				   "changes from the last hour "
-				   "will be lost permanently.",
-				   "If you don\342\200\231t save, "
-				   "changes from the last %d hours "
-				   "will be lost permanently.",
+      = g_strdup_printf (ngettext ("If you don't save, changes from the last "
+				   "hour will be lost permanently.",
+				   "If you don't save, changes from the last "
+				   "%d hours will be lost permanently.",
 				   num_seconds_elapsed / (60 * 60)),
 			 (gint) (num_seconds_elapsed / (60 * 60)));
   }
