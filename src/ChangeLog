@@ -1,5 +1,57 @@
 2006-07-06  Paul Pogonyshev  <pogonyshev@gmx.net>
 
+	* gui-gtk/gtk-file-dialog.c: Revert proper punctuation changes:
+	they are not supported by gettext with GNU libc < 2.3.3, quite
+	recent.
+	* gui-gtk/gtk-goban-window.c: Likewise.
+	* gui-gtk/gtk-new-game-record-dialog.c: Likewise.
+	* gui-gtk/gtk-parser-interface.c: Likewise.
+	* gui-gtk/gtk-preferences.c: Likewise.
+	* gui-gtk/gtk-resume-game-dialog.c: Likewise.
+	* gui-gtk/quarry-save-confirmation-dialog.c: Likewise.
+	* gui-gtk/quarry-stock.c: Likewise.
+
+	* sgf/sgf-parser.c (parse_buffer): Initialize new `file_error'
+	field.  Return `SGF_ERROR_READING_FILE' if the field becomes set.
+	(refresh_buffer): Cancel parsing on file errors instead of dying
+	in assertion failure.
+	(expand_buffer): Likewise.
+
+	* gui-utils/time-control.c
+	(time_control_save_settings_in_sgf_node): Use
+	sgf_utils_set_text_property() so that results are stored in undo
+	history.  Add `side-effect' argument.
+	(time_control_save_state_in_sgf_node): Add `side-effect' argument.
+
+	* sgf/sgf-utils.c (sgf_utils_apply_setup_changes): Add
+	`side-effect' argument.
+	(sgf_utils_apply_markup_changes): Likewise.
+	(sgf_utils_set_none_property): Likewise.
+	(sgf_utils_set_number_property): Likewise.
+	(sgf_utils_set_real_property): Likewise.
+	(sgf_utils_set_text_property): Likewise.
+	(sgf_utils_set_list_of_point_property): Likewise.
+	(sgf_utils_set_list_of_label_property): Likewise.
+	(sgf_utils_append_text_property): Likewise.
+	(sgf_utils_set_score_result): Likewise.
+	(sgf_utils_set_time_left): Likewise.
+	(sgf_utils_delete_property): Likewise.
+	(do_set_pointer_property): Likewise.
+
+	* sgf/sgf-undo.c
+	(sgf_change_node_inlined_color_undo_history_entry_new): Add
+	`side-effect' argument
+	(sgf_new_property_undo_history_entry_new): Likewise.
+	(sgf_delete_property_undo_history_entry_new): Likewise.
+	(sgf_change_property_undo_history_entry_new): Likewise.
+	(sgf_change_real_property_undo_history_entry_new): Likewise.
+	(sgf_operation_change_node_move_color_do_change): Do not set
+	`tree->node_to_switch_to' if `side-effect' field is set.
+	(sgf_operation_add_property): Likewise.
+	(sgf_operation_delete_property): Likewise.
+	(sgf_operation_change_property_do_change): Likewise.
+	(sgf_operation_change_real_property_do_change): Likewise.
+
 	* gui-gtk/gtk-goban-window.c (gtk_goban_window_init): Add
 	"File/Export..." submenu.
 	(export_ascii_diagram, export_senseis_library_diagram)
