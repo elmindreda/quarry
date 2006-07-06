@@ -953,7 +953,7 @@ begin_game (GtkEnginesInstantiationStatus status, gpointer user_data)
 
     time_control_save_settings_in_sgf_node (time_control,
 					    game_tree->current_node,
-					    game_tree);
+					    game_tree, 0);
   }
 
   sgf_collection = sgf_collection_new ();

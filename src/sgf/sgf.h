@@ -832,42 +832,54 @@ SgfNode *     sgf_utils_append_variation (SgfGameTree *tree,
 					  int color, ...);
 
 int	      sgf_utils_apply_setup_changes (SgfGameTree *tree,
-					     const char grid[BOARD_GRID_SIZE]);
+					     const char grid[BOARD_GRID_SIZE],
+					     int side_effect);
 int	      sgf_utils_apply_markup_changes
-		(SgfGameTree *tree, const char markup_grid[BOARD_GRID_SIZE]);
+		(SgfGameTree *tree, const char markup_grid[BOARD_GRID_SIZE],
+		 int side_effect);
 
 int	      sgf_utils_set_none_property (SgfNode *node, SgfGameTree *tree,
-					   SgfType type);
+					   SgfType type, int side_effect);
 int	      sgf_utils_set_number_property (SgfNode *node, SgfGameTree *tree,
-					     SgfType type, int number);
+					     SgfType type, int number,
+					     int side_effect);
 int	      sgf_utils_set_real_property (SgfNode *node, SgfGameTree *tree,
-					   SgfType type, double value);
+					   SgfType type, double value,
+					   int side_effect);
 int	      sgf_utils_set_text_property (SgfNode *node, SgfGameTree *tree,
-					   SgfType type, char *text);
+					   SgfType type, char *text,
+					   int side_effect);
 int	      sgf_utils_set_list_of_point_property
 		(SgfNode *node, SgfGameTree *tree, SgfType type,
-		 BoardPositionList *position_list);
+		 BoardPositionList *position_list, int side_effect);
 int	      sgf_utils_set_list_of_label_property (SgfNode *node,
 						    SgfGameTree *tree,
 						    SgfType type,
-						    SgfLabelList *label_list);
+						    SgfLabelList *label_list,
+						    int side_effect);
 
-#define sgf_utils_set_double_property(node, tree, type, emphasized)	\
-  sgf_utils_set_number_property ((node), (tree), (type), (emphasized))
+#define sgf_utils_set_double_property(node, tree, type, emphasized,	\
+				      side_effect)			\
+  sgf_utils_set_number_property ((node), (tree), (type), (emphasized),	\
+				 (side_effect))
 
-#define sgf_utils_set_color_property(node, tree, type, color)		\
-  sgf_utils_set_number_property ((node), (tree), (type), (color))
+#define sgf_utils_set_color_property(node, tree, type, color,		\
+				     side_effect)			\
+  sgf_utils_set_number_property ((node), (tree), (type), (color),	\
+				 (side_effect))
 
 int	      sgf_utils_append_text_property (SgfNode *node, SgfGameTree *tree,
 					      SgfType type, char *text,
-					      const char *separator);
+					      const char *separator,
+					      int side_effect);
 
 
-int	       sgf_utils_set_score_result (SgfNode *node, SgfGameTree *tree,
-					   double score);
+int	      sgf_utils_set_score_result (SgfNode *node, SgfGameTree *tree,
+					  double score, int side_effect);
 int	      sgf_utils_set_time_left (SgfNode *node, SgfGameTree *tree,
 				       int color,
-				       double time_left, int moves_left);
+				       double time_left, int moves_left,
+				       int side_effect);
 
 void	      sgf_utils_apply_custom_undo_entry
 		(SgfGameTree *tree,
@@ -892,7 +904,7 @@ void	      sgf_utils_swap_current_node_with (SgfGameTree *tree,
 						SgfNode *swap_with);
 
 int	      sgf_utils_delete_property (SgfNode *node, SgfGameTree *tree,
-					 SgfType type);
+					 SgfType type, int side_effect);
 
 
 void	      sgf_utils_set_node_is_collapsed (SgfGameTree *tree,

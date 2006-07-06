@@ -58,7 +58,7 @@ static void	determine_final_color_to_play (const SgfGameTree *tree);
 static int	do_set_pointer_property (SgfNode *node, SgfGameTree *tree,
 					 SgfType type,
 					 ValuesComparator values_are_equal,
-					 void *new_value);
+					 void *new_value, int side_effect);
 static int	strings_are_equal (const void *first_string,
 				   const void *second_string);
 
@@ -408,7 +408,7 @@ sgf_utils_append_variation (SgfGameTree *tree, int color, ...)
 
 int
 sgf_utils_apply_setup_changes (SgfGameTree *tree,
-			       const char grid[BOARD_GRID_SIZE])
+			       const char grid[BOARD_GRID_SIZE], int side_effect)
 {
   BoardPositionList *difference_lists[NUM_ON_GRID_VALUES];
   SgfNode *node;
@@ -460,19 +460,24 @@ sgf_utils_apply_setup_changes (SgfGameTree *tree,
   else if (node->move_color != new_move_color) {
     SgfUndoHistoryEntry *entry
       = (sgf_change_node_inlined_color_undo_history_entry_new
-	 (node, SGF_OPERATION_CHANGE_NODE_MOVE_COLOR, new_move_color));
+	 (node, SGF_OPERATION_CHANGE_NODE_MOVE_COLOR, new_move_color,
+	  side_effect));
 
     sgf_utils_apply_undo_history_entry (tree, entry);
   }
 
   anything_changed |= (sgf_utils_set_list_of_point_property
-		       (node, tree, SGF_ADD_EMPTY, difference_lists[EMPTY]));
+		       (node, tree, SGF_ADD_EMPTY, difference_lists[EMPTY],
+			side_effect));
   anything_changed |= (sgf_utils_set_list_of_point_property
-		       (node, tree, SGF_ADD_BLACK, difference_lists[BLACK]));
+		       (node, tree, SGF_ADD_BLACK, difference_lists[BLACK],
+			side_effect));
   anything_changed |= (sgf_utils_set_list_of_point_property
-		       (node, tree, SGF_ADD_WHITE, difference_lists[WHITE]));
+		       (node, tree, SGF_ADD_WHITE, difference_lists[WHITE],
+			side_effect));
   anything_changed |= (sgf_utils_set_list_of_point_property
-		       (node, tree, SGF_ADD_ARROWS, difference_lists[ARROW]));
+		       (node, tree, SGF_ADD_ARROWS, difference_lists[ARROW],
+			side_effect));
 
   if (created_new_node) {
     tree->undo_history = undo_history;
@@ -494,7 +499,8 @@ sgf_utils_apply_setup_changes (SgfGameTree *tree,
 
 int
 sgf_utils_apply_markup_changes (SgfGameTree *tree,
-				const char markup_grid[BOARD_GRID_SIZE])
+				const char markup_grid[BOARD_GRID_SIZE],
+				int side_effect)
 {
   int num_positions[NUM_SGF_MARKUPS];
   int positions[NUM_SGF_MARKUPS][BOARD_MAX_POSITIONS];
@@ -537,19 +543,19 @@ sgf_utils_apply_markup_changes (SgfGameTree *tree,
 
   anything_changed |= (sgf_utils_set_list_of_point_property
 		       (tree->current_node, tree, SGF_MARK,
-			new_markup_lists[SGF_MARKUP_CROSS]));
+			new_markup_lists[SGF_MARKUP_CROSS], side_effect));
   anything_changed |= (sgf_utils_set_list_of_point_property
 		       (tree->current_node, tree, SGF_CIRCLE,
-			new_markup_lists[SGF_MARKUP_CIRCLE]));
+			new_markup_lists[SGF_MARKUP_CIRCLE], side_effect));
   anything_changed |= (sgf_utils_set_list_of_point_property
 		       (tree->current_node, tree, SGF_SQUARE,
-			new_markup_lists[SGF_MARKUP_SQUARE]));
+			new_markup_lists[SGF_MARKUP_SQUARE], side_effect));
   anything_changed |= (sgf_utils_set_list_of_point_property
 		       (tree->current_node, tree, SGF_TRIANGLE,
-			new_markup_lists[SGF_MARKUP_TRIANGLE]));
+			new_markup_lists[SGF_MARKUP_TRIANGLE], side_effect));
   anything_changed |= (sgf_utils_set_list_of_point_property
 		       (tree->current_node, tree, SGF_SELECTED,
-			new_markup_lists[SGF_MARKUP_SELECTED]));
+			new_markup_lists[SGF_MARKUP_SELECTED], side_effect));
 
   sgf_utils_end_action (tree);
 
@@ -558,7 +564,8 @@ sgf_utils_apply_markup_changes (SgfGameTree *tree,
 
 
 int
-sgf_utils_set_none_property (SgfNode *node, SgfGameTree *tree, SgfType type)
+sgf_utils_set_none_property (SgfNode *node, SgfGameTree *tree, SgfType type,
+			     int side_effect)
 {
   SgfProperty **link;
   SgfUndoHistoryEntry *entry;
@@ -572,7 +579,8 @@ sgf_utils_set_none_property (SgfNode *node, SgfGameTree *tree, SgfType type)
 
   sgf_utils_begin_action (tree);
 
-  entry = sgf_new_property_undo_history_entry_new (tree, node, link, type);
+  entry = sgf_new_property_undo_history_entry_new (tree, node, link, type,
+						   side_effect);
   sgf_utils_apply_undo_history_entry (tree, entry);
 
   sgf_utils_end_action (tree);
@@ -583,7 +591,7 @@ sgf_utils_set_none_property (SgfNode *node, SgfGameTree *tree, SgfType type)
 
 int
 sgf_utils_set_number_property (SgfNode *node, SgfGameTree *tree, SgfType type,
-			       int number)
+			       int number, int side_effect)
 {
   SgfProperty **link;
   SgfUndoHistoryEntry *entry;
@@ -600,11 +608,13 @@ sgf_utils_set_number_property (SgfNode *node, SgfGameTree *tree, SgfType type,
       if ((*link)->value.number == number)
 	return 0;
 
-      entry = sgf_change_property_undo_history_entry_new (node, *link);
+      entry = sgf_change_property_undo_history_entry_new (node, *link,
+							  side_effect);
       ((SgfChangePropertyOperationEntry *) entry)->value.number = number;
     }
     else {
-      entry = sgf_new_property_undo_history_entry_new (tree, node, link, type);
+      entry = sgf_new_property_undo_history_entry_new (tree, node, link, type,
+						       side_effect);
       ((SgfPropertyOperationEntry *) entry)->property->value.number = number;
     }
   }
@@ -616,7 +626,8 @@ sgf_utils_set_number_property (SgfNode *node, SgfGameTree *tree, SgfType type,
 	    || (!IS_STONE (node->move_color) && IS_STONE (number)));
 
     entry = (sgf_change_node_inlined_color_undo_history_entry_new
-	     (node, SGF_OPERATION_CHANGE_NODE_TO_PLAY_COLOR, number));
+	     (node, SGF_OPERATION_CHANGE_NODE_TO_PLAY_COLOR, number,
+	      side_effect));
   }
 
   sgf_utils_begin_action (tree);
@@ -629,7 +640,7 @@ sgf_utils_set_number_property (SgfNode *node, SgfGameTree *tree, SgfType type,
 
 int
 sgf_utils_set_real_property (SgfNode *node, SgfGameTree *tree, SgfType type,
-			     double value)
+			     double value, int side_effect)
 {
   SgfProperty **link;
   SgfUndoHistoryEntry *entry;
@@ -645,20 +656,23 @@ sgf_utils_set_real_property (SgfNode *node, SgfGameTree *tree, SgfType type,
       return 0;
 
     entry = sgf_change_real_property_undo_history_entry_new (node, *link,
-							     value);
+							     value,
+							     side_effect);
 
 #else /* not SGF_REAL_VALUES_ALLOCATED_SEPARATELY */
 
     if ((*link)->value.real == value)
       return 0;
 
-    entry = sgf_change_property_undo_history_entry_new (node, *link);
+    entry = sgf_change_property_undo_history_entry_new (node, *link,
+							side_effect);
     ((SgfChangePropertyOperationEntry *) entry)->value.real = value;
 
 #endif /* not SGF_REAL_VALUES_ALLOCATED_SEPARATELY */
   }
   else {
-    entry = sgf_new_property_undo_history_entry_new (tree, node, link, type);
+    entry = sgf_new_property_undo_history_entry_new (tree, node, link, type,
+						     side_effect);
 
 #if SGF_REAL_VALUES_ALLOCATED_SEPARATELY
     ((SgfPropertyOperationEntry *) entry)->property->value.real
@@ -678,20 +692,22 @@ sgf_utils_set_real_property (SgfNode *node, SgfGameTree *tree, SgfType type,
 
 int
 sgf_utils_set_text_property (SgfNode *node, SgfGameTree *tree, SgfType type,
-			     char *text)
+			     char *text, int side_effect)
 {
   assert (property_info[type].value_type == SGF_SIMPLE_TEXT
 	  || property_info[type].value_type == SGF_FAKE_SIMPLE_TEXT
 	  || property_info[type].value_type == SGF_TEXT);
 
-  return do_set_pointer_property (node, tree, type, strings_are_equal, text);
+  return do_set_pointer_property (node, tree, type, strings_are_equal, text,
+				  side_effect);
 }
 
 
 int
 sgf_utils_set_list_of_point_property (SgfNode *node, SgfGameTree *tree,
 				      SgfType type,
-				      BoardPositionList *position_list)
+				      BoardPositionList *position_list,
+				      int side_effect)
 {
   assert (property_info[type].value_type == SGF_LIST_OF_POINT
 	  || property_info[type].value_type == SGF_ELIST_OF_POINT);
@@ -699,20 +715,21 @@ sgf_utils_set_list_of_point_property (SgfNode *node, SgfGameTree *tree,
   return do_set_pointer_property (node, tree, type,
 				  ((ValuesComparator)
 				   board_position_lists_are_equal),
-				  position_list);
+				  position_list, side_effect);
 }
 
 
 int
 sgf_utils_set_list_of_label_property (SgfNode *node, SgfGameTree *tree,
 				      SgfType type,
-				      SgfLabelList *label_list)
+				      SgfLabelList *label_list,
+				      int side_effect)
 {
   assert (property_info[type].value_type == SGF_LIST_OF_LABEL);
 
   return do_set_pointer_property (node, tree, type,
 				  (ValuesComparator) sgf_label_lists_are_equal,
-				  label_list);
+				  label_list, side_effect);
 }
 
 
@@ -726,7 +743,8 @@ sgf_utils_set_list_of_label_property (SgfNode *node, SgfGameTree *tree,
  */
 int
 sgf_utils_append_text_property (SgfNode *node, SgfGameTree *tree, SgfType type,
-				char *text, const char *separator)
+				char *text, const char *separator,
+				int side_effect)
 {
   const char *existing_text;
 
@@ -745,12 +763,14 @@ sgf_utils_append_text_property (SgfNode *node, SgfGameTree *tree, SgfType type,
     utils_free (text_to_free);
   }
 
-  return do_set_pointer_property (node, tree, type, strings_are_equal, text);
+  return do_set_pointer_property (node, tree, type, strings_are_equal, text,
+				  side_effect);
 }
 
 
 int
-sgf_utils_set_score_result (SgfNode *node, SgfGameTree *tree, double score)
+sgf_utils_set_score_result (SgfNode *node, SgfGameTree *tree, double score,
+			    int side_effect)
 {
   char *result;
 
@@ -767,13 +787,14 @@ sgf_utils_set_score_result (SgfNode *node, SgfGameTree *tree, double score)
     result = utils_duplicate_string ("Draw");
 
   return do_set_pointer_property (node, tree, SGF_RESULT,
-				  strings_are_equal, result);
+				  strings_are_equal, result, side_effect);
 }
 
 
 int
 sgf_utils_set_time_left (SgfNode *node, SgfGameTree *tree,
-			 int color, double time_left, int moves_left)
+			 int color, double time_left, int moves_left,
+			 int side_effect)
 {
   assert (node);
   assert (tree);
@@ -785,14 +806,14 @@ sgf_utils_set_time_left (SgfNode *node, SgfGameTree *tree,
 			       (color == BLACK
 				? SGF_TIME_LEFT_FOR_BLACK
 				: SGF_TIME_LEFT_FOR_WHITE),
-			       time_left);
+			       time_left, side_effect);
 
   if (moves_left) {
     sgf_utils_set_number_property (node, tree,
 				   (color == BLACK
 				    ? SGF_MOVES_LEFT_FOR_BLACK
 				    : SGF_MOVES_LEFT_FOR_WHITE),
-				   moves_left);
+				   moves_left, side_effect);
   }
 
   sgf_utils_end_action (tree);
@@ -985,7 +1006,8 @@ sgf_utils_swap_current_node_with (SgfGameTree *tree, SgfNode *swap_with)
 
 
 int
-sgf_utils_delete_property (SgfNode *node, SgfGameTree *tree, SgfType type)
+sgf_utils_delete_property (SgfNode *node, SgfGameTree *tree, SgfType type,
+			   int side_effect)
 {
   SgfProperty **link;
 
@@ -994,7 +1016,7 @@ sgf_utils_delete_property (SgfNode *node, SgfGameTree *tree, SgfType type)
 
   if (sgf_node_find_property (node, type, &link)) {
     SgfUndoHistoryEntry *entry
-      = sgf_delete_property_undo_history_entry_new (node, *link);
+      = sgf_delete_property_undo_history_entry_new (node, *link, side_effect);
 
     sgf_utils_begin_action (tree);
     sgf_utils_apply_undo_history_entry (tree, entry);
@@ -1833,7 +1855,8 @@ determine_final_color_to_play (const SgfGameTree *tree)
 
 static int
 do_set_pointer_property (SgfNode *node, SgfGameTree *tree, SgfType type,
-			 ValuesComparator values_are_equal, void *new_value)
+			 ValuesComparator values_are_equal, void *new_value,
+			 int side_effect)
 {
   SgfProperty **link;
   SgfUndoHistoryEntry *entry;
@@ -1851,19 +1874,22 @@ do_set_pointer_property (SgfNode *node, SgfGameTree *tree, SgfType type,
 	return 0;
       }
 
-      entry = sgf_change_property_undo_history_entry_new (node, *link);
+      entry = sgf_change_property_undo_history_entry_new (node, *link,
+							  side_effect);
 
       ((SgfChangePropertyOperationEntry *) entry)->value.memory_block
 	= new_value;
     }
     else
-      entry = sgf_delete_property_undo_history_entry_new (node, *link);
+      entry = sgf_delete_property_undo_history_entry_new (node, *link,
+							  side_effect);
   }
   else {
     if (!new_value)
       return 0;
 
-    entry = sgf_new_property_undo_history_entry_new (tree, node, link, type);
+    entry = sgf_new_property_undo_history_entry_new (tree, node, link, type,
+						     side_effect);
     ((SgfPropertyOperationEntry *) entry)->property->value.memory_block
       = new_value;
   }
