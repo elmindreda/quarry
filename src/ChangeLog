@@ -1,3 +1,18 @@
+2006-07-07  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* gui-gtk/gtk-goban-window.c (show_find_dialog): Use new
+	QuarryFindDialog.  Set new `close_automatically' field.  Set
+	dialog's search history.
+	(find_dialog_response): Add `find_dialog' argument.
+	(do_find_text): Use new quarry_find_text() function.  Rebuild
+	search history after successful searches.
+
+	* gui-gtk/quarry-find-dialog.c: New file, broken out of
+	`gui-gtk/gtk-goban-window.c'.
+	* gui-gtk/quarry-find-dialog.h: New file.
+
+	* utils/string-list.c (string_list_clamp_size): New function.
+
 2006-07-06  Paul Pogonyshev  <pogonyshev@gmx.net>
 
 	* gui-gtk/gtk-file-dialog.c: Revert proper punctuation changes:
