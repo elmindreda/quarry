@@ -188,11 +188,13 @@ string_list_duplicate_items (StringList *list,
 {
   const StringListItem *item;
   StringListItem *last_duplicated_item = NULL;
-  StringListItem **link = &list->first;
+  StringListItem **link;
 
   assert (list);
   assert (list->first == NULL);
   assert (duplicate_from_list);
+
+  link = &list->first;
 
   for (item = duplicate_from_list->first; item; item = item->next) {
     last_duplicated_item = utils_malloc (sizeof (StringListItem));
@@ -356,7 +358,7 @@ string_list_delete_item (void *abstract_list, void *abstract_item)
   StringList *list = (StringList *) abstract_list;
   StringListItem *item = (StringListItem *) abstract_item;
   StringListItem *previous_item;
-  StringListItem **link = &list->first;
+  StringListItem **link;
 
   assert (list);
   assert (item);
@@ -399,7 +401,7 @@ string_list_steal_item (void *abstract_list, void *abstract_item)
   StringList *list = (StringList *) abstract_list;
   StringListItem *item = (StringListItem *) abstract_item;
   StringListItem *previous_item;
-  StringListItem **link = &list->first;
+  StringListItem **link;
 
   assert (list);
   assert (item);
@@ -427,12 +429,45 @@ string_list_steal_first_item (void *abstract_list)
   assert (list);
   assert (list->first);
 
-  first = list->first;
+  first	      = list->first;
   list->first = first->next;
+
   if (list->first == NULL)
     list->last = NULL;
 
   return first;
+}
+
+
+int
+string_list_clamp_size (void *abstract_list, int max_size)
+{
+  StringList *list = (StringList *) abstract_list;
+  StringListItem **link;
+  int num_items_skipped;
+
+  assert (list);
+
+  for (link = &list->first, num_items_skipped = 0;
+       *link && num_items_skipped < max_size;
+       link = &(*link)->next)
+    num_items_skipped++;
+
+  if (*link) {
+    StringListItem *this_item;
+
+    for (this_item = *link; this_item;) {
+      StringListItem *next_item = this_item->next;
+
+      DISPOSE_ITEM (list, this_item);
+      this_item = next_item;
+    }
+
+    *link = NULL;
+    return 1;
+  }
+  else
+    return 0;
 }
 
 

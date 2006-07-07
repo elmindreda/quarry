@@ -369,6 +369,8 @@ void *		  string_list_steal_item (void *abstract_list,
 					  void *abstract_item);
 void *		  string_list_steal_first_item (void *abstract_list);
 
+int		  string_list_clamp_size (void *abstract_list, int max_size);
+
 int		  string_list_get_item_index (void *abstract_list,
 					      void *abstract_item);
 StringListItem *  string_list_get_item (void *abstract_list, int item_index);
