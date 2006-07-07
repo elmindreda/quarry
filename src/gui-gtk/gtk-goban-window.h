@@ -31,6 +31,7 @@
 #include "gtk-goban.h"
 #include "gtk-sgf-tree-view.h"
 #include "gtk-progress-dialog.h"
+#include "quarry-find-dialog.h"
 #include "time-control.h"
 #include "gtp-client.h"
 #include "sgf.h"
@@ -150,15 +151,7 @@ struct _GtkGobanWindow {
   SgfDirection		   switching_direction;
   SgfNode		  *node_to_switch_to;
 
-  GtkDialog		  *find_dialog;
-  GtkEntry		  *search_for_entry;
-  GtkToggleButton	  *case_sensitive_toggle_button;
-  GtkToggleButton	  *wrap_around_toggle_button;
-  GtkToggleButton	  *whole_words_only_toggle_button;
-  GtkToggleButton	  *close_automatically_toggle_button;
-  GtkToggleButton	  *search_current_node_only_toggle_button;
-  GtkToggleButton	  *search_everywhere_toggle_button;
-  GtkToggleButton	  *search_comments_only_toggle_button;
+  QuarryFindDialog	  *find_dialog;
 
   gchar			  *text_to_find;
   gboolean		   case_sensitive;
@@ -166,6 +159,7 @@ struct _GtkGobanWindow {
   gboolean		   wrap_around;
   gboolean		   search_whole_game_tree;
   gint			   search_in;
+  gboolean		   close_automatically;
 
   GtkGameInfoDialog	  *game_info_dialog;
   GtkProgressDialog	  *scoring_progress_dialog;

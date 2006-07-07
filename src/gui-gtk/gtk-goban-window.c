@@ -58,6 +58,7 @@
 #include "gtk-sgf-tree-signal-proxy.h"
 #include "gtk-sgf-tree-view.h"
 #include "gtk-utils.h"
+#include "quarry-find-dialog.h"
 #include "quarry-marshal.h"
 #include "quarry-message-dialog.h"
 #include "quarry-move-number-dialog.h"
@@ -139,12 +140,6 @@ enum {
 
 
 enum {
-  GTK_GOBAN_WINDOW_FIND_NEXT = 1,
-  GTK_GOBAN_WINDOW_FIND_PREVIOUS
-};
-
-
-enum {
   GTK_GOBAN_WINDOW_HIDE_CHILD = FALSE,
   GTK_GOBAN_WINDOW_SHOW_CHILD = TRUE,
   GTK_GOBAN_WINDOW_TOGGLE_CHILD
@@ -203,25 +198,11 @@ static void	 do_export_diagram (GtkGobanWindow *goban_window,
 static void	 gtk_goban_window_close (GtkGobanWindow *goban_window);
 
 static void	 show_find_dialog (GtkGobanWindow *goban_window);
-static void	 find_dialog_response (GtkGobanWindow *goban_window,
-				       gint response_id);
-static void	 find_dialog_parameters_changed (GtkGobanWindow *goban_window);
+static void	 find_dialog_response (QuarryFindDialog *find_dialog,
+				       gint response_id,
+				       GtkGobanWindow *goban_window);
 static gboolean	 do_find_text (GtkGobanWindow *goban_window,
-			       guint callback_action);
-static char *	 strstr_whole_word (const char *haystack, const char *needle);
-static char *	 strrstr_whole_word (const char *haystack, const char *needle);
-static char *	 get_top_buffer_part (const GtkGobanWindow *goban_window,
-				      const GtkTextIter *boundary_iterator);
-static char *	 get_bottom_buffer_part (const GtkGobanWindow *goban_window,
-					 const GtkTextIter *boundary_iterator);
-static gboolean  char_is_word_constituent (const gchar *character);
-inline static gchar *
-		 get_normalized_text (const gchar *text, gint length,
-				      gboolean case_sensitive);
-static gint	 get_offset_in_original_text (const gchar *text, gint length,
-					      gint normalized_text_offset,
-					      gboolean case_sensitive,
-					      gint first_guess);
+			       QuarryFindDialogSearchDirection direction);
 
 static void	 show_game_information_dialog (GtkGobanWindow *goban_window);
 static void	 game_info_dialog_property_changed
@@ -759,10 +740,10 @@ gtk_goban_window_init (GtkGobanWindow *goban_window)
       show_find_dialog,			0,
       "<StockItem>",			GTK_STOCK_FIND },
     { N_("/Edit/Find Ne_xt"),		"<ctrl>G",
-      (GtkItemFactoryCallback) do_find_text, GTK_GOBAN_WINDOW_FIND_NEXT,
+      (GtkItemFactoryCallback) do_find_text, QUARRY_FIND_DIALOG_FIND_NEXT,
       "<Item>" },
     { N_("/Edit/Find Pre_vious"),	"<shift><ctrl>G",
-      (GtkItemFactoryCallback) do_find_text, GTK_GOBAN_WINDOW_FIND_PREVIOUS,
+      (GtkItemFactoryCallback) do_find_text, QUARRY_FIND_DIALOG_FIND_PREVIOUS,
       "<Item>" },
     { N_("/Edit/"), NULL, NULL, 0, "<Separator>" },
 
@@ -1997,40 +1978,21 @@ gtk_goban_window_close (GtkGobanWindow *goban_window)
 
 
 
-/* FIXME: Move find dialog to another file? */
 
 static void
 show_find_dialog (GtkGobanWindow *goban_window)
 {
-  static const gchar *tree_scope_radio_button_labels[2]
-    = { N_("Whole game _tree"), N_("Current no_de only") };
-
-  static const gchar *properties_scope_radio_button_labels[3]
-    = { N_("C_omments & node names"),
-	N_("Comm_ents only"), N_("Node na_mes only") };
-
   if (!goban_window->find_dialog) {
-    GtkWidget *dialog
-      = gtk_dialog_new_with_buttons (_("Find"), GTK_WINDOW (goban_window),
-				     GTK_DIALOG_DESTROY_WITH_PARENT,
-				     GTK_STOCK_CLOSE, GTK_RESPONSE_CANCEL,
-				     QUARRY_STOCK_FIND_PREVIOUS,
-				     GTK_GOBAN_WINDOW_FIND_PREVIOUS,
-				     QUARRY_STOCK_FIND_NEXT,
-				     GTK_GOBAN_WINDOW_FIND_NEXT, NULL);
-    GtkWidget *entry;
-    GtkWidget *label;
-    GtkWidget *hbox;
-    GtkWidget *case_sensitive_check_button;
-    GtkWidget *whole_words_only_check_button;
-    GtkWidget *wrap_around_check_button;
-    GtkWidget *vbox1;
-    GtkWidget *close_automatically_check_button;
-    GtkWidget *options_named_vbox;
-    GtkWidget *tree_scope_radio_buttons[2];
-    GtkWidget *properties_scope_radio_buttons[3];
-    GtkWidget *vbox2;
-    GtkWidget *scope_named_vbox;
+    goban_window->find_dialog = QUARRY_FIND_DIALOG (quarry_find_dialog_new
+						    (_("Find")));
+    gtk_utils_null_pointer_on_destroy (((GtkWindow **)
+					&goban_window->find_dialog),
+				       FALSE);
+
+    gtk_window_set_transient_for (GTK_WINDOW (goban_window->find_dialog),
+				  GTK_WINDOW (goban_window));
+    gtk_window_set_destroy_with_parent (GTK_WINDOW (goban_window->find_dialog),
+					TRUE);
 
     if (!goban_window->text_to_find) {
       /* The dialog is opened for the first time for this
@@ -2045,181 +2007,33 @@ show_find_dialog (GtkGobanWindow *goban_window)
       goban_window->search_whole_game_tree
 	= find_dialog_configuration.search_whole_game_tree;
       goban_window->search_in = find_dialog_configuration.search_in;
+      goban_window->close_automatically
+	= find_dialog_configuration.close_automatically;
+    }
+    else {
+      quarry_find_dialog_set_text_to_find (goban_window->find_dialog,
+					   goban_window->text_to_find);
     }
 
-    goban_window->find_dialog = GTK_DIALOG (dialog);
-    gtk_utils_null_pointer_on_destroy (((GtkWindow **)
-					&goban_window->find_dialog),
-				       FALSE);
-    gtk_utils_make_window_only_horizontally_resizable (GTK_WINDOW (dialog));
+    quarry_find_dialog_set_search_history
+      (goban_window->find_dialog,
+       &find_dialog_configuration.latest_search_strings);
 
-    g_signal_connect_swapped (dialog, "response",
-			      G_CALLBACK (find_dialog_response), goban_window);
+    quarry_find_dialog_set_case_sensitive (goban_window->find_dialog,
+					   goban_window->case_sensitive);
+    quarry_find_dialog_set_whole_words_only (goban_window->find_dialog,
+					     goban_window->whole_words_only);
+    quarry_find_dialog_set_wrap_around (goban_window->find_dialog,
+					goban_window->wrap_around);
+    quarry_find_dialog_set_search_whole_game_tree
+      (goban_window->find_dialog, goban_window->search_whole_game_tree);
+    quarry_find_dialog_set_search_in (goban_window->find_dialog,
+				      goban_window->search_in);
+    quarry_find_dialog_set_close_automatically
+      (goban_window->find_dialog, goban_window->close_automatically);
 
-    entry = gtk_utils_create_entry (goban_window->text_to_find,
-				    RETURN_ACTIVATES_DEFAULT);
-    goban_window->search_for_entry = GTK_ENTRY (entry);
-
-    /* FIXME: Implement history, maybe only for GTK+ 2.4. */
-
-    g_signal_connect_swapped (entry, "changed",
-			      G_CALLBACK (find_dialog_parameters_changed),
-			      goban_window);
-
-    label = gtk_utils_create_mnemonic_label (_("Search _for:"), entry);
-
-    hbox = gtk_utils_pack_in_box (GTK_TYPE_HBOX, QUARRY_SPACING,
-				  label, GTK_UTILS_FILL,
-				  entry, GTK_UTILS_PACK_DEFAULT, NULL);
-
-    case_sensitive_check_button
-      = gtk_check_button_new_with_mnemonic (_("Case _sensitive"));
-    goban_window->case_sensitive_toggle_button
-      = GTK_TOGGLE_BUTTON (case_sensitive_check_button);
-
-    if (goban_window->case_sensitive) {
-      gtk_toggle_button_set_active (goban_window->case_sensitive_toggle_button,
-				    TRUE);
-    }
-
-    g_signal_connect_swapped (case_sensitive_check_button, "toggled",
-			      G_CALLBACK (find_dialog_parameters_changed),
-			      goban_window);
-
-    whole_words_only_check_button
-      = gtk_check_button_new_with_mnemonic (_("Whole _words only"));
-    goban_window->whole_words_only_toggle_button
-      = GTK_TOGGLE_BUTTON (whole_words_only_check_button);
-
-    if (goban_window->whole_words_only) {
-      gtk_toggle_button_set_active
-	(goban_window->whole_words_only_toggle_button, TRUE);
-    }
-
-    g_signal_connect_swapped (whole_words_only_check_button, "toggled",
-			      G_CALLBACK (find_dialog_parameters_changed),
-			      goban_window);
-
-    wrap_around_check_button
-      = gtk_check_button_new_with_mnemonic (_("Wrap _around"));
-    goban_window->wrap_around_toggle_button
-      = GTK_TOGGLE_BUTTON (wrap_around_check_button);
-
-    if (goban_window->wrap_around) {
-      gtk_toggle_button_set_active (goban_window->wrap_around_toggle_button,
-				    TRUE);
-    }
-
-    g_signal_connect_swapped (wrap_around_check_button, "toggled",
-			      G_CALLBACK (find_dialog_parameters_changed),
-			      goban_window);
-
-    vbox1 = gtk_utils_pack_in_box (GTK_TYPE_VBOX, QUARRY_SPACING_SMALL,
-				   case_sensitive_check_button, GTK_UTILS_FILL,
-				   whole_words_only_check_button,
-				   GTK_UTILS_FILL,
-				   wrap_around_check_button, GTK_UTILS_FILL,
-				   NULL);
-
-    close_automatically_check_button
-      = (gtk_check_button_new_with_mnemonic
-	 (_("A_uto-close this dialog")));
-    goban_window->close_automatically_toggle_button
-      = GTK_TOGGLE_BUTTON (close_automatically_check_button);
-
-    if (find_dialog_configuration.close_automatically) {
-      gtk_toggle_button_set_active
-	(goban_window->close_automatically_toggle_button, TRUE);
-    }
-
-    options_named_vbox
-      = gtk_utils_pack_in_box (GTK_TYPE_NAMED_VBOX, QUARRY_SPACING_BIG,
-			       vbox1, GTK_UTILS_FILL,
-			       close_automatically_check_button,
-			       GTK_UTILS_FILL,
-			       NULL);
-    gtk_named_vbox_set_label_text (GTK_NAMED_VBOX (options_named_vbox),
-				   _("Options"));
-
-    gtk_utils_create_radio_chain (tree_scope_radio_buttons,
-				  tree_scope_radio_button_labels, 2);
-    goban_window->search_current_node_only_toggle_button
-      = GTK_TOGGLE_BUTTON (tree_scope_radio_buttons[1]);
-
-    if (!goban_window->search_whole_game_tree) {
-      gtk_toggle_button_set_active
-	(goban_window->search_current_node_only_toggle_button, TRUE);
-    }
-
-    g_signal_connect_swapped (tree_scope_radio_buttons[0], "toggled",
-			      G_CALLBACK (find_dialog_parameters_changed),
-			      goban_window);
-
-    vbox1 = gtk_utils_pack_in_box (GTK_TYPE_VBOX, QUARRY_SPACING_SMALL,
-				   tree_scope_radio_buttons[0], GTK_UTILS_FILL,
-				   tree_scope_radio_buttons[1], GTK_UTILS_FILL,
-				   NULL);
-
-    /* Let's be over-secure (a compile-time error would have been
-     * better...)
-     */
-    g_assert (SEARCH_EVERYWHERE	      == 0
-	      && SEARCH_IN_COMMENTS   == 1
-	      && SEARCH_IN_NODE_NAMES == 2);
-
-    gtk_utils_create_radio_chain (properties_scope_radio_buttons,
-				  properties_scope_radio_button_labels, 3);
-    goban_window->search_everywhere_toggle_button
-      = GTK_TOGGLE_BUTTON (properties_scope_radio_buttons[0]);
-    goban_window->search_comments_only_toggle_button
-      = GTK_TOGGLE_BUTTON (properties_scope_radio_buttons[1]);
-
-    gtk_toggle_button_set_active
-      ((GTK_TOGGLE_BUTTON
-	(properties_scope_radio_buttons[goban_window->search_in])),
-       TRUE);
-
-    g_signal_connect_swapped (properties_scope_radio_buttons[0], "toggled",
-			      G_CALLBACK (find_dialog_parameters_changed),
-			      goban_window);
-    g_signal_connect_swapped (properties_scope_radio_buttons[1], "toggled",
-			      G_CALLBACK (find_dialog_parameters_changed),
-			      goban_window);
-
-    vbox2 = gtk_utils_pack_in_box (GTK_TYPE_VBOX, QUARRY_SPACING_SMALL,
-				   properties_scope_radio_buttons[0],
-				   GTK_UTILS_FILL,
-				   properties_scope_radio_buttons[1],
-				   GTK_UTILS_FILL,
-				   properties_scope_radio_buttons[2],
-				   GTK_UTILS_FILL,
-				   NULL);
-
-    scope_named_vbox = gtk_utils_pack_in_box (GTK_TYPE_NAMED_VBOX,
-					      QUARRY_SPACING_BIG,
-					      vbox1, GTK_UTILS_FILL,
-					      vbox2, GTK_UTILS_FILL, NULL);
-    gtk_named_vbox_set_label_text (GTK_NAMED_VBOX (scope_named_vbox),
-				   _("Search Scope"));
-
-    vbox1 = gtk_utils_pack_in_box (GTK_TYPE_VBOX, QUARRY_SPACING_BIG,
-				   hbox, GTK_UTILS_FILL,
-				   (gtk_utils_pack_in_box
-				    (GTK_TYPE_HBOX, QUARRY_SPACING_VERY_BIG,
-				     options_named_vbox, GTK_UTILS_FILL,
-				     scope_named_vbox, GTK_UTILS_FILL,
-				     NULL)),
-				   GTK_UTILS_FILL,
-				   NULL);
-
-    gtk_widget_show_all (vbox1);
-    gtk_utils_standardize_dialog (goban_window->find_dialog, vbox1);
-
-    gtk_dialog_set_default_response (goban_window->find_dialog,
-				     GTK_GOBAN_WINDOW_FIND_NEXT);
-
-    /* Desensitize buttons if the entry is empty. */
-    find_dialog_parameters_changed (goban_window);
+    g_signal_connect (goban_window->find_dialog, "response",
+		      G_CALLBACK (find_dialog_response), goban_window);
   }
 
   gtk_window_present (GTK_WINDOW (goban_window->find_dialog));
@@ -2227,49 +2041,41 @@ show_find_dialog (GtkGobanWindow *goban_window)
 
 
 static void
-find_dialog_response (GtkGobanWindow *goban_window, gint response_id)
+find_dialog_response (QuarryFindDialog *find_dialog, gint response_id,
+		      GtkGobanWindow *goban_window)
 {
-  if (response_id == GTK_GOBAN_WINDOW_FIND_NEXT
-      || response_id == GTK_GOBAN_WINDOW_FIND_PREVIOUS) {
+  if (response_id    == QUARRY_FIND_DIALOG_FIND_NEXT
+      || response_id == QUARRY_FIND_DIALOG_FIND_PREVIOUS) {
     g_free (goban_window->text_to_find);
-    goban_window->text_to_find
-      = g_strdup (gtk_entry_get_text (goban_window->search_for_entry));
+    goban_window->text_to_find = g_strdup (quarry_find_dialog_get_text_to_find
+					   (find_dialog));
 
     goban_window->case_sensitive
-      = (gtk_toggle_button_get_active
-	 (goban_window->case_sensitive_toggle_button));
+      = quarry_find_dialog_get_case_sensitive (find_dialog);
     find_dialog_configuration.case_sensitive = goban_window->case_sensitive;
 
     goban_window->whole_words_only
-      = (gtk_toggle_button_get_active
-	 (goban_window->whole_words_only_toggle_button));
+      = quarry_find_dialog_get_whole_words_only (find_dialog);
     find_dialog_configuration.whole_words_only
       = goban_window->whole_words_only;
 
     goban_window->wrap_around
-      = gtk_toggle_button_get_active (goban_window->wrap_around_toggle_button);
+      = quarry_find_dialog_get_wrap_around (find_dialog);
     find_dialog_configuration.wrap_around = goban_window->wrap_around;
 
     goban_window->search_whole_game_tree
-      = !(gtk_toggle_button_get_active
-	  (goban_window->search_current_node_only_toggle_button));
+      = quarry_find_dialog_get_search_whole_game_tree (find_dialog);
     find_dialog_configuration.search_whole_game_tree
       = goban_window->search_whole_game_tree;
 
-    if (gtk_toggle_button_get_active
-	(goban_window->search_everywhere_toggle_button))
-      goban_window->search_in = SEARCH_EVERYWHERE;
-    else if (gtk_toggle_button_get_active
-	     (goban_window->search_comments_only_toggle_button))
-      goban_window->search_in = SEARCH_IN_COMMENTS;
-    else
-      goban_window->search_in = SEARCH_IN_NODE_NAMES;
-
+    goban_window->search_in
+      = quarry_find_dialog_get_search_in (find_dialog);
     find_dialog_configuration.search_in = goban_window->search_in;
 
+    goban_window->close_automatically
+      = quarry_find_dialog_get_close_automatically (find_dialog);
     find_dialog_configuration.close_automatically
-      = (gtk_toggle_button_get_active
-	 (goban_window->close_automatically_toggle_button));
+      = goban_window->close_automatically;
 
     if (!do_find_text (goban_window, response_id)
 	|| !find_dialog_configuration.close_automatically) {
@@ -2278,547 +2084,83 @@ find_dialog_response (GtkGobanWindow *goban_window, gint response_id)
     }
   }
 
-  gtk_widget_destroy (GTK_WIDGET (goban_window->find_dialog));
+  gtk_widget_destroy (GTK_WIDGET (find_dialog));
 }
 
 
-static void
-find_dialog_parameters_changed (GtkGobanWindow *goban_window)
-{
-  gboolean sensitive
-    = (* gtk_entry_get_text (goban_window->search_for_entry) != 0);
-
-  gtk_dialog_set_response_sensitive (goban_window->find_dialog,
-				     GTK_GOBAN_WINDOW_FIND_NEXT, sensitive);
-  gtk_dialog_set_response_sensitive (goban_window->find_dialog,
-				     GTK_GOBAN_WINDOW_FIND_PREVIOUS,
-				     sensitive);
-}
-
-
-/* This function finds text occurences in comments of current SGF game
- * tree's nodes.  We don't use GtkTreeBuffer built-in search, because
- * it would have been very inefficient: we would have had to load each
- * comment in a buffer before searching.  Also, GtkTreeBuffer
- * apparently doesn't care much for Unicode character collation etc.
- */
 static gboolean
-do_find_text (GtkGobanWindow *goban_window, guint callback_action)
+do_find_text (GtkGobanWindow *goban_window,
+	      QuarryFindDialogSearchDirection direction)
 {
-  GtkTextBuffer *text_buffer = goban_window->text_buffer;
-  GtkTextIter selection_iterator;
-
-  const gboolean case_sensitive = goban_window->case_sensitive;
-
-  gchar *text_to_find_normalized;
-  const gchar *text_to_search_in;
-  gchar *text_to_search_in_normalized;
-  gchar *text_to_free;
-  const gchar *occurence;
-  gint base_offset = 0;
-  SgfType property_type;
-
-  char * (* do_search) (const char *haystack, const char *needle);
-
   if (!goban_window->text_to_find) {
     /* Don't have text to find yet. */
     show_find_dialog (goban_window);
-
     return FALSE;
   }
 
-  text_to_find_normalized = get_normalized_text (goban_window->text_to_find,
-						 -1, case_sensitive);
+  if (quarry_find_text (goban_window->text_to_find, direction,
+			goban_window->case_sensitive,
+			goban_window->whole_words_only,
+			goban_window->wrap_around,
+			goban_window->search_whole_game_tree,
+			goban_window->search_in,
+			goban_window->text_buffer,
+			goban_window->node_name_inserted,
+			goban_window->current_tree,
+			((QuarryFindDialogSwitchToGivenNode)
+			 switch_to_given_node),
+			goban_window)) {
+    gtk_text_view_scroll_to_mark
+      (goban_window->text_view,
+       gtk_text_buffer_get_insert (goban_window->text_buffer),
+       0.1, FALSE, 0.0, 0.0);
 
-  if (callback_action == GTK_GOBAN_WINDOW_FIND_NEXT)
-    do_search = (goban_window->whole_words_only ? strstr_whole_word : strstr);
-  else {
-    /* Apparently, g_strrstr() uses naive search, but let's not care. */
-    do_search = (goban_window->whole_words_only
-		 ? strrstr_whole_word : g_strrstr);
-  }
+    StringListItem *item
+      = string_list_find (&find_dialog_configuration.latest_search_strings,
+			  goban_window->text_to_find);
 
-  /* First search in the right portion of the current node's
-   * comments.
-   */
-
-  if (callback_action == GTK_GOBAN_WINDOW_FIND_NEXT) {
-    gtk_text_buffer_get_selection_bounds (text_buffer,
-					  NULL, &selection_iterator);
-    text_to_free = get_bottom_buffer_part (goban_window, &selection_iterator);
-  }
-  else {
-    gtk_text_buffer_get_selection_bounds (text_buffer,
-					  &selection_iterator, NULL);
-    text_to_free = get_top_buffer_part (goban_window, &selection_iterator);
-  }
-
-  if (text_to_free) {
-    text_to_search_in_normalized = get_normalized_text (text_to_free, -1,
-							case_sensitive);
-
-    occurence = do_search (text_to_search_in_normalized,
-			   text_to_find_normalized);
-    if (occurence) {
-      text_to_search_in = text_to_free;
-      property_type	= SGF_UNKNOWN;
-      if (callback_action == GTK_GOBAN_WINDOW_FIND_NEXT)
-	base_offset = gtk_text_iter_get_offset (&selection_iterator);
-
-      goto found;
+    if (item) {
+      string_list_delete_item
+	(&find_dialog_configuration.latest_search_strings, item);
     }
-
-    g_free (text_to_search_in_normalized);
-    g_free (text_to_free);
-  }
-
-  /* Next traverse the game tree if requested. */
-  if (goban_window->search_whole_game_tree) {
-    SgfNode *occurence_node = goban_window->current_tree->current_node;
-    SgfNode * (* do_traverse) (const SgfNode *sgf_node)
-      = (callback_action == GTK_GOBAN_WINDOW_FIND_NEXT
-	 ? sgf_node_traverse_forward : sgf_node_traverse_backward);
-    SgfType first_property_type;
-
-    switch (goban_window->search_in) {
-    case SEARCH_EVERYWHERE:
-      first_property_type = (callback_action == GTK_GOBAN_WINDOW_FIND_NEXT
-			     ? SGF_NODE_NAME : SGF_COMMENT);
-      break;
-
-    case SEARCH_IN_COMMENTS:
-      first_property_type = SGF_COMMENT;
-      break;
-
-    case SEARCH_IN_NODE_NAMES:
-      first_property_type = SGF_NODE_NAME;
-      break;
-
-    default:
-      g_assert_not_reached ();
-    }
-
-    while (1) {
-      occurence_node = do_traverse (occurence_node);
-      if (!occurence_node) {
-	if (!goban_window->wrap_around)
-	  break;
-
-	if (callback_action == GTK_GOBAN_WINDOW_FIND_NEXT) {
-	  occurence_node
-	    = sgf_game_tree_traverse_forward (goban_window->current_tree);
-	}
-	else {
-	  occurence_node
-	    = sgf_game_tree_traverse_backward (goban_window->current_tree);
-	}
-      }
-
-      /* Can happen when wrapping around. */
-      if (occurence_node == goban_window->current_tree->current_node)
-	break;
-
-      property_type = first_property_type;
-      do {
-	text_to_search_in = sgf_node_get_text_property_value (occurence_node,
-							      property_type);
-	if (text_to_search_in) {
-	  text_to_search_in_normalized
-	    = get_normalized_text (text_to_search_in, -1, case_sensitive);
-
-	  occurence = do_search (text_to_search_in_normalized,
-				 text_to_find_normalized);
-	  if (occurence) {
-	    switch_to_given_node (goban_window, occurence_node);
-	    text_to_free = NULL;
-
-	    goto found;
-	  }
-
-	  g_free (text_to_search_in_normalized);
-	}
-
-	if (goban_window->search_in != SEARCH_EVERYWHERE)
-	  break;
-
-	property_type = (SGF_COMMENT + SGF_NODE_NAME) - property_type;
-      } while (property_type != first_property_type);
-    }
-  }
-
-  /* Finally, wrap around in the current node's comment, if
-   * requested.
-   */
-  if (goban_window->wrap_around) {
-    /* The `selection_iterator' is already set. */
-    if (callback_action == GTK_GOBAN_WINDOW_FIND_NEXT)
-      text_to_free = get_top_buffer_part (goban_window, &selection_iterator);
     else {
-      text_to_free = get_bottom_buffer_part (goban_window,
-					     &selection_iterator);
-    }
-
-    if (text_to_free) {
-      text_to_search_in_normalized = get_normalized_text (text_to_free, -1,
-							  case_sensitive);
-
-      occurence = do_search (text_to_search_in_normalized,
-			     text_to_find_normalized);
-      if (occurence) {
-	text_to_search_in = text_to_free;
-	property_type	  = SGF_UNKNOWN;
-	if (callback_action == GTK_GOBAN_WINDOW_FIND_PREVIOUS)
-	  base_offset = gtk_text_iter_get_offset (&selection_iterator);
-
-	goto found;
-      }
-
-      g_free (text_to_search_in_normalized);
-      g_free (text_to_free);
-    }
-  }
-
-  /* Nothing found. */
-
-  if (goban_window->find_dialog) {
-    if (goban_window->wrap_around
-	|| callback_action == GTK_GOBAN_WINDOW_FIND_NEXT) {
-      gtk_dialog_set_response_sensitive (goban_window->find_dialog,
-					 GTK_GOBAN_WINDOW_FIND_NEXT, FALSE);
-    }
-
-    if (goban_window->wrap_around
-	|| callback_action == GTK_GOBAN_WINDOW_FIND_PREVIOUS) {
-      gtk_dialog_set_response_sensitive (goban_window->find_dialog,
-					 GTK_GOBAN_WINDOW_FIND_PREVIOUS,
-					 FALSE);
-    }
-  }
-
-  g_free (text_to_find_normalized);
-
-  return FALSE;
-
- found:
-
-  {
-    /* We need to find the boundaries of the found string to adjust
-     * selection in the `text_buffer'.
-     *
-     * The main problem is that g_utf8_normalize() can change the
-     * length of string in characters (not the case with simple ASCII
-     * strings, but we at Unicode handling here.)  So, we find how
-     * `text_to_search_in' maps onto `text_to_search_in_normalized'
-     * here.
-     */
-    const gchar *last_line;
-    const gchar *last_line_normalized;
-    const gchar *scan;
-    gint num_lines;
-    gint remaining_text_length;
-    gint last_line_offset;
-    GtkTextIter insertion_iterator;
-    GtkTextIter bound_iterator;
-
-    /* If `text_to_search_in' doesn't include node name, while the
-     * text buffer does, increase `base_offset' accordingly.
-     */
-    if (goban_window->node_name_inserted
-	&& (property_type == SGF_COMMENT
-	    || (property_type == SGF_UNKNOWN && base_offset == 0
-		&& goban_window->search_in == SEARCH_IN_COMMENTS))) {
-      GtkTextIter second_line_iterator;
-
-      gtk_text_buffer_get_iter_at_line (text_buffer, &second_line_iterator, 1);
-      base_offset += gtk_text_iter_get_offset (&second_line_iterator);
-    }
-
-    if (property_type == SGF_COMMENT) {
-      /* First skip all full lines, to speed the things up in case of
-       * a very long text.
+      /* Ten (maximal history size) minus one.  Account for the item
+       * to be added!
        */
+      string_list_clamp_size (&find_dialog_configuration.latest_search_strings,
+			      9);
+    }
 
-      for (last_line_normalized = text_to_search_in_normalized,
-	     scan = text_to_search_in_normalized, num_lines = 0;
-	   scan < occurence; scan++) {
-	if (*scan == '\n') {
-	  num_lines++;
-	  last_line_normalized = scan + 1;
-	}
+    string_list_prepend (&find_dialog_configuration.latest_search_strings,
+			 utils_duplicate_string (goban_window->text_to_find));
+
+    if (goban_window->find_dialog) {
+      quarry_find_dialog_set_search_history
+	(goban_window->find_dialog,
+	 &find_dialog_configuration.latest_search_strings);
+    }
+
+    return TRUE;
+  }
+  else {
+    if (goban_window->find_dialog) {
+      if (goban_window->wrap_around
+	  || direction == QUARRY_FIND_DIALOG_FIND_NEXT) {
+	gtk_dialog_set_response_sensitive
+	  (GTK_DIALOG (goban_window->find_dialog),
+	   QUARRY_FIND_DIALOG_FIND_NEXT, FALSE);
       }
 
-      for (last_line = text_to_search_in; num_lines > 0; last_line++) {
-	if (IS_UTF8_STARTER (*last_line)) {
-	  /* Also adjust `base_offset' as we scan the text. */
-	  base_offset++;
-
-	  if (*last_line == '\n')
-	    num_lines--;
-	}
+      if (goban_window->wrap_around
+	  || direction == QUARRY_FIND_DIALOG_FIND_PREVIOUS) {
+	gtk_dialog_set_response_sensitive
+	  (GTK_DIALOG (goban_window->find_dialog),
+	   QUARRY_FIND_DIALOG_FIND_PREVIOUS, FALSE);
       }
-
-      /* Only search in the next line. */
-      remaining_text_length = 0;
-      while (last_line[remaining_text_length]
-	     && last_line[remaining_text_length] != '\n')
-	remaining_text_length++;
-    }
-    else {
-      last_line_normalized  = text_to_search_in_normalized;
-      last_line		    = text_to_search_in;
-      remaining_text_length = strlen (last_line);
     }
 
-    last_line_offset
-      = get_offset_in_original_text (last_line, remaining_text_length,
-				     occurence - last_line_normalized,
-				     case_sensitive,
-				     occurence - last_line_normalized);
-
-    gtk_text_buffer_get_iter_at_offset (text_buffer, &insertion_iterator,
-					base_offset + last_line_offset);
-
-    last_line_offset
-      = get_offset_in_original_text (last_line, remaining_text_length,
-				     ((occurence
-				       + strlen (text_to_find_normalized))
-				      - last_line_normalized),
-				     case_sensitive,
-				     (last_line_offset
-				      + strlen (goban_window->text_to_find)));
-
-    gtk_text_buffer_get_iter_at_offset (text_buffer, &bound_iterator,
-					base_offset + last_line_offset);
-
-    gtk_text_buffer_select_range (text_buffer,
-				  &insertion_iterator, &bound_iterator);
-    gtk_text_view_scroll_to_mark (goban_window->text_view,
-				  gtk_text_buffer_get_insert (text_buffer),
-				  0.1, FALSE, 0.0, 0.0);
+    return FALSE;
   }
-
-  g_free (text_to_find_normalized);
-  g_free (text_to_search_in_normalized);
-  g_free (text_to_free);
-
-  return TRUE;
-}
-
-
-static char *
-strstr_whole_word (const char *haystack, const char *needle)
-{
-  gchar *occurence = strstr (haystack, needle);
-
-  if (occurence) {
-    gint needle_length = strlen (needle);
-    gboolean first_char_is_word_constituent
-      = char_is_word_constituent (needle);
-    gboolean last_char_is_word_constituent
-      = char_is_word_constituent (g_utf8_prev_char (needle + needle_length));
-
-    do {
-      if ((!first_char_is_word_constituent
-	   || occurence == haystack
-	   || !char_is_word_constituent (g_utf8_prev_char (occurence)))
-	  && (!last_char_is_word_constituent
-	      || *(occurence + needle_length) == 0
-	      || !char_is_word_constituent (occurence + needle_length)))
-	return occurence;
-
-      occurence = strstr (occurence + 1, needle);
-    } while (occurence);
-  }
-
-  return NULL;
-}
-
-
-static char *
-strrstr_whole_word (const char *haystack, const char *needle)
-{
-  gchar *occurence = g_strrstr (haystack, needle);
-
-  if (occurence) {
-    gint needle_length = strlen (needle);
-    gboolean first_char_is_word_constituent
-      = char_is_word_constituent (needle);
-    gboolean last_char_is_word_constituent
-      = char_is_word_constituent (g_utf8_prev_char (needle + needle_length));
-
-    do {
-      if ((!first_char_is_word_constituent
-	   || occurence == haystack
-	   || !char_is_word_constituent (g_utf8_prev_char (occurence)))
-	  && (!last_char_is_word_constituent
-	      || *(occurence + needle_length) == 0
-	      || !char_is_word_constituent (occurence + needle_length)))
-	return occurence;
-
-      occurence = g_strrstr_len (haystack,
-				 occurence + (needle_length - 1) - haystack,
-				 needle);
-    } while (occurence);
-  }
-
-  return NULL;
-}
-
-
-static char *
-get_top_buffer_part (const GtkGobanWindow *goban_window,
-		     const GtkTextIter *boundary_iterator)
-{
-  GtkTextIter start_iterator;
-  GtkTextIter real_boundary_iterator = *boundary_iterator;
-
-  if (goban_window->search_in != SEARCH_IN_COMMENTS
-      || !goban_window->node_name_inserted) {
-    gtk_text_buffer_get_start_iter (goban_window->text_buffer,
-				    &start_iterator);
-  }
-  else {
-    gtk_text_buffer_get_iter_at_line (goban_window->text_buffer,
-				      &start_iterator, 1);
-  }
-
-  if (goban_window->search_in == SEARCH_IN_NODE_NAMES) {
-    if (!goban_window->node_name_inserted)
-      return NULL;
-
-    if (gtk_text_iter_get_line (&real_boundary_iterator) > 0) {
-      gtk_text_buffer_get_iter_at_line (goban_window->text_buffer,
-					&real_boundary_iterator, 1);
-      gtk_text_iter_backward_char (&real_boundary_iterator);
-    }
-  }
-
-  if (gtk_text_iter_compare (&start_iterator, &real_boundary_iterator) >= 0)
-    return NULL;
-
-  return gtk_text_iter_get_text (&start_iterator, &real_boundary_iterator);
-}
-
-
-static char *
-get_bottom_buffer_part (const GtkGobanWindow *goban_window,
-			const GtkTextIter *boundary_iterator)
-{
-  GtkTextIter real_boundary_iterator = *boundary_iterator;
-  GtkTextIter end_iterator;
-
-  if (goban_window->search_in == SEARCH_IN_COMMENTS
-      && goban_window->node_name_inserted
-      && gtk_text_iter_get_line (&real_boundary_iterator) == 0) {
-    gtk_text_buffer_get_iter_at_line (goban_window->text_buffer,
-				      &real_boundary_iterator, 1);
-  }
-
-  if (goban_window->search_in != SEARCH_IN_NODE_NAMES)
-    gtk_text_buffer_get_end_iter (goban_window->text_buffer, &end_iterator);
-  else {
-    if (!goban_window->node_name_inserted)
-      return NULL;
-
-    gtk_text_buffer_get_iter_at_line (goban_window->text_buffer,
-				      &end_iterator, 1);
-    gtk_text_iter_backward_char (&end_iterator);
-  }
-
-  if (gtk_text_iter_compare (&real_boundary_iterator, &end_iterator) >= 0)
-    return NULL;
-
-  return gtk_text_iter_get_text (&real_boundary_iterator, &end_iterator);
-}
-
-
-static gboolean
-char_is_word_constituent (const gchar *character)
-{
-  GUnicodeType character_type = g_unichar_type (g_utf8_get_char (character));
-
-  return (character_type == G_UNICODE_LOWERCASE_LETTER
-	  || character_type == G_UNICODE_MODIFIER_LETTER
-	  || character_type == G_UNICODE_OTHER_LETTER
-	  || character_type == G_UNICODE_TITLECASE_LETTER
-	  || character_type == G_UNICODE_UPPERCASE_LETTER
-	  || character_type == G_UNICODE_DECIMAL_NUMBER
-	  || character_type == G_UNICODE_LETTER_NUMBER
-	  || character_type == G_UNICODE_OTHER_NUMBER);
-}
-
-
-inline static gchar *
-get_normalized_text (const gchar *text, gint length, gboolean case_sensitive)
-{
-  gchar *normalized_text;
-
-  if (case_sensitive)
-    normalized_text = g_utf8_normalize (text, length, G_NORMALIZE_ALL_COMPOSE);
-  else {
-    gchar *case_folded_text = g_utf8_casefold (text, length);
-
-    normalized_text = g_utf8_normalize (case_folded_text, -1,
-					G_NORMALIZE_ALL_COMPOSE);
-    g_free (case_folded_text);
-  }
-
-  return normalized_text;
-}
-
-
-static gint
-get_offset_in_original_text (const gchar *text, gint length,
-			     gint normalized_text_offset,
-			     gboolean case_sensitive, gint first_guess)
-{
-  gint byte_offset = MIN (first_guess, length - 1);
-  gint offset;
-  const gchar *scan;
-
-  if (normalized_text_offset == 0)
-    return 0;
-
-  while (byte_offset < length && !IS_UTF8_STARTER (text[byte_offset]))
-    byte_offset++;
-
-  while (1) {
-    gchar *normalized_text = get_normalized_text (text, byte_offset,
-						  case_sensitive);
-    gint length = strlen (normalized_text);
-
-    g_free (normalized_text);
-
-    if (length == normalized_text_offset)
-      break;
-
-    /* FIXME: Maybe implement something more efficient than one UTF-8
-     *	      character at a time.
-     */
-    if (length < normalized_text_offset) {
-      do
-	byte_offset++;
-      while (byte_offset < length && !IS_UTF8_STARTER (text[byte_offset]));
-
-      if (byte_offset == length)
-	break;
-    }
-    else {
-      do
-	byte_offset--;
-      while (byte_offset > 0 && !IS_UTF8_STARTER (text[byte_offset]));
-
-      if (byte_offset == 0)
-	return 0;
-    }
-  }
-
-  for (offset = 0, scan = text; scan < text + byte_offset; scan++) {
-    if (IS_UTF8_STARTER (*scan))
-      offset++;
-  }
-
-  return offset;
 }
 
 
