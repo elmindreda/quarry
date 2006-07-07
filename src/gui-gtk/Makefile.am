@@ -95,6 +95,7 @@ libguigtk_a_SOURCES =				\
 	gtk-utils.c				\
 	gui-back-end.c				\
 	quarry-assistant.c			\
+	quarry-find-dialog.c			\
 	quarry-history-text-buffer.c		\
 	quarry-message-dialog.c			\
 	quarry-move-number-dialog.c		\
@@ -135,6 +136,7 @@ libguigtk_a_SOURCES =				\
 	gtk-utils.h				\
 	gui-back-end.h				\
 	quarry-assistant.h			\
+	quarry-find-dialog.h			\
 	quarry-history-text-buffer.h		\
 	quarry-message-dialog.h			\
 	quarry-move-number-dialog.h		\

@@ -252,6 +252,7 @@ libguigtk_a_SOURCES = \
 	gtk-utils.c				\
 	gui-back-end.c				\
 	quarry-assistant.c			\
+	quarry-find-dialog.c			\
 	quarry-history-text-buffer.c		\
 	quarry-message-dialog.c			\
 	quarry-move-number-dialog.c		\
@@ -292,6 +293,7 @@ libguigtk_a_SOURCES = \
 	gtk-utils.h				\
 	gui-back-end.h				\
 	quarry-assistant.h			\
+	quarry-find-dialog.h			\
 	quarry-history-text-buffer.h		\
 	quarry-message-dialog.h			\
 	quarry-move-number-dialog.h		\
@@ -360,6 +362,7 @@ am_libguigtk_a_OBJECTS = gtk-add-or-edit-label-dialog.$(OBJEXT) \
 	gtk-sgf-tree-signal-proxy.$(OBJEXT) gtk-sgf-tree-view.$(OBJEXT) \
 	gtk-tile-set.$(OBJEXT) gtk-utils.$(OBJEXT) \
 	gui-back-end.$(OBJEXT) quarry-assistant.$(OBJEXT) \
+	quarry-find-dialog.$(OBJEXT) \
 	quarry-history-text-buffer.$(OBJEXT) \
 	quarry-message-dialog.$(OBJEXT) \
 	quarry-move-number-dialog.$(OBJEXT) \
@@ -406,6 +409,7 @@ am__depfiles_maybe = depfiles
 @AMDEP_TRUE@	./$(DEPDIR)/gtk-utils.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/gui-back-end.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/quarry-assistant.Po \
+@AMDEP_TRUE@	./$(DEPDIR)/quarry-find-dialog.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/quarry-history-text-buffer.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/quarry-marshal.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/quarry-message-dialog.Po \
@@ -481,6 +485,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gtk-utils.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gui-back-end.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/quarry-assistant.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/quarry-find-dialog.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/quarry-history-text-buffer.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/quarry-marshal.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/quarry-message-dialog.Po@am__quote@
