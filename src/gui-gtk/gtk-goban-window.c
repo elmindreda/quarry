@@ -162,6 +162,14 @@ struct _GtkGobanWindowStateData {
 };
 
 
+typedef struct _SgfCopyData			SgfCopyData;
+
+struct _SgfCopyData {
+  char			     *sgf;
+  int			      sgf_length;
+};
+
+
 static void	 gtk_goban_window_class_init (GtkGobanWindowClass *class);
 static void	 gtk_goban_window_init (GtkGobanWindow *goban_window);
 
@@ -410,6 +418,19 @@ static void	 player_is_out_of_time (GtkClock *clock,
 static void	 undo_operation (GtkGobanWindow *goban_window);
 static void	 redo_operation (GtkGobanWindow *goban_window);
 
+static void	 cut_operation (GtkGobanWindow *goban_window);
+static void	 copy_operation (GtkGobanWindow *goban_window);
+static void	 paste_operation (GtkGobanWindow *goban_window);
+
+static void	 get_copied_sgf (GtkClipboard *clipboard,
+				 GtkSelectionData *selection_data,
+				 guint format, gpointer user_data);
+static void	 delete_copied_sgf (GtkClipboard *clipboard,
+				    gpointer user_data);
+static void	 receive_copied_sgf (GtkClipboard *clipboard,
+				     GtkSelectionData *selection_data,
+				     gpointer user_data);
+
 static void	 append_empty_variation (GtkGobanWindow *goban_window);
 
 static void	 swap_adjacent_branches (GtkGobanWindow *goban_window,
@@ -656,16 +677,25 @@ gtk_goban_window_init (GtkGobanWindow *goban_window)
       "<StockItem>",			GTK_STOCK_REDO },
     { N_("/Edit/"), NULL, NULL, 0, "<Separator>" },
 
+    { N_("/Edit/Cu_t"),			"",
+      cut_operation,			0,
+      "<StockItem>",			GTK_STOCK_CUT },
+    { N_("/Edit/_Copy"),		"",
+      copy_operation,			0,
+      "<StockItem>",			GTK_STOCK_COPY },
+    { N_("/Edit/_Paste"),		"",
+      paste_operation,			0,
+      "<StockItem>",			GTK_STOCK_PASTE },
     { N_("/Edit/_Delete Node"),		"<alt>Delete",
       delete_current_node,		0,
       "<StockItem>",			GTK_STOCK_DELETE },
-    { N_("/Edit/Delete Node's _Children"), "<shift><alt>Delete",
+    { N_("/Edit/Delete Node's C_hildren"), "<shift><alt>Delete",
       delete_current_node_children,	0,
       "<Item>" },
     { N_("/Edit/"), NULL, NULL, 0, "<Separator>" },
 
 
-    { N_("/Edit/_Tools"), NULL, NULL, 0, "<Branch>" },
+    { N_("/Edit/T_ools"), NULL, NULL, 0, "<Branch>" },
     { N_("/Edit/Tools/_Move Tool"),	"<ctrl>M",
       activate_move_tool,		0,
       "<RadioItem>" },
@@ -723,7 +753,7 @@ gtk_goban_window_init (GtkGobanWindow *goban_window)
       set_move_number,			0,
       "<Item>" },
 
-    { N_("/Edit/_Player to Move"), NULL, NULL, 0, "<Branch>" },
+    { N_("/Edit/P_layer to Move"), NULL, NULL, 0, "<Branch>" },
     { N_("/Edit/Player to Move/_White"), NULL,
       set_player_to_move,		WHITE,
       "<RadioItem>" },
@@ -752,7 +782,7 @@ gtk_goban_window_init (GtkGobanWindow *goban_window)
       "<StockItem>",			GTK_STOCK_PROPERTIES },
     { N_("/Edit/"), NULL, NULL, 0, "<Separator>" },
 
-    { N_("/Edit/Pr_eferences"),		NULL,
+    { N_("/Edit/Pr_eferences"),		"",
       show_preferences_dialog,		0,
       "<StockItem>",			GTK_STOCK_PREFERENCES },
 
@@ -835,7 +865,7 @@ gtk_goban_window_init (GtkGobanWindow *goban_window)
 
 #ifdef GTK_TYPE_GO_TO_NAMED_NODE_DIALOG
     { N_("/Go/"), NULL, NULL, 0, "<Separator>" },
-    { N_("/Go/_Go to Named Node..."),	NULL,
+    { N_("/Go/_Go to Named Node..."),	"",
       show_go_to_named_node_dialog,	0,
       "<StockItem>",			GTK_STOCK_JUMP_TO },
 #endif
@@ -1953,11 +1983,9 @@ do_export_diagram (GtkGobanWindow *goban_window, char *diagram_string,
   int diagram_string_length = strlen (diagram_string);
   GtkWidget *message_dialog;
 
-  gtk_clipboard_set_text (gtk_clipboard_get (gdk_atom_intern ("CLIPBOARD",
-							      FALSE)),
+  gtk_clipboard_set_text (gtk_clipboard_get (GDK_SELECTION_CLIPBOARD),
 			  diagram_string, diagram_string_length);
-  gtk_clipboard_set_text (gtk_clipboard_get (gdk_atom_intern ("PRIMARY",
-							      FALSE)),
+  gtk_clipboard_set_text (gtk_clipboard_get (GDK_SELECTION_PRIMARY),
 			  diagram_string, diagram_string_length);
   utils_free (diagram_string);
 
@@ -2427,8 +2455,7 @@ show_about_dialog (void)
   static const char *description_string
     = N_("A GUI program for Go, Amazons and Reversi board games");
   static const char *copyright_string
-    = N_("Copyright \xc2\xa9 2003, 2004, 2005, 2006 "
-	 "Paul Pogonyshev and others");
+    = N_("Copyright (C) 2003, 2004, 2005, 2006 Paul Pogonyshev and others");
 
   if (!about_dialog) {
 #if GTK_2_6_OR_LATER
@@ -4275,6 +4302,14 @@ update_commands_sensitivity (const GtkGobanWindow *goban_window)
 
   /* "Edit" submenu. */
   gtk_utils_set_menu_items_sensitive (goban_window->item_factory,
+				      (!goban_window->in_game_mode
+				       && current_node->parent != NULL),
+				      "/Edit/Cut", NULL);				      
+  gtk_utils_set_menu_items_sensitive (goban_window->item_factory,
+				      !goban_window->in_game_mode,
+				      "/Edit/Paste", NULL);
+				      
+  gtk_utils_set_menu_items_sensitive (goban_window->item_factory,
 				      (USER_CAN_PLAY_MOVES (goban_window)
 				       && !is_in_special_mode),
 				      "/Edit/Add Empty Node", NULL);
@@ -5567,6 +5602,132 @@ redo_operation (GtkGobanWindow *goban_window)
 
   update_children_for_new_node (goban_window, TRUE,
 				goban_window->text_buffer_modified);
+}
+
+
+static void
+cut_operation (GtkGobanWindow *goban_window)
+{
+  copy_operation (goban_window);
+  delete_current_node (goban_window);
+}
+
+
+static void
+copy_operation (GtkGobanWindow *goban_window)
+{
+  SgfGameTree *sgf_tree = goban_window->current_tree;
+  SgfCopyData *sgf_data = g_malloc (sizeof (SgfCopyData));
+  static const GtkTargetEntry target = { SGF_MIME_TYPE, 0, 0 };
+
+  sgf_data->sgf = sgf_utils_create_subtree_sgf (sgf_tree,
+						sgf_tree->current_node,
+						&sgf_data->sgf_length);
+
+  gtk_clipboard_set_with_data (gtk_clipboard_get (GDK_SELECTION_CLIPBOARD),
+			       &target, 1,
+			       get_copied_sgf, delete_copied_sgf, sgf_data);
+}
+
+
+static void
+paste_operation (GtkGobanWindow *goban_window)
+{
+  gtk_clipboard_request_contents (gtk_clipboard_get (GDK_SELECTION_CLIPBOARD),
+				  gdk_atom_intern (SGF_MIME_TYPE, FALSE),
+				  receive_copied_sgf, goban_window);
+}
+
+
+static void
+get_copied_sgf (GtkClipboard *clipboard, GtkSelectionData *selection_data,
+		guint format, gpointer user_data)
+{
+  SgfCopyData *sgf_data = (SgfCopyData *) user_data;
+
+  UNUSED (clipboard);
+  UNUSED (format);
+
+  gtk_selection_data_set (selection_data, selection_data->target, 8,
+			  sgf_data->sgf, sgf_data->sgf_length);
+}
+
+
+static void
+delete_copied_sgf (GtkClipboard *clipboard, gpointer user_data)
+{
+  SgfCopyData *sgf_data = (SgfCopyData *) user_data;
+
+  UNUSED (clipboard);
+
+  utils_free (sgf_data->sgf);
+  g_free (sgf_data);
+}
+
+
+static void
+receive_copied_sgf (GtkClipboard *clipboard, GtkSelectionData *selection_data,
+		    gpointer user_data)
+{
+  static const gchar *not_clipboard_sgf_message
+    = N_("Unable to paste game record fragment from clipboard since it is not "
+	 "intended for pasting");
+  static const gchar *not_clipboard_sgf_hint
+    = N_("Clipboard SGF probably contains more than one game tree or "
+	 "not a single child of the root of the only game tree.");
+
+  static const gchar *couldnt_paste_message
+    = N_("Unable to paste game record fragment from clipboard");
+  static const gchar *couldnt_paste_hint
+    = N_("Clipboard game record fragment must be of different game "
+	 "or board size.");
+
+  static const gchar *invalid_sgf_message
+    = N_("Clipboard contains an invalid game record fragment (SGF)");
+
+  GtkGobanWindow *goban_window = (GtkGobanWindow *) user_data;
+  SgfGameTree *sgf_tree = goban_window->current_tree;
+  SgfPasteResult result;
+  GtkWidget *error_dialog;
+  const gchar *message;
+  const gchar *hint;
+
+  UNUSED (clipboard);
+
+  if (selection_data->type != gdk_atom_intern (SGF_MIME_TYPE, FALSE))
+    return;
+
+  if (selection_data->length <= 0)
+    return;
+
+  result = sgf_utils_paste_sgf (sgf_tree, sgf_tree->current_node,
+				selection_data->data, selection_data->length);
+
+  switch (result) {
+  case SGF_PASTED:
+    return;
+
+  case SGF_NOT_CLIPBOARD_SGF:
+    message = _(not_clipboard_sgf_message);
+    hint    = _(not_clipboard_sgf_hint);
+    break;
+
+  case SGF_COULDNT_PASTE:
+    message = _(couldnt_paste_message);
+    hint    = _(couldnt_paste_hint);
+    break;
+
+  case SGF_INVALID_SGF:
+    message = _(invalid_sgf_message);
+    hint    = NULL;
+    break;
+  }
+
+  error_dialog = quarry_message_dialog_new (GTK_WINDOW (goban_window),
+					    GTK_BUTTONS_OK,
+					    GTK_STOCK_DIALOG_ERROR,
+					    hint, message);
+  gtk_utils_show_and_forget_dialog (GTK_DIALOG (error_dialog));
 }
 
 
