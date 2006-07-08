@@ -66,7 +66,7 @@ struct _SgfPropertyInfo {
   SgfValueType	   value_type;
 
   SgfError (* value_parser) (SgfParsingData *data);
-  void (* value_writer)	    (SgfWritingData *data, SgfValue *value);
+  void (* value_writer)	    (SgfWritingData *data, const SgfValue *value);
 };
 
 

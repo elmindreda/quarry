@@ -43,12 +43,12 @@ struct _SgfWritingData {
 
   SgfGameTree	  *tree;
   iconv_t	   utf8_to_tree_encoding;
-  void (* do_write_move) (SgfWritingData *data, SgfNode *node);
+  void (* do_write_move) (SgfWritingData *data, const SgfNode *node);
 };
 
 
-#define DECLARE_VALUE_WRITER(name)				\
-  void		name (SgfWritingData *data, SgfValue *value)
+#define DECLARE_VALUE_WRITER(name)					\
+  void		name (SgfWritingData *data, const SgfValue *value)
 
 
 DECLARE_VALUE_WRITER (sgf_write_none);
