@@ -33,6 +33,12 @@
 
 /* `sgf-tree.c' global declarations and functions. */
 
+/* We don't use Go-specific MIME type here and I think it is right,
+ * since we mean generic SGF here.
+ */
+#define SGF_MIME_TYPE		"text/x-sgf"
+
+
 /* Note that in this means that the node has one of the `add sth.'
  * properties.  Other setup (in SGF sense) nodes, like `PL' do not
  * count!
@@ -786,6 +792,8 @@ extern const SgfParserParameters	sgf_parser_defaults;
 
 int		 sgf_write_file (const char *filename,
 				 SgfCollection *collection, int force_utf8);
+char *		 sgf_write_in_memory (SgfCollection *collection,
+				      int force_utf8, int *sgf_length);
 
 
 
@@ -795,6 +803,14 @@ typedef enum {
   SGF_NEXT,
   SGF_PREVIOUS
 } SgfDirection;
+
+
+typedef enum {
+  SGF_PASTED,
+  SGF_COULDNT_PASTE,
+  SGF_NOT_CLIPBOARD_SGF,
+  SGF_INVALID_SGF
+} SgfPasteResult;
 
 
 inline void   sgf_utils_play_node_move (const SgfNode *node, Board *board);
@@ -925,6 +941,13 @@ void	      sgf_utils_add_free_handicap_stones
 
 
 char *	      sgf_utils_normalize_text (const char *text, int is_simple_text);
+
+char *	      sgf_utils_create_subtree_sgf (SgfGameTree *tree,
+					    SgfNode *subtree_root,
+					    int *sgf_length);
+SgfPasteResult
+	      sgf_utils_paste_sgf (SgfGameTree *tree, SgfNode *parent_node,
+				   char *sgf, int sgf_length);
 
 char *	      sgf_utils_export_position_as_ascii (const SgfGameTree *tree);
 char *	      sgf_utils_export_position_as_senseis_library_diagram
