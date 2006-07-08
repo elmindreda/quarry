@@ -1291,6 +1291,146 @@ sgf_utils_normalize_text (const char *text, int is_simple_text)
 }
 
 
+/* Create and return an in-memory SGF of a subtree of `tree', starting
+ * at `subtree_root'.  The resulting SGF tree always has extra dummy
+ * root, which is used to setup board.  I.e. `subtree_root' will
+ * correspond to the only child of SGF game tree root.
+ */
+char *
+sgf_utils_create_subtree_sgf (SgfGameTree *tree, SgfNode *subtree_root,
+			      int *sgf_length)
+{
+  SgfNode *current_node;
+  SgfCollection *pseudo_collection;
+  SgfGameTree *pseudo_tree;
+  SgfNode *pseudo_root;
+  SgfNode *pseudo_subtree_root;
+  Board *board;
+  SgfBoardState board_state;
+  char *result;
+
+  assert (tree);
+  assert (tree->board);
+  assert (tree->board_state);
+  assert (subtree_root);
+  assert (sgf_length);
+
+  pseudo_collection = sgf_collection_new ();
+  pseudo_tree	    = sgf_game_tree_new_with_root (tree->game,
+						   tree->board_width,
+						   tree->board_height,
+						   0);
+  pseudo_root	    = pseudo_tree->root;
+
+  sgf_collection_add_game_tree (pseudo_collection, pseudo_tree);
+
+  current_node = tree->current_node;
+  if (subtree_root != current_node)
+    sgf_utils_do_switch_to_given_node (tree, subtree_root);
+
+  board = board_new (tree->game, tree->board_width, tree->board_height);
+  sgf_utils_enter_tree (pseudo_tree, board, &board_state);
+
+  /* Copy board grid state to the pseudo tree. */
+  sgf_utils_apply_setup_changes (pseudo_tree, tree->board->grid, 1);
+
+  /* FIXME: Should the board be deleted by the tree itself? */
+  board_delete (board);
+
+  if (current_node != subtree_root)
+    sgf_utils_do_switch_to_given_node (tree, current_node);
+
+  pseudo_subtree_root	     = sgf_node_duplicate (subtree_root, pseudo_tree,
+						   pseudo_root);
+  pseudo_subtree_root->child = subtree_root->child;
+  pseudo_root->child	     = pseudo_subtree_root;
+
+  result = sgf_write_in_memory (pseudo_collection, 1, sgf_length);
+
+  /* Don't accidentally delete real tree's nodes! */
+  pseudo_subtree_root->child = NULL;
+
+  sgf_collection_delete (pseudo_collection);
+
+  return result;
+}
+
+
+SgfPasteResult
+sgf_utils_paste_sgf (SgfGameTree *tree, SgfNode *parent_node,
+		     char *sgf, int sgf_length)
+{
+  SgfCollection *parsed_collection;
+  SgfGameTree *parsed_tree;
+  SgfErrorList *errors;
+  SgfNode *node_to_paste;
+  int parsing_result;
+
+  assert (tree);
+  assert (tree->current_node);
+  assert (parent_node);
+  assert (sgf);
+  assert (sgf_length > 0);
+
+  parsing_result = sgf_parse_buffer (sgf, sgf_length, &parsed_collection,
+				     &errors, &sgf_parser_defaults,
+				     NULL, NULL);
+
+  /* FIXME: Errors are ignored. */
+  if (errors)
+    string_list_delete (errors);
+
+  switch (parsing_result) {
+  case SGF_PARSING_CANCELLED:
+  case SGF_ERROR_READING_FILE:
+    assert (0);
+
+  case SGF_INVALID_FILE:
+    return SGF_INVALID_SGF;
+  }
+
+  if (parsed_collection->num_trees != 1) {
+    sgf_collection_delete (parsed_collection);
+    return SGF_NOT_CLIPBOARD_SGF;
+  }
+
+  parsed_tree = parsed_collection->first_tree;
+
+  /* A valid SGF to paste must have exactly one root child. */
+  if (!parsed_tree->root
+      || !parsed_tree->root->child
+      || parsed_tree->root->child->next) {
+    sgf_collection_delete (parsed_collection);
+    return SGF_NOT_CLIPBOARD_SGF;
+  }
+
+  if (parsed_tree->game		   != tree->game
+      || parsed_tree->board_width  != tree->board_width
+      || parsed_tree->board_height != tree->board_height) {
+    sgf_collection_delete (parsed_collection);
+    return SGF_COULDNT_PASTE;
+  }
+
+  /* This is quite ugly, but we have to duplicate everything for the
+   * tree we paste into, because node and property allocation is
+   * tree-specific with memory pools (the default.)
+   */
+  node_to_paste = sgf_node_duplicate_recursively (parsed_tree->root->child,
+						  tree, parent_node);
+  sgf_collection_delete (parsed_collection);
+
+  if (parent_node != tree->current_node)
+    sgf_utils_do_switch_to_given_node (tree, parent_node);
+
+  sgf_utils_begin_action (tree);
+  sgf_utils_apply_undo_history_entry
+    (tree, sgf_new_node_undo_history_entry_new (node_to_paste));
+  sgf_utils_end_action (tree);
+
+  return SGF_PASTED;
+}
+
+
 char *
 sgf_utils_export_position_as_ascii (const SgfGameTree *tree)
 {
