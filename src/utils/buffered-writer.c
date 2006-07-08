@@ -61,24 +61,53 @@ buffered_writer_init (BufferedWriter *writer,
   assert (buffer_size > MB_LEN_MAX);
 
   if (filename) {
-    writer->file = fopen (filename, "w");
+    writer->file = fopen (filename, "wb");
     if (!writer->file)
       return 0;
   }
   else
     writer->file = stdout;
 
+  writer->first_chunk    = NULL;
+
+  writer->buffer_size	 = buffer_size;
+
   writer->buffer	 = utils_malloc (buffer_size);
   writer->buffer_pointer = writer->buffer;
   writer->buffer_end	 = writer->buffer + buffer_size;
 
-  writer->iconv_handle = NULL;
+  writer->iconv_handle	 = NULL;
 
-  writer->column = 0;
+  writer->column	 = 0;
 
-  writer->successful = 1;
+  writer->successful	 = 1;
 
   return 1;
+}
+
+
+void
+buffered_writer_init_memory (BufferedWriter *writer, size_t buffer_size)
+{
+  assert (writer);
+  assert (buffer_size > sizeof (BufferedWriterChunkData) + MB_LEN_MAX);
+
+  writer->file		 = NULL;
+  writer->first_chunk    = utils_malloc (buffer_size);
+
+  writer->buffer_size	 = buffer_size;
+
+  writer->buffer	 = (char *) (writer->first_chunk + 1);
+  writer->buffer_pointer = writer->buffer;
+  writer->buffer_end	 = ((char *) writer->first_chunk) + buffer_size;
+
+  writer->iconv_handle	 = NULL;
+
+  writer->column	 = 0;
+
+  writer->successful	 = 1;
+
+  writer->first_chunk->next_chunk = NULL;
 }
 
 
@@ -86,6 +115,8 @@ int
 buffered_writer_dispose (BufferedWriter *writer)
 {
   assert (writer);
+  assert (writer->file);
+  assert (!writer->first_chunk);
 
   if (writer->buffer_pointer != writer->buffer)
     flush_buffer (writer);
@@ -96,6 +127,42 @@ buffered_writer_dispose (BufferedWriter *writer)
   utils_free (writer->buffer);
 
   return writer->successful;
+}
+
+
+char *
+buffered_writer_dispose_memory (BufferedWriter *writer, int *data_length)
+{
+  BufferedWriterChunkData *chunk;
+  char *result;
+  char *result_scan;
+
+  assert (writer);
+  assert (!writer->file);
+  assert (writer->first_chunk);
+  assert (data_length);
+
+  chunk		    = ((BufferedWriterChunkData*) writer->buffer) - 1;
+  chunk->chunk_size = writer->buffer_pointer - writer->buffer;
+
+  *data_length = 0;
+  for (chunk = writer->first_chunk; chunk; chunk = chunk->next_chunk)
+    *data_length += chunk->chunk_size;
+
+  result      = utils_malloc (*data_length);
+  result_scan = result;
+
+  for (chunk = writer->first_chunk; chunk;) {
+    BufferedWriterChunkData *next_chunk = chunk->next_chunk;
+
+    memcpy (result_scan, (char *) (chunk + 1), chunk->chunk_size);
+    result_scan += chunk->chunk_size;
+
+    utils_free (chunk);
+    chunk = next_chunk;
+  }
+
+  return result;
 }
 
 
@@ -353,11 +420,27 @@ buffered_writer_vcprintf (BufferedWriter *writer,
 static void
 flush_buffer (BufferedWriter *writer)
 {
-  if (writer->successful) {
-    writer->successful = fwrite (writer->buffer,
-				 writer->buffer_pointer - writer->buffer, 1,
-				 writer->file);
+  if (writer->file) {
+    if (writer->successful) {
+      writer->successful = fwrite (writer->buffer,
+				   writer->buffer_pointer - writer->buffer, 1,
+				   writer->file);
+      writer->buffer_pointer = writer->buffer;
+    }
+  }
+  else {
+    BufferedWriterChunkData *chunk
+      = ((BufferedWriterChunkData*) writer->buffer) - 1;
+
+    chunk->chunk_size	   = writer->buffer_pointer - writer->buffer;
+    chunk->next_chunk	   = utils_malloc (writer->buffer_size);
+
+    chunk		   = chunk->next_chunk;
+    chunk->next_chunk	   = NULL;
+
+    writer->buffer	   = (char *) (chunk + 1);
     writer->buffer_pointer = writer->buffer;
+    writer->buffer_end	   = ((char *) chunk) + writer->buffer_size;
   }
 }
 

@@ -501,26 +501,40 @@ void		string_buffer_vcprintf (StringBuffer *string_buffer,
 
 /* `buffered-writer.c' declarations and global functions. */
 
-typedef struct _BufferedWriter	BufferedWriter;
+typedef struct _BufferedWriter		BufferedWriter;
+typedef struct _BufferedWriterChunkData	BufferedWriterChunkData;
 
 struct _BufferedWriter {
-  FILE	       *file;
+  FILE			   *file;
+  BufferedWriterChunkData  *first_chunk;
 
-  char	       *buffer;
-  char	       *buffer_pointer;
-  char	       *buffer_end;
+  size_t		    buffer_size;
 
-  iconv_t	iconv_handle;
+  char			   *buffer;
+  char			   *buffer_pointer;
+  char			   *buffer_end;
 
-  size_t	column;
+  iconv_t		    iconv_handle;
 
-  int		successful;
+  size_t		    column;
+
+  int			    successful;
+};
+
+struct _BufferedWriterChunkData {
+  BufferedWriterChunkData  *next_chunk;
+  size_t		    chunk_size;
 };
 
 
 int		buffered_writer_init (BufferedWriter *writer,
 				      const char *filename, size_t buffer_size);
+void		buffered_writer_init_memory (BufferedWriter *writer,
+					     size_t buffer_size);
+
 int		buffered_writer_dispose (BufferedWriter *writer);
+char *		buffered_writer_dispose_memory (BufferedWriter *writer,
+						int *data_length);
 
 #define buffered_writer_set_iconv_handle(writer, handle)	\
   ((writer)->iconv_handle = (handle))
