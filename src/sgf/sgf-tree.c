@@ -632,7 +632,7 @@ sgf_node_duplicate_recursively (const SgfNode *node, SgfGameTree *tree,
     /* Recurse for each branch. */
     for (link = &parent->child; node;
 	 node = node->next, link = & (*link)->next)
-      *link = sgf_node_duplicate (node, tree, parent);
+      *link = sgf_node_duplicate_recursively (node, tree, parent);
   }
 
   return node_copy;
