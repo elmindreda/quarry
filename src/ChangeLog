@@ -1,3 +1,55 @@
+2006-07-09  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* gui-gtk/gtk-goban-window.c (gtk_goban_window_init): Add menu
+	items for standard clipboard operations.  Change some accelerators
+	to make way for the new menu items.
+	(update_commands_sensitivity): Update sensitivity of the new
+	commands.
+	(cut_operation, copy_operation, paste_operation, get_copied_sgf)
+	(delete_copied_sgf, receive_copied_sgf): New functions.
+
+	* sgf/sgf-utils.c (sgf_utils_create_subtree_sgf)
+	(sgf_utils_paste_sgf): New functions.
+
+	* sgf/sgf.h (SGF_MIME_TYPE): New macro.
+
+	* sgf/sgf-tree.c (sgf_node_duplicate_recursively): Fix: use
+	sgf_node_duplicate_recursively() for recursion.
+
+2006-07-08  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* sgf/sgf-writer.c (SGF_WRITER_BUFFER_SIZE): New macro.
+	(sgf_write_in_memory): New function.
+	(write_collection): New function, break out of sgf_write_file().
+	(write_node_sequence): Constify `node' argument.
+	(do_write_go_move): Likewise.
+	(do_write_reversi_move): Likewise.
+	(do_write_amazons_move): Likewise.
+	(sgf_write_none): Constify `value' argument.
+	(sgf_write_number): Likewise.
+	(sgf_write_real): Likewise.
+	(sgf_write_double): Likewise.
+	(sgf_write_color): Likewise.
+	(sgf_write_simple_text): Likewise.
+	(sgf_write_fake_simple_text): Likewise.
+	(sgf_write_text): Likewise.
+	(sgf_write_list_of_point): Likewise.
+	(sgf_write_list_of_vector): Likewise.
+	(sgf_write_list_of_label): Likewise.
+	(sgf_write_figure_description): Likewise.
+	(sgf_write_unknown): Likewise.
+
+	* utils/buffered-writer.c (buffered_writer_init): Initialize new
+	fields `first_chunk' and `buffer_size'.  Open file in binary mode.
+	(buffered_writer_init_memory, buffered_writer_add_character): New
+	functions.
+	(flush_buffer): Add special code for memory buffered writers.
+
+	* gui-gtk/gtk-goban-window.c (do_export_diagram): Use
+	`GDK_SELECTION_CLIPBOARD' and `GDK_SELECTION_PRIMARY' constants.
+	(show_about_dialog): Use only ASCII characters in strings
+	translated by gettext.
+
 2006-07-07  Paul Pogonyshev  <pogonyshev@gmx.net>
 
 	* gui-gtk/gtk-goban-window.c (show_find_dialog): Use new
