@@ -3899,7 +3899,9 @@ update_children_for_new_node (GtkGobanWindow *goban_window, gboolean forced,
   update_game_specific_information (goban_window);
   update_move_information (goban_window);
 
-  if (goban_window->last_displayed_node != current_node && !text_handled)
+  if (!text_handled
+      && (goban_window->last_displayed_node != current_node
+	  || !gtk_text_buffer_get_modified (goban_window->text_buffer)))
     set_comment_and_node_name (goban_window, current_node);
 
   if (text_buffer_state) {
@@ -3959,6 +3961,8 @@ set_comment_and_node_name (GtkGobanWindow *goban_window,
 
   if (node_name)
     insert_node_name (goban_window, node_name);
+
+  gtk_text_buffer_set_modified (goban_window->text_buffer, FALSE);
 
   gtk_utils_unblock_signal_handlers (goban_window->text_buffer,
 				     text_buffer_receive_undo_entry);
@@ -4851,6 +4855,8 @@ update_comment_and_node_name_if_needed (GtkGobanWindow *goban_window,
 
     buffer_state->goban_window = goban_window;
     text_buffer_state	       = &buffer_state->state_after;
+
+    sgf_undo_history_hide_last_applied_entry (current_tree->undo_history);
   }
 
   sgf_utils_end_action (current_tree);
