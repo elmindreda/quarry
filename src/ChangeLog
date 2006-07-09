@@ -1,5 +1,18 @@
 2006-07-09  Paul Pogonyshev  <pogonyshev@gmx.net>
 
+	* gui-gtk/gtk-goban-window.c (update_children_for_new_node):
+	Always set comment and node name if the buffer is not modified.
+	(set_comment_and_node_name): Set buffer unmodified.
+	(update_comment_and_node_name_if_needed): Hide last undo history
+	entry.
+
+	* sgf/sgf-undo.c (sgf_undo_history_hide_last_applied_entry): New
+	function.
+	(sgf_utils_undo): Don't stop after hidden entries.
+	(sgf_utils_redo): Likewise.
+	(sgf_utils_apply_undo_history_entry): Initialize new `is_hidden'
+	field.
+
 	* gui-gtk/gtk-goban-window.c (gtk_goban_window_init): Add menu
 	items for standard clipboard operations.  Change some accelerators
 	to make way for the new menu items.
