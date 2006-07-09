@@ -120,6 +120,16 @@ sgf_undo_history_delete (SgfUndoHistory *history, SgfGameTree *tree)
 }
 
 
+void
+sgf_undo_history_hide_last_applied_entry (SgfUndoHistory *history)
+{
+  assert (history);
+  assert (history->last_applied_entry);
+
+  history->last_applied_entry->is_hidden = 1;
+}
+
+
 int
 sgf_undo_history_is_last_applied_entry_single (const SgfUndoHistory *history)
 {
@@ -223,6 +233,7 @@ void
 sgf_utils_undo (SgfGameTree *tree)
 {
   SgfUndoHistoryEntry *entry;
+  int is_hidden_entry = 0;
 
   assert (tree);
   assert (tree->board_state);
@@ -236,9 +247,12 @@ sgf_utils_undo (SgfGameTree *tree)
   entry = tree->undo_history->last_applied_entry;
 
   do {
+    if (entry->is_last_in_action)
+      is_hidden_entry = entry->is_last_in_action;
+
     sgf_undo_operations[entry->operation_index].undo (entry, tree);
     entry = entry->previous;
-  } while (entry && !entry->is_last_in_action);
+  } while (entry && (!entry->is_last_in_action || is_hidden_entry));
 
   tree->undo_history->last_applied_entry = entry;
   end_undoing_or_redoing (tree);
@@ -266,7 +280,8 @@ sgf_utils_redo (SgfGameTree *tree)
 
   while (1) {
     sgf_undo_operations[entry->operation_index].redo (entry, tree);
-    if (entry->is_last_in_action)
+    if (entry->is_last_in_action
+	&& (!entry->is_hidden || !entry->next))
       break;
 
     entry = entry->next;
@@ -583,6 +598,7 @@ sgf_utils_apply_undo_history_entry (SgfGameTree *tree,
     history->last_applied_entry = entry;
     entry->next			= NULL;
     entry->is_last_in_action	= 0;
+    entry->is_hidden		= 0;
   }
 
   /* Perform the operation. */

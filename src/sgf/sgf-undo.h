@@ -46,6 +46,7 @@ struct _SgfUndoHistoryEntry {
 
   unsigned char		operation_index;
   char			is_last_in_action;
+  char			is_hidden;
 };
 
 

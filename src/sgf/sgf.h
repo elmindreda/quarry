@@ -966,6 +966,8 @@ void		  sgf_undo_history_set_notification_callback
 		     SgfUndoHistoryNotificationCallback notification_callback,
 		     void *user_data);
 
+void		  sgf_undo_history_hide_last_applied_entry
+		    (SgfUndoHistory *history);
 int		  sgf_undo_history_is_last_applied_entry_single
 		    (const SgfUndoHistory *history);
 int		  sgf_undo_history_check_last_applied_custom_entry_type
