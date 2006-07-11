@@ -27,6 +27,7 @@
 #include "gtk-freezable-spin-button.h"
 #include "gtk-games.h"
 #include "gtk-goban-window.h"
+#include "gtk-help.h"
 #include "gtk-named-vbox.h"
 #include "gtk-utils.h"
 #include "quarry-stock.h"
@@ -317,7 +318,8 @@ gtk_new_game_record_dialog_init (GtkNewGameRecordDialog *dialog)
 
   gtk_dialog_add_buttons (&dialog->dialog,
 			  GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
-			  QUARRY_STOCK_CREATE, GTK_RESPONSE_OK, NULL);
+			  QUARRY_STOCK_CREATE, GTK_RESPONSE_OK,
+			  GTK_STOCK_HELP, GTK_RESPONSE_HELP, NULL);
   gtk_dialog_set_default_response (&dialog->dialog, GTK_RESPONSE_OK);
 }
 
@@ -443,6 +445,10 @@ gtk_new_game_record_dialog_response (GtkDialog *dialog, gint response_id)
 
     gtk_goban_window_enter_game_record_mode (GTK_GOBAN_WINDOW (goban_window));
     gtk_window_present (GTK_WINDOW (goban_window));
+  }
+  else if (response_id == GTK_RESPONSE_HELP) {
+    gtk_help_display ("new-game-record-dialog");
+    return;
   }
 
   gtk_widget_destroy (GTK_WIDGET (dialog));
