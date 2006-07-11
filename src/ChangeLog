@@ -1,3 +1,44 @@
+2006-07-11  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* gui-gtk/gtk-new-game-record-dialog.c
+	(gtk_new_game_record_dialog_init): Add "Help" button.
+	(gtk_new_game_record_dialog_response): Handle help response.
+
+	* gui-gtk/gtk-game-info-dialog.c
+	(gtk_game_info_dialog_class_init): Hook up new function
+	gtk_game_info_dialog_finalize().
+	(gtk_game_info_dialog_init): Add "Undo" and "Redo" buttons.
+	Change some accelerators to make way for them.  Connect
+	enable_simple_undo() function.  Use GtkTextView, not
+	QuarryTextView, since the latter manages its own undo history.
+	Initialize new fields `sgf_undo_history', `simple_undo_field',
+	`simple_redo_field' and `simple_redo_value'.
+	(create_and_pack_game_info_entry): Add `dialog' argument.  Connect
+	enable_simple_undo() function.
+	(gtk_game_info_dialog_response): Handle undo and redo responses.
+	(gtk_game_info_dialog_finalize): New function.
+	(gtk_game_info_dialog_set_node): Use new set_field_text()
+	function.
+	(get_field, get_page_index, get_property_type, get_field_text)
+	(set_field_text, do_set_field_text): New functions.
+	(game_info_spin_button_focus_out_event): Use renamed
+	update_property() function also for property deletion.
+	(enable_simple_undo, undo_or_redo_availability_changed): New
+	functions.
+	(update_property): Rename from update_property_if_changed().  Use
+	SGF undo history and related functions.
+	(property_has_changed): New function.
+
+	* sgf/sgf-undo.c (sgf_undo_history_delete_redo_entries): New
+	function.
+	(sgf_utils_undo): Fix typo and make function not undo everything
+	at once.
+
+	* gui-gtk/gtk-utils.c (gtk_utils_set_text_buffer_text): Fix for
+	the case of empty text.
+
+	* sgf/sgf.h: Fix `SgfCustomOperationEntryFunction' definition.
+
 2006-07-09  Paul Pogonyshev  <pogonyshev@gmx.net>
 
 	* gui-gtk/gtk-goban-window.c (update_children_for_new_node):
