@@ -178,6 +178,32 @@ sgf_undo_history_get_last_applied_custom_entry_data
 
 
 void
+sgf_undo_history_delete_redo_entries (SgfUndoHistory *history,
+				      SgfGameTree *tree)
+{
+  SgfUndoHistoryEntry *this_entry;
+
+  assert (history);
+
+  if (history->last_applied_entry) {
+    this_entry			      = history->last_applied_entry->next;
+    history->last_applied_entry->next = NULL;
+  }
+  else {
+    this_entry		 = history->first_entry;
+    history->first_entry = NULL;
+  }
+
+  while (this_entry) {
+    SgfUndoHistoryEntry *next_entry = this_entry->next;
+
+    delete_undo_history_entry (this_entry, 0, tree);
+    this_entry = next_entry;
+  }
+}
+
+
+void
 sgf_undo_history_set_notification_callback
   (SgfUndoHistory *history,
    SgfUndoHistoryNotificationCallback notification_callback, void *user_data)
@@ -248,7 +274,7 @@ sgf_utils_undo (SgfGameTree *tree)
 
   do {
     if (entry->is_last_in_action)
-      is_hidden_entry = entry->is_last_in_action;
+      is_hidden_entry = entry->is_hidden;
 
     sgf_undo_operations[entry->operation_index].undo (entry, tree);
     entry = entry->previous;
@@ -573,17 +599,7 @@ sgf_utils_apply_undo_history_entry (SgfGameTree *tree,
   SgfUndoHistory *history = tree->undo_history;
 
   if (history) {
-    SgfUndoHistoryEntry *this_entry;
-
-    for (this_entry = (history->last_applied_entry
-		       ? history->last_applied_entry->next
-		       : history->first_entry);
-	 this_entry;) {
-      SgfUndoHistoryEntry *next_entry = this_entry->next;
-
-      delete_undo_history_entry (this_entry, 0, tree);
-      this_entry = next_entry;
-    }
+    sgf_undo_history_delete_redo_entries (history, tree);
 
     if (history->last_applied_entry) {
       history->last_applied_entry->next = entry;
