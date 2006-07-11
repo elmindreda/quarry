@@ -1091,7 +1091,7 @@ gtk_utils_set_text_buffer_text (GtkTextBuffer *text_buffer, const gchar *text)
 {
   g_return_if_fail (GTK_IS_TEXT_BUFFER (text_buffer));
 
-  if (text) {
+  if (text && *text) {
     gint length = strlen (text);
     GtkTextIter start_iterator;
 
