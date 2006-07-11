@@ -128,8 +128,8 @@ typedef void (* SgfUndoHistoryNotificationCallback)
 
 typedef struct _SgfGameTree			SgfGameTree;
 
-typedef void (* SgfCustomOperationEntryFunction) (SgfGameTree *tree,
-						  void *user_data);
+typedef void (* SgfCustomOperationEntryFunction) (void *user_data,
+						  SgfGameTree *tree);
 
 typedef struct _SgfCustomUndoHistoryEntryData	SgfCustomUndoHistoryEntryData;
 
@@ -975,6 +975,9 @@ int		  sgf_undo_history_check_last_applied_custom_entry_type
 		     const SgfCustomUndoHistoryEntryData *entry_data);
 void *		  sgf_undo_history_get_last_applied_custom_entry_data
 		    (const SgfUndoHistory *history);
+
+void		  sgf_undo_history_delete_redo_entries
+		    (SgfUndoHistory *history, SgfGameTree *tree);
 
 void		  sgf_utils_begin_action (SgfGameTree *tree);
 void		  sgf_utils_end_action (SgfGameTree *tree);
