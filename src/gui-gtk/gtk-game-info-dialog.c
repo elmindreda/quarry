@@ -26,7 +26,6 @@
 #include "gtk-games.h"
 #include "gtk-named-vbox.h"
 #include "gtk-utils.h"
-#include "quarry-history-text-buffer.h"
 #include "quarry-marshal.h"
 #include "quarry-text-view.h"
 #include "sgf.h"
@@ -37,16 +36,43 @@
 #include <gtk/gtk.h>
 
 
+enum {
+  GTK_GAME_INFO_DIALOG_RESPONSE_UNDO,
+  GTK_GAME_INFO_DIALOG_RESPONSE_REDO
+};
+
+
+typedef struct _SgfPropertyChangeData	SgfPropertyChangeData;
+
+struct _SgfPropertyChangeData {
+  GtkGameInfoDialog  *dialog;
+  SgfType	      sgf_property_type;
+};
+
+
 static void	   gtk_game_info_dialog_class_init
 		     (GtkGameInfoDialogClass *class);
 static void	   gtk_game_info_dialog_init (GtkGameInfoDialog *dialog);
 
 static GtkEntry *  create_and_pack_game_info_entry (const gchar *label_text,
 						    SgfType sgf_property_type,
-						    GtkWidget **hbox);
+						    GtkWidget **hbox,
+						    GtkGameInfoDialog *dialog);
 
-static void	   gtk_game_info_dialog_response (GtkDialog *dialog,
+static void	   gtk_game_info_dialog_response (GtkDialog *gtk_dialog,
 						  gint response_id);
+
+static void	   gtk_game_info_dialog_finalize (GObject *object);
+
+
+static void *	   get_field (GtkGameInfoDialog *dialog,
+			      SgfType sgf_property_type);
+static gint	   get_page_index (SgfType sgf_property_type);
+static SgfType	   get_property_type (GtkGameInfoDialog *dialog, void *field);
+static char *	   get_field_text (void *field);
+static void	   set_field_text (GtkGameInfoDialog *dialog,
+				   SgfType sgf_property_type);
+static void	   do_set_field_text (void *field, const gchar *value);
 
 
 static gboolean	   game_info_entry_focus_out_event
@@ -61,9 +87,19 @@ static gboolean	   game_info_spin_button_focus_out_event
 		     (GtkFreezableSpinButton *freezable_spin_button,
 		      GdkEventFocus *event, GtkGameInfoDialog *dialog);
 
-static void	   update_property_if_changed (GtkGameInfoDialog *dialog,
-					       SgfType sgf_property_type,
-					       char *new_value);
+static void	   enable_simple_undo (void *field, GtkGameInfoDialog *dialog);
+
+static void	   undo_or_redo_availability_changed
+		     (SgfUndoHistory *undo_history, void *user_data);
+
+static void	   update_property (GtkGameInfoDialog *dialog,
+				    SgfType sgf_property_type,
+				    char *new_value);
+
+static void	   property_has_changed (SgfPropertyChangeData *data);
+
+
+static GtkDialogClass  *parent_class;
 
 
 enum {
@@ -72,6 +108,12 @@ enum {
 };
 
 static guint	game_info_dialog_signals[NUM_SIGNALS];
+
+
+static const SgfCustomUndoHistoryEntryData  property_change_undo_entry_data
+  = { (SgfCustomOperationEntryFunction) property_has_changed,
+      (SgfCustomOperationEntryFunction) property_has_changed,
+      (SgfCustomOperationEntryFunction) utils_free };
 
 
 GType
@@ -105,6 +147,10 @@ gtk_game_info_dialog_get_type (void)
 static void
 gtk_game_info_dialog_class_init (GtkGameInfoDialogClass *class)
 {
+  parent_class = g_type_class_peek_parent (class);
+
+  G_OBJECT_CLASS (class)->finalize   = gtk_game_info_dialog_finalize;
+
   GTK_DIALOG_CLASS (class)->response = gtk_game_info_dialog_response;
 
   game_info_dialog_signals[PROPERTY_CHANGED]
@@ -121,8 +167,7 @@ gtk_game_info_dialog_class_init (GtkGameInfoDialogClass *class)
 static void
 gtk_game_info_dialog_init (GtkGameInfoDialog *dialog)
 {
-  GtkWidget *notebook_widget = gtk_notebook_new ();
-  GtkNotebook *notebook = GTK_NOTEBOOK (notebook_widget);
+  GtkWidget *notebook = gtk_notebook_new ();
   GtkWidget *label;
   GtkWidget *handicap_spin_button;
   GtkWidget *komi_spin_button;
@@ -148,6 +193,8 @@ gtk_game_info_dialog_init (GtkGameInfoDialog *dialog)
   /* FIXME: Game name in title (if present). */
   gtk_window_set_title (GTK_WINDOW (dialog), _("Game Information"));
 
+  dialog->pages = GTK_NOTEBOOK (notebook);
+
   for (k = 0; k < NUM_COLORS; k++) {
     dialog->player_names[k]
       = create_and_pack_game_info_entry ((k == BLACK_INDEX
@@ -155,19 +202,19 @@ gtk_game_info_dialog_init (GtkGameInfoDialog *dialog)
 					 (k == BLACK_INDEX
 					  ? SGF_PLAYER_BLACK
 					  : SGF_PLAYER_WHITE),
-					 &hbox1);
+					 &hbox1, dialog);
 
     dialog->player_teams[k]
       = create_and_pack_game_info_entry (_("Team:"),
 					 (k == BLACK_INDEX
 					  ? SGF_BLACK_TEAM : SGF_WHITE_TEAM),
-					 &hbox2);
+					 &hbox2, dialog);
 
     dialog->player_ranks[k]
       = create_and_pack_game_info_entry (_("Rank:"),
 					 (k == BLACK_INDEX
 					  ? SGF_BLACK_RANK : SGF_WHITE_RANK),
-					 &hbox3);
+					 &hbox3, dialog);
 
     player_vboxes[k] = gtk_utils_pack_in_box (GTK_TYPE_NAMED_VBOX,
 					      QUARRY_SPACING_SMALL,
@@ -191,18 +238,21 @@ gtk_game_info_dialog_init (GtkGameInfoDialog *dialog)
 
   dialog->game_name
     = create_and_pack_game_info_entry (_("_Game name:"), SGF_GAME_NAME,
-				       &hbox1);
+				       &hbox1, dialog);
   dialog->place
-    = create_and_pack_game_info_entry (_("_Place:"), SGF_PLACE, &hbox2);
+    = create_and_pack_game_info_entry (_("_Place:"), SGF_PLACE, &hbox2,
+				       dialog);
 
   dialog->date
-    = create_and_pack_game_info_entry (_("Da_te:"), SGF_DATE, &hbox3);
+    = create_and_pack_game_info_entry (_("Da_te:"), SGF_DATE, &hbox3, dialog);
 
   dialog->event
-    = create_and_pack_game_info_entry (_("_Event:"), SGF_EVENT, &hbox4);
+    = create_and_pack_game_info_entry (_("_Event:"), SGF_EVENT, &hbox4,
+				       dialog);
 
   dialog->round
-    = create_and_pack_game_info_entry (_("_Round:"), SGF_ROUND, &hbox5);
+    = create_and_pack_game_info_entry (_("R_ound:"), SGF_ROUND, &hbox5,
+				       dialog);
 
   named_vbox1 = gtk_utils_pack_in_box (GTK_TYPE_NAMED_VBOX,
 				       QUARRY_SPACING_SMALL,
@@ -215,12 +265,13 @@ gtk_game_info_dialog_init (GtkGameInfoDialog *dialog)
 				 _("Game Information"));
 
   dialog->rule_set
-    = create_and_pack_game_info_entry (_("Rule _set:"), SGF_RULE_SET, &hbox1);
+    = create_and_pack_game_info_entry (_("Rule _set:"), SGF_RULE_SET, &hbox1,
+				       dialog);
 
-  dialog->handicap =
-    ((GtkAdjustment *)
-     gtk_adjustment_new (0, 0, GTK_MAX_BOARD_SIZE * GTK_MAX_BOARD_SIZE,
-			 1, 2, 0));
+  dialog->handicap
+    = ((GtkAdjustment *)
+       gtk_adjustment_new (0, 0, GTK_MAX_BOARD_SIZE * GTK_MAX_BOARD_SIZE,
+			   1, 2, 0));
   handicap_spin_button
     = gtk_utils_create_freezable_spin_button (dialog->handicap, 0.0, 0, TRUE);
   dialog->handicap_spin_button
@@ -229,6 +280,8 @@ gtk_game_info_dialog_init (GtkGameInfoDialog *dialog)
 
   g_signal_connect (handicap_spin_button, "value-changed",
 		    G_CALLBACK (game_info_spin_button_value_changed), dialog);
+  g_signal_connect (handicap_spin_button, "changed",
+		    G_CALLBACK (enable_simple_undo), dialog);
 
   /* Note: This *must* be `_after' so that `input' signal is sent
    * before our handler is invoked (that signal's handler can set the
@@ -255,6 +308,8 @@ gtk_game_info_dialog_init (GtkGameInfoDialog *dialog)
 
   g_signal_connect (komi_spin_button, "value-changed",
 		    G_CALLBACK (game_info_spin_button_value_changed), dialog);
+  g_signal_connect (komi_spin_button, "changed",
+		    G_CALLBACK (enable_simple_undo), dialog);
   g_signal_connect_after (komi_spin_button, "focus-out-event",
 			  G_CALLBACK (game_info_spin_button_focus_out_event),
 			  dialog);
@@ -280,6 +335,8 @@ gtk_game_info_dialog_init (GtkGameInfoDialog *dialog)
 
   g_signal_connect (main_time_spin_button, "value-changed",
 		    G_CALLBACK (game_info_spin_button_value_changed), dialog);
+  g_signal_connect (main_time_spin_button, "changed",
+		    G_CALLBACK (enable_simple_undo), dialog);
   g_signal_connect_after (main_time_spin_button, "focus-out-event",
 			  G_CALLBACK (game_info_spin_button_focus_out_event),
 			  dialog);
@@ -296,7 +353,8 @@ gtk_game_info_dialog_init (GtkGameInfoDialog *dialog)
 			       main_time_spin_button, NULL);
 
   dialog->overtime
-    = create_and_pack_game_info_entry (_("_Overtime:"), SGF_OVERTIME, &hbox5);
+    = create_and_pack_game_info_entry (_("O_vertime:"), SGF_OVERTIME, &hbox5,
+				       dialog);
 
   named_vbox2 = gtk_utils_pack_in_box (GTK_TYPE_NAMED_VBOX,
 				       QUARRY_SPACING_SMALL,
@@ -321,14 +379,15 @@ gtk_game_info_dialog_init (GtkGameInfoDialog *dialog)
   gtk_container_set_border_width (GTK_CONTAINER (page), QUARRY_SPACING);
   gtk_widget_show_all (page);
 
-  gtk_notebook_append_page (notebook, page, gtk_label_new (_("General")));
+  gtk_notebook_append_page (dialog->pages, page, gtk_label_new (_("General")));
 
   dialog->result
-    = create_and_pack_game_info_entry (_("Game _result:"), SGF_RESULT, &hbox1);
+    = create_and_pack_game_info_entry (_("Game re_sult:"), SGF_RESULT, &hbox1,
+				       dialog);
 
   dialog->opening
     = create_and_pack_game_info_entry (_("_Opening played:"), SGF_OPENING,
-				       &hbox2);
+				       &hbox2, dialog);
 
   vbox = gtk_utils_pack_in_box (GTK_TYPE_VBOX, QUARRY_SPACING_SMALL,
 				hbox1, GTK_UTILS_FILL, hbox2, GTK_UTILS_FILL,
@@ -338,7 +397,9 @@ gtk_game_info_dialog_init (GtkGameInfoDialog *dialog)
   alignment = gtk_alignment_new (0.0, 0.0, 0.4, 1.0);
   gtk_container_add (GTK_CONTAINER (alignment), vbox);
 
-  text_view = quarry_text_view_new ();
+  text_view = gtk_text_view_new ();
+  dialog->game_comment_text_view = text_view;
+
   dialog->game_comment = gtk_text_view_get_buffer (GTK_TEXT_VIEW (text_view));
   gtk_text_view_set_left_margin (GTK_TEXT_VIEW (text_view),
 				 QUARRY_SPACING_VERY_SMALL);
@@ -346,6 +407,8 @@ gtk_game_info_dialog_init (GtkGameInfoDialog *dialog)
 				  QUARRY_SPACING_VERY_SMALL);
   gtk_text_view_set_wrap_mode (GTK_TEXT_VIEW (text_view), GTK_WRAP_WORD);
 
+  g_signal_connect (dialog->game_comment, "changed",
+		    G_CALLBACK (enable_simple_undo), dialog);
   g_signal_connect_swapped (text_view, "focus-out-event",
 			    G_CALLBACK (game_comment_focus_out_event), dialog);
 
@@ -366,22 +429,24 @@ gtk_game_info_dialog_init (GtkGameInfoDialog *dialog)
   gtk_container_set_border_width (GTK_CONTAINER (page), QUARRY_SPACING);
   gtk_widget_show_all (page);
 
-  gtk_notebook_append_page (notebook, page,
+  gtk_notebook_append_page (dialog->pages, page,
 			    gtk_label_new (_("Description & Result")));
 
   dialog->copyright
     = create_and_pack_game_info_entry (_("Co_pyright string:"), SGF_COPYRIGHT,
-				       &hbox1);
+				       &hbox1, dialog);
 
   dialog->annotator
     = create_and_pack_game_info_entry (_("_Annotator:"), SGF_ANNOTATOR,
-				       &hbox2);
+				       &hbox2, dialog);
 
   dialog->source
-    = create_and_pack_game_info_entry (_("_Source:"), SGF_SOURCE, &hbox3);
+    = create_and_pack_game_info_entry (_("_Source:"), SGF_SOURCE, &hbox3,
+				       dialog);
 
   dialog->user
-    = create_and_pack_game_info_entry (_("_Entered by:"), SGF_USER, &hbox4);
+    = create_and_pack_game_info_entry (_("_Entered by:"), SGF_USER, &hbox4,
+				       dialog);
 
   named_vbox1 = gtk_utils_pack_in_box (GTK_TYPE_NAMED_VBOX,
 				       QUARRY_SPACING_SMALL,
@@ -403,22 +468,32 @@ gtk_game_info_dialog_init (GtkGameInfoDialog *dialog)
   gtk_utils_align_left_widgets (GTK_CONTAINER (page), NULL);
   gtk_widget_show_all (page);
 
-  gtk_notebook_append_page (notebook, page, gtk_label_new (_("Game Record")));
+  gtk_notebook_append_page (dialog->pages, page,
+			    gtk_label_new (_("Game Record")));
 
-  gtk_widget_show (notebook_widget);
-  gtk_utils_standardize_dialog (&dialog->dialog, notebook_widget);
+  gtk_widget_show (notebook);
+  gtk_utils_standardize_dialog (&dialog->dialog, notebook);
   gtk_dialog_set_has_separator (&dialog->dialog, FALSE);
 
-  gtk_dialog_add_button (&dialog->dialog, GTK_STOCK_CLOSE, GTK_RESPONSE_CLOSE);
+  gtk_dialog_add_buttons (&dialog->dialog,
+			  GTK_STOCK_UNDO, GTK_GAME_INFO_DIALOG_RESPONSE_UNDO,
+			  GTK_STOCK_REDO, GTK_GAME_INFO_DIALOG_RESPONSE_REDO,
+			  GTK_STOCK_CLOSE, GTK_RESPONSE_CLOSE, NULL);
 
-  dialog->sgf_tree = NULL;
-  dialog->sgf_node = NULL;
+  dialog->sgf_tree	    = NULL;
+  dialog->sgf_node	    = NULL;
+  dialog->sgf_undo_history  = NULL;
+
+  dialog->simple_undo_field = NULL;
+  dialog->simple_redo_field = NULL;
+  dialog->simple_redo_value = NULL;
 }
 
 
 static GtkEntry *
 create_and_pack_game_info_entry (const gchar *label_text,
-				 SgfType sgf_property_type, GtkWidget **hbox)
+				 SgfType sgf_property_type, GtkWidget **hbox,
+				 GtkGameInfoDialog *dialog)
 {
   GtkWidget *entry = gtk_utils_create_entry (NULL, RETURN_ADVANCES_FOCUS);
   GtkWidget *label = gtk_utils_create_mnemonic_label (label_text, entry);
@@ -427,6 +502,7 @@ create_and_pack_game_info_entry (const gchar *label_text,
 				 label, 0, entry, GTK_UTILS_PACK_DEFAULT,
 				 NULL);
 
+  g_signal_connect (entry, "changed", G_CALLBACK (enable_simple_undo), dialog);
   g_signal_connect (entry, "focus-out-event",
 		    G_CALLBACK (game_info_entry_focus_out_event),
 		    GINT_TO_POINTER (sgf_property_type));
@@ -443,10 +519,86 @@ gtk_game_info_dialog_new (void)
 
 
 static void
-gtk_game_info_dialog_response (GtkDialog *dialog, gint response_id)
+gtk_game_info_dialog_response (GtkDialog *gtk_dialog, gint response_id)
 {
   if (response_id == GTK_RESPONSE_CLOSE)
-    gtk_widget_destroy (GTK_WIDGET (dialog));
+    gtk_widget_destroy (GTK_WIDGET (gtk_dialog));
+  else if (response_id	  == GTK_GAME_INFO_DIALOG_RESPONSE_UNDO
+	   || response_id == GTK_GAME_INFO_DIALOG_RESPONSE_REDO) {
+    GtkGameInfoDialog *dialog = GTK_GAME_INFO_DIALOG (gtk_dialog);
+    SgfGameTree *sgf_tree = dialog->sgf_tree;
+    SgfUndoHistory *saved_undo_history = sgf_tree->undo_history;
+    void *field;
+
+    sgf_tree->undo_history = dialog->sgf_undo_history;
+
+    if (response_id == GTK_GAME_INFO_DIALOG_RESPONSE_UNDO) {
+      if (!dialog->simple_undo_field)
+	sgf_utils_undo (sgf_tree);
+      else {
+	dialog->simple_redo_field = dialog->simple_undo_field;
+	dialog->simple_redo_value = get_field_text (dialog->simple_undo_field);
+
+	field = dialog->simple_undo_field;
+	set_field_text (dialog, get_property_type (dialog, field));
+
+	dialog->simple_undo_field = NULL;
+	undo_or_redo_availability_changed (dialog->sgf_undo_history, dialog);
+
+	goto undone_or_redone;
+      }
+    }
+    else {
+      if (!dialog->simple_redo_field)
+	sgf_utils_redo (sgf_tree);
+      else {
+	field = dialog->simple_redo_field;
+	do_set_field_text (field, dialog->simple_redo_value);
+
+	dialog->simple_undo_field = dialog->simple_redo_field;
+	dialog->simple_redo_field = NULL;
+
+	g_free (dialog->simple_redo_value);
+	dialog->simple_redo_value = NULL;
+	undo_or_redo_availability_changed (dialog->sgf_undo_history, dialog);
+
+	goto undone_or_redone;
+      }
+    }
+
+    set_field_text (dialog, dialog->modified_property_type);
+
+    gtk_notebook_set_current_page
+      (dialog->pages, get_page_index (dialog->modified_property_type));
+
+    field = get_field (dialog, dialog->modified_property_type);
+
+    g_signal_emit (dialog, game_info_dialog_signals[PROPERTY_CHANGED], 0,
+		   dialog->modified_property_type);
+
+  undone_or_redone:
+
+    sgf_tree->undo_history = saved_undo_history;
+
+    if (GTK_IS_ENTRY (field))
+      gtk_widget_grab_focus (GTK_WIDGET (field));
+    else
+      gtk_widget_grab_focus (dialog->game_comment_text_view);
+  }
+}
+
+
+static void
+gtk_game_info_dialog_finalize (GObject *object)
+{
+  GtkGameInfoDialog *dialog = GTK_GAME_INFO_DIALOG (object);
+
+  if (dialog->sgf_undo_history)
+    sgf_undo_history_delete (dialog->sgf_undo_history, dialog->sgf_tree);
+
+  g_free (dialog->simple_redo_value);
+
+  G_OBJECT_CLASS (parent_class)->finalize (object);
 }
 
 
@@ -454,135 +606,342 @@ void
 gtk_game_info_dialog_set_node (GtkGameInfoDialog *dialog,
 			       SgfGameTree *sgf_tree, SgfNode *sgf_node)
 {
-  const char *text;
-  int k;
-  double time_limit;
-
   g_return_if_fail (GTK_IS_GAME_INFO_DIALOG (dialog));
   g_return_if_fail (sgf_tree);
   g_return_if_fail (sgf_node);
 
-  dialog->sgf_tree = sgf_tree;
-  dialog->sgf_node = sgf_node;
+  dialog->sgf_tree	   = sgf_tree;
+  dialog->sgf_node	   = sgf_node;
+  dialog->sgf_undo_history = sgf_undo_history_new (sgf_tree);
+
+  sgf_undo_history_set_notification_callback
+    (dialog->sgf_undo_history, undo_or_redo_availability_changed, dialog);
+
+  /* Set the initial state. */
+  undo_or_redo_availability_changed (dialog->sgf_undo_history, dialog);
 
   /* Initializing "General" page. */
 
-  for (k = 0; k < NUM_COLORS; k++) {
-    const char *text;
+  set_field_text (dialog, SGF_PLAYER_WHITE);
+  set_field_text (dialog, SGF_WHITE_TEAM);
+  set_field_text (dialog, SGF_WHITE_RANK);
 
-    text = sgf_node_get_text_property_value (sgf_node, (k == BLACK_INDEX
-							? SGF_PLAYER_BLACK
-							: SGF_PLAYER_WHITE));
-    gtk_entry_set_text (dialog->player_names[k], text ? text : "");
+  set_field_text (dialog, SGF_PLAYER_BLACK);
+  set_field_text (dialog, SGF_BLACK_TEAM);
+  set_field_text (dialog, SGF_BLACK_RANK);
 
-    text = sgf_node_get_text_property_value (sgf_node, (k == BLACK_INDEX
-							? SGF_BLACK_TEAM
-							: SGF_WHITE_TEAM));
-    gtk_entry_set_text (dialog->player_teams[k], text ? text : "");
+  set_field_text (dialog, SGF_GAME_NAME);
+  set_field_text (dialog, SGF_PLACE);
+  set_field_text (dialog, SGF_DATE);
+  set_field_text (dialog, SGF_EVENT);
+  set_field_text (dialog, SGF_ROUND);
 
-    text = sgf_node_get_text_property_value (sgf_node, (k == BLACK_INDEX
-							? SGF_BLACK_RANK
-							: SGF_WHITE_RANK));
-    gtk_entry_set_text (dialog->player_ranks[k], text ? text : "");
-  }
+  set_field_text (dialog, SGF_RULE_SET);
+  set_field_text (dialog, SGF_HANDICAP);
+  set_field_text (dialog, SGF_KOMI);
+  set_field_text (dialog, SGF_TIME_LIMIT);
+  set_field_text (dialog, SGF_OVERTIME);
 
-  text = sgf_node_get_text_property_value (sgf_node, SGF_GAME_NAME);
-  gtk_entry_set_text (dialog->game_name, text ? text : "");
-
-  text = sgf_node_get_text_property_value (sgf_node, SGF_PLACE);
-  gtk_entry_set_text (dialog->place, text ? text : "");
-
-  text = sgf_node_get_text_property_value (sgf_node, SGF_DATE);
-  gtk_entry_set_text (dialog->date, text ? text : "");
-
-  text = sgf_node_get_text_property_value (sgf_node, SGF_EVENT);
-  gtk_entry_set_text (dialog->event, text ? text : "");
-
-  text = sgf_node_get_text_property_value (sgf_node, SGF_ROUND);
-  gtk_entry_set_text (dialog->round, text ? text : "");
-
-  text = sgf_node_get_text_property_value (sgf_node, SGF_RULE_SET);
-  gtk_entry_set_text (dialog->rule_set, text ? text : "");
-
-  if (sgf_tree->game == GAME_GO) {
-    int handicap = sgf_node_get_handicap (sgf_node);
-    double komi;
-
-    dialog->handicap->upper =
-      (gdouble) (sgf_tree->board_width * sgf_tree->board_height - 1);
-    gtk_adjustment_changed (dialog->handicap);
-
-    if (handicap >= 0)
-      gtk_adjustment_set_value (dialog->handicap, (gdouble) handicap);
-    else {
-      const char *handicap_as_string
-	= sgf_node_get_text_property_value (sgf_node, SGF_HANDICAP);
-
-      gtk_freezable_spin_button_freeze (dialog->handicap_spin_button,
-					(handicap_as_string
-					 ? handicap_as_string : ""));
-    }
-
-    if (sgf_node_get_komi (sgf_node, &komi))
-      gtk_adjustment_set_value (dialog->komi, komi);
-    else {
-      const char *komi_as_string = sgf_node_get_text_property_value (sgf_node,
-								     SGF_KOMI);
-
-      gtk_freezable_spin_button_freeze (dialog->komi_spin_button,
-					komi_as_string ? komi_as_string : "");
-    }
-
-    gtk_widget_set_sensitive (dialog->handicap_box, TRUE);
-    gtk_widget_set_sensitive (dialog->komi_box, TRUE);
-  }
-  else {
-    gtk_widget_set_sensitive (dialog->handicap_box, FALSE);
-    gtk_widget_set_sensitive (dialog->komi_box, FALSE);
-  }
-
-  if (sgf_node_get_time_limit (sgf_node, &time_limit))
-    gtk_adjustment_set_value (dialog->main_time, time_limit);
-  else {
-    const char *main_time_as_string
-      = sgf_node_get_text_property_value (sgf_node, SGF_TIME_LIMIT);
-
-    gtk_freezable_spin_button_freeze (dialog->main_time_spin_button,
-				      (main_time_as_string
-				       ? main_time_as_string : ""));
-  }
-
-  text = sgf_node_get_text_property_value (sgf_node, SGF_OVERTIME);
-  gtk_entry_set_text (dialog->overtime, text ? text : "");
+  gtk_widget_set_sensitive (dialog->handicap_box, sgf_tree->game == GAME_GO);
+  gtk_widget_set_sensitive (dialog->komi_box, sgf_tree->game == GAME_GO);
 
   /* Initializing "Description & Result" page. */
-
-  text = sgf_node_get_text_property_value (sgf_node, SGF_RESULT);
-  gtk_entry_set_text (dialog->result, text ? text : "");
-
-  text = sgf_node_get_text_property_value (sgf_node, SGF_OPENING);
-  gtk_entry_set_text (dialog->opening, text ? text : "");
-
-  text = sgf_node_get_text_property_value (sgf_node, SGF_GAME_COMMENT);
-  quarry_history_text_buffer_reset_history (QUARRY_HISTORY_TEXT_BUFFER
-					    (dialog->game_comment));
-  gtk_utils_set_text_buffer_text (dialog->game_comment, text);
-
-  gtk_text_buffer_set_modified (dialog->game_comment, FALSE);
+  set_field_text (dialog, SGF_RESULT);
+  set_field_text (dialog, SGF_OPENING);
+  set_field_text (dialog, SGF_GAME_COMMENT);
 
   /* Initializing "Game Record" page. */
+  set_field_text (dialog, SGF_COPYRIGHT);
+  set_field_text (dialog, SGF_ANNOTATOR);
+  set_field_text (dialog, SGF_SOURCE);
+  set_field_text (dialog, SGF_USER);
+}
 
-  text = sgf_node_get_text_property_value (sgf_node, SGF_COPYRIGHT);
-  gtk_entry_set_text (dialog->copyright, text ? text : "");
 
-  text = sgf_node_get_text_property_value (sgf_node, SGF_ANNOTATOR);
-  gtk_entry_set_text (dialog->annotator, text ? text : "");
+static void *
+get_field (GtkGameInfoDialog *dialog, SgfType sgf_property_type)
+{
+  switch (sgf_property_type) {
+  case SGF_PLAYER_BLACK:
+  case SGF_PLAYER_WHITE:
+    return dialog->player_names[sgf_property_type == SGF_PLAYER_BLACK
+				? BLACK_INDEX : WHITE_INDEX];
 
-  text = sgf_node_get_text_property_value (sgf_node, SGF_SOURCE);
-  gtk_entry_set_text (dialog->source, text ? text : "");
+  case SGF_BLACK_TEAM:
+  case SGF_WHITE_TEAM:
+    return dialog->player_teams[sgf_property_type == SGF_BLACK_TEAM
+				? BLACK_INDEX : WHITE_INDEX];
 
-  text = sgf_node_get_text_property_value (sgf_node, SGF_USER);
-  gtk_entry_set_text (dialog->user, text ? text : "");
+  case SGF_BLACK_RANK:
+  case SGF_WHITE_RANK:
+    return dialog->player_ranks[sgf_property_type == SGF_BLACK_RANK
+				? BLACK_INDEX : WHITE_INDEX];
+
+  case SGF_GAME_NAME:
+    return dialog->game_name;
+
+  case SGF_PLACE:
+    return dialog->place;
+
+  case SGF_DATE:
+    return dialog->date;
+
+  case SGF_EVENT:
+    return dialog->event;
+
+  case SGF_ROUND:
+    return dialog->round;
+
+  case SGF_RULE_SET:
+    return dialog->rule_set;
+
+  case SGF_HANDICAP:
+    return dialog->handicap_spin_button;
+
+  case SGF_KOMI:
+    return dialog->komi_spin_button;
+
+  case SGF_TIME_LIMIT:
+    return dialog->main_time_spin_button;
+
+  case SGF_OVERTIME:
+    return dialog->overtime;
+
+  case SGF_RESULT:
+    return dialog->result;
+
+  case SGF_OPENING:
+    return dialog->opening;
+
+  case SGF_GAME_COMMENT:
+    return dialog->game_comment;
+
+  case SGF_COPYRIGHT:
+    return dialog->copyright;
+
+  case SGF_ANNOTATOR:
+    return dialog->annotator;
+
+  case SGF_SOURCE:
+    return dialog->source;
+
+  case SGF_USER:
+    return dialog->user;
+
+  default:
+    g_assert_not_reached ();
+  }
+}
+
+
+static gint
+get_page_index (SgfType sgf_property_type)
+{
+  switch (sgf_property_type) {
+  case SGF_PLAYER_BLACK:
+  case SGF_PLAYER_WHITE:
+  case SGF_BLACK_TEAM:
+  case SGF_WHITE_TEAM:
+  case SGF_BLACK_RANK:
+  case SGF_WHITE_RANK:
+  case SGF_GAME_NAME:
+  case SGF_PLACE:
+  case SGF_DATE:
+  case SGF_EVENT:
+  case SGF_ROUND:
+  case SGF_RULE_SET:
+  case SGF_HANDICAP:
+  case SGF_KOMI:
+  case SGF_TIME_LIMIT:
+  case SGF_OVERTIME:
+    return 0;
+
+  case SGF_RESULT:
+  case SGF_OPENING:
+  case SGF_GAME_COMMENT:
+    return 1;
+
+  case SGF_COPYRIGHT:
+  case SGF_ANNOTATOR:
+  case SGF_SOURCE:
+  case SGF_USER:
+    return 2;
+
+  default:
+    g_assert_not_reached ();
+  }
+}
+
+
+static SgfType
+get_property_type (GtkGameInfoDialog *dialog, void *field)
+{
+  if (field == dialog->player_names[BLACK_INDEX])
+    return SGF_PLAYER_BLACK;
+
+  if (field == dialog->player_names[WHITE_INDEX])
+    return SGF_PLAYER_WHITE;
+
+  if (field == dialog->player_teams[BLACK_INDEX])
+    return SGF_BLACK_TEAM;
+
+  if (field == dialog->player_teams[WHITE_INDEX])
+    return SGF_WHITE_TEAM;
+
+  if (field == dialog->player_ranks[BLACK_INDEX])
+    return SGF_BLACK_RANK;
+
+  if (field == dialog->player_ranks[WHITE_INDEX])
+    return SGF_WHITE_RANK;
+
+  if (field == dialog->game_name)
+    return SGF_GAME_NAME;
+
+  if (field == dialog->place)
+    return SGF_PLACE;
+
+  if (field == dialog->date)
+    return SGF_DATE;
+
+  if (field == dialog->event)
+    return SGF_EVENT;
+
+  if (field == dialog->round)
+    return SGF_ROUND;
+
+  if (field == dialog->rule_set)
+    return SGF_RULE_SET;
+
+  if (field == dialog->handicap_spin_button)
+    return SGF_HANDICAP;
+
+  if (field == dialog->komi_spin_button)
+    return SGF_KOMI;
+
+  if (field == dialog->main_time_spin_button)
+    return SGF_TIME_LIMIT;
+
+  if (field == dialog->overtime)
+    return SGF_OVERTIME;
+
+  if (field == dialog->result)
+    return SGF_RESULT;
+
+  if (field == dialog->opening)
+    return SGF_OPENING;
+
+  if (field == dialog->game_comment)
+    return SGF_GAME_COMMENT;
+
+  if (field == dialog->copyright)
+    return SGF_COPYRIGHT;
+
+  if (field == dialog->annotator)
+    return SGF_ANNOTATOR;
+
+  if (field == dialog->source)
+    return SGF_SOURCE;
+
+  if (field == dialog->user)
+    return SGF_USER;
+
+  g_assert_not_reached ();
+}
+
+
+static char *
+get_field_text (void *field)
+{
+  /* Note that GtkEntry is a more generic type and must be checked for
+   * after GtkFreezableSpinButton.
+   */
+  if (GTK_IS_ENTRY (field))
+    return g_strdup (gtk_entry_get_text (GTK_ENTRY (field)));
+  else if (GTK_IS_TEXT_BUFFER (field)) {
+    GtkTextIter start_iterator;
+    GtkTextIter end_iterator;
+
+    gtk_text_buffer_get_bounds (GTK_TEXT_BUFFER (field),
+				&start_iterator, &end_iterator);
+    return gtk_text_iter_get_text (&start_iterator, &end_iterator);
+  }
+  else
+    g_assert_not_reached ();
+}
+
+
+static void
+set_field_text (GtkGameInfoDialog *dialog, SgfType sgf_property_type)
+{
+  void *field = get_field (dialog, sgf_property_type);
+
+  g_signal_handlers_block_by_func (field, G_CALLBACK (enable_simple_undo),
+				   dialog);
+
+  if (sgf_property_type == SGF_HANDICAP) {
+    if (dialog->sgf_tree->game == GAME_GO) {
+      int handicap = sgf_node_get_handicap (dialog->sgf_node);
+
+      if (handicap >= 0) {
+	gtk_adjustment_set_value (dialog->handicap, (gdouble) handicap);
+	goto text_set;
+      }
+    }
+  }
+  else if (sgf_property_type == SGF_KOMI) {
+    double komi;
+
+    if (dialog->sgf_tree->game == GAME_GO
+	&& sgf_node_get_komi (dialog->sgf_node, &komi)) {
+      gtk_adjustment_set_value (dialog->komi, komi);
+      goto text_set;
+    }
+  }
+  else if (sgf_property_type == SGF_TIME_LIMIT) {
+    double time_limit;
+
+    if (sgf_node_get_time_limit (dialog->sgf_node, &time_limit)) {
+      gtk_adjustment_set_value (dialog->main_time, time_limit);
+      goto text_set;
+    }
+  }
+
+  do_set_field_text (field,
+		     sgf_node_get_text_property_value (dialog->sgf_node,
+						       sgf_property_type));
+
+ text_set:
+
+  g_signal_handlers_unblock_by_func (field, G_CALLBACK (enable_simple_undo),
+				     dialog);
+}
+
+
+static void
+do_set_field_text (void *field, const gchar *value)
+{
+  if (!value)
+    value = "";
+
+  gtk_utils_block_signal_handlers (field, G_CALLBACK (enable_simple_undo));
+
+  /* Note that GtkEntry is a more generic type and must be checked for
+   * after GtkFreezableSpinButton.
+   */
+  if (GTK_IS_FREEZABLE_SPIN_BUTTON (field)) {
+    gtk_freezable_spin_button_freeze (GTK_FREEZABLE_SPIN_BUTTON (field),
+				      value);
+  }
+  else if (GTK_IS_ENTRY (field))
+    gtk_entry_set_text (GTK_ENTRY (field), value);
+  else if (GTK_IS_TEXT_BUFFER (field)) {
+    gtk_utils_set_text_buffer_text (GTK_TEXT_BUFFER (field), value);
+    gtk_text_buffer_set_modified (GTK_TEXT_BUFFER (field), FALSE);
+  }
+  else
+    g_assert_not_reached ();
+
+  gtk_utils_unblock_signal_handlers (field, G_CALLBACK (enable_simple_undo));
 }
 
 
@@ -591,7 +950,7 @@ static gboolean
 game_info_entry_focus_out_event (GtkEntry *entry, GdkEventFocus *event,
 				 gpointer sgf_property_type)
 {
-  GtkWidget *widget;
+  GtkWidget *top_level_widget;
   const gchar *entry_text = gtk_entry_get_text (entry);
   char *normalized_text = sgf_utils_normalize_text (entry_text, 1);
 
@@ -603,14 +962,9 @@ game_info_entry_focus_out_event (GtkEntry *entry, GdkEventFocus *event,
       : *entry_text)
     gtk_entry_set_text (entry, normalized_text ? normalized_text : "");
 
-  widget = GTK_WIDGET (entry);
-  do
-    widget = gtk_widget_get_parent (widget);
-  while (!GTK_IS_GAME_INFO_DIALOG (widget));
-
-  update_property_if_changed (GTK_GAME_INFO_DIALOG (widget),
-			      GPOINTER_TO_INT (sgf_property_type),
-			      normalized_text);
+  top_level_widget = gtk_widget_get_toplevel (GTK_WIDGET (entry));
+  update_property (GTK_GAME_INFO_DIALOG (top_level_widget),
+		   GPOINTER_TO_INT (sgf_property_type), normalized_text);
 
   return FALSE;
 }
@@ -636,7 +990,7 @@ game_comment_focus_out_event (GtkGameInfoDialog *dialog, GdkEventFocus *event)
     text_buffer_text = gtk_text_iter_get_text (&start_iterator, &end_iterator);
 
     normalized_text = sgf_utils_normalize_text (text_buffer_text, 0);
-    update_property_if_changed (dialog, SGF_GAME_COMMENT, normalized_text);
+    update_property (dialog, SGF_GAME_COMMENT, normalized_text);
 
     g_free (text_buffer_text);
 
@@ -656,20 +1010,18 @@ game_info_spin_button_value_changed
     if (dialog->handicap_spin_button == freezable_spin_button) {
       int handicap = gtk_adjustment_get_value (dialog->handicap);
 
-      update_property_if_changed (dialog, SGF_HANDICAP,
-				  utils_cprintf ("%d", handicap));
+      update_property (dialog, SGF_HANDICAP, utils_cprintf ("%d", handicap));
     }
     else if (dialog->komi_spin_button == freezable_spin_button) {
       double komi = gtk_adjustment_get_value (dialog->komi);
 
-      update_property_if_changed (dialog, SGF_KOMI,
-				  utils_cprintf ("%.f", komi));
+      update_property (dialog, SGF_KOMI, utils_cprintf ("%.f", komi));
     }
     else if (dialog->main_time_spin_button == freezable_spin_button) {
       double main_time = gtk_adjustment_get_value (dialog->main_time);
 
-      update_property_if_changed (dialog, SGF_TIME_LIMIT,
-				  utils_cprintf ("%.f", main_time));
+      update_property (dialog, SGF_TIME_LIMIT,
+		       utils_cprintf ("%.f", main_time));
     }
     else
       g_assert_not_reached ();
@@ -703,13 +1055,7 @@ game_info_spin_button_focus_out_event
       else
 	g_assert_not_reached ();
 
-      if (sgf_node_get_text_property_value (dialog->sgf_node,
-					    sgf_property_type)) {
-	sgf_node_delete_property (dialog->sgf_node, dialog->sgf_tree,
-				  sgf_property_type);
-	g_signal_emit (dialog, game_info_dialog_signals[PROPERTY_CHANGED], 0,
-		       sgf_property_type);
-      }
+      update_property (dialog, sgf_property_type, NULL);
     }
   }
 
@@ -718,32 +1064,92 @@ game_info_spin_button_focus_out_event
 
 
 static void
-update_property_if_changed (GtkGameInfoDialog *dialog,
-			    SgfType sgf_property_type, char *new_value)
+enable_simple_undo (void *field, GtkGameInfoDialog *dialog)
 {
-  if (dialog->sgf_tree) {
-    const char *current_value
-      = sgf_node_get_text_property_value (dialog->sgf_node, sgf_property_type);
+  if (dialog->simple_undo_field)
+    return;
 
-    if (current_value != NULL
-	? new_value == NULL || strcmp (current_value, new_value) != 0
-	: new_value != NULL) {
-      /* The property value has been changed. */
-      if (new_value) {
-	sgf_node_add_text_property (dialog->sgf_node, dialog->sgf_tree,
-				    sgf_property_type, new_value, 1);
-      }
-      else {
-	sgf_node_delete_property (dialog->sgf_node, dialog->sgf_tree,
-				  sgf_property_type);
-      }
+  if (GTK_IS_FREEZABLE_SPIN_BUTTON (field)
+      && (gtk_freezable_spin_button_get_freezing_string
+	  (GTK_FREEZABLE_SPIN_BUTTON (field))))
+    return;
+
+  dialog->simple_undo_field = field;
+
+  sgf_undo_history_delete_redo_entries (dialog->sgf_undo_history,
+					dialog->sgf_tree);
+  dialog->simple_redo_field = NULL;
+  g_free (dialog->simple_redo_value);
+  dialog->simple_redo_value = NULL;
+
+  undo_or_redo_availability_changed (dialog->sgf_undo_history, dialog);
+}
+
+
+static void
+undo_or_redo_availability_changed (SgfUndoHistory *undo_history,
+				   void *user_data)
+{
+  GtkGameInfoDialog *dialog = GTK_GAME_INFO_DIALOG (user_data);
+
+  gboolean can_undo = (dialog->simple_undo_field
+		       || sgf_utils_can_undo (dialog->sgf_tree));
+  gboolean can_redo = (dialog->simple_redo_field
+		       || sgf_utils_can_redo (dialog->sgf_tree));
+
+  UNUSED (undo_history);
+
+  gtk_dialog_set_response_sensitive (&dialog->dialog,
+				     GTK_GAME_INFO_DIALOG_RESPONSE_UNDO,
+				     can_undo);
+  gtk_dialog_set_response_sensitive (&dialog->dialog,
+				     GTK_GAME_INFO_DIALOG_RESPONSE_REDO,
+				     can_redo);
+}
+
+
+static void
+update_property (GtkGameInfoDialog *dialog, SgfType sgf_property_type,
+		 char *new_value)
+{
+  SgfGameTree *sgf_tree = dialog->sgf_tree;
+
+  if (sgf_tree) {
+    SgfUndoHistory *saved_undo_history = sgf_tree->undo_history;
+
+    sgf_tree->undo_history = dialog->sgf_undo_history;
+
+    sgf_utils_begin_action (sgf_tree);
+
+    if (sgf_utils_set_text_property (dialog->sgf_node, sgf_tree,
+				     sgf_property_type, new_value, 1)) {
+      SgfPropertyChangeData *data
+	= utils_malloc (sizeof (SgfPropertyChangeData));
+
+      data->dialog	      = dialog;
+      data->sgf_property_type = sgf_property_type;
+
+      sgf_utils_apply_custom_undo_entry (sgf_tree,
+					 &property_change_undo_entry_data,
+					 data, NULL);
 
       g_signal_emit (dialog, game_info_dialog_signals[PROPERTY_CHANGED], 0,
 		     sgf_property_type);
+
+      dialog->simple_undo_field = NULL;
     }
-    else
-      utils_free (new_value);
+
+    sgf_utils_end_action (sgf_tree);
+
+    sgf_tree->undo_history = saved_undo_history;
   }
+}
+
+
+static void
+property_has_changed (SgfPropertyChangeData *data)
+{
+  data->dialog->modified_property_type = data->sgf_property_type;
 }
 
 

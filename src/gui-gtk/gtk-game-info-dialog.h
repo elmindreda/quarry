@@ -62,6 +62,9 @@ struct _GtkGameInfoDialog {
 
   SgfGameTree		  *sgf_tree;
   SgfNode		  *sgf_node;
+  SgfUndoHistory	  *sgf_undo_history;
+
+  GtkNotebook		  *pages;
 
   GtkEntry		  *player_names[NUM_COLORS];
   GtkEntry		  *player_teams[NUM_COLORS];
@@ -88,11 +91,18 @@ struct _GtkGameInfoDialog {
   GtkEntry		  *result;
   GtkEntry		  *opening;
   GtkTextBuffer		  *game_comment;
+  GtkWidget		  *game_comment_text_view;
 
   GtkEntry		  *copyright;
   GtkEntry		  *annotator;
   GtkEntry		  *source;
   GtkEntry		  *user;
+
+  void *		   simple_undo_field;
+  void *		   simple_redo_field;
+  gchar *		   simple_redo_value;
+
+  SgfType		   modified_property_type;
 };
 
 struct _GtkGameInfoDialogClass {
