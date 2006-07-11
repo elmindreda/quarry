@@ -17,6 +17,7 @@ src/gui-gtk/gtk-new-game-record-dialog.c
 src/gui-gtk/gtk-parser-interface.c
 src/gui-gtk/gtk-preferences.c
 src/gui-gtk/gtk-resume-game-dialog.c
+src/gui-gtk/quarry-find-dialog.c
 src/gui-gtk/quarry-move-number-dialog.c
 src/gui-gtk/quarry-save-confirmation-dialog.c
 src/gui-gtk/quarry-stock.c
