@@ -168,7 +168,7 @@ gtk_named_vbox_size_request (GtkWidget *widget, GtkRequisition *requisition)
 			   + named_vbox->vbox_requisition.height);
   }
   else
-    requisition->height += named_vbox->left_padding;
+    *requisition = named_vbox->vbox_requisition;
 }
 
 
