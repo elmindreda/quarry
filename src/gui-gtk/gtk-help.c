@@ -38,8 +38,6 @@ gtk_help_display (const gchar *link_id)
   static gchar locale_directory[16] = "";
   gchar *child_argv[3];
 
-  g_return_if_fail (link_id);
-
   if (! *locale_directory) {
     /* Get the current locale and find help directory for it. */
     const char *current_locale = setlocale (LC_MESSAGES, NULL);
