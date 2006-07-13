@@ -4736,7 +4736,8 @@ text_buffer_receive_undo_entry (QuarryTextBuffer *text_buffer,
 				     &quarry_text_buffer_undo_entry_data,
 				     undo_entry_data, node);
 
-  undo_entry_data->goban_window = goban_window;
+  if (game_tree->undo_history)
+    undo_entry_data->goban_window = goban_window;
 
   return TRUE;
 }
@@ -4853,10 +4854,12 @@ update_comment_and_node_name_if_needed (GtkGobanWindow *goban_window,
 				       &quarry_text_buffer_state_data,
 				       buffer_state, NULL);
 
-    buffer_state->goban_window = goban_window;
-    text_buffer_state	       = &buffer_state->state_after;
+    if (current_tree->undo_history) {
+      buffer_state->goban_window = goban_window;
+      text_buffer_state	         = &buffer_state->state_after;
 
-    sgf_undo_history_hide_last_applied_entry (current_tree->undo_history);
+      sgf_undo_history_hide_last_applied_entry (current_tree->undo_history);
+    }
   }
 
   sgf_utils_end_action (current_tree);
