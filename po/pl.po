@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Quarry 0.1.16\n"
 "Report-Msgid-Bugs-To: quarry-dev@gna.org\n"
-"POT-Creation-Date: 2006-07-11 23:10+0300\n"
+"POT-Creation-Date: 2006-07-13 23:50+0300\n"
 "PO-Revision-Date: 2006-04-16 22:40+0200\n"
 "Last-Translator: Robert Stefaniuk <kacprey@gazeta.pl>\n"
 "Language-Team: Polish <pl@li.org>\n"
@@ -64,134 +64,131 @@ msgstr ""
 "Plik o nazwie „%s” już istnieje. Czy chcesz go zastąpić obecnie zapisywanym "
 "plikiem?"
 
-#: src/gui-gtk/gtk-game-info-dialog.c:194
-#: src/gui-gtk/gtk-game-info-dialog.c:265
+#: src/gui-gtk/gtk-game-info-dialog.c:225
+#: src/gui-gtk/gtk-game-info-dialog.c:296
 msgid "Game Information"
 msgstr "Informacje o grze"
 
-#: src/gui-gtk/gtk-game-info-dialog.c:201
+#: src/gui-gtk/gtk-game-info-dialog.c:232
 #: src/gui-gtk/gtk-resume-game-dialog.c:323
 msgid "N_ame:"
 msgstr "G_racz:"
 
-#: src/gui-gtk/gtk-game-info-dialog.c:201
+#: src/gui-gtk/gtk-game-info-dialog.c:232
 #: src/gui-gtk/gtk-resume-game-dialog.c:322
 msgid "_Name:"
 msgstr "_Gracz:"
 
-#: src/gui-gtk/gtk-game-info-dialog.c:208
+#: src/gui-gtk/gtk-game-info-dialog.c:239
 msgid "Team:"
 msgstr "Drużyna:"
 
-#: src/gui-gtk/gtk-game-info-dialog.c:214
+#: src/gui-gtk/gtk-game-info-dialog.c:245
 msgid "Rank:"
 msgstr "Ranking:"
 
-#: src/gui-gtk/gtk-game-info-dialog.c:226
+#: src/gui-gtk/gtk-game-info-dialog.c:257
 #: src/gui-gtk/gtk-new-game-dialog.c:226
 #: src/gui-gtk/gtk-resume-game-dialog.c:362
 msgid "Black Player"
 msgstr "Czarne"
 
-#: src/gui-gtk/gtk-game-info-dialog.c:226
+#: src/gui-gtk/gtk-game-info-dialog.c:257
 #: src/gui-gtk/gtk-new-game-dialog.c:226
 #: src/gui-gtk/gtk-resume-game-dialog.c:362
 msgid "White Player"
 msgstr "Białe"
 
-#: src/gui-gtk/gtk-game-info-dialog.c:240
+#: src/gui-gtk/gtk-game-info-dialog.c:271
 msgid "_Game name:"
 msgstr "_Nazwa gry:"
 
-#: src/gui-gtk/gtk-game-info-dialog.c:243
+#: src/gui-gtk/gtk-game-info-dialog.c:274
 msgid "_Place:"
 msgstr "Miej_sce gry:"
 
-#: src/gui-gtk/gtk-game-info-dialog.c:247
+#: src/gui-gtk/gtk-game-info-dialog.c:278
 msgid "Da_te:"
 msgstr "_Data:"
 
-#: src/gui-gtk/gtk-game-info-dialog.c:250
+#: src/gui-gtk/gtk-game-info-dialog.c:281
 msgid "_Event:"
 msgstr "_Okoliczności:"
 
-#: src/gui-gtk/gtk-game-info-dialog.c:254
-#, fuzzy
+#: src/gui-gtk/gtk-game-info-dialog.c:285
 msgid "R_ound:"
 msgstr "R_unda:"
 
-#: src/gui-gtk/gtk-game-info-dialog.c:268
+#: src/gui-gtk/gtk-game-info-dialog.c:299
 msgid "Rule _set:"
 msgstr "Reguł_y:"
 
-#: src/gui-gtk/gtk-game-info-dialog.c:294
-#: src/gui-gtk/gtk-new-game-record-dialog.c:186
+#: src/gui-gtk/gtk-game-info-dialog.c:325
+#: src/gui-gtk/gtk-new-game-record-dialog.c:187
 msgid "Han_dicap:"
 msgstr "_Handikap:"
 
-#: src/gui-gtk/gtk-game-info-dialog.c:317
+#: src/gui-gtk/gtk-game-info-dialog.c:348
 #: src/gui-gtk/gtk-new-game-dialog.c:575
-#: src/gui-gtk/gtk-new-game-record-dialog.c:230
+#: src/gui-gtk/gtk-new-game-record-dialog.c:231
 msgid "_Komi:"
 msgstr "_Komi:"
 
-#: src/gui-gtk/gtk-game-info-dialog.c:344
+#: src/gui-gtk/gtk-game-info-dialog.c:375
 #: src/gui-gtk/gtk-new-game-dialog.c:445
 msgid "_Main time:"
 msgstr "_Czas główny:"
 
-#: src/gui-gtk/gtk-game-info-dialog.c:356
-#, fuzzy
+#: src/gui-gtk/gtk-game-info-dialog.c:387
 msgid "O_vertime:"
 msgstr "C_zas dodatkowy:"
 
-#: src/gui-gtk/gtk-game-info-dialog.c:367
+#: src/gui-gtk/gtk-game-info-dialog.c:398
 #: src/gui-gtk/gtk-new-game-dialog.c:603
 msgid "Game Rules"
 msgstr "Reguły gry"
 
-#: src/gui-gtk/gtk-game-info-dialog.c:382
+#: src/gui-gtk/gtk-game-info-dialog.c:413
 msgid "General"
 msgstr "Ogólne informacje"
 
-#: src/gui-gtk/gtk-game-info-dialog.c:385
-#, fuzzy
+#: src/gui-gtk/gtk-game-info-dialog.c:416
 msgid "Game re_sult:"
 msgstr "_Wynik:"
 
-#: src/gui-gtk/gtk-game-info-dialog.c:389
+#: src/gui-gtk/gtk-game-info-dialog.c:420
 msgid "_Opening played:"
 msgstr "Zagrane _otwarcie:"
 
-#: src/gui-gtk/gtk-game-info-dialog.c:419
+#: src/gui-gtk/gtk-game-info-dialog.c:450
 msgid "Comment / _description:"
 msgstr "_Komentarz/opis:"
 
-#: src/gui-gtk/gtk-game-info-dialog.c:433
+#: src/gui-gtk/gtk-game-info-dialog.c:464
 msgid "Description & Result"
 msgstr "Opis i wynik"
 
-#: src/gui-gtk/gtk-game-info-dialog.c:436
+#: src/gui-gtk/gtk-game-info-dialog.c:467
 msgid "Co_pyright string:"
 msgstr "Wiersz praw _autorskich:"
 
-#: src/gui-gtk/gtk-game-info-dialog.c:440
+#: src/gui-gtk/gtk-game-info-dialog.c:471
 msgid "_Annotator:"
 msgstr "_Zapisujący:"
 
-#: src/gui-gtk/gtk-game-info-dialog.c:444
+#: src/gui-gtk/gtk-game-info-dialog.c:475
 msgid "_Source:"
 msgstr "Ź_ródło:"
 
-#: src/gui-gtk/gtk-game-info-dialog.c:448
+#: src/gui-gtk/gtk-game-info-dialog.c:479
 msgid "_Entered by:"
 msgstr "_Twórca pliku:"
 
-#: src/gui-gtk/gtk-game-info-dialog.c:458
+#: src/gui-gtk/gtk-game-info-dialog.c:489
 msgid "Copyright & Credits"
 msgstr "Informacje o pliku i prawach autorskich"
 
-#: src/gui-gtk/gtk-game-info-dialog.c:472
+#: src/gui-gtk/gtk-game-info-dialog.c:503
 msgid "Game Record"
 msgstr "Autorzy i uprawnienia"
 
@@ -353,17 +350,16 @@ msgid "/File/_Resume Game..."
 msgstr "/Plik/_Dokończ grę..."
 
 #: src/gui-gtk/gtk-goban-window.c:645
-#, fuzzy
 msgid "/File/_Export..."
-msgstr "/Plik/_Otwórz..."
+msgstr "/Plik/_Eksport..."
 
 #: src/gui-gtk/gtk-goban-window.c:646
 msgid "/File/Export.../_ASCII Diagram"
-msgstr ""
+msgstr "/Plik/Eksport.../Diagram _ASCII"
 
 #: src/gui-gtk/gtk-goban-window.c:649
 msgid "/File/Export.../_Sensei's Library Diagram"
-msgstr ""
+msgstr "/Plik/Eksport.../Diagram dla _Sensei's Library"
 
 #: src/gui-gtk/gtk-goban-window.c:655
 msgid "/File/_Save"
@@ -401,33 +397,28 @@ msgid "/Edit/"
 msgstr "/Edycja/"
 
 #: src/gui-gtk/gtk-goban-window.c:680
-#, fuzzy
 msgid "/Edit/Cu_t"
-msgstr "/Edycja/"
+msgstr "/Edycja/_Wytnij"
 
 #: src/gui-gtk/gtk-goban-window.c:683
-#, fuzzy
 msgid "/Edit/_Copy"
-msgstr "/Edycja/_Cofnij"
+msgstr "/Edycja/_Kopiuj"
 
 #: src/gui-gtk/gtk-goban-window.c:686
-#, fuzzy
 msgid "/Edit/_Paste"
-msgstr "/Edycja/P_onów"
+msgstr "/Edycja/Wkle_j"
 
 #: src/gui-gtk/gtk-goban-window.c:689
 msgid "/Edit/_Delete Node"
 msgstr "/Edycja/_Usuń węzeł"
 
 #: src/gui-gtk/gtk-goban-window.c:692
-#, fuzzy
 msgid "/Edit/Delete Node's C_hildren"
 msgstr "/Edycja/U_suń dalsze węzły"
 
 #: src/gui-gtk/gtk-goban-window.c:698
-#, fuzzy
 msgid "/Edit/T_ools"
-msgstr "/Edycja/Narzędzia/"
+msgstr "/Edycja/_Narzędzia/"
 
 #: src/gui-gtk/gtk-goban-window.c:699
 msgid "/Edit/Tools/_Move Tool"
@@ -476,7 +467,7 @@ msgstr "/Edycja/Narzędzia/Ustalanie _wyniku"
 
 #: src/gui-gtk/gtk-goban-window.c:736
 msgid "/Edit/_Add Empty Node"
-msgstr "/Edycja/Dodaj pusty _węzeł"
+msgstr "/Edycja/_Dodaj pusty węzeł"
 
 #: src/gui-gtk/gtk-goban-window.c:741
 msgid "/Edit/Move _Branch Up"
@@ -495,7 +486,6 @@ msgid "/Edit/Set _Move Number"
 msgstr "/Edycja/Wstaw numer _ruchu"
 
 #: src/gui-gtk/gtk-goban-window.c:756
-#, fuzzy
 msgid "/Edit/P_layer to Move"
 msgstr "/Edycja/_Gracz wykonujący ruch"
 
@@ -756,17 +746,19 @@ msgstr "Gra jest przerwana i zapisana w pliku „%s”"
 
 #: src/gui-gtk/gtk-goban-window.c:1952
 msgid "ASCII diagram has been exported to clipboard"
-msgstr ""
+msgstr "Diagram ASCII został wyeksportowany do schowka"
 
 #: src/gui-gtk/gtk-goban-window.c:1965
 msgid "Sensei's Library diagram has been exported to clipboard"
-msgstr ""
+msgstr "Diagram w formacie Sensei's Library został wyeksportowany do schowka"
 
 #: src/gui-gtk/gtk-goban-window.c:1980
 msgid ""
 "You can usually paste the diagram in another application using `Ctrl+C' key "
 "combination or by selecting appropriate menu item."
 msgstr ""
+"Zazwyczaj można wkleić diagram w innym programie używając kombinacji "
+"klawiszy „Ctrl+C” lub wybierając właściwą opcję w menu."
 
 #: src/gui-gtk/gtk-goban-window.c:2432
 msgid "Sorry, there are no named nodes in this game tree"
@@ -777,7 +769,6 @@ msgid "A GUI program for Go, Amazons and Reversi board games"
 msgstr "Graficzny program do gier Go, Amazons i Reversi"
 
 #: src/gui-gtk/gtk-goban-window.c:2458
-#, fuzzy
 msgid "Copyright (C) 2003, 2004, 2005, 2006 Paul Pogonyshev and others"
 msgstr "Copyright © 2003, 2004, 2005 Paweł Pogonyszew i inni"
 
@@ -941,39 +932,43 @@ msgstr "Zgodnie z _regułami (biały)"
 msgid "insert node name here"
 msgstr "wprowadź nazwę dla tego węzła"
 
-#: src/gui-gtk/gtk-goban-window.c:4936
+#: src/gui-gtk/gtk-goban-window.c:4939
 msgid "Set Move Number"
 msgstr "Wprowadź numer ruchu"
 
-#: src/gui-gtk/gtk-goban-window.c:5300
+#: src/gui-gtk/gtk-goban-window.c:5303
 msgid "GTP engine is scoring..."
 msgstr "Algorytm GTP szacuje wynik..."
 
-#: src/gui-gtk/gtk-goban-window.c:5679
+#: src/gui-gtk/gtk-goban-window.c:5682
 msgid ""
 "Unable to paste game record fragment from clipboard since it is not intended "
 "for pasting"
 msgstr ""
+"Nie można wkleić fragmentu zapisu gry ze schowka ponieważ nie jest "
+"przeznaczony do wklejania"
 
-#: src/gui-gtk/gtk-goban-window.c:5682
+#: src/gui-gtk/gtk-goban-window.c:5685
 msgid ""
 "Clipboard SGF probably contains more than one game tree or not a single "
 "child of the root of the only game tree."
 msgstr ""
+"SGF ze schowka prawdopodobnie zawiera więcej niż jedno drzewo ruchów albo "
+"więcej niż jedną odnogę drzewa ruchów."
 
-#: src/gui-gtk/gtk-goban-window.c:5686
+#: src/gui-gtk/gtk-goban-window.c:5689
 msgid "Unable to paste game record fragment from clipboard"
-msgstr ""
+msgstr "Nie można wkleić fragmentu zapisu gry ze schowka"
 
-#: src/gui-gtk/gtk-goban-window.c:5688
+#: src/gui-gtk/gtk-goban-window.c:5691
 msgid "Clipboard game record fragment must be of different game or board size."
-msgstr ""
+msgstr "Zapis gry w schowku ma inny rozmiar planszy lub dotyczy innej gry."
 
-#: src/gui-gtk/gtk-goban-window.c:5692
+#: src/gui-gtk/gtk-goban-window.c:5695
 msgid "Clipboard contains an invalid game record fragment (SGF)"
-msgstr ""
+msgstr "Schowek zawiera błędny fragment zapisu gry (SGF)"
 
-#: src/gui-gtk/gtk-goban-window.c:5841
+#: src/gui-gtk/gtk-goban-window.c:5844
 msgid ""
 "Please select dead stones\n"
 "to score the game"
@@ -1069,7 +1064,7 @@ msgid "New Game"
 msgstr "Nowa gra"
 
 #: src/gui-gtk/gtk-new-game-dialog.c:167
-#: src/gui-gtk/gtk-new-game-record-dialog.c:131
+#: src/gui-gtk/gtk-new-game-record-dialog.c:132
 msgid "Game"
 msgstr "Gra"
 
@@ -1136,27 +1131,27 @@ msgstr "_Okres czasu dodatkowego:"
 msgid "Mo_ves per overtime:"
 msgstr "Ilośc _ruchów w tym okresie:"
 
-#: src/gui-gtk/gtk-new-game-record-dialog.c:118
+#: src/gui-gtk/gtk-new-game-record-dialog.c:119
 msgid "New Game Record"
 msgstr "Nowy zapis gry"
 
-#: src/gui-gtk/gtk-new-game-record-dialog.c:188
+#: src/gui-gtk/gtk-new-game-record-dialog.c:189
 msgid "_Place stones"
 msgstr "Ka_mienie na planszy"
 
-#: src/gui-gtk/gtk-new-game-record-dialog.c:264
+#: src/gui-gtk/gtk-new-game-record-dialog.c:265
 msgid "_White player:"
 msgstr "_Białe:"
 
-#: src/gui-gtk/gtk-new-game-record-dialog.c:275
+#: src/gui-gtk/gtk-new-game-record-dialog.c:276
 msgid "_Black player:"
 msgstr "_Czarne:"
 
-#: src/gui-gtk/gtk-new-game-record-dialog.c:286
+#: src/gui-gtk/gtk-new-game-record-dialog.c:287
 msgid "Game _name:"
 msgstr "_Nazwa gry:"
 
-#: src/gui-gtk/gtk-new-game-record-dialog.c:299
+#: src/gui-gtk/gtk-new-game-record-dialog.c:300
 msgid ""
 "You can always change and expand game information later. Just choose `Edit/"
 "Game Information' menu item or press `Info' button on the main toolbar."
@@ -1165,7 +1160,7 @@ msgstr ""
 "wybrać „Edycja|Informacje o grze” z menu programu, albo użyć przycisku "
 "„Informacje” z paska głównego."
 
-#: src/gui-gtk/gtk-new-game-record-dialog.c:309
+#: src/gui-gtk/gtk-new-game-record-dialog.c:310
 #: src/gui-gtk/gtk-resume-game-dialog.c:225
 msgid "Short Game Information"
 msgstr "Krótka informacja o grze"
@@ -2138,6 +2133,3 @@ msgstr[2] "Czarne: %d punktów terytorium"
 #: src/board/go.c:1374
 msgid "The game is draw"
 msgstr "Gra zakończyła się remisem"
-
-#~ msgid "/Edit/_Tools"
-#~ msgstr "/Edycja/N_arzędzia"
