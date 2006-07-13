@@ -1252,21 +1252,14 @@ static void
 map_modified (GtkSgfTreeView *view)
 {
   if (GTK_WIDGET_REALIZED (view)) {
-    if (view->do_track_current_node) {
-      gint view_x = (gint) view->hadjustment->value;
-      gint view_y = (gint) view->vadjustment->value;
+    gint view_x = (gint) view->hadjustment->value;
+    gint view_y = (gint) view->vadjustment->value;
 
+    if (view->do_track_current_node)
       track_current_node (view);
 
-      if (!update_view_port_and_maybe_move_or_resize_window (view,
-							     view_x, view_y)) {
-	/* FIXME: Suboptimal. */
-	gtk_widget_queue_draw (GTK_WIDGET (view));
-      }
-    }
-    else {
-      update_view_port (view);
-
+    if (!update_view_port_and_maybe_move_or_resize_window (view,
+							   view_x, view_y)) {
       /* FIXME: Suboptimal. */
       gtk_widget_queue_draw (GTK_WIDGET (view));
     }
