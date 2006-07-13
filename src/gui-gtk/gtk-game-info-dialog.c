@@ -24,6 +24,7 @@
 
 #include "gtk-freezable-spin-button.h"
 #include "gtk-games.h"
+#include "gtk-help.h"
 #include "gtk-named-vbox.h"
 #include "gtk-utils.h"
 #include "quarry-marshal.h"
@@ -34,6 +35,7 @@
 
 #include <string.h>
 #include <gtk/gtk.h>
+#include <gdk/gdkkeysyms.h>
 
 
 enum {
@@ -59,8 +61,11 @@ static GtkEntry *  create_and_pack_game_info_entry (const gchar *label_text,
 						    GtkWidget **hbox,
 						    GtkGameInfoDialog *dialog);
 
-static void	   gtk_game_info_dialog_response (GtkDialog *gtk_dialog,
+static void	   gtk_game_info_dialog_response (GtkDialog *dialog,
 						  gint response_id);
+
+static void	   gtk_game_info_dialog_undo_history_action
+		     (GtkGameInfoDialog *dialog, gboolean undo);
 
 static void	   gtk_game_info_dialog_finalize (GObject *object);
 
@@ -104,6 +109,7 @@ static GtkDialogClass  *parent_class;
 
 enum {
   PROPERTY_CHANGED,
+  UNDO_HISTORY_ACTION,
   NUM_SIGNALS
 };
 
@@ -147,11 +153,20 @@ gtk_game_info_dialog_get_type (void)
 static void
 gtk_game_info_dialog_class_init (GtkGameInfoDialogClass *class)
 {
+  static GtkUtilsBindingInfo undo_redo_bindings[]
+    = { { GDK_Z,	GDK_CONTROL_MASK,			TRUE  },
+	{ GDK_Z,	GDK_CONTROL_MASK | GDK_SHIFT_MASK,	FALSE } };
+
+  GtkBindingSet *binding_set;
+
   parent_class = g_type_class_peek_parent (class);
 
   G_OBJECT_CLASS (class)->finalize   = gtk_game_info_dialog_finalize;
 
   GTK_DIALOG_CLASS (class)->response = gtk_game_info_dialog_response;
+
+  class->property_changed    = NULL;
+  class->undo_history_action = gtk_game_info_dialog_undo_history_action;
 
   game_info_dialog_signals[PROPERTY_CHANGED]
     = g_signal_new ("property-changed",
@@ -161,6 +176,22 @@ gtk_game_info_dialog_class_init (GtkGameInfoDialogClass *class)
 		    NULL, NULL,
 		    quarry_marshal_VOID__INT,
 		    G_TYPE_NONE, 1, G_TYPE_INT);
+
+  game_info_dialog_signals[UNDO_HISTORY_ACTION]
+    = g_signal_new ("undo-history-action",
+		    G_TYPE_FROM_CLASS (class),
+		    G_SIGNAL_RUN_LAST | G_SIGNAL_ACTION,
+		    G_STRUCT_OFFSET (GtkGameInfoDialogClass,
+				     undo_history_action),
+		    NULL, NULL,
+		    quarry_marshal_VOID__BOOLEAN,
+		    G_TYPE_NONE, 1, G_TYPE_BOOLEAN);
+
+  binding_set = gtk_binding_set_by_class (class);
+  gtk_utils_add_similar_bindings (binding_set, "undo-history-action",
+				  undo_redo_bindings,
+				  (sizeof undo_redo_bindings
+				   / sizeof (GtkUtilsBindingInfo)));
 }
 
 
@@ -476,6 +507,7 @@ gtk_game_info_dialog_init (GtkGameInfoDialog *dialog)
   gtk_dialog_set_has_separator (&dialog->dialog, FALSE);
 
   gtk_dialog_add_buttons (&dialog->dialog,
+			  GTK_STOCK_HELP, GTK_RESPONSE_HELP,
 			  GTK_STOCK_UNDO, GTK_GAME_INFO_DIALOG_RESPONSE_UNDO,
 			  GTK_STOCK_REDO, GTK_GAME_INFO_DIALOG_RESPONSE_REDO,
 			  GTK_STOCK_CLOSE, GTK_RESPONSE_CLOSE, NULL);
@@ -519,72 +551,87 @@ gtk_game_info_dialog_new (void)
 
 
 static void
-gtk_game_info_dialog_response (GtkDialog *gtk_dialog, gint response_id)
+gtk_game_info_dialog_response (GtkDialog *dialog, gint response_id)
 {
   if (response_id == GTK_RESPONSE_CLOSE)
-    gtk_widget_destroy (GTK_WIDGET (gtk_dialog));
+    gtk_widget_destroy (GTK_WIDGET (dialog));
   else if (response_id	  == GTK_GAME_INFO_DIALOG_RESPONSE_UNDO
 	   || response_id == GTK_GAME_INFO_DIALOG_RESPONSE_REDO) {
-    GtkGameInfoDialog *dialog = GTK_GAME_INFO_DIALOG (gtk_dialog);
-    SgfGameTree *sgf_tree = dialog->sgf_tree;
-    SgfUndoHistory *saved_undo_history = sgf_tree->undo_history;
-    void *field;
-
-    sgf_tree->undo_history = dialog->sgf_undo_history;
-
-    if (response_id == GTK_GAME_INFO_DIALOG_RESPONSE_UNDO) {
-      if (!dialog->simple_undo_field)
-	sgf_utils_undo (sgf_tree);
-      else {
-	dialog->simple_redo_field = dialog->simple_undo_field;
-	dialog->simple_redo_value = get_field_text (dialog->simple_undo_field);
-
-	field = dialog->simple_undo_field;
-	set_field_text (dialog, get_property_type (dialog, field));
-
-	dialog->simple_undo_field = NULL;
-	undo_or_redo_availability_changed (dialog->sgf_undo_history, dialog);
-
-	goto undone_or_redone;
-      }
-    }
-    else {
-      if (!dialog->simple_redo_field)
-	sgf_utils_redo (sgf_tree);
-      else {
-	field = dialog->simple_redo_field;
-	do_set_field_text (field, dialog->simple_redo_value);
-
-	dialog->simple_undo_field = dialog->simple_redo_field;
-	dialog->simple_redo_field = NULL;
-
-	g_free (dialog->simple_redo_value);
-	dialog->simple_redo_value = NULL;
-	undo_or_redo_availability_changed (dialog->sgf_undo_history, dialog);
-
-	goto undone_or_redone;
-      }
-    }
-
-    set_field_text (dialog, dialog->modified_property_type);
-
-    gtk_notebook_set_current_page
-      (dialog->pages, get_page_index (dialog->modified_property_type));
-
-    field = get_field (dialog, dialog->modified_property_type);
-
-    g_signal_emit (dialog, game_info_dialog_signals[PROPERTY_CHANGED], 0,
-		   dialog->modified_property_type);
-
-  undone_or_redone:
-
-    sgf_tree->undo_history = saved_undo_history;
-
-    if (GTK_IS_ENTRY (field))
-      gtk_widget_grab_focus (GTK_WIDGET (field));
-    else
-      gtk_widget_grab_focus (dialog->game_comment_text_view);
+    g_signal_emit (dialog, game_info_dialog_signals[UNDO_HISTORY_ACTION],
+		   0, response_id == GTK_GAME_INFO_DIALOG_RESPONSE_UNDO);
   }
+  else if (response_id == GTK_RESPONSE_HELP)
+    gtk_help_display ("game-information-dialog");
+}
+
+
+static void
+gtk_game_info_dialog_undo_history_action (GtkGameInfoDialog *dialog,
+					  gboolean undo)
+{
+  SgfGameTree *sgf_tree;
+  SgfUndoHistory *saved_undo_history;
+  void *field;
+
+  g_return_if_fail (GTK_IS_GAME_INFO_DIALOG (dialog));
+
+  sgf_tree	     = dialog->sgf_tree;
+  saved_undo_history = sgf_tree->undo_history;
+
+  sgf_tree->undo_history = dialog->sgf_undo_history;
+
+  if (undo) {
+    if (!dialog->simple_undo_field)
+      sgf_utils_undo (sgf_tree);
+    else {
+      dialog->simple_redo_field = dialog->simple_undo_field;
+      dialog->simple_redo_value = get_field_text (dialog->simple_undo_field);
+
+      field = dialog->simple_undo_field;
+      set_field_text (dialog, get_property_type (dialog, field));
+
+      dialog->simple_undo_field = NULL;
+      undo_or_redo_availability_changed (dialog->sgf_undo_history, dialog);
+
+      goto undone_or_redone;
+    }
+  }
+  else {
+    if (!dialog->simple_redo_field)
+      sgf_utils_redo (sgf_tree);
+    else {
+      field = dialog->simple_redo_field;
+      do_set_field_text (field, dialog->simple_redo_value);
+
+      dialog->simple_undo_field = dialog->simple_redo_field;
+      dialog->simple_redo_field = NULL;
+
+      g_free (dialog->simple_redo_value);
+      dialog->simple_redo_value = NULL;
+      undo_or_redo_availability_changed (dialog->sgf_undo_history, dialog);
+
+      goto undone_or_redone;
+    }
+  }
+
+  set_field_text (dialog, dialog->modified_property_type);
+
+  gtk_notebook_set_current_page
+    (dialog->pages, get_page_index (dialog->modified_property_type));
+
+  field = get_field (dialog, dialog->modified_property_type);
+
+  g_signal_emit (dialog, game_info_dialog_signals[PROPERTY_CHANGED], 0,
+		 dialog->modified_property_type);
+
+ undone_or_redone:
+
+  sgf_tree->undo_history = saved_undo_history;
+
+  if (GTK_IS_ENTRY (field))
+    gtk_widget_grab_focus (GTK_WIDGET (field));
+  else
+    gtk_widget_grab_focus (dialog->game_comment_text_view);
 }
 
 

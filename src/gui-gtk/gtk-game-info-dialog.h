@@ -108,8 +108,11 @@ struct _GtkGameInfoDialog {
 struct _GtkGameInfoDialogClass {
   GtkDialogClass	   parent_class;
 
-  void (* property_changed) (GtkGameInfoDialog *game_info_dialog,
-			     SgfType sgf_property_type);
+  void (* property_changed)    (GtkGameInfoDialog *game_info_dialog,
+				SgfType sgf_property_type);
+
+  void (* undo_history_action) (GtkGameInfoDialog *game_info_dialog,
+				gboolean undo);
 };
 
 
