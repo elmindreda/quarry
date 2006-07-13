@@ -1,3 +1,33 @@
+2006-07-13  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* gui-gtk/gtk-named-vbox.c (gtk_named_vbox_size_request): Fix for
+	the case of invisible label (reported by Jérémie Knuesel.)
+
+	* gui-gtk/gtk-sgf-tree-view.c (map_modified): Call
+	update_view_port_and_maybe_move_or_resize_window() even if we are
+	not tracking the current node since the map size might have
+	changed.  Reported by Jérémie Knuesel.
+
+	* gui-gtk/gtk-goban-window.c (text_buffer_receive_undo_entry):
+	Only keep using `undo_entry_data' if there's an undo history;
+	otherwise it is deleted (reported by Jérémie Knuesel.)
+	(update_comment_and_node_name_if_needed): Likewise.
+
+2006-07-12  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* gui-gtk/gtk-game-info-dialog.c
+	(gtk_game_info_dialog_class_init): Add bindings for undo and redo
+	actions.  Create `undo-history-action' signal.
+	(gtk_game_info_dialog_init): Add "Help" button.
+	(gtk_game_info_dialog_response): Handle help response.
+	(gtk_game_info_dialog_undo_history_action): New function, break
+	out of gtk_game_info_dialog_response().
+
+	* gui-gtk/quarry-marshal.glist: New marshaller `VOID:BOOLEAN'.
+
+	* gui-gtk/gtk-help.c (gtk_help_display): Don't assert that
+	`link_id' is not NULL, it is not necessary true.
+
 2006-07-11  Paul Pogonyshev  <pogonyshev@gmx.net>
 
 	* gui-gtk/gtk-new-game-record-dialog.c
@@ -30,7 +60,7 @@
 	(property_has_changed): New function.
 
 	* sgf/sgf-undo.c (sgf_undo_history_delete_redo_entries): New
-	function.
+	function, break out of sgf_utils_apply_undo_history_entry().
 	(sgf_utils_undo): Fix typo and make function not undo everything
 	at once.
 
