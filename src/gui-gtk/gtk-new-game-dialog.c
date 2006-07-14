@@ -816,6 +816,8 @@ begin_game (GtkEnginesInstantiationStatus status, gpointer user_data)
   TimeControl *time_control;
   SgfGameTree *game_tree;
   SgfCollection *sgf_collection;
+  Board *board;
+  SgfBoardState board_state;
   GtkWidget *goban_window;
   int k;
 
@@ -833,6 +835,12 @@ begin_game (GtkEnginesInstantiationStatus status, gpointer user_data)
 
   game_tree = sgf_game_tree_new_with_root (game, board_size, board_size, 1);
   game_tree->char_set = utils_duplicate_string ("UTF-8");
+
+  sgf_collection = sgf_collection_new ();
+  sgf_collection_add_game_tree (sgf_collection, game_tree);
+
+  board = board_new (game, board_size, board_size);
+  sgf_utils_enter_tree (game_tree, board, &board_state);
 
   sgf_node_add_text_property (game_tree->root, game_tree,
 			      SGF_RESULT, utils_duplicate_string ("Void"), 0);
@@ -956,9 +964,6 @@ begin_game (GtkEnginesInstantiationStatus status, gpointer user_data)
 					    game_tree, 0);
   }
 
-  sgf_collection = sgf_collection_new ();
-  sgf_collection_add_game_tree (sgf_collection, game_tree);
-
   configuration_set_string_value (&new_game_configuration.game_name,
 				  game_info[game].name);
 
@@ -970,6 +975,10 @@ begin_game (GtkEnginesInstantiationStatus status, gpointer user_data)
     configuration_set_string_value (&new_game_configuration.engine_names[k],
 				    engine_screen_names[k]);
   }
+
+  board_delete (board);
+  game_tree->board	 = NULL;
+  game_tree->board_state = NULL;
 
   goban_window = gtk_goban_window_new (sgf_collection, NULL);
   gtk_goban_window_enter_game_mode (GTK_GOBAN_WINDOW (goban_window),
