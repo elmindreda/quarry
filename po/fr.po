@@ -8,8 +8,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Quarry\n"
 "Report-Msgid-Bugs-To: quarry-dev@gna.org\n"
-"POT-Creation-Date: 2006-07-13 23:50+0300\n"
-"PO-Revision-Date: 2006-07-13 16:50+0100\n"
+"POT-Creation-Date: 2006-07-14 18:47+0300\n"
+"PO-Revision-Date: 2006-07-14 12:08+0100\n"
 "Last-Translator: Jeremie Knuesel <knuesel@gmail.com>\n"
 "Language-Team: fr <->\n"
 "MIME-Version: 1.0\n"
@@ -717,10 +717,10 @@ msgid_plural ""
 "Please set up %d (or less)\n"
 "stones of free handicap"
 msgstr[0] ""
-"Veuillez placer %d pions\n"
+"Veuillez placer %d pierre\n"
 "(ou moins) de handicap libre"
 msgstr[1] ""
-"Veuillez placer %d pion\n"
+"Veuillez placer %d pierres\n"
 "(ou moins) de handicap libre"
 
 #: src/gui-gtk/gtk-goban-window.c:1774
@@ -962,26 +962,28 @@ msgstr ""
 "Impossible de coller le fragment d'enregistrement de partie à partir du "
 "presse-papier"
 
-#: src/gui-gtk/gtk-goban-window.c:5691
-#, fuzzy
+#. TRANSLATORS: This message is shown if you e.g. copy a part of
+#. 13x13 game tree and try to paste it into a 19x19 game tree; or
+#. copy a part of a Reversi game tree and try to paste it into a
+#. Go game tree.
+#: src/gui-gtk/gtk-goban-window.c:5695
 msgid "Clipboard game record fragment must be of different game or board size."
 msgstr ""
-"Le fragment d'enregistrement de partie du presse-papier doit avoir une "
-"taille de plateau différente."
+"Le fragment d'enregistrement de partie dans le presse-papier a probablement "
+"une taille de plateau différente."
 
-#: src/gui-gtk/gtk-goban-window.c:5695
+#: src/gui-gtk/gtk-goban-window.c:5699
 msgid "Clipboard contains an invalid game record fragment (SGF)"
 msgstr ""
 "Le presse-papier contient un fragment d'enregistrement de partie (SGF) "
 "invalide"
 
-#: src/gui-gtk/gtk-goban-window.c:5844
-#, fuzzy
+#: src/gui-gtk/gtk-goban-window.c:5848
 msgid ""
 "Please select dead stones\n"
 "to score the game"
 msgstr ""
-"Veuillez choisir les pions morts\n"
+"Veuillez choisir les pierres mortes\n"
 "pour établir le score"
 
 #: src/gui-gtk/gtk-go-to-named-node-dialog.c:135
@@ -1147,7 +1149,7 @@ msgstr "Nouvel enregistrement de partie"
 
 #: src/gui-gtk/gtk-new-game-record-dialog.c:189
 msgid "_Place stones"
-msgstr "_Placer les pions"
+msgstr "_Placer les pierres"
 
 #: src/gui-gtk/gtk-new-game-record-dialog.c:265
 msgid "_White player:"
@@ -1448,15 +1450,15 @@ msgstr "Encodage"
 
 #: src/gui-gtk/gtk-preferences.c:1103
 msgid "_Relative to stone size"
-msgstr "_Relatif à la taille des pions"
+msgstr "_Relatif à la taille des pierres"
 
 #: src/gui-gtk/gtk-preferences.c:1104
 msgid "On _white stones:"
-msgstr "Sur les pions _blancs :"
+msgstr "Sur les pierres _blanches :"
 
 #: src/gui-gtk/gtk-preferences.c:1105
 msgid "On _black stones:"
-msgstr "Sur les pions _noirs :"
+msgstr "Sur les pierres _noires :"
 
 #: src/gui-gtk/gtk-preferences.c:1106
 msgid "On _empty intersections:"
@@ -2092,7 +2094,7 @@ msgstr[1] " + %d captures"
 #. 87.5''.  This is used only with
 #. fractional komi.
 #: src/board/go.c:1337
-#, fuzzy, c-format
+#, c-format
 msgid " %s %.*f komi = %.*f\n"
 msgstr " %s %.*f komi = %.*f\n"
 
