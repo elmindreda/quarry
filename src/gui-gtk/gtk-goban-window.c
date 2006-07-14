@@ -5688,6 +5688,10 @@ receive_copied_sgf (GtkClipboard *clipboard, GtkSelectionData *selection_data,
   static const gchar *couldnt_paste_message
     = N_("Unable to paste game record fragment from clipboard");
   static const gchar *couldnt_paste_hint
+    /* TRANSLATORS: This message is shown if you e.g. copy a part of
+       13x13 game tree and try to paste it into a 19x19 game tree; or
+       copy a part of a Reversi game tree and try to paste it into a
+       Go game tree. */
     = N_("Clipboard game record fragment must be of different game "
 	 "or board size.");
 
