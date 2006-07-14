@@ -172,6 +172,11 @@ DESKTOP_FILE = quarry.desktop
 desktopdir = $(datadir)/applications
 desktop_DATA = $(DESKTOP_FILE)
 
+ICON_FILE = quarry.png
+
+icondir = $(datadir)/pixmaps
+icon_DATA = $(ICON_FILE)
+
 @REGISTER_MIME_TYPES_TRUE@MIME_DESCRIPTION_FILE = quarry.xml
 
 @REGISTER_MIME_TYPES_TRUE@mimedir = $(datadir)/mime/packages
@@ -180,6 +185,7 @@ desktop_DATA = $(DESKTOP_FILE)
 EXTRA_DIST = \
 	$(FILES)				\
 	$(DESKTOP_FILE:.desktop=.desktop.in)	\
+	$(ICON_FILE)				\
 	$(MIME_DESCRIPTION_FILE)
 
 
@@ -190,7 +196,7 @@ mkinstalldirs = $(SHELL) $(top_srcdir)/build/mkinstalldirs
 CONFIG_HEADER = $(top_builddir)/config.h
 CONFIG_CLEAN_FILES = quarry.desktop
 DIST_SOURCES =
-DATA = $(desktop_DATA) $(files_DATA) $(mime_DATA)
+DATA = $(desktop_DATA) $(files_DATA) $(icon_DATA) $(mime_DATA)
 
 
 RECURSIVE_TARGETS = info-recursive dvi-recursive pdf-recursive \
@@ -247,6 +253,24 @@ uninstall-filesDATA:
 	  f="`echo $$p | sed -e 's|^.*/||'`"; \
 	  echo " rm -f $(DESTDIR)$(filesdir)/$$f"; \
 	  rm -f $(DESTDIR)$(filesdir)/$$f; \
+	done
+iconDATA_INSTALL = $(INSTALL_DATA)
+install-iconDATA: $(icon_DATA)
+	@$(NORMAL_INSTALL)
+	$(mkinstalldirs) $(DESTDIR)$(icondir)
+	@list='$(icon_DATA)'; for p in $$list; do \
+	  if test -f "$$p"; then d=; else d="$(srcdir)/"; fi; \
+	  f="`echo $$p | sed -e 's|^.*/||'`"; \
+	  echo " $(iconDATA_INSTALL) $$d$$p $(DESTDIR)$(icondir)/$$f"; \
+	  $(iconDATA_INSTALL) $$d$$p $(DESTDIR)$(icondir)/$$f; \
+	done
+
+uninstall-iconDATA:
+	@$(NORMAL_UNINSTALL)
+	@list='$(icon_DATA)'; for p in $$list; do \
+	  f="`echo $$p | sed -e 's|^.*/||'`"; \
+	  echo " rm -f $(DESTDIR)$(icondir)/$$f"; \
+	  rm -f $(DESTDIR)$(icondir)/$$f; \
 	done
 mimeDATA_INSTALL = $(INSTALL_DATA)
 install-mimeDATA: $(mime_DATA)
@@ -440,7 +464,7 @@ check: check-recursive
 all-am: Makefile $(DATA)
 installdirs: installdirs-recursive
 installdirs-am:
-	$(mkinstalldirs) $(DESTDIR)$(desktopdir) $(DESTDIR)$(filesdir) $(DESTDIR)$(mimedir)
+	$(mkinstalldirs) $(DESTDIR)$(desktopdir) $(DESTDIR)$(filesdir) $(DESTDIR)$(icondir) $(DESTDIR)$(mimedir)
 
 install: install-recursive
 install-exec: install-exec-recursive
@@ -483,7 +507,8 @@ info: info-recursive
 
 info-am:
 
-install-data-am: install-desktopDATA install-filesDATA install-mimeDATA
+install-data-am: install-desktopDATA install-filesDATA install-iconDATA \
+	install-mimeDATA
 	@$(NORMAL_INSTALL)
 	$(MAKE) $(AM_MAKEFLAGS) install-data-hook
 
@@ -512,7 +537,7 @@ ps: ps-recursive
 ps-am:
 
 uninstall-am: uninstall-desktopDATA uninstall-filesDATA \
-	uninstall-info-am uninstall-mimeDATA
+	uninstall-iconDATA uninstall-info-am uninstall-mimeDATA
 	@$(NORMAL_INSTALL)
 	$(MAKE) $(AM_MAKEFLAGS) uninstall-hook
 
@@ -524,16 +549,17 @@ uninstall-info: uninstall-info-recursive
 	dvi dvi-am dvi-recursive info info-am info-recursive install \
 	install-am install-data install-data-am install-data-recursive \
 	install-desktopDATA install-exec install-exec-am \
-	install-exec-recursive install-filesDATA install-info \
-	install-info-am install-info-recursive install-man \
+	install-exec-recursive install-filesDATA install-iconDATA \
+	install-info install-info-am install-info-recursive install-man \
 	install-mimeDATA install-recursive install-strip installcheck \
 	installcheck-am installdirs installdirs-am \
 	installdirs-recursive maintainer-clean maintainer-clean-generic \
 	maintainer-clean-recursive mostlyclean mostlyclean-generic \
 	mostlyclean-recursive pdf pdf-am pdf-recursive ps ps-am \
 	ps-recursive tags tags-recursive uninstall uninstall-am \
-	uninstall-desktopDATA uninstall-filesDATA uninstall-info-am \
-	uninstall-info-recursive uninstall-mimeDATA uninstall-recursive
+	uninstall-desktopDATA uninstall-filesDATA uninstall-iconDATA \
+	uninstall-info-am uninstall-info-recursive uninstall-mimeDATA \
+	uninstall-recursive
 
 
 @REGISTER_MIME_TYPES_TRUE@install-data-hook: update-mime-database

@@ -21,6 +21,12 @@ desktopdir   = $(datadir)/applications
 desktop_DATA = $(DESKTOP_FILE)
 
 
+ICON_FILE    = quarry.png
+
+icondir	     = $(datadir)/pixmaps
+icon_DATA    = $(ICON_FILE)
+
+
 if REGISTER_MIME_TYPES
 
 
@@ -47,6 +53,7 @@ endif
 EXTRA_DIST =					\
 	$(FILES)				\
 	$(DESKTOP_FILE:.desktop=.desktop.in)	\
+	$(ICON_FILE)				\
 	$(MIME_DESCRIPTION_FILE)
 
 
