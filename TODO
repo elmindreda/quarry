@@ -4,22 +4,9 @@
 
 ** Display values of various SGF properties (`VA',  `BM' etc.)
 
-** TEXT SEARCH
-
-*** Implement search history.
-
 * EDITING GAME RECORDS
 
-** Complete undo/redo machinery so that comments are handler properly.
-
 ** Support editing various SGF properties (`VA', `BM' etc.)
-
-** Implement standard clipboard operations: cut, copy and paste.
-
-** GAME INFORMATION
-
-*** Add a way to revert to original values.
-    Maybe a button to undo changes one by one (property by property.)
 
 * BOARD APPEARANCE
 
@@ -28,8 +15,6 @@
 * SGF PARSING
 
 ** Complete support for charsets.
-
-** Handle file read errors gracefully.
 
 * INTERNAL BOARD CODE
 

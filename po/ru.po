@@ -1,13 +1,13 @@
 # Russian translations for Quarry package.
-# Copyright (C) 2005 Paul Pogonyshev
+# Copyright (C) 2004, 2005, 2006 Paul Pogonyshev
 # This file is distributed under the same license as the Quarry package.
-# Paul Pogonyshev <pogonyshev@gmx.net>, 2005.
+# Paul Pogonyshev <pogonyshev@gmx.net>, 2005, 2006.
 #
 msgid ""
 msgstr ""
 "Project-Id-Version: Quarry 0.1.15\n"
 "Report-Msgid-Bugs-To: quarry-dev@gna.org\n"
-"POT-Creation-Date: 2006-07-11 23:10+0300\n"
+"POT-Creation-Date: 2006-07-14 18:47+0300\n"
 "PO-Revision-Date: 2006-07-11 23:13+0300\n"
 "Last-Translator: Paul Pogonyshev <pogonyshev@gmx.net>\n"
 "Language-Team: Russian <ru@li.org>\n"
@@ -61,132 +61,132 @@ msgid ""
 "are saving?"
 msgstr "Файл с именем «%s» уже существует. Вы хотите переписать его?"
 
-#: src/gui-gtk/gtk-game-info-dialog.c:194
-#: src/gui-gtk/gtk-game-info-dialog.c:265
+#: src/gui-gtk/gtk-game-info-dialog.c:225
+#: src/gui-gtk/gtk-game-info-dialog.c:296
 msgid "Game Information"
 msgstr "Информация о партии"
 
-#: src/gui-gtk/gtk-game-info-dialog.c:201
+#: src/gui-gtk/gtk-game-info-dialog.c:232
 #: src/gui-gtk/gtk-resume-game-dialog.c:323
 msgid "N_ame:"
 msgstr "И_мя:"
 
-#: src/gui-gtk/gtk-game-info-dialog.c:201
+#: src/gui-gtk/gtk-game-info-dialog.c:232
 #: src/gui-gtk/gtk-resume-game-dialog.c:322
 msgid "_Name:"
 msgstr "_Имя:"
 
-#: src/gui-gtk/gtk-game-info-dialog.c:208
+#: src/gui-gtk/gtk-game-info-dialog.c:239
 msgid "Team:"
 msgstr "Команда:"
 
-#: src/gui-gtk/gtk-game-info-dialog.c:214
+#: src/gui-gtk/gtk-game-info-dialog.c:245
 msgid "Rank:"
 msgstr "Ранг:"
 
-#: src/gui-gtk/gtk-game-info-dialog.c:226
+#: src/gui-gtk/gtk-game-info-dialog.c:257
 #: src/gui-gtk/gtk-new-game-dialog.c:226
 #: src/gui-gtk/gtk-resume-game-dialog.c:362
 msgid "Black Player"
 msgstr "Черные"
 
-#: src/gui-gtk/gtk-game-info-dialog.c:226
+#: src/gui-gtk/gtk-game-info-dialog.c:257
 #: src/gui-gtk/gtk-new-game-dialog.c:226
 #: src/gui-gtk/gtk-resume-game-dialog.c:362
 msgid "White Player"
 msgstr "Белые"
 
-#: src/gui-gtk/gtk-game-info-dialog.c:240
+#: src/gui-gtk/gtk-game-info-dialog.c:271
 msgid "_Game name:"
 msgstr "_Название партии:"
 
-#: src/gui-gtk/gtk-game-info-dialog.c:243
+#: src/gui-gtk/gtk-game-info-dialog.c:274
 msgid "_Place:"
 msgstr "Мес_то проведения:"
 
-#: src/gui-gtk/gtk-game-info-dialog.c:247
+#: src/gui-gtk/gtk-game-info-dialog.c:278
 msgid "Da_te:"
 msgstr "_Дата:"
 
-#: src/gui-gtk/gtk-game-info-dialog.c:250
+#: src/gui-gtk/gtk-game-info-dialog.c:281
 msgid "_Event:"
 msgstr "_Событие:"
 
-#: src/gui-gtk/gtk-game-info-dialog.c:254
+#: src/gui-gtk/gtk-game-info-dialog.c:285
 msgid "R_ound:"
 msgstr "Р_аунд:"
 
-#: src/gui-gtk/gtk-game-info-dialog.c:268
+#: src/gui-gtk/gtk-game-info-dialog.c:299
 msgid "Rule _set:"
 msgstr "_Правила:"
 
-#: src/gui-gtk/gtk-game-info-dialog.c:294
-#: src/gui-gtk/gtk-new-game-record-dialog.c:186
+#: src/gui-gtk/gtk-game-info-dialog.c:325
+#: src/gui-gtk/gtk-new-game-record-dialog.c:187
 msgid "Han_dicap:"
 msgstr "_Гандикап:"
 
-#: src/gui-gtk/gtk-game-info-dialog.c:317
+#: src/gui-gtk/gtk-game-info-dialog.c:348
 #: src/gui-gtk/gtk-new-game-dialog.c:575
-#: src/gui-gtk/gtk-new-game-record-dialog.c:230
+#: src/gui-gtk/gtk-new-game-record-dialog.c:231
 msgid "_Komi:"
 msgstr "_Коми:"
 
-#: src/gui-gtk/gtk-game-info-dialog.c:344
+#: src/gui-gtk/gtk-game-info-dialog.c:375
 #: src/gui-gtk/gtk-new-game-dialog.c:445
 msgid "_Main time:"
 msgstr "Основное _время:"
 
-#: src/gui-gtk/gtk-game-info-dialog.c:356
+#: src/gui-gtk/gtk-game-info-dialog.c:387
 msgid "O_vertime:"
 msgstr "Допо_лнительное время:"
 
-#: src/gui-gtk/gtk-game-info-dialog.c:367
+#: src/gui-gtk/gtk-game-info-dialog.c:398
 #: src/gui-gtk/gtk-new-game-dialog.c:603
 msgid "Game Rules"
 msgstr "Правила игры"
 
-#: src/gui-gtk/gtk-game-info-dialog.c:382
+#: src/gui-gtk/gtk-game-info-dialog.c:413
 msgid "General"
 msgstr "Общая информация"
 
-#: src/gui-gtk/gtk-game-info-dialog.c:385
+#: src/gui-gtk/gtk-game-info-dialog.c:416
 msgid "Game re_sult:"
 msgstr "Резу_льтат партии:"
 
-#: src/gui-gtk/gtk-game-info-dialog.c:389
+#: src/gui-gtk/gtk-game-info-dialog.c:420
 msgid "_Opening played:"
 msgstr "Сыграный _дебют:"
 
-#: src/gui-gtk/gtk-game-info-dialog.c:419
+#: src/gui-gtk/gtk-game-info-dialog.c:450
 msgid "Comment / _description:"
 msgstr "_Комментарии/описание:"
 
-#: src/gui-gtk/gtk-game-info-dialog.c:433
+#: src/gui-gtk/gtk-game-info-dialog.c:464
 msgid "Description & Result"
 msgstr "Описание и результат"
 
-#: src/gui-gtk/gtk-game-info-dialog.c:436
+#: src/gui-gtk/gtk-game-info-dialog.c:467
 msgid "Co_pyright string:"
 msgstr "_Авторские права:"
 
-#: src/gui-gtk/gtk-game-info-dialog.c:440
+#: src/gui-gtk/gtk-game-info-dialog.c:471
 msgid "_Annotator:"
 msgstr "А_ннотатор:"
 
-#: src/gui-gtk/gtk-game-info-dialog.c:444
+#: src/gui-gtk/gtk-game-info-dialog.c:475
 msgid "_Source:"
 msgstr "_Источник:"
 
-#: src/gui-gtk/gtk-game-info-dialog.c:448
+#: src/gui-gtk/gtk-game-info-dialog.c:479
 msgid "_Entered by:"
 msgstr "_Создатель файла:"
 
 # «Авторские права и благодарности» слишком длинно
-#: src/gui-gtk/gtk-game-info-dialog.c:458
+#: src/gui-gtk/gtk-game-info-dialog.c:489
 msgid "Copyright & Credits"
 msgstr "Благодарности"
 
-#: src/gui-gtk/gtk-game-info-dialog.c:472
+#: src/gui-gtk/gtk-game-info-dialog.c:503
 msgid "Game Record"
 msgstr "Запись партии"
 
@@ -932,15 +932,15 @@ msgstr "По правилам (белые)"
 msgid "insert node name here"
 msgstr "вставьте здесь название узла"
 
-#: src/gui-gtk/gtk-goban-window.c:4936
+#: src/gui-gtk/gtk-goban-window.c:4939
 msgid "Set Move Number"
 msgstr "Установить номер хода"
 
-#: src/gui-gtk/gtk-goban-window.c:5300
+#: src/gui-gtk/gtk-goban-window.c:5303
 msgid "GTP engine is scoring..."
 msgstr "GTP-движок подсчитывает результат партии…"
 
-#: src/gui-gtk/gtk-goban-window.c:5679
+#: src/gui-gtk/gtk-goban-window.c:5682
 msgid ""
 "Unable to paste game record fragment from clipboard since it is not intended "
 "for pasting"
@@ -948,7 +948,7 @@ msgstr ""
 "Невозможно вставить фрагмент записи партии из буфера обмена, так как он для "
 "этого не предназначен"
 
-#: src/gui-gtk/gtk-goban-window.c:5682
+#: src/gui-gtk/gtk-goban-window.c:5685
 msgid ""
 "Clipboard SGF probably contains more than one game tree or not a single "
 "child of the root of the only game tree."
@@ -956,21 +956,25 @@ msgstr ""
 "SGF-фрагмент из буфера обмена, вероятно, содержит более одного дерева игры, "
 "или не одного наследника у корня единственного дерева."
 
-#: src/gui-gtk/gtk-goban-window.c:5686
+#: src/gui-gtk/gtk-goban-window.c:5689
 msgid "Unable to paste game record fragment from clipboard"
 msgstr "Невозможно вставить фрагмент записи партии из буфера обмена"
 
-#: src/gui-gtk/gtk-goban-window.c:5688
+#. TRANSLATORS: This message is shown if you e.g. copy a part of
+#. 13x13 game tree and try to paste it into a 19x19 game tree; or
+#. copy a part of a Reversi game tree and try to paste it into a
+#. Go game tree.
+#: src/gui-gtk/gtk-goban-window.c:5695
 msgid "Clipboard game record fragment must be of different game or board size."
 msgstr ""
 "Фрагмент записи партии в буфере обмена, вероятно, был создан для другой игры "
 "или размера доски."
 
-#: src/gui-gtk/gtk-goban-window.c:5692
+#: src/gui-gtk/gtk-goban-window.c:5699
 msgid "Clipboard contains an invalid game record fragment (SGF)"
 msgstr "Буфер обмена содержит неправильный фрагмент записи партии (SGF)"
 
-#: src/gui-gtk/gtk-goban-window.c:5841
+#: src/gui-gtk/gtk-goban-window.c:5848
 msgid ""
 "Please select dead stones\n"
 "to score the game"
@@ -1068,7 +1072,7 @@ msgid "New Game"
 msgstr "Новая партия"
 
 #: src/gui-gtk/gtk-new-game-dialog.c:167
-#: src/gui-gtk/gtk-new-game-record-dialog.c:131
+#: src/gui-gtk/gtk-new-game-record-dialog.c:132
 msgid "Game"
 msgstr "Игра"
 
@@ -1135,27 +1139,27 @@ msgstr "_Период дополнительного времени:"
 msgid "Mo_ves per overtime:"
 msgstr "_Ходов на один период:"
 
-#: src/gui-gtk/gtk-new-game-record-dialog.c:118
+#: src/gui-gtk/gtk-new-game-record-dialog.c:119
 msgid "New Game Record"
 msgstr "Новая запись партии"
 
-#: src/gui-gtk/gtk-new-game-record-dialog.c:188
+#: src/gui-gtk/gtk-new-game-record-dialog.c:189
 msgid "_Place stones"
 msgstr "Раз_местить камни"
 
-#: src/gui-gtk/gtk-new-game-record-dialog.c:264
+#: src/gui-gtk/gtk-new-game-record-dialog.c:265
 msgid "_White player:"
 msgstr "_Белые:"
 
-#: src/gui-gtk/gtk-new-game-record-dialog.c:275
+#: src/gui-gtk/gtk-new-game-record-dialog.c:276
 msgid "_Black player:"
 msgstr "_Черные:"
 
-#: src/gui-gtk/gtk-new-game-record-dialog.c:286
+#: src/gui-gtk/gtk-new-game-record-dialog.c:287
 msgid "Game _name:"
 msgstr "_Название партии:"
 
-#: src/gui-gtk/gtk-new-game-record-dialog.c:299
+#: src/gui-gtk/gtk-new-game-record-dialog.c:300
 msgid ""
 "You can always change and expand game information later. Just choose `Edit/"
 "Game Information' menu item or press `Info' button on the main toolbar."
@@ -1164,7 +1168,7 @@ msgstr ""
 "выберите элемент меню «Правка/Информация о партии» или нажмите кнопку «Инфо» "
 "на главной панели инструментов."
 
-#: src/gui-gtk/gtk-new-game-record-dialog.c:309
+#: src/gui-gtk/gtk-new-game-record-dialog.c:310
 #: src/gui-gtk/gtk-resume-game-dialog.c:225
 msgid "Short Game Information"
 msgstr "Краткая информация о партии"

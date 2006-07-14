@@ -1,5 +1,5 @@
 # English (British) translation of Quarry.
-# Copyright (C) 2005 Paul Pogonyshev
+# Copyright (C) 2004, 2005, 2006 Paul Pogonyshev
 # This file is distributed under the same license as the Quarry package.
 # Paul Pogonyshev <pogonyshev@gmx.net>, 2005.
 #
@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Quarry\n"
 "Report-Msgid-Bugs-To: quarry-dev@gna.org\n"
-"POT-Creation-Date: 2006-07-11 23:10+0300\n"
-"PO-Revision-Date: 2006-07-11 23:11+0300\n"
+"POT-Creation-Date: 2006-07-14 18:47+0300\n"
+"PO-Revision-Date: 2006-07-14 01:23+0300\n"
 "Last-Translator: Paul Pogonyshev <pogonyshev@gmx.net>\n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
@@ -63,131 +63,131 @@ msgstr ""
 "File named ‘%s’ already exists. Do you want to overwrite it with the one you "
 "are saving?"
 
-#: src/gui-gtk/gtk-game-info-dialog.c:194
-#: src/gui-gtk/gtk-game-info-dialog.c:265
+#: src/gui-gtk/gtk-game-info-dialog.c:225
+#: src/gui-gtk/gtk-game-info-dialog.c:296
 msgid "Game Information"
 msgstr "Game Information"
 
-#: src/gui-gtk/gtk-game-info-dialog.c:201
+#: src/gui-gtk/gtk-game-info-dialog.c:232
 #: src/gui-gtk/gtk-resume-game-dialog.c:323
 msgid "N_ame:"
 msgstr "N_ame:"
 
-#: src/gui-gtk/gtk-game-info-dialog.c:201
+#: src/gui-gtk/gtk-game-info-dialog.c:232
 #: src/gui-gtk/gtk-resume-game-dialog.c:322
 msgid "_Name:"
 msgstr "_Name:"
 
-#: src/gui-gtk/gtk-game-info-dialog.c:208
+#: src/gui-gtk/gtk-game-info-dialog.c:239
 msgid "Team:"
 msgstr "Team:"
 
-#: src/gui-gtk/gtk-game-info-dialog.c:214
+#: src/gui-gtk/gtk-game-info-dialog.c:245
 msgid "Rank:"
 msgstr "Rank:"
 
-#: src/gui-gtk/gtk-game-info-dialog.c:226
+#: src/gui-gtk/gtk-game-info-dialog.c:257
 #: src/gui-gtk/gtk-new-game-dialog.c:226
 #: src/gui-gtk/gtk-resume-game-dialog.c:362
 msgid "Black Player"
 msgstr "Black Player"
 
-#: src/gui-gtk/gtk-game-info-dialog.c:226
+#: src/gui-gtk/gtk-game-info-dialog.c:257
 #: src/gui-gtk/gtk-new-game-dialog.c:226
 #: src/gui-gtk/gtk-resume-game-dialog.c:362
 msgid "White Player"
 msgstr "White Player"
 
-#: src/gui-gtk/gtk-game-info-dialog.c:240
+#: src/gui-gtk/gtk-game-info-dialog.c:271
 msgid "_Game name:"
 msgstr "_Game name:"
 
-#: src/gui-gtk/gtk-game-info-dialog.c:243
+#: src/gui-gtk/gtk-game-info-dialog.c:274
 msgid "_Place:"
 msgstr "_Place:"
 
-#: src/gui-gtk/gtk-game-info-dialog.c:247
+#: src/gui-gtk/gtk-game-info-dialog.c:278
 msgid "Da_te:"
 msgstr "Da_te:"
 
-#: src/gui-gtk/gtk-game-info-dialog.c:250
+#: src/gui-gtk/gtk-game-info-dialog.c:281
 msgid "_Event:"
 msgstr "_Event:"
 
-#: src/gui-gtk/gtk-game-info-dialog.c:254
+#: src/gui-gtk/gtk-game-info-dialog.c:285
 msgid "R_ound:"
 msgstr "R_ound:"
 
-#: src/gui-gtk/gtk-game-info-dialog.c:268
+#: src/gui-gtk/gtk-game-info-dialog.c:299
 msgid "Rule _set:"
 msgstr "Rule _set:"
 
-#: src/gui-gtk/gtk-game-info-dialog.c:294
-#: src/gui-gtk/gtk-new-game-record-dialog.c:186
+#: src/gui-gtk/gtk-game-info-dialog.c:325
+#: src/gui-gtk/gtk-new-game-record-dialog.c:187
 msgid "Han_dicap:"
 msgstr "Han_dicap:"
 
-#: src/gui-gtk/gtk-game-info-dialog.c:317
+#: src/gui-gtk/gtk-game-info-dialog.c:348
 #: src/gui-gtk/gtk-new-game-dialog.c:575
-#: src/gui-gtk/gtk-new-game-record-dialog.c:230
+#: src/gui-gtk/gtk-new-game-record-dialog.c:231
 msgid "_Komi:"
 msgstr "_Komi:"
 
-#: src/gui-gtk/gtk-game-info-dialog.c:344
+#: src/gui-gtk/gtk-game-info-dialog.c:375
 #: src/gui-gtk/gtk-new-game-dialog.c:445
 msgid "_Main time:"
 msgstr "_Main time:"
 
-#: src/gui-gtk/gtk-game-info-dialog.c:356
+#: src/gui-gtk/gtk-game-info-dialog.c:387
 msgid "O_vertime:"
 msgstr "O_vertime:"
 
-#: src/gui-gtk/gtk-game-info-dialog.c:367
+#: src/gui-gtk/gtk-game-info-dialog.c:398
 #: src/gui-gtk/gtk-new-game-dialog.c:603
 msgid "Game Rules"
 msgstr "Game Rules"
 
-#: src/gui-gtk/gtk-game-info-dialog.c:382
+#: src/gui-gtk/gtk-game-info-dialog.c:413
 msgid "General"
 msgstr "General"
 
-#: src/gui-gtk/gtk-game-info-dialog.c:385
+#: src/gui-gtk/gtk-game-info-dialog.c:416
 msgid "Game re_sult:"
 msgstr "Game re_sult:"
 
-#: src/gui-gtk/gtk-game-info-dialog.c:389
+#: src/gui-gtk/gtk-game-info-dialog.c:420
 msgid "_Opening played:"
 msgstr "_Opening played:"
 
-#: src/gui-gtk/gtk-game-info-dialog.c:419
+#: src/gui-gtk/gtk-game-info-dialog.c:450
 msgid "Comment / _description:"
 msgstr "Comment / _description:"
 
-#: src/gui-gtk/gtk-game-info-dialog.c:433
+#: src/gui-gtk/gtk-game-info-dialog.c:464
 msgid "Description & Result"
 msgstr "Description & Result"
 
-#: src/gui-gtk/gtk-game-info-dialog.c:436
+#: src/gui-gtk/gtk-game-info-dialog.c:467
 msgid "Co_pyright string:"
 msgstr "Co_pyright string:"
 
-#: src/gui-gtk/gtk-game-info-dialog.c:440
+#: src/gui-gtk/gtk-game-info-dialog.c:471
 msgid "_Annotator:"
 msgstr "_Annotator:"
 
-#: src/gui-gtk/gtk-game-info-dialog.c:444
+#: src/gui-gtk/gtk-game-info-dialog.c:475
 msgid "_Source:"
 msgstr "_Source:"
 
-#: src/gui-gtk/gtk-game-info-dialog.c:448
+#: src/gui-gtk/gtk-game-info-dialog.c:479
 msgid "_Entered by:"
 msgstr "_Entered by:"
 
-#: src/gui-gtk/gtk-game-info-dialog.c:458
+#: src/gui-gtk/gtk-game-info-dialog.c:489
 msgid "Copyright & Credits"
 msgstr "Copyright & Credits"
 
-#: src/gui-gtk/gtk-game-info-dialog.c:472
+#: src/gui-gtk/gtk-game-info-dialog.c:503
 msgid "Game Record"
 msgstr "Game Record"
 
@@ -417,7 +417,7 @@ msgstr "/Edit/Delete Node’s C_hildren"
 
 #: src/gui-gtk/gtk-goban-window.c:698
 msgid "/Edit/T_ools"
-msgstr "/Edit/T_ools/"
+msgstr "/Edit/T_ools"
 
 #: src/gui-gtk/gtk-goban-window.c:699
 msgid "/Edit/Tools/_Move Tool"
@@ -927,44 +927,48 @@ msgstr "By Game _Rules (White)"
 msgid "insert node name here"
 msgstr "insert node name here"
 
-#: src/gui-gtk/gtk-goban-window.c:4936
+#: src/gui-gtk/gtk-goban-window.c:4939
 msgid "Set Move Number"
 msgstr "Set Move Number"
 
-#: src/gui-gtk/gtk-goban-window.c:5300
+#: src/gui-gtk/gtk-goban-window.c:5303
 msgid "GTP engine is scoring..."
 msgstr "GTP engine is scoring…"
 
-#: src/gui-gtk/gtk-goban-window.c:5679
-msgid ""
-"Unable to paste game record fragment from clipboard since it is not intended "
-"for pasting"
-msgstr ""
-"Unable to paste game record fragment from clipboard since it is not intended "
-"for pasting"
-
 #: src/gui-gtk/gtk-goban-window.c:5682
 msgid ""
+"Unable to paste game record fragment from clipboard since it is not intended "
+"for pasting"
+msgstr ""
+"Unable to paste game record fragment from clipboard since it is not intended "
+"for pasting"
+
+#: src/gui-gtk/gtk-goban-window.c:5685
+msgid ""
 "Clipboard SGF probably contains more than one game tree or not a single "
 "child of the root of the only game tree."
 msgstr ""
 "Clipboard SGF probably contains more than one game tree or not a single "
 "child of the root of the only game tree."
 
-#: src/gui-gtk/gtk-goban-window.c:5686
+#: src/gui-gtk/gtk-goban-window.c:5689
 msgid "Unable to paste game record fragment from clipboard"
 msgstr "Unable to paste game record fragment from clipboard"
 
-#: src/gui-gtk/gtk-goban-window.c:5688
+#. TRANSLATORS: This message is shown if you e.g. copy a part of
+#. 13x13 game tree and try to paste it into a 19x19 game tree; or
+#. copy a part of a Reversi game tree and try to paste it into a
+#. Go game tree.
+#: src/gui-gtk/gtk-goban-window.c:5695
 msgid "Clipboard game record fragment must be of different game or board size."
 msgstr ""
 "Clipboard game record fragment must be of different game or board size."
 
-#: src/gui-gtk/gtk-goban-window.c:5692
+#: src/gui-gtk/gtk-goban-window.c:5699
 msgid "Clipboard contains an invalid game record fragment (SGF)"
 msgstr "Clipboard contains an invalid game record fragment (SGF)"
 
-#: src/gui-gtk/gtk-goban-window.c:5841
+#: src/gui-gtk/gtk-goban-window.c:5848
 msgid ""
 "Please select dead stones\n"
 "to score the game"
@@ -1060,7 +1064,7 @@ msgid "New Game"
 msgstr "New Game"
 
 #: src/gui-gtk/gtk-new-game-dialog.c:167
-#: src/gui-gtk/gtk-new-game-record-dialog.c:131
+#: src/gui-gtk/gtk-new-game-record-dialog.c:132
 msgid "Game"
 msgstr "Game"
 
@@ -1127,27 +1131,27 @@ msgstr "_Overtime period length:"
 msgid "Mo_ves per overtime:"
 msgstr "Mo_ves per overtime:"
 
-#: src/gui-gtk/gtk-new-game-record-dialog.c:118
+#: src/gui-gtk/gtk-new-game-record-dialog.c:119
 msgid "New Game Record"
 msgstr "New Game Record"
 
-#: src/gui-gtk/gtk-new-game-record-dialog.c:188
+#: src/gui-gtk/gtk-new-game-record-dialog.c:189
 msgid "_Place stones"
 msgstr "_Place stones"
 
-#: src/gui-gtk/gtk-new-game-record-dialog.c:264
+#: src/gui-gtk/gtk-new-game-record-dialog.c:265
 msgid "_White player:"
 msgstr "_White player:"
 
-#: src/gui-gtk/gtk-new-game-record-dialog.c:275
+#: src/gui-gtk/gtk-new-game-record-dialog.c:276
 msgid "_Black player:"
 msgstr "_Black player:"
 
-#: src/gui-gtk/gtk-new-game-record-dialog.c:286
+#: src/gui-gtk/gtk-new-game-record-dialog.c:287
 msgid "Game _name:"
 msgstr "Game _name:"
 
-#: src/gui-gtk/gtk-new-game-record-dialog.c:299
+#: src/gui-gtk/gtk-new-game-record-dialog.c:300
 msgid ""
 "You can always change and expand game information later. Just choose `Edit/"
 "Game Information' menu item or press `Info' button on the main toolbar."
@@ -1155,7 +1159,7 @@ msgstr ""
 "You can always change and expand game information later. Just choose ‘Edit/"
 "Game Information’ menu item or press ‘Info’ button on the main toolbar."
 
-#: src/gui-gtk/gtk-new-game-record-dialog.c:309
+#: src/gui-gtk/gtk-new-game-record-dialog.c:310
 #: src/gui-gtk/gtk-resume-game-dialog.c:225
 msgid "Short Game Information"
 msgstr "Short Game Information"

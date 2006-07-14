@@ -1,3 +1,21 @@
+--- New in Quarry 0.1.18 ---------------------------------------------
+
+* Undo/redo history has been completed and now includes comment and
+  node name changes.
+
+* Standard clipboard operations (cut, copy and paste) are supported
+  for game subtrees.
+
+* Board diagrams in ASCII and Sensei's format can be copied to
+  clipboard.
+
+* Somewhat expanded manual.
+
+* Updated translations: en_GB, fr, pl, ru.
+
+* Build process improvements, other improvements and bug-fixes.
+
+
 --- New in Quarry 0.1.17 ---------------------------------------------
 
 * More features for editing SGF game records: it is now possible to
@@ -161,14 +179,14 @@
 * Partial support for different encodings of SGF files.  It is not yet
   complete, but at least all single-byte encodings should work.
 
-* GTP engines now automatically score games they play.  (by Martin
+* GTP engines now automatically score games they play.  (By Martin
   Holters)
 
 * Comments can now be edited.  Just modify the text in the comment
   pane and your changes will be remembered.
 
 * Mouse wheel can be used to go back and forth between moves
-  (suggested by David Gómez).
+  (Suggested by David Gómez).
 
 * Othello disks now look like disks, not like Go stones.
 
