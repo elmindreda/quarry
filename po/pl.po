@@ -1,14 +1,14 @@
 # Polish translations for Quarry package.
 # Copyright (C) 2005 Paul Pogonyshev
 # This file is distributed under the same license as the Quarry package.
-# Paul Pogonyshev <pogonyshev@gmx.net>, 2005.
+# Robert Stefaniuk <kacprey@gazeta.pl>, 2005, 2006.
 #
 msgid ""
 msgstr ""
 "Project-Id-Version: Quarry 0.1.16\n"
 "Report-Msgid-Bugs-To: quarry-dev@gna.org\n"
-"POT-Creation-Date: 2006-07-13 23:50+0300\n"
-"PO-Revision-Date: 2006-04-16 22:40+0200\n"
+"POT-Creation-Date: 2006-07-14 18:47+0300\n"
+"PO-Revision-Date: 2006-07-14 01:25+0300\n"
 "Last-Translator: Robert Stefaniuk <kacprey@gazeta.pl>\n"
 "Language-Team: Polish <pl@li.org>\n"
 "MIME-Version: 1.1\n"
@@ -770,7 +770,7 @@ msgstr "Graficzny program do gier Go, Amazons i Reversi"
 
 #: src/gui-gtk/gtk-goban-window.c:2458
 msgid "Copyright (C) 2003, 2004, 2005, 2006 Paul Pogonyshev and others"
-msgstr "Copyright © 2003, 2004, 2005 Paweł Pogonyszew i inni"
+msgstr "Copyright © 2003, 2004, 2005, 2006 Paweł Pogonyszew i inni"
 
 #: src/gui-gtk/gtk-goban-window.c:2474
 msgid "About Quarry"
@@ -960,15 +960,19 @@ msgstr ""
 msgid "Unable to paste game record fragment from clipboard"
 msgstr "Nie można wkleić fragmentu zapisu gry ze schowka"
 
-#: src/gui-gtk/gtk-goban-window.c:5691
+#. TRANSLATORS: This message is shown if you e.g. copy a part of
+#. 13x13 game tree and try to paste it into a 19x19 game tree; or
+#. copy a part of a Reversi game tree and try to paste it into a
+#. Go game tree.
+#: src/gui-gtk/gtk-goban-window.c:5695
 msgid "Clipboard game record fragment must be of different game or board size."
 msgstr "Zapis gry w schowku ma inny rozmiar planszy lub dotyczy innej gry."
 
-#: src/gui-gtk/gtk-goban-window.c:5695
+#: src/gui-gtk/gtk-goban-window.c:5699
 msgid "Clipboard contains an invalid game record fragment (SGF)"
 msgstr "Schowek zawiera błędny fragment zapisu gry (SGF)"
 
-#: src/gui-gtk/gtk-goban-window.c:5844
+#: src/gui-gtk/gtk-goban-window.c:5848
 msgid ""
 "Please select dead stones\n"
 "to score the game"
