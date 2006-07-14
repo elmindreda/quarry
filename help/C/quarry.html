@@ -2,7 +2,7 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>Quarry Manual V0.2</title><meta name="generator" content="DocBook XSL Stylesheets V1.68.1" /><meta http-equiv="Content-Style-Type" content="text/css"><link rel="stylesheet" href="../quarry-help.css" type="text/css"></head><body><table border="0" cellspacing="0" cellpadding="0" align="center"><tr><td style="width: 90ex; padding: 2ex 6ex;" class="contents"><div class="article" lang="en" xml:lang="en"><div class="titlepage"><div><div><h1 class="title"><a id="index"></a><span class="application">Quarry</span> Manual V0.2</h1></div><div><div class="authorgroup"><div class="author"><h3 class="author"><span class="firstname">Paul</span> <span class="surname">Pogonyshev</span></h3><div class="affiliation"><div class="address"><p><code class="email">&lt;<a href="mailto:pogonyshev@gmx.net">pogonyshev@gmx.net</a>&gt;</code></p></div></div></div></div></div><div><p class="releaseinfo">
       This manual describes version 0.2 of Quarry.
-    </p></div><div><p class="copyright">Copyright © 2004, 2005 Paul Pogonyshev</p></div><div><div class="legalnotice"><a id="legalnotice"></a><p>
+    </p></div><div><p class="copyright">Copyright © 2004, 2005, 2006 Paul Pogonyshev</p></div><div><div class="legalnotice"><a id="legalnotice"></a><p>
     Permission is granted to copy, distribute and/or modify this document under the terms
     of the GNU Free Documentation License, Version 1.2 or any later version published by
     the Free Software Foundation; with no Invariant Sections, no Front-Cover Texts, and no
@@ -37,7 +37,7 @@
 	  OF THE DOCUMENT, EVEN IF SUCH PARTY SHALL HAVE BEEN INFORMED OF THE POSSIBILITY
 	  OF SUCH DAMAGES.
 	</p></li></ol></div><p>
-  </p></div></div><div><div class="legalnotice"><a id="id2452663"></a><p class="legalnotice-title"><b>Feedback</b></p><p>
+  </p></div></div><div><div class="legalnotice"><a id="id2461444"></a><p class="legalnotice-title"><b>Feedback</b></p><p>
 	To report a bug or make a suggestion regarding the <span class="application">Quarry</span> application or this
 	manual, either send a message to <code class="email">&lt;<a href="mailto:quarry-dev@gna.org">quarry-dev@gna.org</a>&gt;</code> or use
 	<a href="https://gna.org/bugs/?group=quarry" target="_top"><span class="application">Quarry</span> bug tracker</a>.
@@ -45,7 +45,7 @@
 	  <p class="author">Paul Pogonyshev
 	    <code class="email">&lt;<a href="mailto:pogonyshev@gmx.net">pogonyshev@gmx.net</a>&gt;</code>
 	  </p>
-	</td></tr></table></div></div></div><hr /></div><div class="toc"><p><b>Table of Contents</b></p><dl><dt><span class="sect1"><a href="#introduction">Introduction</a></span></dt><dt><span class="sect1"><a href="#getting-started">Getting Started</a></span></dt><dd><dl><dt><span class="sect2"><a href="#start">To Start <span class="application">Quarry</span></a></span></dt><dt><span class="sect2"><a href="#when-start">When You Start <span class="application">Quarry</span></a></span></dt></dl></dd><dt><span class="sect1"><a href="#usage">Usage</a></span></dt><dd><dl><dt><span class="sect2"><a href="#new-game">To Start a New Game</a></span></dt><dt><span class="sect2"><a href="#open-game-record">To Open a Game Record</a></span></dt><dt><span class="sect2"><a href="#save-game-record">To Save a Game Record</a></span></dt><dt><span class="sect2"><a href="#register-game-playing-program">To Register a Game-Playing Program</a></span></dt><dt><span class="sect2"><a href="#adjourn-game">To Adjourn a Game</a></span></dt><dt><span class="sect2"><a href="#resume-game">To Resume a Game</a></span></dt></dl></dd><dt><span class="sect1"><a href="#windows-and-menus">Quarry Windows and Menus</a></span></dt><dd><dl><dt><span class="sect2"><a href="#new-game-dialog">New Game Dialog</a></span></dt><dt><span class="sect2"><a href="#new-game-record-dialog">New Game Record Dialog</a></span></dt><dt><span class="sect2"><a href="#resuming-game-dialog">Resuming Game Dialog</a></span></dt><dt><span class="sect2"><a href="#board-windows">Board Windows</a></span></dt><dt><span class="sect2"><a href="#find-dialog">Find Dialog</a></span></dt></dl></dd><dt><span class="sect1"><a href="#preferences">Settings</a></span></dt><dd><dl><dt><span class="sect2"><a href="#preferences-gtk-ui">General Interface</a></span></dt><dt><span class="sect2"><a href="#preferences-game-tree">Game Tree</a></span></dt><dt><span class="sect2"><a href="#preferences-gtp-engines">GTP Engines</a></span></dt><dt><span class="sect2"><a href="#preferences-saving-game-records">Saving Game Records</a></span></dt><dt><span class="sect2"><a href="#preferences-go-board-appearance">Go Board Appearance</a></span></dt><dt><span class="sect2"><a href="#preferences-amazons-board-appearance">Amazons Board Appearance</a></span></dt><dt><span class="sect2"><a href="#preferences-reversi-board-appearance">Reversi Board Appearance</a></span></dt></dl></dd><dt><span class="appendix"><a href="#fdl">A. GNU Free Documentation License</a></span></dt><dd><dl><dt><span class="sect1"><a href="#id2514363"></a></span></dt></dl></dd></dl></div><a id="id2452698" class="indexterm"></a><a id="id2452710" class="indexterm"></a><div class="sect1" lang="en" xml:lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="introduction"></a>Introduction</h2></div></div></div><p>
+	</td></tr></table></div></div></div><hr /></div><div class="toc"><p><b>Table of Contents</b></p><dl><dt><span class="sect1"><a href="#introduction">Introduction</a></span></dt><dt><span class="sect1"><a href="#getting-started">Getting Started</a></span></dt><dd><dl><dt><span class="sect2"><a href="#start">To Start <span class="application">Quarry</span></a></span></dt><dt><span class="sect2"><a href="#when-start">When You Start <span class="application">Quarry</span></a></span></dt></dl></dd><dt><span class="sect1"><a href="#usage">Usage</a></span></dt><dd><dl><dt><span class="sect2"><a href="#new-game">To Start a New Game</a></span></dt><dt><span class="sect2"><a href="#open-game-record">To Open a Game Record</a></span></dt><dt><span class="sect2"><a href="#save-game-record">To Save a Game Record</a></span></dt><dt><span class="sect2"><a href="#register-game-playing-program">To Register a Game-Playing Program</a></span></dt><dt><span class="sect2"><a href="#adjourn-game">To Adjourn a Game</a></span></dt><dt><span class="sect2"><a href="#resume-game">To Resume a Game</a></span></dt></dl></dd><dt><span class="sect1"><a href="#windows-and-menus">Quarry Windows and Menus</a></span></dt><dd><dl><dt><span class="sect2"><a href="#new-game-dialog">New Game Dialog</a></span></dt><dt><span class="sect2"><a href="#new-game-record-dialog">New Game Record Dialog</a></span></dt><dt><span class="sect2"><a href="#resuming-game-dialog">Resuming Game Dialog</a></span></dt><dt><span class="sect2"><a href="#board-windows">Board Windows</a></span></dt><dt><span class="sect2"><a href="#find-dialog">Find Dialog</a></span></dt><dt><span class="sect2"><a href="#game-information-dialog">Game Information Dialog</a></span></dt></dl></dd><dt><span class="sect1"><a href="#preferences">Settings</a></span></dt><dd><dl><dt><span class="sect2"><a href="#preferences-gtk-ui">General Interface</a></span></dt><dt><span class="sect2"><a href="#preferences-game-tree">Game Tree</a></span></dt><dt><span class="sect2"><a href="#preferences-gtp-engines">GTP Engines</a></span></dt><dt><span class="sect2"><a href="#preferences-saving-game-records">Saving Game Records</a></span></dt><dt><span class="sect2"><a href="#preferences-go-board-appearance">Go Board Appearance</a></span></dt><dt><span class="sect2"><a href="#preferences-amazons-board-appearance">Amazons Board Appearance</a></span></dt><dt><span class="sect2"><a href="#preferences-reversi-board-appearance">Reversi Board Appearance</a></span></dt></dl></dd><dt><span class="appendix"><a href="#fdl">A. GNU Free Documentation License</a></span></dt><dd><dl><dt><span class="sect1"><a href="#id2515165"></a></span></dt></dl></dd></dl></div><a id="id2453140" class="indexterm"></a><a id="id2461403" class="indexterm"></a><div class="sect1" lang="en" xml:lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="introduction"></a>Introduction</h2></div></div></div><p>
       The <span class="application">Quarry</span> application allows you to play the board games of Go, Amazons and Reversi.
       You can play with computer programs or with another human, and save, view and edit
       game records.
@@ -84,7 +84,7 @@
 		Fast and robust parser can read SGF files of any version.
 	      </p></li><li><p>
 		In particular,
-		<a href="http://waterfire.us/joseki.htm" target="_top">Kogo's Joseki
+		<a href="http://waterfire.us/joseki.htm" target="_top">Kogo’s Joseki
 		  Dictionary</a> can be browsed with <span class="application">Quarry</span>.
 	      </p></li><li><p>
 		<a href="#game-tree-view" title="Game Tree View">Game tree view</a> allows for easy
@@ -121,7 +121,7 @@
 	in the command line and press <span><strong class="keycap">Return</strong></span>.  <span class="application">Quarry</span> will start with
 	specified file(s) open.
       </p><div class="note" style="margin-left: 0.5in; margin-right: 0.5in;"><h3 class="title">Note</h3><p>
-	  Filenames don't have to end in <code class="filename">.sgf</code>, but names of SGF files
+	  Filenames don’t have to end in <code class="filename">.sgf</code>, but names of SGF files
 	  typically do have this suffix.
 	</p></div></div><div class="sect2" lang="en" xml:lang="en"><div class="titlepage"><div><div><h3 class="title"><a id="when-start"></a>When You Start <span class="application">Quarry</span></h3></div></div></div><p>
 	When you start <span class="application">Quarry</span>, Control Center window is displayed:
@@ -155,7 +155,7 @@
 	    </p></dd></dl></div></div></div><div class="sect1" lang="en" xml:lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="usage"></a>Usage</h2></div></div></div><div class="sect2" lang="en" xml:lang="en"><div class="titlepage"><div><div><h3 class="title"><a id="new-game"></a>To Start a New Game</h3></div></div></div><p>
 	To start a new game, click the <span class="guibutton">New Game</span> button in the <span class="application">Quarry</span>
 	<a href="#when-start" title="When You Start Quarry">Control Center window</a> or choose
-	<span class="guimenu">File</span>&nbsp;&rarr;&nbsp;<span class="guimenuitem">New Game...</span>
+	<span class="guimenu">File</span>&nbsp;&rarr;&nbsp;<span class="guimenuitem">New Game…</span>
 	menu item in any of the already open <a href="#board-windows" title="Board Windows">Board
 	Windows</a>.  The <a href="#new-game-dialog" title="New Game Dialog">New Game dialog</a> will
 	appear, where you can choose the kind of game you want and the opponents.
@@ -211,7 +211,7 @@
 	Then click the <span class="guibutton">Add</span> button and, in the appeared
 	<a href="#preferences-gtp-engine-information-dialog" title="GTP Engine Information Dialog">dialog</a>, enter the
 	command line required to launch the program in GTP mode.  You should consult the
-	program's manual to find out how the command line should look like.  For instance,
+	program’s manual to find out how the command line should look like.  For instance,
 	command line for <a href="http://www.gnugo.org/gnugo.html" target="_top">GNU
 	Go</a> should be like this (note the double hyphens):
       </p><p>
@@ -225,11 +225,11 @@
 	of the file you would like to store it in.
       </p><p>
 	Actually, adjourning differs from saving only in that it closes
-	the <a href="#board-windows" title="Board Windows">game's window</a>.
+	the <a href="#board-windows" title="Board Windows">game’s window</a>.
       </p></div><div class="sect2" lang="en" xml:lang="en"><div class="titlepage"><div><div><h3 class="title"><a id="resume-game"></a>To Resume a Game</h3></div></div></div><p>
 	To resume a previously adjourned game, click <span class="guibutton">Resume Game</span>
 	button in the <span class="application">Quarry</span> <a href="#when-start" title="When You Start Quarry">Control Center window</a> or
-	select <span class="guimenuitem">Resume Game...</span> item from
+	select <span class="guimenuitem">Resume Game…</span> item from
 	the <span class="guimenu">File</span> menu.  You will be prompted for the file that contains
 	the game record.
       </p><p>
@@ -243,8 +243,7 @@
 	The New Game dialog consists of two pages, <span class="guilabel">Game &amp; Players</span>
 	and <span class="guilabel">Game Rules</span>.  When you open the dialog, the first page
 	appears.  When you click <span class="guibutton">Next</span> button, the second page is
-	displayed, which is specific for each of three games—Go, Amazons and
-	Reversi.
+	displayed, which is specific for each of three games—Go, Amazons and Reversi.
       </p><div class="sect3" lang="en" xml:lang="en"><div class="titlepage"><div><div><h4 class="title"><a id="new-game-dialog-game-and-players"></a>Game &amp; Players Page</h4></div></div></div><p>
 	  On this page you can select one of three available games and the opponents.  You
 	  can make selections in arbitrary order—first choose the game and then the
@@ -280,7 +279,7 @@
 		always change sides with the <span class="guibutton">Swap</span> button to the
 		right.
 	      </p></dd><dt><span class="term"><span class="guibutton">Swap</span> button</span></dt><dd><p>
-		This button allows you to easily swap players' sides.  It does nothing
+		This button allows you to easily swap players’ sides.  It does nothing
 		else but copying settings from <span class="guilabel">White Player</span> section
 		to <span class="guilabel">Black Player</span> section and vice versa.
 	      </p></dd><dt><span class="term"><span class="guibutton">Manage Engine List</span> button</span></dt><dd><p>
@@ -302,13 +301,16 @@
 	  button to start the game.
 	</p><div class="sect4" lang="en" xml:lang="en"><div class="titlepage"><div><div><h5 class="title"><a id="new-game-dialog-go-rules"></a>Go Rules</h5></div></div></div><p>
 	    Go has many different rule sets that differ in scoring details, treating of
-	    some special positions etc.  Currently, <span class="application">Quarry</span> doesn't make any difference
+	    some special positions etc.  Currently, <span class="application">Quarry</span> doesn’t make any difference
 	    between them.  However, existing rule controls should be enough in most cases.
 	  </p><div class="variablelist"><dl><dt><span class="term"><span class="guilabel">Board Size</span> spin button</span></dt><dd><p>
 		  Choose the size of board for the game here.  Go is traditionally played
-		  on a 19×19 board.  9×9 and 13×13 boards are also
-		  common.  <span class="application">Quarry</span> doesn't limit you to these—choose any size between
-		  5×5 and 25×25 inclusive.
+		  on a 19×19 board.  9×9 and 13×13 boards are also common.  <span class="application">Quarry</span> doesn’t
+		  limit you to these—choose any size between 5×5 and 25×25 inclusive.
+		</p></dd><dt><span class="term">Traditional board sizes buttons</span></dt><dd><p>
+		  These buttons allows you to quickly select one of
+		  three “<span class="quote">traditional</span>” Go board sizes—either 9×9, 13×13 or
+		  19×19.
 		</p></dd><dt><span class="term">Handicap controls</span></dt><dd><p>
 		  When one of the players is weaker, it is common practice in Go to give
 		  him <em class="firstterm">handicap</em> stones.  This gives her better
@@ -333,10 +335,9 @@
 		</p></dd><dt><span class="term"><span class="guilabel">Komi</span> spin button</span></dt><dd><p>
 		  <em class="firstterm">Komi</em> is the compensation to the white player for
 		  playing second.  It is usually non-integer to make draws impossible.
-		  The currently suggested komi for “<span class="quote">even</span>” game on 19×19
-		  board is 6.5 points.  Smaller (or even negative) komi gives some
-		  advantage to black player and can be used in addition to or instead of
-		  handicap.
+		  The currently suggested komi for “<span class="quote">even</span>” game on 19×19 board
+		  is 6.5 points.  Smaller (or even negative) komi gives some advantage to
+		  black player and can be used in addition to or instead of handicap.
 		</p></dd></dl></div><p>
 	    See also
 	    <a href="#new-game-dialog-time-settings" title="Time Limit Settings">time limit settings
@@ -344,14 +345,17 @@
 	  </p></div><div class="sect4" lang="en" xml:lang="en"><div class="titlepage"><div><div><h5 class="title"><a id="new-game-dialog-amazons-rules"></a>Amazons Rules</h5></div></div></div><p>
 	    At present, Amazons rules in <span class="application">Quarry</span> are limited to board size and common
 	    <a href="#new-game-dialog-time-settings" title="Time Limit Settings">time limit settings</a>.
-	    Standard board size for Amazons is 10×10, but you can choose anything
-	    from 5×5 to 25×25 inclusive.
+	    Standard board size for Amazons is 10×10 (which is also selectable with the
+	    small button to the right), but you can choose anything from 5×5 to 25×25
+	    inclusive.
 	  </p></div><div class="sect4" lang="en" xml:lang="en"><div class="titlepage"><div><div><h5 class="title"><a id="new-game-dialog-reversi-rules"></a>Reversi Rules</h5></div></div></div><p>
 	    Reversi rules in <span class="application">Quarry</span> are limited to board size and
 	    <a href="#new-game-dialog-time-settings" title="Time Limit Settings">time limit settings</a>
-	    described just below this section.  Standard board size for Reversi is
-	    8×8, though 10×10 boards are not uncommon either.  In <span class="application">Quarry</span> you
-	    can select any even board size from 6×6 to 24×24 inclusive.
+	    described just below this section.  Standard board size for Reversi is 8×8,
+	    though 10×10 boards are not uncommon either.  This is reflected by the choice
+	    of “<span class="quote">traditional</span>” board sizes with the buttons to the right.
+	    However, in <span class="application">Quarry</span> you can select any even board size from 6×6 to 24×24
+	    inclusive.
 	  </p></div><div class="sect4" lang="en" xml:lang="en"><div class="titlepage"><div><div><h5 class="title"><a id="new-game-dialog-time-settings"></a>Time Limit Settings</h5></div></div></div><p>
 	    <span class="application">Quarry</span> allows to play games with limited time for both players.  This also
 	    applies to computer program players—they have to honor the alloted time
@@ -363,7 +367,7 @@
 	      Also, if you run a computationally intensive task while playing, your
 	      computer opponents may become slower.  Finally, certain computer programs
 	      may also
-	      “<span class="quote">think</span>” on opponent's time.
+	      “<span class="quote">think</span>” on opponent’s time.
 	    </p></div><p>
 	    <span class="application">Quarry</span> has four types of time control:
 	  </p><div class="variablelist"><dl><dt><span class="term">No limit</span></dt><dd><p>
@@ -375,7 +379,7 @@
 		</p></dd><dt><span class="term">Limited time for entire game</span></dt><dd><p>
 		  Each player has limited time to play the whole game.  If a player fails
 		  to finish the game in the alloted time, she loses.  Note that time limit
-		  doesn't depend on the number of moves in the game.
+		  doesn’t depend on the number of moves in the game.
 		</p></dd><dt><span class="term">Limited time per move</span></dt><dd><p>
 		  Each move has to be played in fixed time.  Time not used is not stored
 		  and not added to available time on next moves.  When using this mode,
@@ -402,28 +406,166 @@
 		  one overtime period is not stored and not added to other overtime
 		  periods.
 		</p></dd></dl></div></div></div></div><div class="sect2" lang="en" xml:lang="en"><div class="titlepage"><div><div><h3 class="title"><a id="new-game-record-dialog"></a>New Game Record Dialog</h3></div></div></div><p>
-	Sorry, not documented yet...
-      </p></div><div class="sect2" lang="en" xml:lang="en"><div class="titlepage"><div><div><h3 class="title"><a id="resuming-game-dialog"></a>Resuming Game Dialog</h3></div></div></div><p>
-	Sorry, not documented yet...
+	The New Game Record dialog allows you to start a new game record without actually
+	playing a game.  When you are done entering game record information, press
+	the <span class="guibutton">Create</span> button.  Or press
+	the <span class="guibutton">Cancel</span> button to cancel game record creation.
+      </p><p>
+	The dialog consists of the following controls besides the mentioned buttons:
+      </p><div class="variablelist"><dl><dt><span class="term">Game selectors</span></dt><dd><p>
+	      Here you choose the game you want to create a record of—Go, Amazons or
+	      Reversi.  All the games supported by <span class="application">Quarry</span> are listed.
+	    </p></dd></dl></div><div class="variablelist"><dl><dt><span class="term">Rules section</span></dt><dd><p>
+	      This section contains various controls for basic game rules.  They are
+	      described in more details in <a href="#new-game-dialog" title="New Game Dialog">the New Game
+	      dialog section</a>.
+	    </p><p>
+	      One important change is the <span class="guibutton">Place stones</span> check button
+	      to the right of handicap spin button.  It determines whether <span class="application">Quarry</span> should
+	      place the handicap stones for you, or not.  Stones are placed as if the
+	      handicap is fixed, but you can always change stones setup later if needed.
+	    </p></dd></dl></div><div class="variablelist"><dl><dt><span class="term"><span class="guilabel">Short Game Information</span></span></dt><dd><p>
+	      Here you can enter the names of white and black player and the name of the
+	      game.  You can change or expand this information later,
+	      using <a href="#game-information-dialog" title="Game Information Dialog">the Game Information
+	      dialog </a>.
+	    </p></dd></dl></div></div><div class="sect2" lang="en" xml:lang="en"><div class="titlepage"><div><div><h3 class="title"><a id="resuming-game-dialog"></a>Resuming Game Dialog</h3></div></div></div><p>
+	Sorry, not documented yet…
       </p></div><div class="sect2" lang="en" xml:lang="en"><div class="titlepage"><div><div><h3 class="title"><a id="board-windows"></a>Board Windows</h3></div></div></div><p>
 	Board windows are the main part of <span class="application">Quarry</span>.  They are used to play games and view
 	and edit game records.  To the left in a window is the game board itself.  The
 	exact appearance of the board depends on the current game (Go, Amazons or Reversi)
 	and can be <a href="#preferences-go-board-appearance" title="Go Board Appearance">configured</a>.  On
 	the right side of the window there is information pane (to the top) and the
-	comment window.  There can also be <a href="#game-tree-view" title="Game Tree View"> the game tree
+	comment window.  There can also be <a href="#game-tree-view" title="Game Tree View">the game tree
 	view</a> to the bottom of the right pane.
       </p><div class="sect3" lang="en" xml:lang="en"><div class="titlepage"><div><div><h4 class="title"><a id="board"></a>The Board</h4></div></div></div><p>
-	  Sorry, not documented yet...
+	  Sorry, not documented yet…
 	</p></div><div class="sect3" lang="en" xml:lang="en"><div class="titlepage"><div><div><h4 class="title"><a id="board-window-information-pane"></a>Board Window Information Pane</h4></div></div></div><p>
-	  Sorry, not documented yet...
+	  Sorry, not documented yet…
 	</p></div><div class="sect3" lang="en" xml:lang="en"><div class="titlepage"><div><div><h4 class="title"><a id="game-tree-view"></a>Game Tree View</h4></div></div></div><p>
-	  Sorry, not documented yet...
+	  Sorry, not documented yet…
 	</p></div><div class="sect3" lang="en" xml:lang="en"><div class="titlepage"><div><div><h4 class="title"><a id="board-window-menu"></a>Board Window Menu</h4></div></div></div><p>
-	  Sorry, not documented yet...
+	  Sorry, not documented yet…
 	</p></div></div><div class="sect2" lang="en" xml:lang="en"><div class="titlepage"><div><div><h3 class="title"><a id="find-dialog"></a>Find Dialog</h3></div></div></div><p>
-	Sorry, not documented yet...
-      </p></div></div><div class="sect1" lang="en" xml:lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="preferences"></a>Settings</h2></div></div></div><p>
+	Sorry, not documented yet…
+      </p></div><div class="sect2" lang="en" xml:lang="en"><div class="titlepage"><div><div><h3 class="title"><a id="game-information-dialog"></a>Game Information Dialog</h3></div></div></div><p>
+	The Game Information Dialog allows you to set values that describe game tree as a
+	whole and are not specific to a particular move or position in the game.  It has a
+	lot of fields which are splitted in three pages.  All fields are optional and can
+	be empty (not set), but defining them gives additional description to the game.
+      </p><p>
+	Fields on the first page (<span class="guilabel">General</span>) describe the game
+	opponents, rules of the game and non-spoiling game details.  Field on the seoond
+	page (<span class="guilabel">Description &amp; Result</span>) are generally spoiling and
+	can even disclose game outcome.  The third page (<span class="guilabel">Game Record</span>)
+	describe the record itself.
+      </p><div class="variablelist"><dl><dt><span class="term"><span class="guilabel">White Player</span> and <span class="guilabel">Black
+	      Player</span></span></dt><dd><p>
+	      This group of fields allows you to describe the opponents in the game.
+	      The <span class="guilabel">Name</span> fields should be obvious.
+	      The <span class="guilabel">Team</span> fields are used when the game is a part of a
+	      match between two teams, for instance national teams.  Usually, they are
+	      left empty.  The <span class="guilabel">Rank</span> of the opponents can be entered
+	      in the appropriate fields.  This is usually the rank as applies to the game
+	      in question.  For instance, this can be the rank awarded by the federation
+	      guiding the tournament or it can be the rank of an Internet server where the
+	      game took place.
+	    </p><p>
+	      Values of these fields are also displayed
+	      in <a href="#board-window-information-pane" title="Board Window Information Pane">the right column of board
+	      windows</a>.
+	    </p></dd><dt><span class="term"><span class="guilabel">Game Name</span></span></dt><dd><p>
+	      The name of the game.  This field can be empty if the game is not special
+	      and doesn’t have a distinguished name.
+	    </p></dd><dt><span class="term"><span class="guilabel">Place</span></span></dt><dd><p>
+	      The place the game took place at.  This can be a geographical location or
+	      the name of an Internet server.
+	    </p></dd><dt><span class="term"><span class="guilabel">Date</span></span></dt><dd><p>
+	      The date the game took place on.  It should be in the international format
+	      of YYYY-MM-DD.  For instance 2006-07-23 means 23 July 2006.
+	    </p></dd><dt><span class="term"><span class="guilabel">Event</span></span></dt><dd><p>
+	      The event this game is part of.  For instance, this can be the name of a
+	      tournament.  This field is often empty.
+	    </p></dd><dt><span class="term"><span class="guilabel">Round</span></span></dt><dd><p>
+	      The round this game is part of.  For instance “<span class="quote">1st round</span>” or
+	      “<span class="quote">Semifinal</span>”.  This field is often empty, especially
+	      if <span class="guilabel">Event</span> is.
+	    </p></dd><dt><span class="term"><span class="guilabel">Rule set</span></span></dt><dd><p>
+	      Descriptive name of the rules this game was played in accordance with.  For
+	      instance, for Go this can be “<span class="quote">Japanese</span>”, “<span class="quote">Chinese</span>”
+	      etc.
+	    </p></dd><dt><span class="term"><span class="guilabel">Handicap</span></span></dt><dd><p>
+	      For Go only: number of stones the black was allowed to place on his first
+	      move.  This field is either 0 or not set for the games with no handicap.
+	    </p><div class="note" style="margin-left: 0.5in; margin-right: 0.5in;"><h3 class="title">Note</h3><p>
+		Value of this field is only informational.  It doesn’t imply any
+		particular setting of the black stones.
+	      </p></div></dd><dt><span class="term"><span class="guilabel">Komi</span></span></dt><dd><p>
+	      For Go only: the compensation, in points, the white receives for having the
+	      second turn.  Can be negative or not set.  However, it should always be set
+	      for games with non-zero komi, as otherwise proper scoring is impossible.
+	    </p></dd><dt><span class="term"><span class="guilabel">Main time</span></span></dt><dd><p>
+	      Main time each player has.  Should not be set if the game is played with no
+	      time limit.
+	    </p></dd><dt><span class="term"><span class="guilabel">Overtime</span></span></dt><dd><p>
+	      Description of the overtime rules used for this game.  For
+	      instance, “<span class="quote">25/600 Canadian</span>” means Canadian overtime with 10
+	      minutes (600 seconds) for every 25 moves.
+	    </p></dd><dt><span class="term"><span class="guilabel">Game result</span></span></dt><dd><p>
+	      The result of the game in SGF format.
+
+	      </p><div class="table"><a id="id2513443"></a><p class="title"><b>Table 1. Valid <span class="guilabel">Game result</span> values</b></p><table summary="Valid Game result values" border="0"><colgroup><col /><col /></colgroup><thead><tr><th>Value</th><th>Meaning</th></tr></thead><tbody><tr><td>Void</td><td>
+			There is no result yet (the game is not finished) or there can be
+			no result at all (e.g. for problems.)
+		      </td></tr><tr><td>0 <span class="emphasis"><em>or</em></span> Draw</td><td>
+			The game is draw, i.e. is finished, but there’s no winner.
+		      </td></tr><tr><td>
+			W+<strong class="userinput"><code>score</code></strong>
+			<span class="emphasis"><em>or</em></span> B+<strong class="userinput"><code>score</code></strong>
+		      </td><td>
+			A player has won by the specified score.  For
+			instance, “<span class="quote">W+6.5</span>” means that white has won by 6.5
+			points.
+		      </td></tr><tr><td>W+ <span class="emphasis"><em>or</em></span> B+</td><td>
+			A player has won.  Used for the games without a notion for score,
+			e.g. Amazons.
+		      </td></tr><tr><td>
+			W+Resign <span class="emphasis"><em>or</em></span> B+Resign
+			<span class="emphasis"><em>or</em></span> W+R <span class="emphasis"><em>or</em></span> B+R
+		      </td><td>
+			A player has won by resignation,
+		      </td></tr><tr><td>
+			W+Time <span class="emphasis"><em>or</em></span> B+Time
+			<span class="emphasis"><em>or</em></span> W+T <span class="emphasis"><em>or</em></span> B+T
+		      </td><td>
+			A player has won on time.  I.e. his opponent exceeded his time
+			limit.
+		      </td></tr><tr><td>
+			W+Forfeit <span class="emphasis"><em>or</em></span> B+Forfeit
+			<span class="emphasis"><em>or</em></span> W+F <span class="emphasis"><em>or</em></span> B+F
+		      </td><td>
+			A player has won by forfeit, e.g. his opponent made an illegal
+			move.
+		      </td></tr><tr><td>?</td><td>
+			Game result is unknown.
+		      </td></tr></tbody></table></div><p>
+	    </p></dd><dt><span class="term"><span class="guilabel">Opening played</span></span></dt><dd><p>
+	      Description of the opening played in the game.  This field is often empty.
+	    </p></dd><dt><span class="term"><span class="guilabel">Comment / description</span></span></dt><dd><p>
+	      Description for the entire game.  It can be some background information
+	      and/or the summary of the game.
+	    </p></dd><dt><span class="term"><span class="guilabel">Copyright string</span></span></dt><dd><p>
+	      Short copyright information for the game record.
+	    </p></dd><dt><span class="term"><span class="guilabel">Annotator</span></span></dt><dd><p>
+	      The name of the person who provided comments (annotation) for the game.
+	    </p></dd><dt><span class="term"><span class="guilabel">Source</span></span></dt><dd><p>
+	      The source of the game record (book, journal etc.)  Often is empty if the
+	      game record was in electronic form to begin with.
+	    </p></dd><dt><span class="term"><span class="guilabel">Entered by</span></span></dt><dd><p>
+	      Name of the person who entered the game record.  Usually empty for
+	      automatically create records.
+	    </p></dd></dl></div></div></div><div class="sect1" lang="en" xml:lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="preferences"></a>Settings</h2></div></div></div><p>
       To configure <span class="application">Quarry</span> either click the <span class="guibutton">Preferences</span> button in the
       <a href="#when-start" title="When You Start Quarry">Control Center window</a> or choose
       <span class="guimenu">Edit</span>&nbsp;&rarr;&nbsp;<span class="guimenuitem">Preferences</span>
@@ -454,9 +596,9 @@
 		  Appearance</a></p></li><li><p><a href="#preferences-reversi-board-appearance" title="Reversi Board Appearance">Reversi Board
 		  Appearance</a></p></li></ul></div><p>
 	</p></li></ul></div><div class="sect2" lang="en" xml:lang="en"><div class="titlepage"><div><div><h3 class="title"><a id="preferences-gtk-ui"></a>General Interface</h3></div></div></div><p>
-	Sorry, not documented yet...
+	Sorry, not documented yet…
       </p></div><div class="sect2" lang="en" xml:lang="en"><div class="titlepage"><div><div><h3 class="title"><a id="preferences-game-tree"></a>Game Tree</h3></div></div></div><p>
-	Sorry, not documented yet...
+	Sorry, not documented yet…
       </p></div><div class="sect2" lang="en" xml:lang="en"><div class="titlepage"><div><div><h3 class="title"><a id="preferences-gtp-engines"></a>GTP Engines</h3></div></div></div><p>
 	At this page, all game-playing programs registered in <span class="application">Quarry</span> are shown.  You can
 	register new programs and modify information in existing entries.
@@ -509,12 +651,12 @@
 	  information.
 	</p><div class="note" style="margin-left: 0.5in; margin-right: 0.5in;"><h3 class="title"><a id="preferences-gtp-engine-information-dialog-freeze"></a>Note</h3><p>
 	    If the message
-	    “<span class="quote">Querying engine's name, version and known commands...</span>” appears
-	    and persists for too long (more than a few seconds), this most likely
-	    indicates that the command line you specify starts the program in non-GTP mode
-	    or starts a wrong program to begin with.  If you don't expect the program to
-	    be very slow on initialization, then click the <span class="guibutton">Cancel</span>
-	    button and fix the command line.
+	    “<span class="quote">Querying engine’s name, version and known commands…</span>” appears and
+	    persists for too long (more than a few seconds), this most likely indicates
+	    that the command line you specify starts the program in non-GTP mode or starts
+	    a wrong program to begin with.  If you don’t expect the program to be very
+	    slow on initialization, then click the <span class="guibutton">Cancel</span> button
+	    and fix the command line.
 	  </p></div><p>
 	  The dialog has two text entry fields:
 	</p><div class="variablelist"><dl><dt><span class="term"><span class="guilabel">Command line</span></span></dt><dd><p>
@@ -541,19 +683,19 @@
 		name and version of the program as it reports them itself.  In most cases
 		the default value of “<span class="quote">%n %v</span>” is what you want, but sometimes
 		it makes sense to alter it.  For instance, you can specify
-		“<span class="quote">%n %v level 5</span>” here if you fixed program's level in the
+		“<span class="quote">%n %v level 5</span>” here if you fixed program’s level in the
 		command line.  If, for some reason, you need the percent sign in the name,
 		type it in as “<span class="quote">%%</span>” (the percent sign is used as
 		<em class="firstterm">escape symbol</em> in this field.)
 	      </p></dd></dl></div></div></div><div class="sect2" lang="en" xml:lang="en"><div class="titlepage"><div><div><h3 class="title"><a id="preferences-saving-game-records"></a>Saving Game Records</h3></div></div></div><p>
-	Sorry, not documented yet...
+	Sorry, not documented yet…
       </p></div><div class="sect2" lang="en" xml:lang="en"><div class="titlepage"><div><div><h3 class="title"><a id="preferences-go-board-appearance"></a>Go Board Appearance</h3></div></div></div><p>
-	Sorry, not documented yet...
+	Sorry, not documented yet…
       </p></div><div class="sect2" lang="en" xml:lang="en"><div class="titlepage"><div><div><h3 class="title"><a id="preferences-amazons-board-appearance"></a>Amazons Board Appearance</h3></div></div></div><p>
-	Sorry, not documented yet...
+	Sorry, not documented yet…
       </p></div><div class="sect2" lang="en" xml:lang="en"><div class="titlepage"><div><div><h3 class="title"><a id="preferences-reversi-board-appearance"></a>Reversi Board Appearance</h3></div></div></div><p>
-	Sorry, not documented yet...
-      </p></div></div><div class="appendix" lang="en" xml:lang="en"><h2 class="title" style="clear: both"><a id="fdl"></a>A. GNU Free Documentation License</h2><h3><a id="id2514341"></a>Version 1.2, November 2002</h3><div class="blockquote"><blockquote class="blockquote"><p>
+	Sorry, not documented yet…
+      </p></div></div><div class="appendix" lang="en" xml:lang="en"><h2 class="title" style="clear: both"><a id="fdl"></a>A. GNU Free Documentation License</h2><h3><a id="id2515144"></a>Version 1.2, November 2002</h3><div class="blockquote"><blockquote class="blockquote"><p>
       Copyright © 2000, 2001, 2002 Free Software Foundation, Inc. 51 Franklin St,
       Fifth Floor, Boston, MA 02110-1301 USA
     </p><p>

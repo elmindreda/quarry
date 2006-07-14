@@ -27,13 +27,14 @@
     <copyright>
       <year>2004</year>
       <year>2005</year>
+      <year>2006</year>
       <holder>Paul Pogonyshev</holder>
     </copyright>
 
     <!-- Translators: uncomment this:
 
     <copyright>
-      <year>2004</year>
+      <year>2006</year>
       <holder>ME-THE-TRANSLATOR (Latin translation)</holder>
     </copyright>
 
@@ -198,7 +199,7 @@
 	    <listitem>
 	      <para>
 		In particular,
-		<ulink type="http" url="http://waterfire.us/joseki.htm">Kogo's Joseki
+		<ulink type="http" url="http://waterfire.us/joseki.htm">Kogo’s Joseki
 		  Dictionary</ulink> can be browsed with &app;.
 	      </para>
 	    </listitem>
@@ -282,7 +283,7 @@
 
       <note>
 	<para>
-	  Filenames don't have to end in <filename>.sgf</filename>, but names of SGF files
+	  Filenames don’t have to end in <filename>.sgf</filename>, but names of SGF files
 	  typically do have this suffix.
 	</para>
       </note>
@@ -398,7 +399,7 @@
 	<link linkend="when-start">Control Center window</link> or choose
 	<menuchoice>
 	  <guimenu>File</guimenu>
-	  <guimenuitem>New Game...</guimenuitem>
+	  <guimenuitem>New Game…</guimenuitem>
 	</menuchoice>
 	menu item in any of the already open <link linkend="board-windows">Board
 	Windows</link>.  The <link linkend="new-game-dialog">New Game dialog</link> will
@@ -505,7 +506,7 @@
 	Then click the <guibutton>Add</guibutton> button and, in the appeared
 	<link linkend="preferences-gtp-engine-information-dialog">dialog</link>, enter the
 	command line required to launch the program in GTP mode.  You should consult the
-	program's manual to find out how the command line should look like.  For instance,
+	program’s manual to find out how the command line should look like.  For instance,
 	command line for <ulink type="http" url="http://www.gnugo.org/gnugo.html">GNU
 	Go</ulink> should be like this (note the double hyphens):
       </para>
@@ -533,7 +534,7 @@
 
       <para>
 	Actually, adjourning differs from saving only in that it closes
-	the <link linkend="board-windows">game's window</link>.
+	the <link linkend="board-windows">game’s window</link>.
       </para>
     </sect2>
 
@@ -542,7 +543,7 @@
       <para>
 	To resume a previously adjourned game, click <guibutton>Resume Game</guibutton>
 	button in the &app; <link linkend="when-start">Control Center window</link> or
-	select <guimenuitem>Resume Game...</guimenuitem> item from
+	select <guimenuitem>Resume Game…</guimenuitem> item from
 	the <guimenu>File</guimenu> menu.  You will be prompted for the file that contains
 	the game record.
       </para>
@@ -567,15 +568,14 @@
 	The New Game dialog consists of two pages, <guilabel>Game &amp; Players</guilabel>
 	and <guilabel>Game Rules</guilabel>.  When you open the dialog, the first page
 	appears.  When you click <guibutton>Next</guibutton> button, the second page is
-	displayed, which is specific for each of three games&mdash;Go, Amazons and
-	Reversi.
+	displayed, which is specific for each of three games—Go, Amazons and Reversi.
       </para>
 
       <sect3 id="new-game-dialog-game-and-players">
 	<title>Game &amp; Players Page</title>
 	<para>
 	  On this page you can select one of three available games and the opponents.  You
-	  can make selections in arbitrary order&mdash;first choose the game and then the
+	  can make selections in arbitrary order—first choose the game and then the
 	  opponents or the other way round.  At any time, all playable combinations of
 	  games and computer players are marked with <quote>Yes</quote> icons, while all
 	  unplayable combinations are marked with <quote>No</quote> icons.
@@ -636,7 +636,7 @@
 	    <term><guibutton>Swap</guibutton> button</term>
 	    <listitem>
 	      <para>
-		This button allows you to easily swap players' sides.  It does nothing
+		This button allows you to easily swap players’ sides.  It does nothing
 		else but copying settings from <guilabel>White Player</guilabel> section
 		to <guilabel>Black Player</guilabel> section and vice versa.
 	      </para>
@@ -686,7 +686,7 @@
 	  <title>Go Rules</title>
 	  <para>
 	    Go has many different rule sets that differ in scoring details, treating of
-	    some special positions etc.  Currently, &app; doesn't make any difference
+	    some special positions etc.  Currently, &app; doesn’t make any difference
 	    between them.  However, existing rule controls should be enough in most cases.
 	  </para>
 
@@ -696,9 +696,19 @@
 	      <listitem>
 		<para>
 		  Choose the size of board for the game here.  Go is traditionally played
-		  on a 19&times;19 board.  9&times;9 and 13&times;13 boards are also
-		  common.  &app; doesn't limit you to these&mdash;choose any size between
-		  5&times;5 and 25&times;25 inclusive.
+		  on a 19×19 board.  9×9 and 13×13 boards are also common.  &app; doesn’t
+		  limit you to these—choose any size between 5×5 and 25×25 inclusive.
+		</para>
+	      </listitem>
+	    </varlistentry>
+
+	    <varlistentry>
+	      <term>Traditional board sizes buttons</term>
+	      <listitem>
+		<para>
+		  These buttons allows you to quickly select one of
+		  three <quote>traditional</quote> Go board sizes—either 9×9, 13×13 or
+		  19×19.
 		</para>
 	      </listitem>
 	    </varlistentry>
@@ -745,10 +755,9 @@
 		<para>
 		  <firstterm>Komi</firstterm> is the compensation to the white player for
 		  playing second.  It is usually non-integer to make draws impossible.
-		  The currently suggested komi for <quote>even</quote> game on 19&times;19
-		  board is 6.5 points.  Smaller (or even negative) komi gives some
-		  advantage to black player and can be used in addition to or instead of
-		  handicap.
+		  The currently suggested komi for <quote>even</quote> game on 19×19 board
+		  is 6.5 points.  Smaller (or even negative) komi gives some advantage to
+		  black player and can be used in addition to or instead of handicap.
 		</para>
 	      </listitem>
 	    </varlistentry>
@@ -766,8 +775,9 @@
 	  <para>
 	    At present, Amazons rules in &app; are limited to board size and common
 	    <link linkend="new-game-dialog-time-settings">time limit settings</link>.
-	    Standard board size for Amazons is 10&times;10, but you can choose anything
-	    from 5&times;5 to 25&times;25 inclusive.
+	    Standard board size for Amazons is 10×10 (which is also selectable with the
+	    small button to the right), but you can choose anything from 5×5 to 25×25
+	    inclusive.
 	  </para>
 	</sect4>
 
@@ -776,9 +786,11 @@
 	  <para>
 	    Reversi rules in &app; are limited to board size and
 	    <link linkend="new-game-dialog-time-settings">time limit settings</link>
-	    described just below this section.  Standard board size for Reversi is
-	    8&times;8, though 10&times;10 boards are not uncommon either.  In &app; you
-	    can select any even board size from 6&times;6 to 24&times;24 inclusive.
+	    described just below this section.  Standard board size for Reversi is 8×8,
+	    though 10×10 boards are not uncommon either.  This is reflected by the choice
+	    of <quote>traditional</quote> board sizes with the buttons to the right.
+	    However, in &app; you can select any even board size from 6×6 to 24×24
+	    inclusive.
 	  </para>
 	</sect4>
 
@@ -786,7 +798,7 @@
 	  <title>Time Limit Settings</title>
 	  <para>
 	    &app; allows to play games with limited time for both players.  This also
-	    applies to computer program players&mdash;they have to honor the alloted time
+	    applies to computer program players—they have to honor the alloted time
 	    or lose.  Of course the programs are properly notified about the time limit
 	    settings and the remaining time.
 	  </para>
@@ -798,7 +810,7 @@
 	      Also, if you run a computationally intensive task while playing, your
 	      computer opponents may become slower.  Finally, certain computer programs
 	      may also
-	      <quote>think</quote> on opponent's time.
+	      <quote>think</quote> on opponent’s time.
 	    </para>
 	  </note>
 
@@ -826,7 +838,7 @@
 		<para>
 		  Each player has limited time to play the whole game.  If a player fails
 		  to finish the game in the alloted time, she loses.  Note that time limit
-		  doesn't depend on the number of moves in the game.
+		  doesn’t depend on the number of moves in the game.
 		</para>
 	      </listitem>
 	    </varlistentry>
@@ -879,14 +891,67 @@
     <sect2 id="new-game-record-dialog">
       <title>New Game Record Dialog</title>
       <para>
-	Sorry, not documented yet...
+	The New Game Record dialog allows you to start a new game record without actually
+	playing a game.  When you are done entering game record information, press
+	the <guibutton>Create</guibutton> button.  Or press
+	the <guibutton>Cancel</guibutton> button to cancel game record creation.
       </para>
+
+      <para>
+	The dialog consists of the following controls besides the mentioned buttons:
+      </para>
+
+      <variablelist>
+	<varlistentry>
+	  <term>Game selectors</term>
+	  <listitem>
+	    <para>
+	      Here you choose the game you want to create a record of—Go, Amazons or
+	      Reversi.  All the games supported by &app; are listed.
+	    </para>
+	  </listitem>
+	</varlistentry>
+      </variablelist>
+
+      <variablelist>
+	<varlistentry>
+	  <term>Rules section</term>
+	  <listitem>
+	    <para>
+	      This section contains various controls for basic game rules.  They are
+	      described in more details in <link linkend="new-game-dialog">the New Game
+	      dialog section</link>.
+	    </para>
+
+	    <para>
+	      One important change is the <guibutton>Place stones</guibutton> check button
+	      to the right of handicap spin button.  It determines whether &app; should
+	      place the handicap stones for you, or not.  Stones are placed as if the
+	      handicap is fixed, but you can always change stones setup later if needed.
+	    </para>
+	  </listitem>
+	</varlistentry>
+      </variablelist>
+
+      <variablelist>
+	<varlistentry>
+	  <term><guilabel>Short Game Information</guilabel></term>
+	  <listitem>
+	    <para>
+	      Here you can enter the names of white and black player and the name of the
+	      game.  You can change or expand this information later,
+	      using <link linkend="game-information-dialog">the Game Information
+	      dialog </link>.
+	    </para>
+	  </listitem>
+	</varlistentry>
+      </variablelist>
     </sect2>
 
     <sect2 id="resuming-game-dialog">
       <title>Resuming Game Dialog</title>
       <para>
-	Sorry, not documented yet...
+	Sorry, not documented yet…
       </para>
     </sect2>
 
@@ -898,35 +963,35 @@
 	exact appearance of the board depends on the current game (Go, Amazons or Reversi)
 	and can be <link linkend="preferences-go-board-appearance">configured</link>.  On
 	the right side of the window there is information pane (to the top) and the
-	comment window.  There can also be <link linkend="game-tree-view"> the game tree
+	comment window.  There can also be <link linkend="game-tree-view">the game tree
 	view</link> to the bottom of the right pane.
       </para>
 
       <sect3 id="board">
 	<title>The Board</title>
 	<para>
-	  Sorry, not documented yet...
+	  Sorry, not documented yet…
 	</para>
       </sect3>
 
       <sect3 id="board-window-information-pane">
 	<title>Board Window Information Pane</title>
 	<para>
-	  Sorry, not documented yet...
+	  Sorry, not documented yet…
 	</para>
       </sect3>
 
       <sect3 id="game-tree-view">
 	<title>Game Tree View</title>
 	<para>
-	  Sorry, not documented yet...
+	  Sorry, not documented yet…
 	</para>
       </sect3>
 
       <sect3 id="board-window-menu">
 	<title>Board Window Menu</title>
 	<para>
-	  Sorry, not documented yet...
+	  Sorry, not documented yet…
 	</para>
       </sect3>
     </sect2>
@@ -934,8 +999,317 @@
     <sect2 id="find-dialog">
       <title>Find Dialog</title>
       <para>
-	Sorry, not documented yet...
+	Sorry, not documented yet…
       </para>
+    </sect2>
+
+    <sect2 id="game-information-dialog">
+      <title>Game Information Dialog</title>
+      <para>
+	The Game Information Dialog allows you to set values that describe game tree as a
+	whole and are not specific to a particular move or position in the game.  It has a
+	lot of fields which are splitted in three pages.  All fields are optional and can
+	be empty (not set), but defining them gives additional description to the game.
+      </para>
+
+      <para>
+	Fields on the first page (<guilabel>General</guilabel>) describe the game
+	opponents, rules of the game and non-spoiling game details.  Field on the second
+	page (<guilabel>Description &amp; Result</guilabel>) are generally spoiling and
+	can even disclose game outcome.  The third page (<guilabel>Game Record</guilabel>)
+	describe the record itself.
+      </para>
+
+      <variablelist>
+	<varlistentry>
+	  <term><guilabel>White Player</guilabel> and <guilabel>Black
+	      Player</guilabel></term>
+	  <listitem>
+	    <para>
+	      This group of fields allows you to describe the opponents in the game.
+	      The <guilabel>Name</guilabel> fields should be obvious.
+	      The <guilabel>Team</guilabel> fields are used when the game is a part of a
+	      match between two teams, for instance national teams.  Usually, they are
+	      left empty.  The <guilabel>Rank</guilabel> of the opponents can be entered
+	      in the appropriate fields.  This is usually the rank as applies to the game
+	      in question.  For instance, this can be the rank awarded by the federation
+	      guiding the tournament or it can be the rank of an Internet server where the
+	      game took place.
+	    </para>
+
+	    <para>
+	      Values of these fields are also displayed
+	      in <link linkend="board-window-information-pane">the right column of board
+	      windows</link>.
+	    </para>
+	  </listitem>
+	</varlistentry>
+
+	<varlistentry>
+	  <term><guilabel>Game Name</guilabel></term>
+	  <listitem>
+	    <para>
+	      The name of the game.  This field can be empty if the game is not special
+	      and doesn’t have a distinguished name.
+	    </para>
+	  </listitem>
+	</varlistentry>
+
+	<varlistentry>
+	  <term><guilabel>Place</guilabel></term>
+	  <listitem>
+	    <para>
+	      The place the game took place at.  This can be a geographical location or
+	      the name of an Internet server.
+	    </para>
+	  </listitem>
+	</varlistentry>
+
+	<varlistentry>
+	  <term><guilabel>Date</guilabel></term>
+	  <listitem>
+	    <para>
+	      The date the game took place on.  It should be in the international format
+	      of YYYY-MM-DD.  For instance 2006-07-23 means 23 July 2006.
+	    </para>
+	  </listitem>
+	</varlistentry>
+
+	<varlistentry>
+	  <term><guilabel>Event</guilabel></term>
+	  <listitem>
+	    <para>
+	      The event this game is part of.  For instance, this can be the name of a
+	      tournament.  This field is often empty.
+	    </para>
+	  </listitem>
+	</varlistentry>
+
+	<varlistentry>
+	  <term><guilabel>Round</guilabel></term>
+	  <listitem>
+	    <para>
+	      The round this game is part of.  For instance <quote>1st round</quote> or
+	      <quote>Semifinal</quote>.  This field is often empty, especially
+	      if <guilabel>Event</guilabel> is.
+	    </para>
+	  </listitem>
+	</varlistentry>
+
+	<varlistentry>
+	  <term><guilabel>Rule set</guilabel></term>
+	  <listitem>
+	    <para>
+	      Descriptive name of the rules this game was played in accordance with.  For
+	      instance, for Go this can be <quote>Japanese</quote>, <quote>Chinese</quote>
+	      etc.
+	    </para>
+	  </listitem>
+	</varlistentry>
+
+	<varlistentry>
+	  <term><guilabel>Handicap</guilabel></term>
+	  <listitem>
+	    <para>
+	      For Go only: number of stones the black was allowed to place on his first
+	      move.  This field is either 0 or not set for the games with no handicap.
+	    </para>
+
+	    <note>
+	      <para>
+		Value of this field is only informational.  It doesn’t imply any
+		particular setting of the black stones.
+	      </para>
+	    </note>
+	  </listitem>
+	</varlistentry>
+
+	<varlistentry>
+	  <term><guilabel>Komi</guilabel></term>
+	  <listitem>
+	    <para>
+	      For Go only: the compensation, in points, the white receives for having the
+	      second turn.  Can be negative or not set.  However, it should always be set
+	      for games with non-zero komi, as otherwise proper scoring is impossible.
+	    </para>
+	  </listitem>
+	</varlistentry>
+
+	<varlistentry>
+	  <term><guilabel>Main time</guilabel></term>
+	  <listitem>
+	    <para>
+	      Main time each player has.  Should not be set if the game is played with no
+	      time limit.
+	    </para>
+	  </listitem>
+	</varlistentry>
+
+	<varlistentry>
+	  <term><guilabel>Overtime</guilabel></term>
+	  <listitem>
+	    <para>
+	      Description of the overtime rules used for this game.  For
+	      instance, <quote>25/600 Canadian</quote> means Canadian overtime with 10
+	      minutes (600 seconds) for every 25 moves.
+	    </para>
+	  </listitem>
+	</varlistentry>
+
+	<varlistentry>
+	  <term><guilabel>Game result</guilabel></term>
+	  <listitem>
+	    <para>
+	      The result of the game in SGF format.
+
+	      <table frame="none">
+		<title>Valid <guilabel>Game result</guilabel> values</title>
+		<tgroup cols="2">
+		  <thead>
+		    <row>
+		      <entry>Value</entry>
+		      <entry>Meaning</entry>
+		    </row>
+		  </thead>
+
+		  <tbody>
+		    <row>
+		      <entry>Void</entry>
+		      <entry>
+			There is no result yet (the game is not finished) or there can be
+			no result at all (e.g. for problems.)
+		      </entry>
+		    </row>
+
+		    <row>
+		      <entry>0 <emphasis>or</emphasis> Draw</entry>
+		      <entry>
+			The game is draw, i.e. is finished, but there’s no winner.
+		      </entry>
+		    </row>
+
+		    <row>
+		      <entry>
+			W+<userinput>score</userinput>
+			<emphasis>or</emphasis> B+<userinput>score</userinput>
+		      </entry>
+		      <entry>
+			A player has won by the specified score.  For
+			instance, <quote>W+6.5</quote> means that white has won by 6.5
+			points.
+		      </entry>
+		    </row>
+
+		    <row>
+		      <entry>W+ <emphasis>or</emphasis> B+</entry>
+		      <entry>
+			A player has won.  Used mainly for the games without a notion for
+			score, e.g. Amazons.
+		      </entry>
+		    </row>
+
+		    <row>
+		      <entry>
+			W+Resign <emphasis>or</emphasis> B+Resign
+			<emphasis>or</emphasis> W+R <emphasis>or</emphasis> B+R
+		      </entry>
+		      <entry>
+			A player has won by resignation,
+		      </entry>
+		    </row>
+
+		    <row>
+		      <entry>
+			W+Time <emphasis>or</emphasis> B+Time
+			<emphasis>or</emphasis> W+T <emphasis>or</emphasis> B+T
+		      </entry>
+		      <entry>
+			A player has won on time.  I.e. his opponent exceeded his time
+			limit.
+		      </entry>
+		    </row>
+
+		    <row>
+		      <entry>
+			W+Forfeit <emphasis>or</emphasis> B+Forfeit
+			<emphasis>or</emphasis> W+F <emphasis>or</emphasis> B+F
+		      </entry>
+		      <entry>
+			A player has won by forfeit, e.g. his opponent made an illegal
+			move.
+		      </entry>
+		    </row>
+
+		    <row>
+		      <entry>?</entry>
+		      <entry>
+			Game result is unknown.
+		      </entry>
+		    </row>
+		  </tbody>
+		</tgroup>
+	      </table>
+	    </para>
+	  </listitem>
+	</varlistentry>
+
+	<varlistentry>
+	  <term><guilabel>Opening played</guilabel></term>
+	  <listitem>
+	    <para>
+	      Description of the opening played in the game.  This field is often empty.
+	    </para>
+	  </listitem>
+	</varlistentry>
+
+	<varlistentry>
+	  <term><guilabel>Comment / description</guilabel></term>
+	  <listitem>
+	    <para>
+	      Description for the entire game.  It can be some background information
+	      and/or the summary of the game.
+	    </para>
+	  </listitem>
+	</varlistentry>
+
+	<varlistentry>
+	  <term><guilabel>Copyright string</guilabel></term>
+	  <listitem>
+	    <para>
+	      Short copyright information for the game record.
+	    </para>
+	  </listitem>
+	</varlistentry>
+
+	<varlistentry>
+	  <term><guilabel>Annotator</guilabel></term>
+	  <listitem>
+	    <para>
+	      The name of the person who provided comments (annotation) for the game.
+	    </para>
+	  </listitem>
+	</varlistentry>
+
+	<varlistentry>
+	  <term><guilabel>Source</guilabel></term>
+	  <listitem>
+	    <para>
+	      The source of the game record (book, journal etc.)  Often is empty if the
+	      game record was in electronic form to begin with.
+	    </para>
+	  </listitem>
+	</varlistentry>
+
+	<varlistentry>
+	  <term><guilabel>Entered by</guilabel></term>
+	  <listitem>
+	    <para>
+	      Name of the person who entered the game record.  Usually empty for
+	      automatically created records.
+	    </para>
+	  </listitem>
+	</varlistentry>
+      </variablelist>
     </sect2>
   </sect1>
 
@@ -1031,14 +1405,14 @@
     <sect2 id="preferences-gtk-ui">
       <title>General Interface</title>
       <para>
-	Sorry, not documented yet...
+	Sorry, not documented yet…
       </para>
     </sect2>
 
     <sect2 id="preferences-game-tree">
       <title>Game Tree</title>
       <para>
-	Sorry, not documented yet...
+	Sorry, not documented yet…
       </para>
     </sect2>
 
@@ -1132,12 +1506,12 @@
 	<note id="preferences-gtp-engine-information-dialog-freeze">
 	  <para>
 	    If the message
-	    <quote>Querying engine's name, version and known commands...</quote> appears
-	    and persists for too long (more than a few seconds), this most likely
-	    indicates that the command line you specify starts the program in non-GTP mode
-	    or starts a wrong program to begin with.  If you don't expect the program to
-	    be very slow on initialization, then click the <guibutton>Cancel</guibutton>
-	    button and fix the command line.
+	    <quote>Querying engine’s name, version and known commands…</quote> appears and
+	    persists for too long (more than a few seconds), this most likely indicates
+	    that the command line you specify starts the program in non-GTP mode or starts
+	    a wrong program to begin with.  If you don’t expect the program to be very
+	    slow on initialization, then click the <guibutton>Cancel</guibutton> button
+	    and fix the command line.
 	  </para>
 	</note>
 
@@ -1186,7 +1560,7 @@
 		name and version of the program as it reports them itself.  In most cases
 		the default value of <quote>%n %v</quote> is what you want, but sometimes
 		it makes sense to alter it.  For instance, you can specify
-		<quote>%n %v level 5</quote> here if you fixed program's level in the
+		<quote>%n %v level 5</quote> here if you fixed program’s level in the
 		command line.  If, for some reason, you need the percent sign in the name,
 		type it in as <quote>%%</quote> (the percent sign is used as
 		<firstterm>escape symbol</firstterm> in this field.)
@@ -1200,28 +1574,28 @@
     <sect2 id="preferences-saving-game-records">
       <title>Saving Game Records</title>
       <para>
-	Sorry, not documented yet...
+	Sorry, not documented yet…
       </para>
     </sect2>
 
     <sect2 id="preferences-go-board-appearance">
       <title>Go Board Appearance</title>
       <para>
-	Sorry, not documented yet...
+	Sorry, not documented yet…
       </para>
     </sect2>
 
     <sect2 id="preferences-amazons-board-appearance">
       <title>Amazons Board Appearance</title>
       <para>
-	Sorry, not documented yet...
+	Sorry, not documented yet…
       </para>
     </sect2>
 
     <sect2 id="preferences-reversi-board-appearance">
       <title>Reversi Board Appearance</title>
       <para>
-	Sorry, not documented yet...
+	Sorry, not documented yet…
       </para>
     </sect2>
   </sect1>
