@@ -1,3 +1,11 @@
+2006-07-14  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* (Quarry version 0.1.18.)
+
+	* quarry.png: New file (icon.)
+	* quarry.desktop.in (Icon): Use `quarry.png'.
+	(MimeType): New value.
+
 2006-03-09  Paul Pogonyshev  <pogonyshev@gmx.net>
 
 	* (Quarry version 0.1.17.)

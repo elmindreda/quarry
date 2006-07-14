@@ -1,3 +1,9 @@
+2006-07-14  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* (Quarry version 0.1.18.)
+
+	* C/quarry.xml: Expand somewhat.
+
 2006-03-09  Paul Pogonyshev  <pogonyshev@gmx.net>
 
 	* (Quarry version 0.1.17.)
@@ -6,7 +12,7 @@
 
 	* (Quarry version 0.1.16.)
 
-	* C/figures/control-center.png: Update for newre Quarry versions.
+	* C/figures/control-center.png: Update for newer Quarry versions.
 
 	* C/quarry.xml: Update and expand somewhat.
 

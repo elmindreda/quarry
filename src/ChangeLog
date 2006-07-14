@@ -1,3 +1,15 @@
+2006-07-14  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* (Quarry version 0.1.18.)
+
+	* gui-gtk/gtk-new-game-dialog.c (begin_game): Create SGF
+	collection and a temporary board before anything else to satisfy
+	some assertions.
+
+	* gui-gtk/gtk-goban-window.c (receive_copied_sgf): Add a comment
+	for the translators in an obscure place (requested by Jérémie
+	Knuesel.)
+
 2006-07-13  Paul Pogonyshev  <pogonyshev@gmx.net>
 
 	* gui-gtk/gtk-named-vbox.c (gtk_named_vbox_size_request): Fix for

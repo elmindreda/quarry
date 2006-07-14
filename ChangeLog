@@ -1,3 +1,13 @@
+2006-07-14  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* configure.ac: Quarry version 0.1.18.
+	* NEWS: Update.
+	* TODO: Update.
+
+2006-07-13  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* THANKS: Also thank Jérémie Knuesel for bug reports.
+
 2006-04-30  Paul Pogonyshev  <pogonyshev@gmx.net>
 
 	* build: Rename from `aux' to avoid conflicts with system reserved
