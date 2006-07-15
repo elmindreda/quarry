@@ -1,3 +1,12 @@
+2006-07-16  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* (Quarry version 0.1.19.)
+
+2006-07-15  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* utils/buffered-writer.c (update_column): Fix for the case of
+	missing memrchr().
+
 2006-07-14  Paul Pogonyshev  <pogonyshev@gmx.net>
 
 	* (Quarry version 0.1.18.)
