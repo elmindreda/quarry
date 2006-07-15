@@ -1,3 +1,8 @@
+--- New in Quarry 0.1.19 ---------------------------------------------
+
+* A severe bug fixed in the Polish translation, see bug #6367.
+
+
 --- New in Quarry 0.1.18 ---------------------------------------------
 
 * Undo/redo history has been completed and now includes comment and
