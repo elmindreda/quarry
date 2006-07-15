@@ -465,7 +465,7 @@ update_column (BufferedWriter *writer, const char *buffer, size_t length)
 
   size_t k;
 
-  for (k = length; --k >= 0; k++) {
+  for (k = length; --k >= 0;) {
     if (buffer[k] == '\n') {
       writer->column = 0;
       break;
