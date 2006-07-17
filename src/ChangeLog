@@ -1,3 +1,36 @@
+2006-07-17  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* gui-gtk/gtk-file-dialog.c (gtk_file_dialog_get_filename): Avoid
+	warnings for missed return on non-GCC compilers.
+	(gtk_file_dialog_set_filename): Likewise.
+
+	* gui-gtk/gtk-game-info-dialog.c (get_field): Likewise.
+	(get_page_index): Likewise.
+	(get_property_type): Likewise.
+	(get_field_text): Likewise.
+	(game_info_spin_button_focus_out_event): Likewise.
+
+	* gui-gtk/gtk-games.c (gtk_games_create_board_size_adjustment):
+	Likewise.
+
+	* gui-gtk/gtk-goban.c (get_or_create_label_feedback_pixbuf):
+	Likewise.
+
+	* gui-gtk/gtk-goban-window.c (free_handicap_mode_goban_clicked):
+	Likewise.
+	(update_set_player_to_move_commands): Likewise.
+
+	* gui-gtk/quarry-find-dialog.c (quarry_find_text): Likewise.
+
+	* gui-gtk/gtk-goban-window.c (receive_copied_sgf): Initialize some
+	variables to avoid compiler warnings.
+
+	* gui-gtk/quarry-text-buffer.c: Include `gtk-utils.h' to get
+	definition of g_signal_accumulator_true_handled() on old GTK+
+	versions.
+	(quarry_text_buffer_insert_text): Initialize a variable to avoid
+	compiler warning.
+
 2006-07-16  Paul Pogonyshev  <pogonyshev@gmx.net>
 
 	* (Quarry version 0.1.19.)
