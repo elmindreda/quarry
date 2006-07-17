@@ -777,6 +777,7 @@ get_field (GtkGameInfoDialog *dialog, SgfType sgf_property_type)
 
   default:
     g_assert_not_reached ();
+    return NULL;
   }
 }
 
@@ -816,6 +817,7 @@ get_page_index (SgfType sgf_property_type)
 
   default:
     g_assert_not_reached ();
+    return -1;
   }
 }
 
@@ -893,6 +895,7 @@ get_property_type (GtkGameInfoDialog *dialog, void *field)
     return SGF_USER;
 
   g_assert_not_reached ();
+  return SGF_UNKNOWN;
 }
 
 
@@ -912,8 +915,10 @@ get_field_text (void *field)
 				&start_iterator, &end_iterator);
     return gtk_text_iter_get_text (&start_iterator, &end_iterator);
   }
-  else
+  else {
     g_assert_not_reached ();
+    return NULL;
+  }
 }
 
 
@@ -1099,8 +1104,10 @@ game_info_spin_button_focus_out_event
 	sgf_property_type = SGF_KOMI;
       else if (dialog->main_time_spin_button == freezable_spin_button)
 	sgf_property_type = SGF_TIME_LIMIT;
-      else
+      else {
 	g_assert_not_reached ();
+	return FALSE:
+      }
 
       update_property (dialog, sgf_property_type, NULL);
     }

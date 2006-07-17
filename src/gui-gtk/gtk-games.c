@@ -154,6 +154,7 @@ gtk_games_create_board_size_adjustment (GtkGameIndex game_index,
 
   default:
     g_assert_not_reached ();
+    return NULL;
   }
 }
 

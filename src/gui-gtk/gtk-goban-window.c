@@ -3589,8 +3589,10 @@ free_handicap_mode_goban_clicked (GtkGobanWindow *goban_window,
       contents = EMPTY;
       goban_window->num_handicap_stones_placed--;
     }
-    else
+    else {
       g_assert_not_reached ();
+      return;
+    }
 
     gtk_goban_set_contents (goban_window->goban, position_list,
 			    contents, GOBAN_TILE_DONT_CHANGE,
@@ -4467,6 +4469,7 @@ update_set_player_to_move_commands (GtkGobanWindow *goban_window)
 
   default:
     g_assert_not_reached ();
+    return;
   }
 
   menu_item = gtk_item_factory_get_widget (goban_window->item_factory,
@@ -5702,8 +5705,8 @@ receive_copied_sgf (GtkClipboard *clipboard, GtkSelectionData *selection_data,
   SgfGameTree *sgf_tree = goban_window->current_tree;
   SgfPasteResult result;
   GtkWidget *error_dialog;
-  const gchar *message;
-  const gchar *hint;
+  const gchar *message = NULL;
+  const gchar *hint    = NULL;
 
   UNUSED (clipboard);
 

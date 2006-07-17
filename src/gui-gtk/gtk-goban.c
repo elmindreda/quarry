@@ -2273,8 +2273,10 @@ get_or_create_label_feedback_pixbuf (GtkGoban *goban, gint background)
       saturated_pixels = saturate_and_set_alpha (color, 1, 2, width, height,
 						 pixel_data, row_stride);
     }
-    else
+    else {
       g_assert_not_reached ();
+      return NULL;
+    }
 
     goban->label_ghost_pixbufs[ghost_level][background]
       = gdk_pixbuf_new_from_data (saturated_pixels, GDK_COLORSPACE_RGB,

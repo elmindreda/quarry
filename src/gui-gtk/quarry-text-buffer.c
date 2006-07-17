@@ -22,6 +22,9 @@
 
 #include "quarry-text-buffer.h"
 
+/* For g_signal_accumulator_true_handled() on old GTK+ versions. */
+#include "gtk-utils.h"
+
 #include "quarry-marshal.h"
 
 #include <gtk/gtk.h>
@@ -323,7 +326,7 @@ quarry_text_buffer_insert_text (GtkTextBuffer *text_buffer, GtkTextIter *where,
 				const gchar *text, gint length)
 {
   QuarryTextBuffer *buffer = QUARRY_TEXT_BUFFER (text_buffer);
-  gint offset;
+  gint offset = 0;
 
   if (buffer->current_undo_entry) {
     QuarryTextBufferTextOperation *operation

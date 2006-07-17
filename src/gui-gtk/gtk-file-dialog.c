@@ -128,6 +128,7 @@ gtk_file_dialog_get_filename (GtkWidget *dialog)
   }
 
   g_assert_not_reached ();
+  return NULL;
 }
 
 
@@ -175,6 +176,7 @@ gtk_file_dialog_set_filename (GtkWidget *dialog, const gchar *filename)
   }
 
   g_assert_not_reached ();
+  return;
 }
 
 

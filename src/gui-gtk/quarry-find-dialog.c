@@ -575,6 +575,7 @@ quarry_find_text (const gchar *text_to_find,
 
     default:
       g_assert_not_reached ();
+      return FALSE;
     }
 
     while (1) {
