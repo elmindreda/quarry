@@ -1106,7 +1106,7 @@ game_info_spin_button_focus_out_event
 	sgf_property_type = SGF_TIME_LIMIT;
       else {
 	g_assert_not_reached ();
-	return FALSE:
+	return FALSE;
       }
 
       update_property (dialog, sgf_property_type, NULL);
