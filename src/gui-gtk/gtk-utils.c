@@ -255,6 +255,7 @@ g_signal_accumulator_true_handled (GSignalInvocationHint *hint,
 {
   gboolean signal_handled;
 
+  UNUSED (hint);
   UNUSED (user_data);
   
   signal_handled = g_value_get_boolean (handler_return);

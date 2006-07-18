@@ -387,6 +387,11 @@ quarry_find_dialog_set_search_history (QuarryFindDialog *dialog,
   for (item = strings->first; item; item = item->next)
     gtk_combo_box_append_text (combo_box, item->text);
 
+#else  /* not GTK_2_4_OR_LATER */
+
+  UNUSED (dialog);
+  UNUSED (strings);
+
 #endif /* not GTK_2_4_OR_LATER */
 }
 
