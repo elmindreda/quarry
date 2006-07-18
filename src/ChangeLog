@@ -1,3 +1,15 @@
+2006-07-18  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* gui-gtk/quarry-find-dialog.c
+	(quarry_find_dialog_set_search_history): Make some variables
+	unused for old versions of GTK+.
+
+	* gui-gtk/gtk-utils.c (g_signal_accumulator_true_handled):
+	Likewise.
+
+	* gui-gtk/gtk-game-info-dialog.c
+	(game_info_spin_button_focus_out_event): Fix typo error.
+
 2006-07-17  Paul Pogonyshev  <pogonyshev@gmx.net>
 
 	* gui-gtk/gtk-file-dialog.c (gtk_file_dialog_get_filename): Avoid
