@@ -1,7 +1,16 @@
+2006-07-29  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* gui-gtk/gtk-sgf-tree-view.c (SHOULD_TRACK_CURRENT_NODE): Make it
+	work when `current_tree' is NULL (bug #6475.)
+	(track_current_node): Likewise.
+	(center_on_current_node): Likewise.
+	(update_view_port): Likewise.
+	(update_view_port_and_maybe_move_or_resize_window): Likewise.
+
 2006-07-18  Paul Pogonyshev  <pogonyshev@gmx.net>
 
 	* gui-gtk/quarry-find-dialog.c
-	(quarry_find_dialog_set_search_history): Make some variables
+	(quarry_find_dialog_set_search_history): Mark some variables as
 	unused for old versions of GTK+.
 
 	* gui-gtk/gtk-utils.c (g_signal_accumulator_true_handled):
