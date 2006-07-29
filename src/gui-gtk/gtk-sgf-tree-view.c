@@ -66,14 +66,16 @@
 
 
 #define SHOULD_TRACK_CURRENT_NODE(view)					\
-  (game_tree_view.track_current_node == TRACK_CURRENT_NODE_ALWAYS	\
-   || ((game_tree_view.track_current_node				\
-	== TRACK_CURRENT_NODE_AUTOMATICALLY)				\
-       && (sgf_game_tree_node_is_within_view_port			\
-	   ((view)->current_tree, (view)->current_tree->current_node,	\
-	    (view)->view_port_x0, (view)->view_port_y0,			\
-	    (view)->view_port_x1, (view)->view_port_y1,			\
-	    NULL, NULL))))
+  ((view)->current_tree							\
+   && (game_tree_view.track_current_node == TRACK_CURRENT_NODE_ALWAYS	\
+       || ((game_tree_view.track_current_node				\
+	    == TRACK_CURRENT_NODE_AUTOMATICALLY)			\
+	   && (sgf_game_tree_node_is_within_view_port			\
+	       ((view)->current_tree,					\
+		(view)->current_tree->current_node,			\
+		(view)->view_port_x0, (view)->view_port_y0,		\
+		(view)->view_port_x1, (view)->view_port_y1,		\
+		NULL, NULL)))))
 
 
 static void	 gtk_sgf_tree_view_class_init (GtkSgfTreeViewClass *class);
@@ -934,6 +936,11 @@ track_current_node (GtkSgfTreeView *view)
   gint current_node_x;
   gint current_node_y;
 
+  if (!view->current_tree) {
+    /* No tree to begin with, so nothing to track. */
+    return;
+  }
+
   if (!sgf_game_tree_get_node_coordinates (view->current_tree,
 					   view->current_tree->current_node,
 					   &current_node_x, &current_node_y)) {
@@ -1031,9 +1038,11 @@ center_on_current_node (GtkSgfTreeView *view)
   gint current_node_x;
   gint current_node_y;
 
-  if (sgf_game_tree_get_node_coordinates (view->current_tree,
-					  view->current_tree->current_node,
-					  &current_node_x, &current_node_y)) {
+  if (view->current_tree
+      && sgf_game_tree_get_node_coordinates (view->current_tree,
+					     view->current_tree->current_node,
+					     &current_node_x,
+					     &current_node_y)) {
     gint view_width     = GTK_WIDGET (view)->allocation.width;
     gint view_height    = GTK_WIDGET (view)->allocation.height;
     gint full_cell_size = FULL_CELL_SIZE (view);
@@ -1077,18 +1086,30 @@ update_view_port (GtkSgfTreeView *view)
   utils_free (view->tile_map);
   utils_free (view->sgf_markup_tile_map);
 
-  sgf_game_tree_fill_map_view_port (view->current_tree,
-				    view->view_port_x0, view->view_port_y0,
-				    view->view_port_x1, view->view_port_y1,
-				    &view->view_port_nodes,
-				    &view->view_port_lines,
-				    &view->num_view_port_lines);
+  if (view->current_tree) {
+    sgf_game_tree_fill_map_view_port (view->current_tree,
+				      view->view_port_x0, view->view_port_y0,
+				      view->view_port_x1, view->view_port_y1,
+				      &view->view_port_nodes,
+				      &view->view_port_lines,
+				      &view->num_view_port_lines);
+    view->tile_map
+      = sgf_game_tree_get_current_branch_marks (view->current_tree,
+						view->view_port_x0,
+						view->view_port_y0,
+						view->view_port_x1,
+						view->view_port_y1);
+  }
+  else {
+    view->view_port_nodes = utils_malloc0 (((view->view_port_x1
+					     - view->view_port_x0)
+					    * (view->view_port_y1
+					       - view->view_port_y0))
+					   * sizeof (SgfNode *));
+    view->view_port_lines     = NULL;
+    view->num_view_port_lines = 0;
+  }
 
-  view->tile_map = sgf_game_tree_get_current_branch_marks (view->current_tree,
-							   view->view_port_x0,
-							   view->view_port_y0,
-							   view->view_port_x1,
-							   view->view_port_y1);
   view->sgf_markup_tile_map = utils_malloc (((view->view_port_x1
 					      - view->view_port_x0)
 					     * (view->view_port_y1
@@ -1145,8 +1166,14 @@ update_view_port_and_maybe_move_or_resize_window
   gboolean need_to_resize_window;
   gboolean need_to_move_window;
 
-  sgf_game_tree_get_map_dimensions (view->current_tree,
-				    &view->map_width, &view->map_height);
+  if (view->current_tree) {
+    sgf_game_tree_get_map_dimensions (view->current_tree,
+				      &view->map_width, &view->map_height);
+  }
+  else {
+    view->map_width  = 1;
+    view->map_height = 1;
+  }
 
   view->ignore_adjustment_changes = TRUE;
 
