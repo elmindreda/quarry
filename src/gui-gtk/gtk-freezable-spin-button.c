@@ -142,6 +142,14 @@ gtk_freezable_spin_button_new (GtkAdjustment *adjustment,
 static gboolean
 gtk_freezable_spin_button_output (GtkFreezableSpinButton *spin_button)
 {
+  if (spin_button->freezing_string) {
+    GtkAdjustment* adjustment
+      = gtk_spin_button_get_adjustment (GTK_SPIN_BUTTON (spin_button));
+
+    if (gtk_adjustment_get_value (adjustment) != 0.0)
+      gtk_freezable_spin_button_unfreeze (spin_button);
+  }
+
   if (!spin_button->freezing_string) {
     /* Fall through to other handlers. */
     return FALSE;
