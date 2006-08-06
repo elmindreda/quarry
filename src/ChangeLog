@@ -1,3 +1,9 @@
+2006-08-06  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* gui-gtk/gtk-freezable-spin-button.c
+	(gtk_freezable_spin_button_output): Unfreeze if adjustment's value
+	changes for some reason (fixes mouse blocking in freezed state.)
+
 2006-07-29  Paul Pogonyshev  <pogonyshev@gmx.net>
 
 	* gui-gtk/gtk-sgf-tree-view.c (SHOULD_TRACK_CURRENT_NODE): Make it
