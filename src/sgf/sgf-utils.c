@@ -1861,7 +1861,7 @@ find_board_state_data (const SgfGameTree *tree, SgfNode *node,
 {
   SgfBoardState *const board_state = tree->board_state;
 
-  if (!need_color_to_move && !need_color_to_move)
+  if (!need_color_to_move && !need_move_coordinates)
     return;
 
   board_state->last_move_node = NULL;
