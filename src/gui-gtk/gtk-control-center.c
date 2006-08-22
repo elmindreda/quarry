@@ -32,6 +32,7 @@
 #include "quarry-stock.h"
 
 #include <gtk/gtk.h>
+#include <gdk/gdkkeysyms.h>
 
 
 static GSList	  *windows = NULL;
@@ -51,6 +52,7 @@ gtk_control_center_present (void)
     GtkWidget *resume_game_button;
     GtkWidget *preferences_button;
     GtkWidget *quit_button;
+    GtkAccelGroup *accel_group;
 
     control_center = (GtkWindow *) gtk_window_new (GTK_WINDOW_TOPLEVEL);
     gtk_control_center_window_created (control_center);
@@ -61,19 +63,33 @@ gtk_control_center_present (void)
     gtk_container_set_border_width (GTK_CONTAINER (control_center),
 				    QUARRY_SPACING);
 
+    accel_group = gtk_accel_group_new ();
+    gtk_window_add_accel_group (control_center, accel_group);
+
     new_game_button = gtk_button_new_from_stock (QUARRY_STOCK_NEW_GAME);
     g_signal_connect (new_game_button, "clicked",
 		      G_CALLBACK (gtk_new_game_dialog_present), NULL);
+
+    gtk_widget_add_accelerator (GTK_WIDGET (new_game_button), "clicked",
+				accel_group, GDK_N, GDK_CONTROL_MASK, 0);
 
     new_game_record_button
       = gtk_button_new_with_mnemonic (_("Ne_w Game Record"));
     g_signal_connect (new_game_record_button, "clicked",
 		      G_CALLBACK (gtk_new_game_record_dialog_present), NULL);
 
+    gtk_widget_add_accelerator (GTK_WIDGET (new_game_record_button), "clicked",
+				accel_group,
+				GDK_N, GDK_SHIFT_MASK | GDK_CONTROL_MASK, 0);
+
     open_game_record_button
       = gtk_button_new_from_stock (QUARRY_STOCK_OPEN_GAME_RECORD);
     g_signal_connect (open_game_record_button, "clicked",
 		      G_CALLBACK (gtk_parser_interface_present_default), NULL);
+
+    gtk_widget_add_accelerator (GTK_WIDGET (open_game_record_button),
+				"clicked",
+				accel_group, GDK_O, GDK_CONTROL_MASK, 0);
 
     resume_game_button = gtk_button_new_with_mnemonic (_("_Resume Game"));
     g_signal_connect (resume_game_button, "clicked",
@@ -87,6 +103,9 @@ gtk_control_center_present (void)
     quit_button = gtk_button_new_from_stock (GTK_STOCK_QUIT);
     g_signal_connect_swapped (quit_button, "clicked",
 			      G_CALLBACK (gtk_control_center_quit), NULL);
+
+    gtk_widget_add_accelerator (GTK_WIDGET (quit_button), "clicked",
+				accel_group, GDK_Q, GDK_CONTROL_MASK, 0);
 
     vbox = gtk_utils_pack_in_box (GTK_TYPE_VBOX, QUARRY_SPACING_SMALL,
 				  new_game_button, GTK_UTILS_FILL,
