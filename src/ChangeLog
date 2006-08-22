@@ -1,3 +1,12 @@
+2006-08-22  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* gui-gtk/gtk-control-center.c (gtk_control_center_present): Add
+	accelerators consistent with goban windows to most buttons.
+
+2006-08-15  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* sgf/sgf-utils.c (find_board_state_data): Fix typo bug.
+
 2006-08-06  Paul Pogonyshev  <pogonyshev@gmx.net>
 
 	* gui-gtk/gtk-freezable-spin-button.c
