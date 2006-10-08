@@ -22,6 +22,9 @@
 
 #include "gtk-help.h"
 
+#include "gtk-utils.h"
+#include "quarry-message-dialog.h"
+
 #include <locale.h>
 #include <string.h>
 #include <sys/stat.h>
@@ -110,6 +113,8 @@ gtk_help_display (const gchar *link_id)
   if (!yelp_works) {
 #endif
 
+    GError  *error = NULL;
+
     /* FIXME: Make fallback browser configurable. */
     child_argv[0] = "mozilla";
 
@@ -123,9 +128,24 @@ gtk_help_display (const gchar *link_id)
 
     child_argv[2] = NULL;
 
-    /* FIXME: If not works, pop up configuration dialog. */
     g_spawn_async (NULL, child_argv, NULL, G_SPAWN_SEARCH_PATH,
-		   NULL, NULL, NULL, NULL);
+		   NULL, NULL, NULL, &error);
+
+    if (error) {
+      gchar* error_message
+	= g_strdup_printf (_("Neither Yelp nor Mozilla works. You may browse "
+			     "help with a different browser, see file `%s'."),
+			   PACKAGE_DATA_DIR "/help/C/quarry.html");
+      GtkWidget *error_dialog
+	= quarry_message_dialog_new (NULL, GTK_BUTTONS_OK,
+				     GTK_STOCK_DIALOG_ERROR,
+				     error_message, "%s", error->message);
+
+      g_free (error_message);
+      g_error_free (error);
+
+      gtk_utils_show_and_forget_dialog (GTK_DIALOG (error_dialog));
+    }
 
     if (link_id)
       g_free (child_argv[1]);
