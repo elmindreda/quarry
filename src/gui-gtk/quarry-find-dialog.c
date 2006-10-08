@@ -147,8 +147,6 @@ quarry_find_dialog_init (QuarryFindDialog *dialog)
 
 #endif /* not GTK_2_4_OR_LATER */
 
-  /* FIXME: Implement history, maybe only for GTK+ 2.4. */
-
   g_signal_connect_swapped (entry, "changed",
 			    G_CALLBACK (parameters_changed), dialog);
 

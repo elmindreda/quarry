@@ -4825,12 +4825,6 @@ update_comment_and_node_name_if_needed (GtkGobanWindow *goban_window,
   gtk_sgf_tree_signal_proxy_push_tree_state (current_tree,
 					     &current_tree_state);
 
-  /* FIXME: This action is separate from real text activity in the
-   *	    buffer and is undone/redone separately too.  It is unclear
-   *	    how to fix it now; maybe a ``don't stop on this action''
-   *	    flag?
-   */
-
   sgf_utils_begin_action (current_tree);
 
   if (fetch_comment_and_node_name (goban_window, for_current_node)) {

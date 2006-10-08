@@ -340,7 +340,6 @@ gtk_new_game_dialog_init (GtkNewGameDialog *dialog)
     }
 
     /* "Game Rules" named vertical box. */
-    /* FIXME: i18n. */
     rules_vbox_widget = gtk_named_vbox_new (_(game_rules_labels[k]), FALSE,
 					    QUARRY_SPACING_SMALL);
     rules_vbox = GTK_BOX (rules_vbox_widget);
