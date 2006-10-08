@@ -1,3 +1,21 @@
+2006-10-08  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* gui-gtk/gtk-goban-window.c
+	(update_comment_and_node_name_if_needed): Remove old FIXME.
+	* gui-gtk/gtk-new-game-dialog.c (gtk_new_game_dialog_init):
+	Likewise.
+	* gui-gtk/quarry-find-dialog.c (quarry_find_dialog_init):
+	Likewise.
+
+	* gui-gtk/gtk-help.c (gtk_help_display): Show error dialog in case
+	`mozilla' doesn't start.
+
+	* gui-gtk/gtk-game-info-dialog.c (gtk_game_info_dialog_init): Call
+	new function update_title().
+	(update_title): New function.
+	(set_field_text): Call update_title() if game name changes.
+	(update_property): Likewise.
+
 2006-08-22  Paul Pogonyshev  <pogonyshev@gmx.net>
 
 	* gui-gtk/gtk-control-center.c (gtk_control_center_present): Add
