@@ -56,6 +56,8 @@ static void	   gtk_game_info_dialog_class_init
 		     (GtkGameInfoDialogClass *class);
 static void	   gtk_game_info_dialog_init (GtkGameInfoDialog *dialog);
 
+static void	   update_title (GtkGameInfoDialog *dialog);
+
 static GtkEntry *  create_and_pack_game_info_entry (const gchar *label_text,
 						    SgfType sgf_property_type,
 						    GtkWidget **hbox,
@@ -220,9 +222,6 @@ gtk_game_info_dialog_init (GtkGameInfoDialog *dialog)
   GtkWidget *page;
   GtkSizeGroup *size_group;
   int k;
-
-  /* FIXME: Game name in title (if present). */
-  gtk_window_set_title (GTK_WINDOW (dialog), _("Game Information"));
 
   dialog->pages = GTK_NOTEBOOK (notebook);
 
@@ -519,6 +518,27 @@ gtk_game_info_dialog_init (GtkGameInfoDialog *dialog)
   dialog->simple_undo_field = NULL;
   dialog->simple_redo_field = NULL;
   dialog->simple_redo_value = NULL;
+
+  update_title (dialog);
+}
+
+
+static void
+update_title (GtkGameInfoDialog *dialog)
+{
+  if (dialog->sgf_node
+      && sgf_node_get_text_property_value (dialog->sgf_node, SGF_GAME_NAME)) {
+    gchar* title
+      = g_strdup_printf ("%s - %s",
+			 sgf_node_get_text_property_value (dialog->sgf_node,
+							   SGF_GAME_NAME),
+			 _("Game Information"));
+
+    gtk_window_set_title (GTK_WINDOW (dialog), title);
+    g_free (title);
+  }
+  else
+    gtk_window_set_title (GTK_WINDOW (dialog), _("Game Information"));
 }
 
 
@@ -957,6 +977,8 @@ set_field_text (GtkGameInfoDialog *dialog, SgfType sgf_property_type)
       goto text_set;
     }
   }
+  else if (sgf_property_type == SGF_GAME_NAME)
+    update_title (dialog);
 
   do_set_field_text (field,
 		     sgf_node_get_text_property_value (dialog->sgf_node,
@@ -1191,6 +1213,9 @@ update_property (GtkGameInfoDialog *dialog, SgfType sgf_property_type,
 		     sgf_property_type);
 
       dialog->simple_undo_field = NULL;
+
+      if (sgf_property_type == SGF_GAME_NAME)
+	update_title (dialog);
     }
 
     sgf_utils_end_action (sgf_tree);
