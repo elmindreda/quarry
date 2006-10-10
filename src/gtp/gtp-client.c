@@ -536,7 +536,7 @@ gtp_client_set_free_handicap (GtpClient *client,
   game_format_position_list (GAME_GO, client->board_size, client->board_size,
 			     &buffer, handicap_stones);
   send_command (client, response_callback, user_data,
-		"set_free_handicap %s", buffer);
+		"set_free_handicap %s", buffer.string);
 
   string_buffer_dispose (&buffer);
 }
@@ -612,7 +612,7 @@ gtp_client_play_move (GtpClient *client,
 
   send_command (client, response_callback, user_data,
 		client->protocol_version != 1 ? "play %s %s" : "%s %s",
-		COLOR_STRING (color), move_buffer);
+		COLOR_STRING (color), move_buffer.string);
 
   string_buffer_dispose (&move_buffer);
 }
