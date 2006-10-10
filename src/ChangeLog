@@ -1,5 +1,10 @@
 2006-10-08  Paul Pogonyshev  <pogonyshev@gmx.net>
 
+	* gtp/gtp-client.c (gtp_client_set_free_handicap): Bug-fix: use
+	`buffer.string', not just `buffer' where we need string (fixes a
+	bug on 64-bit machines, maybe #6432.)
+	(gtp_client_play_move): Likewise.
+
 	* gui-gtk/gtk-goban-window.c
 	(update_comment_and_node_name_if_needed): Remove old FIXME.
 	* gui-gtk/gtk-new-game-dialog.c (gtk_new_game_dialog_init):
