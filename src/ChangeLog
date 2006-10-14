@@ -1,3 +1,8 @@
+2006-10-15  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* gui-gtk/gtk-goban-window.c (initialize_gtp_player): Add code to
+	handle failed initialization gracefully and inform user.
+
 2006-10-14  Paul Pogonyshev  <pogonyshev@gmx.net>
 
 	* gui-gtk/gtk-game-info-dialog.c
