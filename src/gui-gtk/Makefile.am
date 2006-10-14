@@ -6,6 +6,7 @@ QUARRY_FULL_GTK_CFLAGS = 		\
 	$(QUARRY_GTHREAD_CFLAGS)
 
 AM_CPPFLAGS = 					\
+	-D DATA_DIR=\"$(datadir)\"		\
 	-D PACKAGE_DATA_DIR=\"$(pkgdatadir)\"	\
 						\
 	$(QUARRY_WARNINGS_GTK)			\

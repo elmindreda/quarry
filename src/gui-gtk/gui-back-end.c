@@ -26,6 +26,7 @@
 #include "gtk-preferences.h"
 #include "gtk-thread-interface.h"
 #include "gtk-tile-set.h"
+#include "gtk-utils.h"
 #include "gui-back-end.h"
 #include "quarry-stock.h"
 #include "configuration.h"
@@ -270,6 +271,10 @@ initialize_main_loop (void)
 					site_configuration_name)));
 
   gtk_preferences_init ();
+
+#if GTK_2_2_OR_LATER
+  gtk_window_set_default_icon_from_file (DATA_DIR "/pixmaps/quarry.png", NULL);
+#endif
 }
 
 
