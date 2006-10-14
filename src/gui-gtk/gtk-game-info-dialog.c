@@ -1167,13 +1167,20 @@ undo_or_redo_availability_changed (SgfUndoHistory *undo_history,
 				   void *user_data)
 {
   GtkGameInfoDialog *dialog = GTK_GAME_INFO_DIALOG (user_data);
-
-  gboolean can_undo = (dialog->simple_undo_field
-		       || sgf_utils_can_undo (dialog->sgf_tree));
-  gboolean can_redo = (dialog->simple_redo_field
-		       || sgf_utils_can_redo (dialog->sgf_tree));
+  SgfUndoHistory *saved_undo_history = dialog->sgf_tree->undo_history;
+  gboolean can_undo;
+  gboolean can_redo;
 
   UNUSED (undo_history);
+
+  dialog->sgf_tree->undo_history = dialog->sgf_undo_history;
+
+  can_undo = (dialog->simple_undo_field
+	      || sgf_utils_can_undo (dialog->sgf_tree));
+  can_redo = (dialog->simple_redo_field
+	      || sgf_utils_can_redo (dialog->sgf_tree));
+
+  dialog->sgf_tree->undo_history = saved_undo_history;
 
   gtk_dialog_set_response_sensitive (&dialog->dialog,
 				     GTK_GAME_INFO_DIALOG_RESPONSE_UNDO,
