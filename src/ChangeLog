@@ -1,3 +1,16 @@
+2006-10-14  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* gui-gtk/gtk-game-info-dialog.c
+	(undo_or_redo_availability_changed): Swap undo histories to
+	determine can undo/can redo state on the valid history (bug
+	#7419.)
+
+2006-10-12  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* gui-gtk/gui-back-end.c (initialize_main_loop): Set default icon
+	as some/most window managers don't use application's
+	icon (suggested by Michel Salim).
+
 2006-10-08  Paul Pogonyshev  <pogonyshev@gmx.net>
 
 	* gtp/gtp-client.c (gtp_client_set_free_handicap): Bug-fix: use
