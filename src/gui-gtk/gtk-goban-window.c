@@ -5025,8 +5025,84 @@ initialize_gtp_player (GtpClient *client, int successful,
   int *initialization_step = (goban_window->player_initialization_step
 			      + client_color_index);
 
-  /* FIXME */
-  g_assert (successful);
+  if (!successful) {
+    /* This should be the name as displayed in the Preferences dialog
+     * and elsewhere, but let's not bother; we don't have pointers to
+     * `GtpEngineListItem's currently.
+     */
+    gchar* engine_name = g_strdup_printf ((client->engine_version
+					   ? "%s %s" : "%s"),
+					  client->engine_name,
+					  client->engine_version);
+    gchar* message;
+    int engine_error = 1;
+    GtkWidget *error_dialog;
+
+    g_return_val_if_fail (*initialization_step != INITIALIZATION_NOT_STARTED, 0);
+
+    switch (*initialization_step) {
+    case INITIALIZATION_GAME_SET:
+      /* TRANSLATORS: Note that game name will be in `normal' form. */
+      message = g_strdup_printf (_("GTP engine `%s' reported it could handle "
+				   "%s game, but failed to initialize itself "
+				   "for it"),
+				 engine_name,
+				 _(game_info[game_tree->game].name));
+      break;
+
+    case INITIALIZATION_BOARD_SIZE_SET:
+      message = g_strdup_printf (_("GTP engine `%s' cannot handle %dx%d board "
+				   "size, sorry"),
+				 engine_name,
+				 game_tree->board_width,
+				 game_tree->board_width);
+      engine_error = 0;
+
+      break;
+
+    case INITIALIZATION_BOARD_CLEARED:
+      message = g_strdup_printf (_("GTP engine `%s' failed to clean "
+				   "the board"),
+				 engine_name);
+      break;
+
+    case INITIALIZATION_TIME_LIMITS_SET:
+      message = g_strdup_printf (_("GTP engine `%s' failed to set initial "
+				   "time limits (it could ignore them, but "
+				   "not fail)"),
+				 engine_name);
+      break;
+
+    case INITIALIZATION_FIXED_HANDICAP_SET:
+    case INITIALIZATION_FREE_HANDICAP_PLACED:
+      message = g_strdup_printf (_("GTP engine `%s' failed to set handicap "
+				   "stones on board"),
+				 engine_name);
+      break;
+
+    default:
+      g_assert_not_reached ();
+      return 0;
+    }
+
+    error_dialog = quarry_message_dialog_new (GTK_WINDOW (goban_window),
+					      GTK_BUTTONS_OK,
+					      GTK_STOCK_DIALOG_ERROR,
+					      (engine_error
+					       ? _("This is an engine error. "
+						   "You may want to report it "
+						   "to engine authors.")
+					       : NULL),
+					      "%s", message);
+
+    g_free (message);
+    g_free (engine_name);
+
+    gtk_widget_destroy (GTK_WIDGET (goban_window));
+    gtk_utils_show_and_forget_dialog (GTK_DIALOG (error_dialog));
+
+    return 0;
+  }
 
   /* These special cases are needed to avoid nasty `goto's in `switch'
    * block below.
