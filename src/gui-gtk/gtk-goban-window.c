@@ -1890,7 +1890,7 @@ save_file_as_response (GtkWidget *file_dialog, gint response_id,
 static gboolean
 do_save_collection (GtkGobanWindow *goban_window, const gchar *filename)
 {
-  int result;
+  char* error;
   SgfGameTree *sgf_tree = goban_window->current_tree;
   SgfUndoHistory *undo_history = sgf_tree->undo_history;
 
@@ -1902,8 +1902,8 @@ do_save_collection (GtkGobanWindow *goban_window, const gchar *filename)
   sgf_tree->undo_history = sgf_undo_history_new (sgf_tree);
   fetch_comment_and_node_name (goban_window, TRUE);
 
-  result = sgf_write_file (filename, goban_window->sgf_collection,
-			   sgf_configuration.force_utf8);
+  error = sgf_write_file (filename, goban_window->sgf_collection,
+			  sgf_configuration.force_utf8);
 
   if (sgf_utils_can_undo (sgf_tree))
     sgf_utils_undo (sgf_tree);
@@ -1911,12 +1911,22 @@ do_save_collection (GtkGobanWindow *goban_window, const gchar *filename)
   sgf_undo_history_delete (sgf_tree->undo_history, sgf_tree);
   sgf_tree->undo_history = undo_history;
 
-  if (result) {
+  if (!error) {
     sgf_collection_set_unmodified (goban_window->sgf_collection);
     goban_window->time_of_first_modification = 0;
   }
+  else {
+    GtkWidget *error_dialog
+      = quarry_message_dialog_new (GTK_WINDOW (goban_window),
+				   GTK_BUTTONS_OK, GTK_STOCK_DIALOG_ERROR,
+				   error,
+				   _("Error saving to file `%s'"), filename);
 
-  return result;
+    g_free (error);
+    gtk_utils_show_and_forget_dialog (GTK_DIALOG (error_dialog));
+  }
+
+  return error == NULL;
 }
 
 
