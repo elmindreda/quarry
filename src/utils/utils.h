@@ -55,6 +55,11 @@ struct _QuarryColor {
 };
 
 
+#define STRUCTURE_FIELD_OFFSET(StructureType, field)	\
+  (((const char *) &((StructureType *) NULL)->field)	\
+   - (const char *) NULL)
+
+
 #define QUARRY_COLORS_ARE_EQUAL(first_color, second_color)	\
   ((first_color).red == (second_color).red			\
    && (first_color).green == (second_color).green		\
@@ -170,7 +175,8 @@ struct _MemoryChunk {
 };
 
 struct _MemoryPool {
-  int		 item_size;
+  int		  item_size;
+  int		  index_field_offset;
 
   MemoryChunk	 *first_chunk;
   MemoryChunk	 *last_chunk;
@@ -193,7 +199,8 @@ typedef void (* MemoryPoolCallback) (void *item);
 typedef void (* MemoryPoolDataCallback) (void *item, void *data);
 
 
-void		memory_pool_init (MemoryPool *pool, int item_size);
+void		memory_pool_init (MemoryPool *pool, int item_size,
+				  int index_field_offset);
 
 void *		memory_pool_alloc (MemoryPool *pool);
 void		memory_pool_free (MemoryPool *pool, void *item);
@@ -230,13 +237,13 @@ struct _MemoryPool {
 };
 
 
-#define memory_pool_init(pool, _item_size)	\
+#define memory_pool_init(pool, _item_size, index_field_offset)	\
   ((pool)->item_size = (_item_size))
 
-#define memory_pool_alloc(pool)			\
+#define memory_pool_alloc(pool)					\
   utils_malloc ((pool)->item_size)
 
-#define memory_pool_free(pool, item)		\
+#define memory_pool_free(pool, item)				\
   (UNUSED (pool), utils_free (item))
 
 /* Functions memory_pool_count_items(), memory_pool_traverse(),
@@ -519,6 +526,7 @@ struct _BufferedWriter {
   size_t		    column;
 
   int			    successful;
+  char*			    error_string;
 };
 
 struct _BufferedWriterChunkData {
@@ -527,7 +535,7 @@ struct _BufferedWriterChunkData {
 };
 
 
-int		buffered_writer_init (BufferedWriter *writer,
+const char *	buffered_writer_init (BufferedWriter *writer,
 				      const char *filename, size_t buffer_size);
 void		buffered_writer_init_memory (BufferedWriter *writer,
 					     size_t buffer_size);
