@@ -32,6 +32,7 @@
 #include "utils.h"
 
 #include <assert.h>
+#include <stdio.h>
 #include <string.h>
 
 
@@ -500,8 +501,9 @@ configuration_write_to_file (const ConfigurationSection *sections,
 			     int num_sections, const char *filename)
 {
   BufferedWriter writer;
+  const char* initialization_error = buffered_writer_init (&writer, filename, 0x1000);
 
-  if (buffered_writer_init (&writer, filename, 0x1000)) {
+  if (!initialization_error) {
     int k;
 
     buffered_writer_cat_string (&writer, configuration_file_intro_comment);
@@ -521,7 +523,16 @@ configuration_write_to_file (const ConfigurationSection *sections,
 	write_section (&writer, sections, sections->section_structure, NULL);
     }
 
+    if (!writer.successful) {
+      fprintf (stderr, "error writing configuration: %s\n",
+	       writer.error_string);
+    }
+
     return buffered_writer_dispose (&writer);
+  }
+  else {
+    fprintf (stderr, "error opening configuration file for writing: %s\n",
+	     initialization_error);
   }
 
   return 0;
