@@ -35,6 +35,7 @@
 #include "utils.h"
 
 #include <assert.h>
+#include <errno.h>
 #include <limits.h>
 #include <stdarg.h>
 #include <stdlib.h>
@@ -53,7 +54,7 @@ static void	update_column (BufferedWriter *writer,
 			       const char *buffer, size_t length);
 
 
-int
+const char*
 buffered_writer_init (BufferedWriter *writer,
 		      const char *filename, size_t buffer_size)
 {
@@ -63,7 +64,7 @@ buffered_writer_init (BufferedWriter *writer,
   if (filename) {
     writer->file = fopen (filename, "wb");
     if (!writer->file)
-      return 0;
+      return strerror (errno);
   }
   else
     writer->file = stdout;
@@ -81,8 +82,9 @@ buffered_writer_init (BufferedWriter *writer,
   writer->column	 = 0;
 
   writer->successful	 = 1;
+  writer->error_string   = NULL;
 
-  return 1;
+  return NULL;
 }
 
 
@@ -125,6 +127,7 @@ buffered_writer_dispose (BufferedWriter *writer)
     fclose (writer->file);
 
   utils_free (writer->buffer);
+  utils_free (writer->error_string);
 
   return writer->successful;
 }
@@ -426,6 +429,9 @@ flush_buffer (BufferedWriter *writer)
 				   writer->buffer_pointer - writer->buffer, 1,
 				   writer->file);
       writer->buffer_pointer = writer->buffer;
+
+      if (!writer->successful)
+	writer->error_string = utils_duplicate_string (strerror (errno));
     }
   }
   else {
