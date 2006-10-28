@@ -65,20 +65,32 @@ static int	    do_write_text (SgfWritingData *data, const char *text,
 /* NOTE: if `filename' is NULL, write to stdout.
  * FIXME: add proper comment and actually write this function.
  */
-int
+char *
 sgf_write_file (const char *filename, SgfCollection *collection,
 		int force_utf8)
 {
   SgfWritingData data;
+  const char *initialization_error;
 
   assert (collection);
 
-  if (buffered_writer_init (&data.writer, filename, SGF_WRITER_BUFFER_SIZE)) {
-    write_collection (&data, collection, force_utf8);
-    return buffered_writer_dispose (&data.writer);
-  }
+  initialization_error = buffered_writer_init (&data.writer, filename,
+					       SGF_WRITER_BUFFER_SIZE);
+  if (initialization_error)
+    return utils_duplicate_string (initialization_error);
 
-  return 0;
+  write_collection (&data, collection, force_utf8);
+
+  if (data.writer.successful) {
+    buffered_writer_dispose (&data.writer);
+    return NULL;
+  }
+  else {
+    char* error = utils_duplicate_string (data.writer.error_string);
+
+    buffered_writer_dispose (&data.writer);
+    return error;
+  }
 }
 
 

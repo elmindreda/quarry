@@ -790,7 +790,7 @@ extern const SgfParserParameters	sgf_parser_defaults;
 
 /* `sgf-writer.c' global functions. */
 
-int		 sgf_write_file (const char *filename,
+char *		 sgf_write_file (const char *filename,
 				 SgfCollection *collection, int force_utf8);
 char *		 sgf_write_in_memory (SgfCollection *collection,
 				      int force_utf8, int *sgf_length);
