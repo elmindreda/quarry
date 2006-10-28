@@ -32,7 +32,6 @@ libguiutils_a_SOURCES =			\
 	time-control.c			\
 					\
 	configuration.h			\
-	configuration-internals.h	\
 	gui-utils.h			\
 	tile-renderer.h			\
 	time-control.h			\

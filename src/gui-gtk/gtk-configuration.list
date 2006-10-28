@@ -23,7 +23,7 @@
 @mode configuration
 
 
-@h_include "configuration-internals.h"
+@h_include "configuration.h"
 @h_include "board.h"
 @h_include "utils.h"
 
