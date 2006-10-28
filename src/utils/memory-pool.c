@@ -35,14 +35,14 @@
  * - very fast "flushing" of pools which frees all items stored.
  *
  * The disadvantage is that all items must include a field of
- * `ItemIndex' type (unsigned char) as their first field.
+ * `ItemIndex' type (unsigned char.)
  *
  *
  * Chunks in memory pools are kept in double-linked list.  Non-full
  * chunks (with at least one free item) are kept together in the
  * list's head.  At least one non-full chunk must always be present.
  *
- * Each item's first field must be of `ItemIndex' type.  This field is
+ * Each item must jave a field of `ItemIndex' type.  This field is
  * private to memory pool and must not be used from outside.
  *
  * When an item is allocated, this field contains item's index in
@@ -70,7 +70,7 @@
 #endif
 
 
-static MemoryChunk *  memory_chunk_new (int item_size);
+static MemoryChunk *  memory_chunk_new (int item_size, int index_field_offset);
 
 
 #if ENABLE_MEMORY_PROFILING
@@ -88,16 +88,18 @@ int		num_pools_flushed = 0;
 
 /* Initialize a MemoryPool structure to store items of given size. */
 void
-memory_pool_init (MemoryPool *pool, int item_size)
+memory_pool_init (MemoryPool *pool, int item_size, int index_field_offset)
 {
   MemoryChunk *chunk;
 
   assert (pool);
   assert (item_size > 0);
+  assert (0 <= index_field_offset && index_field_offset < item_size);
 
-  pool->item_size = item_size;
+  pool->item_size	   = item_size;
+  pool->index_field_offset = index_field_offset;
 
-  chunk = memory_chunk_new (item_size);
+  chunk = memory_chunk_new (item_size, index_field_offset);
   chunk->next = NULL;
   chunk->previous = NULL;
 
@@ -137,8 +139,10 @@ memory_pool_alloc (MemoryPool *pool)
   item_index = chunk->first_free_item;
   item = (char *) chunk->memory + item_index * pool->item_size;
 
-  if (--chunk->num_free_items)
-    chunk->first_free_item = * (ItemIndex *) item;
+  if (--chunk->num_free_items) {
+    chunk->first_free_item = * (ItemIndex *) ((char *) item
+					      + pool->index_field_offset);
+  }
   else {
     if (chunk->next && chunk->next->num_free_items > 0) {
       /* The chunk is full now, but is followed by at least one
@@ -156,7 +160,7 @@ memory_pool_alloc (MemoryPool *pool)
     }
     else {
       /* We need at least one non-full chunk. */
-      chunk = memory_chunk_new (pool->item_size);
+      chunk = memory_chunk_new (pool->item_size, pool->index_field_offset);
       chunk->next = pool->first_chunk;
       chunk->previous = NULL;
 
@@ -169,7 +173,7 @@ memory_pool_alloc (MemoryPool *pool)
     }
   }
 
-  * (ItemIndex *) item = item_index;
+  * (ItemIndex *) ((char *) item + pool->index_field_offset) = item_index;
 
 #if ENABLE_MEMORY_PROFILING
   pool->num_items_allocated++;
@@ -187,7 +191,8 @@ void
 memory_pool_free (MemoryPool *pool, void *item)
 {
   MemoryChunk *chunk;
-  ItemIndex item_index = * (ItemIndex *) item;
+  ItemIndex item_index = * (ItemIndex *) ((char *) item
+					  + pool->index_field_offset);
 
   assert (pool->item_size > 0);
 
@@ -248,7 +253,8 @@ memory_pool_free (MemoryPool *pool, void *item)
 
   chunk->num_free_items++;
 
-  * (ItemIndex *) item = chunk->first_free_item;
+  * (ItemIndex *) ((char *) item + pool->index_field_offset)
+    = chunk->first_free_item;
   chunk->first_free_item = item_index;
 
 #if ENABLE_MEMORY_PROFILING
@@ -305,7 +311,7 @@ memory_pool_traverse (const MemoryPool *pool, MemoryPoolCallback callback)
   do {
     for (memory = (char *) chunk->memory, k = 0; k < NUM_ITEMS_IN_CHUNK;
 	 memory += pool->item_size, k++) {
-      if (* (ItemIndex *) memory == k)
+      if (* (ItemIndex *) (memory + pool->index_field_offset) == k)
 	callback (memory);
     }
 
@@ -342,7 +348,7 @@ memory_pool_traverse_data (const MemoryPool *pool,
   do {
     for (memory = (char *) chunk->memory, k = 0; k < NUM_ITEMS_IN_CHUNK;
 	 memory += pool->item_size, k++) {
-      if (* (ItemIndex *) memory == k)
+      if (* (ItemIndex *) (memory + pool->index_field_offset) == k)
 	callback (memory, data);
     }
 
@@ -395,7 +401,7 @@ memory_pool_flush (MemoryPool *pool)
 
 /* Allocate a new MemoryChunk structure with all items being free. */
 static MemoryChunk *
-memory_chunk_new (int item_size)
+memory_chunk_new (int item_size, int index_field_offset)
 {
   MemoryChunk *chunk = utils_malloc (sizeof (MemoryChunk) - sizeof (int)
 				     + NUM_ITEMS_IN_CHUNK * item_size);
@@ -404,7 +410,7 @@ memory_chunk_new (int item_size)
 
   for (memory = (char *) chunk->memory, k = 0; k < NUM_ITEMS_IN_CHUNK;
        memory += item_size, k++)
-    * (ItemIndex *) memory = k + 1;
+    * (ItemIndex *) (memory + index_field_offset) = k + 1;
 
   chunk->first_free_item = 0;
   chunk->num_free_items = NUM_ITEMS_IN_CHUNK;
