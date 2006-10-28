@@ -1,3 +1,36 @@
+2006-10-28  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* gui-gtk/gtk-goban-window.c (do_save_collection): Show error
+	dialog on writing error.
+
+	* gui-utils/configuration.c (configuration_write_to_file): Print
+	error to `stderr' if unable to write for some reason.
+
+	* sgf/sgf-writer.c (sgf_write_file): Change return type to `const
+	char*' and return error, if any.
+
+	* utils/buffered-writer.c (buffered_writer_init): Change return
+	type to `const char*' and return result of strerror() on error in
+	opening file.  Initialize new field `error_string' to NULL.
+	(buffered_writer_dispose): Free `error_string'.
+	(flush_buffer): Set `error_string' on error.
+
+	* gui-utils/configuration-internals.h: Remove file, use
+	`configuration.h' directly.
+
+	* sgf/sgf-tree.c (sgf_game_tree_new, sgf_game_tree_set_game):
+	Adapt to memory_pool_init() change.
+
+	* utils/memory-pool.c: Hopefully a fix for #6432.
+	(memory_pool_init): Add `index_field_offset' argument and store it
+	in the structure.
+	(memory_pool_alloc, memory_pool_free, memory_pool_traverse)
+	(memory_pool_traverse_data): Use `index_field_offset'.
+	(memory_chunk_new): Add `index_field_offset' argument.
+
+	* utils/utils.h (STRUCTURE_FIELD_OFFSET): Move here from
+	`gui-utils/configuration-internals.h'.
+
 2006-10-15  Paul Pogonyshev  <pogonyshev@gmx.net>
 
 	* gui-gtk/gtk-goban-window.c (initialize_gtp_player): Add code to
