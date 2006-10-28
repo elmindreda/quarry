@@ -184,7 +184,8 @@ sgf_game_tree_new (void)
 
   tree->node_pool.item_size   = 0;
 
-  memory_pool_init (&tree->property_pool, sizeof (SgfProperty));
+  memory_pool_init (&tree->property_pool, sizeof (SgfProperty),
+		    STRUCTURE_FIELD_OFFSET (SgfProperty, item_index));
 
   tree->notification_callback = NULL;
   tree->user_data	      = NULL;
@@ -287,22 +288,31 @@ void
 sgf_game_tree_set_game (SgfGameTree *tree, Game game)
 {
   int node_size;
+  int index_field_offset;
 
   assert (tree);
   assert (FIRST_GAME <= game && game <= LAST_GAME);
 
   tree->game = game;
 
-  if (game == GAME_GO)
-    node_size = sizeof (SgfNodeGo);
-  else if (game == GAME_REVERSI)
-    node_size = sizeof (SgfNodeReversi);
-  else if (game == GAME_AMAZONS)
-    node_size = sizeof (SgfNodeAmazons);
-  else
-    node_size = sizeof (SgfNodeGeneric);
+  if (game == GAME_GO) {
+    node_size	       = sizeof (SgfNodeGo);
+    index_field_offset = STRUCTURE_FIELD_OFFSET (SgfNodeGo, item_index);
+  }
+  else if (game == GAME_REVERSI) {
+    node_size	       = sizeof (SgfNodeReversi);
+    index_field_offset = STRUCTURE_FIELD_OFFSET (SgfNodeReversi, item_index);
+  }
+  else if (game == GAME_AMAZONS) {
+    node_size	       = sizeof (SgfNodeAmazons);
+    index_field_offset = STRUCTURE_FIELD_OFFSET (SgfNodeAmazons, item_index);
+  }
+  else {
+    node_size	       = sizeof (SgfNodeGeneric);
+    index_field_offset = STRUCTURE_FIELD_OFFSET (SgfNodeGeneric, item_index);
+  }
 
-  memory_pool_init (&tree->node_pool, node_size);
+  memory_pool_init (&tree->node_pool, node_size, index_field_offset);
 }
 
 
