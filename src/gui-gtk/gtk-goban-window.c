@@ -2121,6 +2121,10 @@ find_dialog_response (QuarryFindDialog *find_dialog, gint response_id,
       return;
     }
   }
+  else if (response_id == GTK_RESPONSE_HELP) {
+    gtk_help_display ("find-dialog");
+    return;
+  }
 
   gtk_widget_destroy (GTK_WIDGET (find_dialog));
 }
@@ -4689,8 +4693,10 @@ text_buffer_mark_set (GtkTextBuffer *text_buffer,
   node_name_end_iterator = start_iterator;
   gtk_text_iter_forward_char (&node_name_end_iterator);
 
+  gtk_text_buffer_begin_user_action (goban_window->text_buffer);
   gtk_text_buffer_delete (text_buffer, &start_iterator,
 			  &node_name_end_iterator);
+  gtk_text_buffer_end_user_action (goban_window->text_buffer);
 }
 
 
