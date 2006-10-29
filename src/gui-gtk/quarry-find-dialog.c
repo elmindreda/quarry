@@ -127,7 +127,8 @@ quarry_find_dialog_init (QuarryFindDialog *dialog)
 			  QUARRY_STOCK_FIND_PREVIOUS,
 			  QUARRY_FIND_DIALOG_FIND_PREVIOUS,
 			  QUARRY_STOCK_FIND_NEXT,
-			  QUARRY_FIND_DIALOG_FIND_NEXT, NULL);
+			  QUARRY_FIND_DIALOG_FIND_NEXT,
+			  GTK_STOCK_HELP, GTK_RESPONSE_HELP, NULL);
   gtk_dialog_set_default_response (&dialog->dialog,
 				   QUARRY_FIND_DIALOG_FIND_NEXT);
 
