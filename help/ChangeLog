@@ -1,3 +1,10 @@
+2006-10-28  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* C/quarry.xml: Expand.  Raise level of all sections by 1 by
+	converting `article' to a `book'.
+	
+	* quarry-help.css: Use bold font for GUI labels.
+
 2006-07-16  Paul Pogonyshev  <pogonyshev@gmx.net>
 
 	* (Quarry version 0.1.19.)

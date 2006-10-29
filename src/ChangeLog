@@ -1,4 +1,22 @@
+2006-10-29  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* gui-gtk/gtk-goban-window.c (text_buffer_mark_set): Mark removal
+	of node name row as user action so it is included in undo history.
+
 2006-10-28  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* gui-gtk/gtk-go-to-named-node-dialog.c
+	(gtk_go_to_named_node_dialog_init): Remove separator from the
+	dialog.
+
+	* gui-gtk/quarry-find-dialog.c (quarry_find_dialog_init): Add
+	"Help" button.
+	* gui-gtk/gtk-goban-window.c (find_dialog_response): Process
+	clicks on it.
+
+	* gui-gtk/gtk-resume-game-dialog.c
+	(gtk_resume_game_dialog_present): Add "Help" button.
+	(gtk_resume_game_dialog_response): Process clicks on it.
 
 	* gui-gtk/gtk-goban-window.c (do_save_collection): Show error
 	dialog on writing error.
