@@ -1,5 +1,7 @@
 2006-10-29  Paul Pogonyshev  <pogonyshev@gmx.net>
 
+	* (Quarry version 0.1.20.)
+
 	* gui-gtk/gtk-goban-window.c (text_buffer_mark_set): Mark removal
 	of node name row as user action so it is included in undo history.
 
