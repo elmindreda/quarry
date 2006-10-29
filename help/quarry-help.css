@@ -103,7 +103,7 @@ div.note h3 {
 	text-decoration: underline;
 }
 
-span.guimenu, span.guisubmenu, span.guimenuitem, span.guibutton {
+span.guimenu, span.guisubmenu, span.guimenuitem, span.guibutton, span.guilabel {
 	font-weight:	bold;
 }
 
