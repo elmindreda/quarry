@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!DOCTYPE article PUBLIC "-//OASIS//DTD DocBook XML V4.1.2//EN"
+<!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.1.2//EN"
 	  "http://www.oasis-open.org/docbook/xml/4.1.2/docbookx.dtd"
-	  [ <!ENTITY legal SYSTEM "legal.xml">
-	    <!ENTITY FDL   SYSTEM "fdl.xml">
-	    <!ENTITY appversion "0.2">
+	  [ <!ENTITY LEGAL       SYSTEM "legal.xml">
+	    <!ENTITY FDL         SYSTEM "fdl.xml">
+	    <!ENTITY appversion  "0.2">
 	    <!ENTITY manrevision "0.2">
-	    <!ENTITY date "October 2005">
-	    <!ENTITY app "<application>Quarry</application>"> ]>
+	    <!ENTITY date        "October 2006">
+	    <!ENTITY app         "<application>Quarry</application>"> ]>
 <!--
       (Do not remove this comment block.)
   Maintained by the GNOME Documentation Project
@@ -21,8 +21,8 @@
 
 <!-- Please do not change the `id'; for translations, change `lang' to appropriate
      code. -->
-<article id="index" lang="en">
-  <articleinfo>
+<book id="index" lang="en">
+  <bookinfo>
     <title>&app; Manual V&manrevision;</title>
     <copyright>
       <year>2004</year>
@@ -31,7 +31,7 @@
       <holder>Paul Pogonyshev</holder>
     </copyright>
 
-    <!-- Translators: uncomment this:
+    <!-- TRANSLATORS: Uncomment this:
 
     <copyright>
       <year>2006</year>
@@ -43,7 +43,7 @@
     <!-- An address can be added to the publisher information.  If a role is not
 	 specified, the publisher/author is the same for all versions of the document.
 
-	 FIXME: Seems not particularly true for Quarry, commented out.
+	 Seems not particularly true for Quarry, commented out.
       -->
     <!--
     <publisher>
@@ -51,7 +51,7 @@
     </publisher>
     -->
 
-    &legal;
+    &LEGAL;
 
     <authorgroup>
       <author>
@@ -101,19 +101,19 @@
       </para>
       <!-- Translators may also add here feedback address for translations. -->
     </legalnotice>
-  </articleinfo>
 
-  <indexterm zone="index">
-    <primary>Quarry</primary>
-  </indexterm>
-  <indexterm zone="index">
-    <primary>quarry</primary>
-  </indexterm>
+    <indexterm zone="index">
+      <primary>Quarry</primary>
+    </indexterm>
+    <indexterm zone="index">
+      <primary>quarry</primary>
+    </indexterm>
+  </bookinfo>
 
   <!-- Document Body -->
 
   <!-- Introduction -->
-  <sect1 id="introduction">
+  <preface id="introduction">
     <title>Introduction</title>
     <para>
       The &app; application allows you to play the board games of Go, Amazons and Reversi.
@@ -145,9 +145,11 @@
 	  <itemizedlist>
 	    <listitem>
 	      <para>
-		<ulink type="http" url="http://www.gnugo.org/gnugo.html">GNU Go</ulink>,
-		<ulink type="http" url="http://rhino.sourceforge.net/">GRhino</ulink> or
-		any other
+		<ulink type="http" url="http://www.gnugo.org/gnugo.html"><application>GNU
+		    Go</application></ulink>,
+		<ulink type="http"
+		       url="http://rhino.sourceforge.net/"><application>GRhino</application></ulink>
+		or any other
 		<ulink type="http"
 		       url="http://www.lysator.liu.se/~gunnar/gtp/">GTP</ulink>
 		(Game Text Protocol) engine can be your opponent.
@@ -206,7 +208,7 @@
 
 	    <listitem>
 	      <para>
-		<link linkend="game-tree-view">Game tree view</link> allows for easy
+		<link linkend="game-tree-view">Game Tree View</link> allows for easy
 		navigation of game records.
 	      </para>
 	    </listitem>
@@ -231,8 +233,9 @@
     <note>
       <para>
 	&app; itself can play neither Go, nor Amazons, nor Reversi.  To have a computer
-	opponent, you need to find a program (e.g. GNU Go mentioned above) that supports
-	GTP and <link linkend="register-game-playing-program">register it in &app;</link>.
+	opponent, you need to find a program (e.g. <application>GNU Go</application>
+	mentioned above) that supports GTP and
+	<link linkend="register-game-playing-program">register it in &app;</link>.
       </para>
     </note>
 
@@ -242,13 +245,13 @@
 	before versions 0.3.x.
       </para>
     </note>
-  </sect1>
+  </preface>
 
   <!-- Getting Started -->
-  <sect1 id="getting-started">
+  <chapter id="getting-started">
     <title>Getting Started</title>
 
-    <sect2 id="start">
+    <section id="start">
       <title>To Start &app;</title>
       <para>
 	You can start &app; from your Applications menu, it should typically be available
@@ -287,9 +290,9 @@
 	  typically do have this suffix.
 	</para>
       </note>
-    </sect2>
+    </section>
 
-    <sect2 id="when-start">
+    <section id="when-start">
       <title>When You Start &app;</title>
       <para>
 	When you start &app;, Control Center window is displayed:
@@ -386,17 +389,17 @@
 	  </listitem>
 	</varlistentry>
       </variablelist>
-    </sect2>
-  </sect1>
+    </section>
+  </chapter>
 
-  <sect1 id="usage">
+  <chapter id="usage">
     <title>Usage</title>
 
-    <sect2 id="new-game">
+    <section id="new-game">
       <title>To Start a New Game</title>
       <para>
-	To start a new game, click the <guibutton>New Game</guibutton> button in the &app;
-	<link linkend="when-start">Control Center window</link> or choose
+	To start a new game, click the <guibutton>New Game</guibutton> button in the
+	<link linkend="when-start">&app; Control Center window</link> or choose
 	<menuchoice>
 	  <guimenu>File</guimenu>
 	  <guimenuitem>New Game…</guimenuitem>
@@ -418,9 +421,9 @@
 	<link linkend="new-game-dialog">detailed description of New Game
 	  dialog</link>.
       </para>
-    </sect2>
+    </section>
 
-    <sect2 id="open-game-record">
+    <section id="open-game-record">
       <title>To Open a Game Record</title>
       <para>
 	You can open a game record in one of three ways:
@@ -464,9 +467,9 @@
 	  </para>
 	</listitem>
       </itemizedlist>
-    </sect2>
+    </section>
 
-    <sect2 id="save-game-record">
+    <section id="save-game-record">
       <title>To Save a Game Record</title>
       <para>
 	To save a game record, choose
@@ -489,9 +492,9 @@
 	menu item.  Enter a name for the file in the <guilabel>Save As</guilabel> dialog
 	and click <guibutton>OK</guibutton>.
       </para>
-    </sect2>
+    </section>
 
-    <sect2 id="register-game-playing-program">
+    <section id="register-game-playing-program">
       <title>To Register a Game-Playing Program</title>
       <para>
 	To register a game-playing program in &app;, first open the
@@ -503,12 +506,13 @@
       </para>
 
       <para>
-	Then click the <guibutton>Add</guibutton> button and, in the appeared
-	<link linkend="preferences-gtp-engine-information-dialog">dialog</link>, enter the
-	command line required to launch the program in GTP mode.  You should consult the
-	program’s manual to find out how the command line should look like.  For instance,
-	command line for <ulink type="http" url="http://www.gnugo.org/gnugo.html">GNU
-	Go</ulink> should be like this (note the double hyphens):
+	Then click the <guibutton>Add</guibutton> button and, in the
+	<link linkend="preferences-gtp-engine-information-dialog">appeared dialog</link>,
+	enter the command line required to launch the program in GTP mode.  You should
+	consult the program’s manual to find out how the command line should look like.
+	For instance, command line for
+	<ulink type="http" url="http://www.gnugo.org/gnugo.html"><application>GNU
+	Go</application></ulink> should be like this (note the double hyphens):
       </para>
 
       <para>
@@ -518,9 +522,9 @@
       <para>
 	Other programs may require different options or no options at all.
       </para>
-    </sect2>
+    </section>
 
-    <sect2 id="adjourn-game">
+    <section id="adjourn-game">
       <title>To Adjourn a Game</title>
       <para>
 	To adjourn a game, choose
@@ -536,13 +540,13 @@
 	Actually, adjourning differs from saving only in that it closes
 	the <link linkend="board-windows">game’s window</link>.
       </para>
-    </sect2>
+    </section>
 
-    <sect2 id="resume-game">
+    <section id="resume-game">
       <title>To Resume a Game</title>
       <para>
 	To resume a previously adjourned game, click <guibutton>Resume Game</guibutton>
-	button in the &app; <link linkend="when-start">Control Center window</link> or
+	button in the <link linkend="when-start">&app; Control Center window</link> or
 	select <guimenuitem>Resume Game…</guimenuitem> item from
 	the <guimenu>File</guimenu> menu.  You will be prompted for the file that contains
 	the game record.
@@ -556,13 +560,18 @@
 	should play.  You will always have the final say, though, and will be able to
 	correct any mistakes.
       </para>
-    </sect2>
-  </sect1>
 
-  <sect1 id="windows-and-menus">
+      <para>
+	If the game you select is already finished, you will be prompted to open it for
+	viewing and/or editing instead of resuming.
+      </para>
+    </section>
+  </chapter>
+
+  <chapter id="windows-and-menus">
     <title>Quarry Windows and Menus</title>
 
-    <sect2 id="new-game-dialog">
+    <section id="new-game-dialog">
       <title>New Game Dialog</title>
       <para>
 	The New Game dialog consists of two pages, <guilabel>Game &amp; Players</guilabel>
@@ -571,7 +580,7 @@
 	displayed, which is specific for each of three games—Go, Amazons and Reversi.
       </para>
 
-      <sect3 id="new-game-dialog-game-and-players">
+      <section id="new-game-dialog-game-and-players">
 	<title>Game &amp; Players Page</title>
 	<para>
 	  On this page you can select one of three available games and the opponents.  You
@@ -586,8 +595,8 @@
 	<note>
 	  <para>
 	    Before playing against a computer program (e.g.
-	    <ulink type="http" url="http://www.gnugo.org/gnugo.html">GNU Go</ulink>, you
-	    need to register it in &app;.  See
+	    <ulink type="http" url="http://www.gnugo.org/gnugo.html"><application>GNU
+	    Go</application></ulink>, you need to register it in &app;.  See
 	    <link linkend="preferences-gtp-engines">GTP Engines</link> section for how to
 	    do this.
 	  </para>
@@ -665,9 +674,9 @@
 	    </listitem>
 	  </varlistentry>
 	</variablelist>
-      </sect3>
+      </section>
 
-      <sect3 id="new-game-dialog-game-rules">
+      <section id="new-game-dialog-game-rules">
 	<title>Game Rules Page</title>
 	<para>
 	  On this page you can select the rules for the game.  The page has two parts.
@@ -682,7 +691,7 @@
 	  button to start the game.
 	</para>
 
-	<sect4 id="new-game-dialog-go-rules">
+	<section id="new-game-dialog-go-rules">
 	  <title>Go Rules</title>
 	  <para>
 	    Go has many different rule sets that differ in scoring details, treating of
@@ -703,7 +712,7 @@
 	    </varlistentry>
 
 	    <varlistentry>
-	      <term>Traditional board sizes buttons</term>
+	      <term>Traditional board size buttons</term>
 	      <listitem>
 		<para>
 		  These buttons allows you to quickly select one of
@@ -768,9 +777,9 @@
 	    <link linkend="new-game-dialog-time-settings">time limit settings
 	      description</link>.
 	  </para>
-	</sect4>
+	</section>
 
-	<sect4 id="new-game-dialog-amazons-rules">
+	<section id="new-game-dialog-amazons-rules">
 	  <title>Amazons Rules</title>
 	  <para>
 	    At present, Amazons rules in &app; are limited to board size and common
@@ -779,9 +788,9 @@
 	    small button to the right), but you can choose anything from 5×5 to 25×25
 	    inclusive.
 	  </para>
-	</sect4>
+	</section>
 
-	<sect4 id="new-game-dialog-reversi-rules">
+	<section id="new-game-dialog-reversi-rules">
 	  <title>Reversi Rules</title>
 	  <para>
 	    Reversi rules in &app; are limited to board size and
@@ -792,9 +801,9 @@
 	    However, in &app; you can select any even board size from 6×6 to 24×24
 	    inclusive.
 	  </para>
-	</sect4>
+	</section>
 
-	<sect4 id="new-game-dialog-time-settings">
+	<section id="new-game-dialog-time-settings">
 	  <title>Time Limit Settings</title>
 	  <para>
 	    &app; allows to play games with limited time for both players.  This also
@@ -855,7 +864,7 @@
 	      </listitem>
 	    </varlistentry>
 
-	    <varlistentry>
+	    <varlistentry id="canadian-overtime">
 	      <term>Canadian overtime (also known as Canadian byo-yomi)</term>
 	      <listitem>
 		<para>
@@ -884,11 +893,11 @@
 	      </listitem>
 	    </varlistentry>
 	  </variablelist>
-	</sect4>
-      </sect3>
-    </sect2>
+	</section>
+      </section>
+    </section>
 
-    <sect2 id="new-game-record-dialog">
+    <section id="new-game-record-dialog">
       <title>New Game Record Dialog</title>
       <para>
 	The New Game Record dialog allows you to start a new game record without actually
@@ -911,15 +920,13 @@
 	    </para>
 	  </listitem>
 	</varlistentry>
-      </variablelist>
 
-      <variablelist>
 	<varlistentry>
 	  <term>Rules section</term>
 	  <listitem>
 	    <para>
 	      This section contains various controls for basic game rules.  They are
-	      described in more details in <link linkend="new-game-dialog">the New Game
+	      described in more details in the <link linkend="new-game-dialog">New Game
 	      dialog section</link>.
 	    </para>
 
@@ -931,79 +938,1158 @@
 	    </para>
 	  </listitem>
 	</varlistentry>
-      </variablelist>
 
-      <variablelist>
 	<varlistentry>
 	  <term><guilabel>Short Game Information</guilabel></term>
 	  <listitem>
 	    <para>
 	      Here you can enter the names of white and black player and the name of the
-	      game.  You can change or expand this information later,
-	      using <link linkend="game-information-dialog">the Game Information
-	      dialog </link>.
+	      game.  You can change or expand this information later, using the
+	      <link linkend="game-information-dialog">Game Information dialog </link>.
 	    </para>
 	  </listitem>
 	</varlistentry>
       </variablelist>
-    </sect2>
+    </section>
 
-    <sect2 id="resuming-game-dialog">
+    <section id="resuming-game-dialog">
       <title>Resuming Game Dialog</title>
       <para>
-	Sorry, not documented yet…
+	The Resuming Game Dialog allows you to specify or correct game players when
+	resuming a game.  It also shows some information about the game, most of which is
+	not editable.
       </para>
-    </sect2>
 
-    <sect2 id="board-windows">
+      <para>
+	You can specify both game players and fix their names, if needed.  There are two
+	radio buttons and a combo box for each player.  Radio buttons control whether a
+	player is a human or a computer (some GTP engine.)  If you select to let computer
+	control a player, you can choose any available GTP engine from the list for it.
+      </para>
+
+      <para>
+	&app; tries to guess players based on their names, as stored in the game record.
+	Normally, if the game record was adjoirned in &app; and you don’t alter computer
+	player names, it should guess correctly.  However, you can always override and
+	correct its decision.
+      </para>
+    </section>
+
+    <section id="board-windows">
       <title>Board Windows</title>
       <para>
 	Board windows are the main part of &app;.  They are used to play games and view
 	and edit game records.  To the left in a window is the game board itself.  The
 	exact appearance of the board depends on the current game (Go, Amazons or Reversi)
 	and can be <link linkend="preferences-go-board-appearance">configured</link>.  On
-	the right side of the window there is information pane (to the top) and the
-	comment window.  There can also be <link linkend="game-tree-view">the game tree
+	the right side of the window there is information pane, including the comment
+	window.  There can also be the <link linkend="game-tree-view">game tree
 	view</link> to the bottom of the right pane.
       </para>
 
-      <sect3 id="board">
+      <section id="board">
 	<title>The Board</title>
 	<para>
-	  Sorry, not documented yet…
+	  Board displays current game position, including pieces, markup, labels and
+	  variations of the current node.  Coordinate labels are shown on the edges of the
+	  board.  They depend on the current game.  In the top-left corner a small
+	  rectangle is drawn if the board has focus.
 	</para>
-      </sect3>
 
-      <sect3 id="board-window-information-pane">
+	<note>
+	  <para>
+	    This section can be significantly improved.	<!-- FIXME -->
+	  </para>
+	</note>
+
+	<section id="board-keyboard-navigation">
+	  <title>Keyboard Navigation</title>
+	  <para>
+	    Board has several keyboard shortcuts to ease game record navigation.
+	    Remember, that these shortcuts are active only if the board has focus, as
+	    indicated with a small rectangle in the top-left corner.  Otherwise, you
+	    should type them with <keycap>Alt</keycap> modifier: more complicated
+	    shortcuts work everywhere in Board Windows.
+
+	    <table frame="none">
+	      <title>Board keyboard shortcuts</title>
+	      <tgroup cols="2">
+		<thead>
+		  <row>
+		    <entry>Shortcut</entry>
+		    <entry>Action</entry>
+		  </row>
+		</thead>
+
+		<tbody>
+		  <row>
+		    <entry><keycap>Left arrow</keycap></entry>
+		    <entry>
+		      Go to the previous node (current node’s parent.)
+		    </entry>
+		  </row>
+
+		  <row>
+		    <entry><keycap>Right arrow</keycap></entry>
+		    <entry>
+		      Go to the next node (current node’s child.)  By default, next node
+		      is the first child, but it is remembered if you switch to a
+		      different child.
+		    </entry>
+		  </row>
+
+		  <row>
+		    <entry><keycap>Page Up</keycap></entry>
+		    <entry>
+		      Go ten nodes backward.  If there are less than ten nodes, stop at
+		      the root of the game tree.
+		    </entry>
+		  </row>
+
+		  <row>
+		    <entry><keycap>Page Down</keycap></entry>
+		    <entry>
+		      Go ten nodes forward.  If there are less than ten nodes, stop at the
+		      branch end.
+		    </entry>
+		  </row>
+
+		  <row>
+		    <entry><keycap>Home</keycap></entry>
+		    <entry>
+		      Go to the game tree root.
+		    </entry>
+		  </row>
+
+		  <row>
+		    <entry><keycap>End</keycap></entry>
+		    <entry>
+		      Go to the last node in the current branch (variation.)
+		    </entry>
+		  </row>
+
+		  <row>
+		    <entry><keycap>Up arrow</keycap></entry>
+		    <entry>
+		      Go to the previous variation of the current node.  I.e. go to the
+		      previous child of the parent of the current node.
+		    </entry>
+		  </row>
+
+		  <row>
+		    <entry><keycap>Down arrow</keycap></entry>
+		    <entry>
+		      Go to the next variation of the current node.  I.e. go to the next
+		      child of the parent of the current node.
+		    </entry>
+		  </row>
+		</tbody>
+	      </tgroup>
+	    </table>
+	  </para>
+	</section>
+      </section>
+
+      <section id="board-window-information-pane">
 	<title>Board Window Information Pane</title>
 	<para>
-	  Sorry, not documented yet…
+	  Game Information Pane shows information about the game in general, about last
+	  made and about the current node.  Some of its components are optional and can be
+	  hidden in the <guimenu>View</guimenu> menu.
 	</para>
-      </sect3>
 
-      <sect3 id="game-tree-view">
+	<para>
+	  <variablelist>
+	    <varlistentry>
+	      <term>Player Information</term>
+	      <listitem>
+		<para>
+		  At the top of the pane is the player information for both players.  It
+		  shows player name, team and rank (first line), plus game-specific
+		  information (second line.)  If name is missing,
+		  string <quote>[unknown]</quote> is shown in its place.  If team or rank
+		  is not specified, they are simply not shown.
+		</para>
+
+		<para>
+		  Game-specific information includes number of captures made by a player
+		  plus white player’s komi for Go; and number of disks on the board for
+		  Reversi.
+		</para>
+	      </listitem>
+	    </varlistentry>
+
+	    <varlistentry>
+	      <term>Player Clocks</term>
+	      <listitem>
+		<para>
+		  Close to player information are the clocks.  When a game is played, they
+		  display the time left for a player.  Additionally, they can display
+		  number of pieces left in the current
+		  <link linkend="canadian-overtime">Canadian overtime</link> period in
+		  smaller digits to the right.  When a game record is viewed, clocks
+		  display time left <emphasis>after</emphasis> move in the current node
+		  has been played.  Clocks can be empty if a game is played without time
+		  limits.
+		</para>
+	      </listitem>
+	    </varlistentry>
+
+	    <varlistentry>
+	      <term>Move Information</term>
+	      <listitem>
+		<para>
+		  Below player information and clocks a single line displays move
+		  information.  It shows last move (usually, current node’s move) number
+		  and the move itself.  Afterwards, player to move is specified.  This can
+		  sometimes seemingly contradict with the last move, but it is allowed to
+		  override player to move in game records (see
+		  <menuchoice>
+		    <guimenu>Edit</guimenu>
+		    <guisubmenu>Player to Move</guisubmenu>
+		  </menuchoice>
+		  submenu.)  This feature is often used in problem collections.
+		</para>
+	      </listitem>
+	    </varlistentry>
+
+	    <varlistentry>
+	      <term>Game Result</term>
+	      <listitem>
+		<para>
+		  Below move information game result is shown, but only at the very last
+		  node of the game.  This is done in order to prevent spoiling of watching
+		  of unknown games.  Also, if the game lacks any result or is unfinished
+		  there nothing to show at all.
+		</para>
+	      </listitem>
+	    </varlistentry>
+
+	    <varlistentry>
+	      <term>Game Action Buttons</term>
+	      <listitem>
+		<para>
+		  Yet below there are game action buttons.  These
+		  include <guibutton>Pass</guibutton> (for Go) and
+		  <guibutton>Resign</guibutton>.  Because functionality of this buttons is
+		  quite rarely used and they take up space, you can hide them using
+		  <menuchoice>
+		    <guimenu>View</guimenu>
+		    <guimenuitem>Game Action Buttons</guimenuitem>
+		  </menuchoice> menu item.  They are shown by default mainly as a reminder
+		  of the option you have.
+		</para>
+	      </listitem>
+	    </varlistentry>
+
+	    <varlistentry>
+	      <term>Comment Window</term>
+	      <listitem>
+		<para>
+		  Most of the right side is taken by comment window.  It displays any
+		  commentary the current node has.  Comment can be edited and you don’t
+		  need to take any actions to save your edits.  Edits are also saved in
+		  the undo history and can be undone and redone freely.
+		</para>
+
+		<para>
+		  If the current node has a name, it is shown above comment in bold
+		  underlined font.  It can be edited just like comment and you don’t need
+		  any special steps to edit node name.  However, to create a name for a
+		  node that lacks one, use
+		  <menuchoice>
+		    <guimenu>Edit</guimenu>
+		    <guimenuitem>Edit Node Name</guimenuitem>
+		  </menuchoice> menu item.  It will insert a placeholder for node name in
+		  the window, which you can then replace with actual name.  To delete a
+		  name, simply delete all its text and &app; will notice it and remove
+		  node line from the window.
+		</para>
+	      </listitem>
+	    </varlistentry>
+
+	    <varlistentry>
+	      <term>Game Tree View</term>
+	      <listitem>
+		<para>
+		  Finally, there can be the Game Tree View, described in detail in the
+		  <link linkend="game-tree-view">next section</link>.  It’s visibility is
+		  controlled by
+		  <menuchoice>
+		    <guimenu>View</guimenu>
+		    <guimenuitem>Game Tree</guimenuitem>
+		  </menuchoice> menu item and
+		  <link linkend="preferences-game-tree">preferences</link>.
+		</para>
+	      </listitem>
+	    </varlistentry>
+	  </variablelist>
+	</para>
+      </section>
+
+      <section id="game-tree-view">
 	<title>Game Tree View</title>
 	<para>
-	  Sorry, not documented yet…
+	  Game Tree View shows game record as a tree in a style used
+	  by <application>CGoban1</application>.  Generally, it is of interest only if the
+	  game records contains variations.  For instance, a debut/joseki dictionary or a
+	  well-annotated game with alternate branches.  Visibility of Game Tree View is
+	  controlled with <guimenuitem>Game Tree</guimenuitem> item in
+	  <guimenu>View</guimenu> menu and with
+	  <link linkend="preferences-game-tree">preferences</link>.
 	</para>
-      </sect3>
 
-      <sect3 id="board-window-menu">
-	<title>Board Window Menu</title>
 	<para>
-	  Sorry, not documented yet…
+	  Node with a move of a specific player, including pass move in Go, are shown as
+	  pieces of player’s color.  Other nodes, including position setup, at present
+	  lack any icon.  Nodes that belong to a same branch (variation) are connected
+	  with line and the current branch is highlighted.  Current node is shown within a
+	  black rectangle.  If it is not visible, you can bring it onscreen using
+	  <guimenuitem>Recenter on Current Node</guimenuitem> command
+	  from <guimenu>View</guimenu> menu.
 	</para>
-      </sect3>
-    </sect2>
 
-    <sect2 id="find-dialog">
+	<para>
+	  Subtrees can be collapsed/expanded by right-clicking on subtree root.  This is
+	  useful to hide nodes you are not interested in currently.  Roots of collapsed
+	  nodes have a cross on them.
+	</para>
+
+	<para>
+	  If a mouse is held over a node, a tooltip with information about the node is
+	  shown.  It includes move number, move itself, node name and comment.  Of course,
+	  some of these can be absent from the tooltip, if they are not present in the
+	  node to begin with.  If node comment is too long, only first part of it is
+	  shown.  Tooltips can be disabled in
+	  <link linkend="preferences-game-tree">preferences</link> if they look too
+	  distracting to you.
+	</para>
+      </section>
+
+      <section id="board-window-menu">
+	<title>Board Window Menu</title>
+
+	<section id="file-menu">
+	  <title><guimenu>File</guimenu> menu</title>
+	  <para>
+	    <variablelist>
+	      <varlistentry>
+		<term><guimenuitem>New Game…</guimenuitem></term>
+		<listitem>
+		  <para>
+		    Show <link linkend="new-game-dialog">New Game Dialog</link> to start a
+		    new game.
+		  </para>
+		</listitem>
+	      </varlistentry>
+
+	      <varlistentry>
+		<term><guimenuitem>New Game Record…</guimenuitem></term>
+		<listitem>
+		  <para>
+		    Show <link linkend="new-game-record-dialog">New Game Record
+		      Dialog</link> to create a new game record without actually playing a
+		    game.
+		  </para>
+		</listitem>
+	      </varlistentry>
+
+	      <varlistentry>
+		<term><guimenuitem>Open…</guimenuitem></term>
+		<listitem>
+		  <para>
+		    Open a game record.  Record may as well have been saved in a different
+		    application.
+		  </para>
+		</listitem>
+	      </varlistentry>
+
+	      <varlistentry>
+		<term><guimenuitem>Resume Game…</guimenuitem></term>
+		<listitem>
+		  <para>
+		    Open a game record and show
+		    <link linkend="resuming-game-dialog">Resume Game Dialog</link> to
+		    resume the game.  Games adjourned in different applications can be
+		    resumed too.
+		  </para>
+		</listitem>
+	      </varlistentry>
+
+	      <varlistentry>
+		<term><guisubmenu>Export…</guisubmenu></term>
+		<listitem>
+		  <para>
+		    <variablelist>
+		      <varlistentry>
+			<term><guimenuitem>ASCII Diagram</guimenuitem></term>
+			<listitem>
+			  <para>
+			    Export current board position as a free-format ASCII diagram
+			    to the clipboard.  Useful e.g. to mail game position if you
+			    don’t need a full-blown SGF.  Only board position without any
+			    markup is stored.
+			  </para>
+			</listitem>
+		      </varlistentry>
+
+		      <varlistentry>
+			<term><guimenuitem>Sensei’s Library Diagram</guimenuitem></term>
+			<listitem>
+			  <para>
+			    Export current board position as a Sensei’s Library diagram to
+			    the clipboard.  Pieces, circle and square markup and labels
+			    are exported.  Result, of course, can be imported into the
+			    Sensei’s Library.  Only available for Go games.
+			  </para>
+
+			  <note>
+			    <para>
+			      It is currenly impossible to export only part of the board.
+			      You need to manually delete unneeded information in such
+			      cases.
+			    </para>
+			  </note>
+			</listitem>
+		      </varlistentry>
+		    </variablelist>
+		  </para>
+		</listitem>
+	      </varlistentry>
+
+	      <varlistentry>
+		<term><guimenuitem>Save</guimenuitem></term>
+		<listitem>
+		  <para>
+		    Save the game record under its filename.  If the game record is new,
+		    ask for filename first.  This command is disabled if the game record
+		    is not modified.
+		  </para>
+		</listitem>
+	      </varlistentry>
+
+	      <varlistentry>
+		<term><guimenuitem>Save as…</guimenuitem></term>
+		<listitem>
+		  <para>
+		    Save the game record under a different filename.
+		  </para>
+		</listitem>
+	      </varlistentry>
+
+	      <varlistentry>
+		<term><guimenuitem>Close</guimenuitem></term>
+		<listitem>
+		  <para>
+		    Close the board window.  If the game record is modified, ask whether
+		    to save it first.
+		  </para>
+		</listitem>
+	      </varlistentry>
+
+	      <varlistentry>
+		<term><guimenuitem>Quit</guimenuitem></term>
+		<listitem>
+		  <para>
+		    Quit &app;.  Prompts to save any unsaved game records first.
+		  </para>
+		</listitem>
+	      </varlistentry>
+	    </variablelist>
+	  </para>
+	</section>
+
+	<section id="edit-menu">
+	  <title><guimenu>Edit</guimenu> menu</title>
+	  <para>
+	    <variablelist>
+	      <varlistentry>
+		<term><guimenuitem>Undo</guimenuitem></term>
+		<listitem>
+		  <para>
+		    Undo the last change made in the current game record.
+		  </para>
+		</listitem>
+	      </varlistentry>
+
+	      <varlistentry>
+		<term><guimenuitem>Redo</guimenuitem></term>
+		<listitem>
+		  <para>
+		    Redo the last undone change made in the current game record.
+		  </para>
+		</listitem>
+	      </varlistentry>
+
+	      <varlistentry>
+		<term><guimenuitem>Cut</guimenuitem></term>
+		<listitem>
+		  <para>
+		    Cut subtree having the current node as its root into clipboard.
+		  </para>
+		</listitem>
+	      </varlistentry>
+
+	      <varlistentry>
+		<term><guimenuitem>Copy</guimenuitem></term>
+		<listitem>
+		  <para>
+		    Copy subtree having the current node as its root into clipboard.
+		  </para>
+		</listitem>
+	      </varlistentry>
+
+	      <varlistentry>
+		<term><guimenuitem>Paste</guimenuitem></term>
+		<listitem>
+		  <para>
+		    Paste subtree contained in clipboard as last child of the current
+		    node.  This command may fail if e.g. the subtree was copied from a
+		    different kind of game.
+		  </para>
+
+		  <note>
+		    <para>
+		      It is currently impossible to determine if the clipboard contains
+		      anything, therefore this menu item is sensitive even if there is no
+		      subtree to paste.
+		    </para>
+		  </note>
+		</listitem>
+	      </varlistentry>
+
+	      <varlistentry>
+		<term><guimenuitem>Delete Node</guimenuitem></term>
+		<listitem>
+		  <para>
+		    Delete the current node together with its children from the game
+		    record.
+		  </para>
+		</listitem>
+	      </varlistentry>
+
+	      <varlistentry>
+		<term><guisubmenu>Tools</guisubmenu></term>
+		<listitem>
+		  <para>
+		    Tools are very important as they are the most used (together with
+		    comment editing) way of modifying game records.  Active tool can also
+		    be changed using the editing toolbar of from keyboard.
+		  </para>
+
+		  <para>
+		    <variablelist>
+		      <varlistentry>
+			<term><guimenuitem>Move Tool</guimenuitem></term>
+			<listitem>
+			  <para>
+			    Activate tool which is used to play new moves in the current
+			    game record.
+			  </para>
+			</listitem>
+		      </varlistentry>
+
+		      <varlistentry>
+			<term><guimenuitem>Setup Tool</guimenuitem></term>
+			<listitem>
+			  <para>
+			    Activate tool which is used to add and remove pieces from the
+			    current node.
+			  </para>
+			</listitem>
+		      </varlistentry>
+
+		      <varlistentry>
+			<term><guimenuitem>Cross Markup</guimenuitem></term>
+			<listitem>
+			  <para>
+			    Activate tool which adds cross markup to the current position.
+			  </para>
+			</listitem>
+		      </varlistentry>
+
+		      <varlistentry>
+			<term><guimenuitem>Circle Markup</guimenuitem></term>
+			<listitem>
+			  <para>
+			    Activate tool which adds circle markup to the current
+			    position.
+			  </para>
+			</listitem>
+		      </varlistentry>
+
+		      <varlistentry>
+			<term><guimenuitem>Cross Markup</guimenuitem></term>
+			<listitem>
+			  <para>
+			    Activate tool which adds cross markup to the current position.
+			  </para>
+			</listitem>
+		      </varlistentry>
+
+		      <varlistentry>
+			<term><guimenuitem>Square Markup</guimenuitem></term>
+			<listitem>
+			  <para>
+			    Activate tool which adds sqiare markup to the current
+			    position.
+			  </para>
+			</listitem>
+		      </varlistentry>
+
+		      <varlistentry>
+			<term><guimenuitem>Triangle Markup</guimenuitem></term>
+			<listitem>
+			  <para>
+			    Activate tool which adds triangle markup to the current
+			    position.
+			  </para>
+			</listitem>
+		      </varlistentry>
+
+		      <varlistentry>
+			<term><guimenuitem>Selected Markup</guimenuitem></term>
+			<listitem>
+			  <para>
+			    Activate tool which adds selected markup to the current
+			    position.
+			  </para>
+
+			  <note>
+			    <para>
+			      It is not recommended to use this type of markup, as it has
+			      no standard appearance and may confuse other users.
+			    </para>
+			  </note>
+			</listitem>
+		      </varlistentry>
+
+		      <varlistentry>
+			<term><guimenuitem>Label Tool</guimenuitem></term>
+			<listitem>
+			  <para>
+			    Activate tool which places single letter and arbitrary text
+			    labels on the board.
+			  </para>
+			</listitem>
+		      </varlistentry>
+
+		      <varlistentry>
+			<term><guimenuitem>Number Tool</guimenuitem></term>
+			<listitem>
+			  <para>
+			    Activate tool which places number labels on the board.
+			  </para>
+			</listitem>
+		      </varlistentry>
+
+		      <varlistentry>
+			<term><guimenuitem>Scoring Tool</guimenuitem></term>
+			<listitem>
+			  <para>
+			    Activate tool which scores the current position.  This tool is
+			    valid only for Go games.
+			  </para>
+			</listitem>
+		      </varlistentry>
+		    </variablelist>
+		  </para>
+		</listitem>
+	      </varlistentry>
+
+	      <varlistentry>
+		<term><guimenuitem>Add Empty Node</guimenuitem></term>
+		<listitem>
+		  <para>
+		    Add an empty children to the current node.  Standard way of adding
+		    children is by playing moves, but this command allows you to add node
+		    without any move.
+		  </para>
+		</listitem>
+	      </varlistentry>
+
+	      <varlistentry>
+		<term><guimenuitem>Move Branch Up</guimenuitem></term>
+		<listitem>
+		  <para>
+		    Move current branch up i.e. swap it with the previous branch.  Useful
+		    to rearrange branches in the game record.
+		  </para>
+		</listitem>
+	      </varlistentry>
+
+	      <varlistentry>
+		<term><guimenuitem>Move Branch Down</guimenuitem></term>
+		<listitem>
+		  <para>
+		    Move current branch down i.e. swap it with the next branch.  Useful to
+		    rearrange branches in the game record.
+		  </para>
+		</listitem>
+	      </varlistentry>
+
+	      <varlistentry>
+		<term><guimenuitem>Edit Node Name</guimenuitem></term>
+		<listitem>
+		  <para>
+		    Edit the name of the current node.  If the node has no name, it is
+		    inserted.  Otherwise, you can edit node just by directly modifying it
+		    in the comment window and this command simply selects the name.
+		  </para>
+		</listitem>
+	      </varlistentry>
+
+	      <varlistentry>
+		<term><guimenuitem>Set Move Number</guimenuitem></term>
+		<listitem>
+		  <para>
+		    Set the number of the current move.  Normally, move number is
+		    incremented by one after each move, but there are cases when this must
+		    be overridden, for instance, if game record starts not at the game
+		    beginning.
+		  </para>
+		</listitem>
+	      </varlistentry>
+
+	      <varlistentry>
+		<term><guisubmenu>Player to Move</guisubmenu></term>
+		<listitem>
+		  <para>
+		    Sometimes it is needed to explicitly set who is to move next, for
+		    instance, in a problem collection.
+		  </para>
+
+		  <para>
+		    <variablelist>
+		      <varlistentry>
+			<term><guimenuitem>White</guimenuitem></term>
+			<listitem>
+			  <para>
+			    Set player to move to White, regardless of what game rules
+			    say.
+			  </para>
+			</listitem>
+		      </varlistentry>
+
+		      <varlistentry>
+			<term><guimenuitem>Black</guimenuitem></term>
+			<listitem>
+			  <para>
+			    Set player to move to Black, regardless of what game rules
+			    say.
+			  </para>
+			</listitem>
+		      </varlistentry>
+
+		      <varlistentry>
+			<term><guimenuitem>By Game Rules</guimenuitem></term>
+			<listitem>
+			  <para>
+			    Let game rules determine who is to move next (this is the
+			    default.)
+			  </para>
+			</listitem>
+		      </varlistentry>
+		    </variablelist>
+		  </para>
+		</listitem>
+	      </varlistentry>
+
+	      <varlistentry>
+		<term><guimenuitem>Find</guimenuitem></term>
+		<listitem>
+		  <para>
+		    Show the <link linkend="find-dialog">Find Dialog</link> to find a
+		    string in node comments and/or names.
+		  </para>
+		</listitem>
+	      </varlistentry>
+
+	      <varlistentry>
+		<term><guimenuitem>Find Next</guimenuitem></term>
+		<listitem>
+		  <para>
+		    Repeat the last search in forward direction.  If there were no last
+		    search, acts just as <guimenuitem>Find</guimenuitem> menu item.
+		  </para>
+		</listitem>
+	      </varlistentry>
+
+	      <varlistentry>
+		<term><guimenuitem>Find Previous</guimenuitem></term>
+		<listitem>
+		  <para>
+		    Repeat the last search in backward direction.  If there were no last
+		    search, acts just as <guimenuitem>Find</guimenuitem> menu item.
+		  </para>
+		</listitem>
+	      </varlistentry>
+
+	      <varlistentry>
+		<term><guimenuitem>Game Information</guimenuitem></term>
+		<listitem>
+		  <para>
+		    Show the <link linkend="game-information-dialog">Game Information
+		      Dialog</link> to view and/org edit game information.
+		  </para>
+		</listitem>
+	      </varlistentry>
+
+	      <varlistentry>
+		<term><guimenuitem>Preferences</guimenuitem></term>
+		<listitem>
+		  <para>
+		    Show the <link linkend="preferences">Preferences Dialog</link> to
+		    change &app; settings.
+		  </para>
+		</listitem>
+	      </varlistentry>
+	    </variablelist>
+	  </para>
+	</section>
+
+	<section id="view-menu">
+	  <title><guimenu>View</guimenu> menu</title>
+	  <para>
+	    <variablelist>
+	      <varlistentry>
+		<term><guimenuitem>Main Toolbar</guimenuitem></term>
+		<listitem>
+		  <para>
+		    Show or hide main toolbar in this window.
+		  </para>
+		</listitem>
+	      </varlistentry>
+
+	      <varlistentry>
+		<term><guimenuitem>Editing Toolbar</guimenuitem></term>
+		<listitem>
+		  <para>
+		    Show or hide editing toolbar in this window.
+		  </para>
+		</listitem>
+	      </varlistentry>
+
+	      <varlistentry>
+		<term><guimenuitem>Navigation Toolbar</guimenuitem></term>
+		<listitem>
+		  <para>
+		    Show or hide navigation toolbar in this window.
+		  </para>
+		</listitem>
+	      </varlistentry>
+
+	      <varlistentry>
+		<term><guimenuitem>Game Action Buttons</guimenuitem></term>
+		<listitem>
+		  <para>
+		    Show or hide Game Action Buttons (<guibutton>Pass</guibutton> for Go
+		    game and <guibutton>Resign</guibutton>.)  They have quite rarely used
+		    functionality and take precious space on the right.
+		  </para>
+		</listitem>
+	      </varlistentry>
+
+	      <varlistentry>
+		<term><guimenuitem>Game Tree</guimenuitem></term>
+		<listitem>
+		  <para>
+		    Show or hide <link linkend="game-tree-view">Game Tree View</link> in
+		    this window.  Its visibility can also be globally changed in the
+		    <link linkend="preferences-game-tree">preferences</link>.
+		  </para>
+		</listitem>
+	      </varlistentry>
+
+	      <varlistentry>
+		<term><guimenuitem>Recenter on Current Node</guimenuitem></term>
+		<listitem>
+		  <para>
+		    Recenter <link linkend="game-tree-view">Game Tree View</link> on the
+		    current node.  Of course, the view should be shown to begin with.
+		  </para>
+		</listitem>
+	      </varlistentry>
+
+	      <varlistentry>
+		<term><guimenuitem>Control Center</guimenuitem></term>
+		<listitem>
+		  <para>
+		    Show <link linkend="when-start">&app; Control Center</link>.
+		  </para>
+		</listitem>
+	      </varlistentry>
+	    </variablelist>
+	  </para>
+	</section>
+
+	<section id="play-menu">
+	  <title><guimenu>Play</guimenu> menu</title>
+	  <para>
+	    <variablelist>
+	      <varlistentry>
+		<term><guimenuitem>Pass</guimenuitem></term>
+		<listitem>
+		  <para>
+		    Play a pass move.  (Only valid in Go.)
+		  </para>
+		</listitem>
+	      </varlistentry>
+
+	      <varlistentry>
+		<term><guimenuitem>Resign</guimenuitem></term>
+		<listitem>
+		  <para>
+		    Resign current game.  Opponent is declared a winner.
+		  </para>
+		</listitem>
+	      </varlistentry>
+
+	      <varlistentry>
+		<term><guimenuitem>Adjourn Game</guimenuitem></term>
+		<listitem>
+		  <para>
+		    Adjourn current game and save game record, so it can be later
+		    <link linkend="resume-game">resumed</link>.
+		  </para>
+		</listitem>
+	      </varlistentry>
+	    </variablelist>
+	  </para>
+	</section>
+
+	<section id="go-menu">
+	  <title><guimenu>Go</guimenu> menu</title>
+	  <note>
+	    <para>
+	      This menu’s title is English verb <quote>go</quote>, not game name.
+	    </para>
+	  </note>
+
+	  <para>
+	    <variablelist>
+	      <varlistentry>
+		<term><guimenuitem>Previous Node</guimenuitem></term>
+		<listitem>
+		  <para>
+		    Go to the previous node (current node’s parent.)
+		  </para>
+		</listitem>
+	      </varlistentry>
+
+	      <varlistentry>
+		<term><guimenuitem>Next Node</guimenuitem></term>
+		<listitem>
+		  <para>
+		    Go to the next node (current node’s child.)  By default, next node is
+		    the first child, but it is remembered if you switch to a different
+		    child.
+		  </para>
+		</listitem>
+	      </varlistentry>
+
+	      <varlistentry>
+		<term><guimenuitem>Ten Nodes Backward</guimenuitem></term>
+		<listitem>
+		  <para>
+		    Go ten nodes backward.  If there are less than ten nodes, stop at the
+		    root of the game tree.
+		  </para>
+		</listitem>
+	      </varlistentry>
+
+	      <varlistentry>
+		<term><guimenuitem>Ten Nodes Forward</guimenuitem></term>
+		<listitem>
+		  <para>
+		    Go ten nodes forward.  If there are less than ten nodes, stop at the
+		    branch end.
+		  </para>
+		</listitem>
+	      </varlistentry>
+
+	      <varlistentry>
+		<term><guimenuitem>Root Node</guimenuitem></term>
+		<listitem>
+		  <para>
+		    Go to the game tree root.
+		  </para>
+		</listitem>
+	      </varlistentry>
+
+	      <varlistentry>
+		<term><guimenuitem>Variation Last Node</guimenuitem></term>
+		<listitem>
+		  <para>
+		    Go to the last node in the current branch (variation.)
+		  </para>
+		</listitem>
+	      </varlistentry>
+
+	      <varlistentry>
+		<term><guimenuitem>Previous Variation</guimenuitem></term>
+		<listitem>
+		  <para>
+		    Go to the previous variation of the current node.  I.e. go to the
+		    previous child of the parent of the current node.
+		  </para>
+		</listitem>
+	      </varlistentry>
+
+	      <varlistentry>
+		<term><guimenuitem>Next Node</guimenuitem></term>
+		<listitem>
+		  <para>
+		    Go to the next variation of the current node.  I.e. go to the next
+		    child of the parent of the current node.
+		  </para>
+		</listitem>
+	      </varlistentry>
+
+	      <varlistentry>
+		<term><guimenuitem>Go to Named Node…</guimenuitem></term>
+		<listitem>
+		  <para>
+		    Go to a named node given its name.  You can also use
+		    <link linkend="find-dialog">Find Dialog</link> for this purpose, but
+		    this way there is completion on node names.
+		  </para>
+		</listitem>
+	      </varlistentry>
+	    </variablelist>
+	  </para>
+	</section>
+
+	<section id="help-menu">
+	  <title><guimenu>Help</guimenu> menu</title>
+	  <para>
+	    <variablelist>
+	      <varlistentry>
+		<term><guimenuitem>Contents</guimenuitem></term>
+		<listitem>
+		  <para>
+		    Show this help.
+		  </para>
+		</listitem>
+	      </varlistentry>
+
+	      <varlistentry>
+		<term><guimenuitem>About</guimenuitem></term>
+		<listitem>
+		  <para>
+		    Show short information about &app; and its version.
+		  </para>
+		</listitem>
+	      </varlistentry>
+	    </variablelist>
+	  </para>
+	</section>
+      </section>
+    </section>
+
+    <section id="find-dialog">
       <title>Find Dialog</title>
       <para>
-	Sorry, not documented yet…
+	Find Dialog allows you to search for text in node names and/or comments.  It is
+	invaluable for large game records, especially those containing multiple branches,
+	like debut/joseki dictionaries.
       </para>
-    </sect2>
 
-    <sect2 id="game-information-dialog">
+      <para>
+	When a node with matching text is found, <link linkend="board-windows">board
+	  window</link> switches to it, if needed.  Matching text is selected in
+	<link linkend="board-window-information-pane">information pane</link>.  Search can
+	be repeated later without opening this dialog using <guimenu>Edit</guimenu> menu
+	items or from keyboard.
+      </para>
+
+      <para>
+	Dialog contains several controls:
+      </para>
+
+      <variablelist>
+	<varlistentry>
+	  <term><guilabel>Search for</guilabel> field</term>
+	  <listitem>
+	    <para>
+	      Enter the text to search for here.  Field also has a history with up to 10
+	      most recently found strings.
+	    </para>
+	  </listitem>
+	</varlistentry>
+
+	<varlistentry>
+	  <term><guilabel>Optons</guilabel></term>
+	  <listitem>
+	    <para>
+	      There a few options that control the search.  It can be case-sensitive or
+	      case-insensitive.  It can be restricted to whole words or include any match.
+	      Search can be wrapped around when the end or beginning of search domain is
+	      reached, or stop there.
+	    </para>
+
+	    <para>
+	      You can also select <guibutton>Auto-close this dialog</guibutton> button.
+	      In this case, the dialog will be hidden after any successful search.  You
+	      can repeat search afterwards using <guimenuitem>Find Next</guimenuitem>
+	      and <guimenuitem>Find Previous</guimenuitem> items of
+	      <guimenu>Edit</guimenu> menu or using <keycap>Ctrl+G</keycap> and
+	      <keycap>Shift+Ctrl+G</keycap> key combinations.
+	    </para>
+	  </listitem>
+	</varlistentry>
+
+	<varlistentry>
+	  <term><guilabel>Search scope</guilabel></term>
+	  <listitem>
+	    <para>
+	      Search domain can include the whole game record tree or the current node
+	      only.  The latter option is only interesting if current node’s comment is
+	      very long.
+	    </para>
+
+	    <para>
+	      Search can also be performed in node names, comments or both.  Typically,
+	      you will want to search in both of them, but can sometimes wish to restrict
+	      search to decrease number of matches you are not interested in.
+	    </para>
+	  </listitem>
+	</varlistentry>
+
+	<varlistentry>
+	  <term><guibutton>Next</guibutton> and <guibutton>Previous</guibutton>
+	    buttons</term>
+	  <listitem>
+	    <para>
+	      When search parameters are entered, click one of this buttons, depending on
+	      direction you wish search to be performed.  Buttons can be pressed
+	      repeatedly to repeat search.  However, if <guibutton>Auto-close this
+	      dialog</guibutton> option is selected, dialog will be closed on first
+	      successful search.
+	    </para>
+
+	    <para>
+	      These buttons can be disabled if a search in certain direction certainly
+	      won’t hit any matches.  However, they are many cases when this cannot be
+	      determined in advance (quickly), so activating one of these buttons is not
+	      guaranteed to find anything.
+	    </para>
+	  </listitem>
+	</varlistentry>
+
+	<varlistentry>
+	  <term><guibutton>Close</guibutton> button</term>
+	  <listitem>
+	    <para>
+	      Close the dialog without performing any further search.  Use it when you’ve
+	      finished searching or changed your mind.
+	    </para>
+	    </listitem>
+	</varlistentry>
+      </variablelist>
+    </section>
+
+    <section id="game-information-dialog">
       <title>Game Information Dialog</title>
       <para>
 	The Game Information Dialog allows you to set values that describe game tree as a
@@ -1038,8 +2124,8 @@
 	    </para>
 
 	    <para>
-	      Values of these fields are also displayed
-	      in <link linkend="board-window-information-pane">the right column of board
+	      Values of these fields are also displayed in the
+	      <link linkend="board-window-information-pane">right column of board
 	      windows</link>.
 	    </para>
 	  </listitem>
@@ -1310,10 +2396,10 @@
 	  </listitem>
 	</varlistentry>
       </variablelist>
-    </sect2>
-  </sect1>
+    </section>
+  </chapter>
 
-  <sect1 id="preferences">
+  <chapter id="preferences">
     <title>Settings</title>
     <para>
       To configure &app; either click the <guibutton>Preferences</guibutton> button in the
@@ -1402,21 +2488,53 @@
       </listitem>
     </itemizedlist>
 
-    <sect2 id="preferences-gtk-ui">
+    <section id="preferences-gtk-ui">
       <title>General Interface</title>
       <para>
-	Sorry, not documented yet…
+	General interface of &app; can be configured at this page.  It is not really
+	related to the functionality of the application.
       </para>
-    </sect2>
 
-    <sect2 id="preferences-game-tree">
+      <variablelist>
+	<varlistentry>
+	  <term><guilabel>File Chooser Dialog Style</guilabel></term>
+	  <listitem>
+	    <para>
+	      You can use either the new file chooser or the old one, which was the
+	      default on pre-2.4 GTK+.
+	    </para>
+
+	    <note>
+	      <para>
+		This option will be removed in &app; ver. 0.3.  It was added when the new
+		file chooser was in early development stages and had significant usability
+		problems.  Nowadays it has little sense to keep supporting the old one.
+	      </para>
+	    </note>
+	  </listitem>
+	</varlistentry>
+
+	<varlistentry>
+	  <term><guilabel>Toolbar Styles</guilabel></term>
+	  <listitem>
+	    <para>
+	      By default, &app; uses desktop settings for all its toolbars.  However, you
+	      can choose specific style for each of three toolbar kinds.  You can also
+	      return toolbars to using desktop defaults here.
+	    </para>
+	  </listitem>
+	</varlistentry>
+      </variablelist>
+    </section>
+
+    <section id="preferences-game-tree">
       <title>Game Tree</title>
       <para>
-	Sorry, not documented yet…
+	Sorry, not documented yet… <!-- FIXME -->
       </para>
-    </sect2>
+    </section>
 
-    <sect2 id="preferences-gtp-engines">
+    <section id="preferences-gtp-engines">
       <title>GTP Engines</title>
       <para>
 	At this page, all game-playing programs registered in &app; are shown.  You can
@@ -1491,7 +2609,7 @@
 	</varlistentry>
       </variablelist>
 
-      <sect3 id="preferences-gtp-engine-information-dialog">
+      <section id="preferences-gtp-engine-information-dialog">
 	<title>GTP Engine Information Dialog</title>
 	<para>
 	  This dialog is shown whenever you want to register a game-playing program in
@@ -1534,9 +2652,10 @@
 	      </para>
 
 	      <para>
-		For <ulink type="http" url="http://www.gnugo.org/gnugo.html">GNU
-		Go</ulink>, the command line should look like this (note the double
-		hyphens):
+		For
+		<ulink type="http" url="http://www.gnugo.org/gnugo.html"><application>GNU
+		Go</application></ulink>, the command line should look like this (note the
+		double hyphens):
 	      </para>
 
 	      <para>
@@ -1544,8 +2663,8 @@
 	      </para>
 
 	      <para>
-		You may also want to specify additional options.  See GNU Go documentation
-		for more information.
+		You may also want to specify additional options.  See <application>GNU
+		Go</application> documentation for more information.
 	      </para>
 	    </listitem>
 	  </varlistentry>
@@ -1568,40 +2687,45 @@
 	    </listitem>
 	  </varlistentry>
 	</variablelist>
-      </sect3>
-    </sect2>
+      </section>
+    </section>
 
-    <sect2 id="preferences-saving-game-records">
+    <section id="preferences-saving-game-records">
       <title>Saving Game Records</title>
       <para>
-	Sorry, not documented yet…
+	Currently, you can only specify whether to save game records in UTF-8 or to
+	preserve original encoding.  The former option is recommended because UTF-8 can
+	encode any character and because Quarry loads UTF-8 encoded game records faster
+	than with any other encoding.  However, you may want to preserve original encoding
+	if, for instance, you use other SGF editor/viewer with poor support for UTF-8 or
+	this is required for some reason for distribution.
       </para>
-    </sect2>
+    </section>
 
-    <sect2 id="preferences-go-board-appearance">
+    <section id="preferences-go-board-appearance">
       <title>Go Board Appearance</title>
       <para>
-	Sorry, not documented yet…
+	Sorry, not documented yet… <!-- FIXME -->
       </para>
-    </sect2>
+    </section>
 
-    <sect2 id="preferences-amazons-board-appearance">
+    <section id="preferences-amazons-board-appearance">
       <title>Amazons Board Appearance</title>
       <para>
-	Sorry, not documented yet…
+	Sorry, not documented yet… <!-- FIXME -->
       </para>
-    </sect2>
+    </section>
 
-    <sect2 id="preferences-reversi-board-appearance">
+    <section id="preferences-reversi-board-appearance">
       <title>Reversi Board Appearance</title>
       <para>
-	Sorry, not documented yet…
+	Sorry, not documented yet… <!-- FIXME -->
       </para>
-    </sect2>
-  </sect1>
+    </section>
+  </chapter>
 
   &FDL;
-</article>
+</book>
 
 <!--
     Local Variables:
