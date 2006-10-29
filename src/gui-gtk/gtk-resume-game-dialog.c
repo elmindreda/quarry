@@ -26,6 +26,7 @@
 #include "gtk-control-center.h"
 #include "gtk-games.h"
 #include "gtk-goban-window.h"
+#include "gtk-help.h"
 #include "gtk-named-vbox.h"
 #include "gtk-parser-interface.h"
 #include "gtk-preferences.h"
@@ -210,7 +211,9 @@ gtk_resume_game_dialog_present (SgfCollection *sgf_collection,
 
   dialog = gtk_dialog_new_with_buttons (_("Resuming Game"), NULL, 0,
 					GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
-					_("_Resume"), GTK_RESPONSE_OK, NULL);
+					_("_Resume"), GTK_RESPONSE_OK,
+					GTK_STOCK_HELP, GTK_RESPONSE_HELP,
+					NULL);
   data->dialog = dialog;
 
   gtk_dialog_set_default_response (GTK_DIALOG (dialog), GTK_RESPONSE_OK);
@@ -426,6 +429,8 @@ gtk_resume_game_dialog_response (GtkWidget *dialog, gint response_id,
 
     gtk_preferences_do_instantiate_engines (engine_chain);
   }
+  else if (response_id == GTK_RESPONSE_HELP)
+    gtk_help_display ("resuming-game-dialog");
   else {
     sgf_collection_delete (data->sgf_collection);
 
