@@ -194,6 +194,8 @@ gtk_go_to_named_node_dialog_init (GtkGoToNamedNodeDialog *dialog)
 
   gtk_dialog_set_response_sensitive (&dialog->dialog, GTK_RESPONSE_OK, FALSE);
 
+  gtk_dialog_set_has_separator (&dialog->dialog, FALSE);
+
   set_selected_node (dialog, NULL);
 }
 
