@@ -1,7 +1,7 @@
 dnl  Process this file with Autoconf to produce a `configure' script.
 
 # Package name and version.
-AC_INIT([Quarry], [0.1.19], [quarry-dev@gna.org])
+AC_INIT([Quarry], [0.1.20], [quarry-dev@gna.org])
 AC_PREREQ(2.57)
 
 # Check if the script is running in the proper directory.  Alarm if it

@@ -1,3 +1,12 @@
+--- New in Quarry 0.1.20 ---------------------------------------------
+
+* Many bug-fixes, including two crashing bugs on 64-bit platforms.
+
+* Significantly expanded manual.
+
+* Updated translations: en_GB, ru.
+
+
 --- New in Quarry 0.1.19 ---------------------------------------------
 
 * A severe bug fixed in the Polish translation, see bug #6367.

@@ -1,29 +1,5 @@
 	   THINGS THAT NEED TO BE DONE BEFORE RELEASING 0.2
 
-* VIEWING GAME RECORDS
-
-** Display values of various SGF properties (`VA',  `BM' etc.)
-
-* EDITING GAME RECORDS
-
-** Support editing various SGF properties (`VA', `BM' etc.)
-
-* BOARD APPEARANCE
-
-** Make Amazons look like chess queens (with SVG.)
-
-* SGF PARSING
-
-** Complete support for charsets.
-
-* INTERNAL BOARD CODE
-
-** Score sekis correctly.
-
-* INTERNAL GTP CODE
-
-** Be nicer to engines, don't crash if they don't support some command.
-
 * GENERAL
 
 ** Expand and fix the manual.
@@ -48,11 +24,21 @@
 
 * VIEWING GAME RECORDS
 
+** Display values of various SGF properties (`VA',  `BM' etc.)
+
 ** Support multiple games in one file, same for editing.
 
 ** GAME TREE VIEW
 
 *** Maybe add command to narrow to a subtree.
+
+* EDITING GAME RECORDS
+
+** Support editing various SGF properties (`VA', `BM' etc.)
+
+* BOARD APPEARANCE
+
+** Make Amazons look like chess queens (with SVG.)
 
 * GTP SUPPORT
 
@@ -64,6 +50,14 @@
    keep SGF records of what's going on.  This way you can connect an
    engine to an arbitrary internet GTP server and see the games in
    Quarry in real-time.
+
+* SGF PARSING
+
+** Complete support for charsets.
+
+* INTERNAL BOARD CODE
+
+** Score sekis correctly.
 
 * GENERAL GUI
 
