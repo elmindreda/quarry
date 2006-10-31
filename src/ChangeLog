@@ -1,4 +1,13 @@
+2006-10-31  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* gui-utils/configuration.c (write_string): Bug-fix: properly
+	handle non-ASCII characters in `string' (spotted by Bjørn Ingmar
+	Berg.)
+
 2006-10-29  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* gui-gtk/gtk-control-center.c (gtk_control_center_present): Add
+	standard actions to "F1" and "Ctrl+W" accelerators.
 
 	* (Quarry version 0.1.20.)
 
