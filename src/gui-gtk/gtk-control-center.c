@@ -23,6 +23,7 @@
 #include "gtk-control-center.h"
 
 #include "gtk-goban-window.h"
+#include "gtk-help.h"
 #include "gtk-new-game-dialog.h"
 #include "gtk-new-game-record-dialog.h"
 #include "gtk-parser-interface.h"
@@ -52,6 +53,8 @@ gtk_control_center_present (void)
     GtkWidget *resume_game_button;
     GtkWidget *preferences_button;
     GtkWidget *quit_button;
+    GtkWidget *help_button;
+    GtkWidget *close_button;
     GtkAccelGroup *accel_group;
 
     control_center = (GtkWindow *) gtk_window_new (GTK_WINDOW_TOPLEVEL);
@@ -70,7 +73,7 @@ gtk_control_center_present (void)
     g_signal_connect (new_game_button, "clicked",
 		      G_CALLBACK (gtk_new_game_dialog_present), NULL);
 
-    gtk_widget_add_accelerator (GTK_WIDGET (new_game_button), "clicked",
+    gtk_widget_add_accelerator (new_game_button, "clicked",
 				accel_group, GDK_N, GDK_CONTROL_MASK, 0);
 
     new_game_record_button
@@ -78,7 +81,7 @@ gtk_control_center_present (void)
     g_signal_connect (new_game_record_button, "clicked",
 		      G_CALLBACK (gtk_new_game_record_dialog_present), NULL);
 
-    gtk_widget_add_accelerator (GTK_WIDGET (new_game_record_button), "clicked",
+    gtk_widget_add_accelerator (new_game_record_button, "clicked",
 				accel_group,
 				GDK_N, GDK_SHIFT_MASK | GDK_CONTROL_MASK, 0);
 
@@ -87,8 +90,7 @@ gtk_control_center_present (void)
     g_signal_connect (open_game_record_button, "clicked",
 		      G_CALLBACK (gtk_parser_interface_present_default), NULL);
 
-    gtk_widget_add_accelerator (GTK_WIDGET (open_game_record_button),
-				"clicked",
+    gtk_widget_add_accelerator (open_game_record_button, "clicked",
 				accel_group, GDK_O, GDK_CONTROL_MASK, 0);
 
     resume_game_button = gtk_button_new_with_mnemonic (_("_Resume Game"));
@@ -104,7 +106,7 @@ gtk_control_center_present (void)
     g_signal_connect_swapped (quit_button, "clicked",
 			      G_CALLBACK (gtk_control_center_quit), NULL);
 
-    gtk_widget_add_accelerator (GTK_WIDGET (quit_button), "clicked",
+    gtk_widget_add_accelerator (quit_button, "clicked",
 				accel_group, GDK_Q, GDK_CONTROL_MASK, 0);
 
     vbox = gtk_utils_pack_in_box (GTK_TYPE_VBOX, QUARRY_SPACING_SMALL,
@@ -122,6 +124,34 @@ gtk_control_center_present (void)
 				  quit_button, GTK_UTILS_FILL, NULL);
     gtk_container_add (GTK_CONTAINER (control_center), vbox);
     gtk_widget_show_all (vbox);
+
+    /* Add invisible buttons, used only for adding accelerator. */
+
+    help_button = gtk_button_new ();
+    g_signal_connect_swapped (help_button, "clicked",
+			      G_CALLBACK (gtk_help_display), NULL);
+
+    gtk_widget_add_accelerator (help_button, "clicked",
+				accel_group, GDK_F1, 0, 0);
+
+    close_button = gtk_button_new ();
+    g_signal_connect_swapped (close_button, "clicked",
+			      G_CALLBACK (gtk_widget_destroy), control_center);
+
+    gtk_widget_add_accelerator (close_button, "clicked",
+				accel_group, GDK_W, GDK_CONTROL_MASK, 0);
+
+#if GTK_2_4_OR_LATER
+
+    g_signal_connect (help_button, "can-activate-accel",
+		      G_CALLBACK (gtk_true), NULL);
+    g_signal_connect (close_button, "can-activate-accel",
+		      G_CALLBACK (gtk_true), NULL);
+
+#endif
+
+    gtk_container_add (GTK_CONTAINER (vbox), help_button);
+    gtk_container_add (GTK_CONTAINER (vbox), close_button);
   }
 
   gtk_window_present (control_center);
