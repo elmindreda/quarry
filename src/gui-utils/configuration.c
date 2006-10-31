@@ -682,15 +682,25 @@ write_string (BufferedWriter *writer, const char *string)
 {
   buffered_writer_add_character (writer, '"');
 
-  for (; *string; string++) {
+  while (*string) {
     if (*string == '\n' || *string == '\r'
 	|| *string == '"' || *string == '\\')
       buffered_writer_add_character (writer, '\\');
 
-    if (*string != '\n' && *string != '\r')
-      buffered_writer_add_character (writer, *string);
-    else
-      buffered_writer_add_character (writer, *string == '\n' ? 'n' : 'r');
+    const char* utf8_character = string;
+
+    do
+      string++;
+    while (!IS_UTF8_STARTER (*string));
+
+    if (*utf8_character != '\n' && *utf8_character != '\r') {
+      buffered_writer_cat_as_string (writer,
+				     utf8_character, string - utf8_character);
+    }
+    else {
+      buffered_writer_add_character (writer,
+				     *utf8_character == '\n' ? 'n' : 'r');
+    }
   }
 
   buffered_writer_add_character (writer, '"');
