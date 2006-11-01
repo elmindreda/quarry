@@ -179,7 +179,7 @@ gtk_progress_dialog_set_help_link_id (GtkProgressDialog *dialog,
   g_return_if_fail (!dialog->help_link_id);
 
   dialog->help_link_id = help_link_id;
-  gtk_dialog_add_button (&dialog->dialog, GTK_STOCK_HELP, GTK_RESPONSE_HELP);
+  gtk_utils_add_help_button (&dialog->dialog);
 }
 
 

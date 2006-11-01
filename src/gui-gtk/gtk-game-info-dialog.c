@@ -506,10 +506,10 @@ gtk_game_info_dialog_init (GtkGameInfoDialog *dialog)
   gtk_dialog_set_has_separator (&dialog->dialog, FALSE);
 
   gtk_dialog_add_buttons (&dialog->dialog,
-			  GTK_STOCK_HELP, GTK_RESPONSE_HELP,
 			  GTK_STOCK_UNDO, GTK_GAME_INFO_DIALOG_RESPONSE_UNDO,
 			  GTK_STOCK_REDO, GTK_GAME_INFO_DIALOG_RESPONSE_REDO,
 			  GTK_STOCK_CLOSE, GTK_RESPONSE_CLOSE, NULL);
+  gtk_utils_add_help_button (&dialog->dialog);
 
   dialog->sgf_tree	    = NULL;
   dialog->sgf_node	    = NULL;

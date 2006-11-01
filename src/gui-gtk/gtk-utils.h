@@ -196,6 +196,7 @@ void		gtk_utils_workaround_set_default_response (GtkDialog *dialog,
 
 void		gtk_utils_standardize_dialog (GtkDialog *dialog,
 					      GtkWidget *contents);
+GtkWidget *	gtk_utils_add_help_button (GtkDialog* dialog);
 
 void		gtk_utils_show_and_forget_dialog (GtkDialog *dialog);
 

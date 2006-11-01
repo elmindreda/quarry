@@ -318,8 +318,8 @@ gtk_new_game_record_dialog_init (GtkNewGameRecordDialog *dialog)
 
   gtk_dialog_add_buttons (&dialog->dialog,
 			  GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
-			  QUARRY_STOCK_CREATE, GTK_RESPONSE_OK,
-			  GTK_STOCK_HELP, GTK_RESPONSE_HELP, NULL);
+			  QUARRY_STOCK_CREATE, GTK_RESPONSE_OK, NULL);
+  gtk_utils_add_help_button (&dialog->dialog);
   gtk_dialog_set_default_response (&dialog->dialog, GTK_RESPONSE_OK);
 }
 

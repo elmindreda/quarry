@@ -211,9 +211,8 @@ gtk_resume_game_dialog_present (SgfCollection *sgf_collection,
 
   dialog = gtk_dialog_new_with_buttons (_("Resuming Game"), NULL, 0,
 					GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
-					_("_Resume"), GTK_RESPONSE_OK,
-					GTK_STOCK_HELP, GTK_RESPONSE_HELP,
-					NULL);
+					_("_Resume"), GTK_RESPONSE_OK, NULL);
+  gtk_utils_add_help_button (GTK_DIALOG (dialog));
   data->dialog = dialog;
 
   gtk_dialog_set_default_response (GTK_DIALOG (dialog), GTK_RESPONSE_OK);

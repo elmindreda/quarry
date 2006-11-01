@@ -477,9 +477,7 @@ gtk_preferences_dialog_present (gpointer page_to_select)
   if (!preferences_dialog) {
     GtkWidget *dialog = gtk_dialog_new_with_buttons (_("Preferences"), NULL, 0,
 						     GTK_STOCK_CLOSE,
-						     GTK_RESPONSE_CLOSE,
-						     GTK_STOCK_HELP,
-						     GTK_RESPONSE_HELP, NULL);
+						     GTK_RESPONSE_CLOSE, NULL);
     GtkTreeStore *categories;
     GtkWidget *category_list;
     GtkWidget *label;
@@ -496,6 +494,8 @@ gtk_preferences_dialog_present (gpointer page_to_select)
     preferences_dialog = GTK_WINDOW (dialog);
     gtk_control_center_window_created (preferences_dialog);
     gtk_utils_null_pointer_on_destroy (&preferences_dialog, TRUE);
+
+    gtk_utils_add_help_button (GTK_DIALOG (dialog));
 
     g_signal_connect (preferences_dialog, "response",
 		      G_CALLBACK (gtk_preferences_dialog_response), NULL);

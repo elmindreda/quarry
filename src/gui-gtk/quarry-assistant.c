@@ -355,11 +355,8 @@ quarry_assistant_set_page_help_link_id (QuarryAssistant *assistant,
 
   page_data->help_link_id = help_link_id;
 
-  if (!assistant->help_button) {
-    assistant->help_button = gtk_dialog_add_button (&assistant->dialog,
-						    GTK_STOCK_HELP,
-						    GTK_RESPONSE_HELP);
-  }
+  if (!assistant->help_button)
+    assistant->help_button = gtk_utils_add_help_button (&assistant->dialog);
 }
 
 
@@ -384,11 +381,8 @@ quarry_assistant_set_page_help_link_id_callback
 
   page_data->help_link_id_callback = callback;
 
-  if (!assistant->help_button) {
-    assistant->help_button = gtk_dialog_add_button (&assistant->dialog,
-						    GTK_STOCK_HELP,
-						    GTK_RESPONSE_HELP);
-  }
+  if (!assistant->help_button)
+    assistant->help_button = gtk_utils_add_help_button (&assistant->dialog);
 }
 
 

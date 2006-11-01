@@ -32,6 +32,8 @@
 #include <stdarg.h>
 #include <string.h>
 
+#include <gdk/gdkkeysyms.h>
+
 
 typedef struct _GtkUtilsBrowseButtonData	GtkUtilsBrowseButtonData;
 
@@ -151,6 +153,22 @@ gtk_utils_standardize_dialog (GtkDialog *dialog, GtkWidget *contents)
 
   gtk_box_set_spacing (GTK_BOX (dialog->vbox), QUARRY_SPACING);
   gtk_box_pack_start_defaults (GTK_BOX (dialog->vbox), contents);
+}
+
+
+GtkWidget*
+gtk_utils_add_help_button (GtkDialog* dialog)
+{
+  GtkAccelGroup* accel_group = gtk_accel_group_new ();
+  GtkWidget* help_button = gtk_dialog_add_button (dialog, GTK_STOCK_HELP,
+						  GTK_RESPONSE_HELP);
+
+  gtk_widget_add_accelerator (help_button, "clicked",
+			      accel_group, GDK_F1, 0, 0);
+
+  gtk_window_add_accel_group (GTK_WINDOW (dialog), accel_group);
+
+  return help_button;
 }
 
 
