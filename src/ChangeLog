@@ -1,3 +1,24 @@
+2006-11-01  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* gui-gtk/gtk-utils.c (gtk_utils_show_and_forget_dialog): New
+	function: add "Help" button with accelerator on "F1".
+
+	* gui-gtk/gtk-game-info-dialog.c (gtk_game_info_dialog_init): Use
+	it.
+	* gui-gtk/gtk-new-game-record-dialog.c
+	(gtk_new_game_record_dialog_init): Likewise.
+	* gui-gtk/gtk-preferences.c (gtk_preferences_dialog_present):
+	Likewise.
+	* gui-gtk/gtk-progress-dialog.c
+	(gtk_progress_dialog_set_help_link_id): Likewise.
+	* gui-gtk/gtk-resume-game-dialog.c
+	(gtk_resume_game_dialog_present): Likewise.
+	* gui-gtk/quarry-assistant.c
+	(quarry_assistant_set_page_help_link_id)
+	(quarry_assistant_set_page_help_link_id_callback): Likewise.
+	* gui-gtk/quarry-find-dialog.c (quarry_find_dialog_init):
+	Likewise.
+
 2006-10-31  Paul Pogonyshev  <pogonyshev@gmx.net>
 
 	* gui-utils/configuration.c (write_string): Bug-fix: properly
