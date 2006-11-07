@@ -1,3 +1,10 @@
+2006-11-07  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* gui-gtk/quarry-save-confirmation-dialog.c
+	(update_secondary_text): Make two version of a string passed
+	through ngettext() contain the same number of conversion
+	specifiers (bug #7585, Bjørn Ingmar Berg.)
+
 2006-11-01  Paul Pogonyshev  <pogonyshev@gmx.net>
 
 	* gui-gtk/gtk-utils.c (gtk_utils_show_and_forget_dialog): New

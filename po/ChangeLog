@@ -1,3 +1,14 @@
+2006-07-11  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* quarry.pot: Force update.
+	* en.po: Update.
+	* en_GB.po: Update.
+	* ru.po: Update.
+
+2006-10-30  Robert Stefaniuk <kacprey@gazeta.pl>
+
+	* pl.po: Update.
+
 2006-10-29  Jeremie Knuesel <knuesel@gmail.com>
 
 	* fr.po: Update.
@@ -9,6 +20,7 @@
 2006-10-28  Paul Pogonyshev  <pogonyshev@gmx.net>
 
 	* quarry.pot: Force update.
+	* en.po: Update.
 	* en_GB.po: Update.
 	* ru.po: Update.
 
