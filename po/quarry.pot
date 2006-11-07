@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: quarry-dev@gna.org\n"
-"POT-Creation-Date: 2006-10-29 18:56+0200\n"
+"POT-Creation-Date: 2006-11-07 18:33+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -32,15 +32,15 @@ msgstr ""
 msgid "Pick a Color"
 msgstr ""
 
-#: src/gui-gtk/gtk-control-center.c:61
+#: src/gui-gtk/gtk-control-center.c:64
 msgid "Quarry Control Center"
 msgstr ""
 
-#: src/gui-gtk/gtk-control-center.c:77
+#: src/gui-gtk/gtk-control-center.c:80
 msgid "Ne_w Game Record"
 msgstr ""
 
-#: src/gui-gtk/gtk-control-center.c:94
+#: src/gui-gtk/gtk-control-center.c:96
 msgid "_Resume Game"
 msgstr ""
 
@@ -58,12 +58,12 @@ msgid ""
 msgstr ""
 
 #: src/gui-gtk/gtk-game-info-dialog.c:231
-#: src/gui-gtk/gtk-resume-game-dialog.c:326
+#: src/gui-gtk/gtk-resume-game-dialog.c:325
 msgid "N_ame:"
 msgstr ""
 
 #: src/gui-gtk/gtk-game-info-dialog.c:231
-#: src/gui-gtk/gtk-resume-game-dialog.c:325
+#: src/gui-gtk/gtk-resume-game-dialog.c:324
 msgid "_Name:"
 msgstr ""
 
@@ -77,13 +77,13 @@ msgstr ""
 
 #: src/gui-gtk/gtk-game-info-dialog.c:256
 #: src/gui-gtk/gtk-new-game-dialog.c:226
-#: src/gui-gtk/gtk-resume-game-dialog.c:365
+#: src/gui-gtk/gtk-resume-game-dialog.c:364
 msgid "Black Player"
 msgstr ""
 
 #: src/gui-gtk/gtk-game-info-dialog.c:256
 #: src/gui-gtk/gtk-new-game-dialog.c:226
-#: src/gui-gtk/gtk-resume-game-dialog.c:365
+#: src/gui-gtk/gtk-resume-game-dialog.c:364
 msgid "White Player"
 msgstr ""
 
@@ -1086,17 +1086,17 @@ msgid "Game"
 msgstr ""
 
 #: src/gui-gtk/gtk-new-game-dialog.c:173
-#: src/gui-gtk/gtk-resume-game-dialog.c:308
+#: src/gui-gtk/gtk-resume-game-dialog.c:307
 msgid "Hu_man"
 msgstr ""
 
 #: src/gui-gtk/gtk-new-game-dialog.c:173
-#: src/gui-gtk/gtk-resume-game-dialog.c:309
+#: src/gui-gtk/gtk-resume-game-dialog.c:308
 msgid "Com_puter"
 msgstr ""
 
 #: src/gui-gtk/gtk-new-game-dialog.c:174
-#: src/gui-gtk/gtk-resume-game-dialog.c:309
+#: src/gui-gtk/gtk-resume-game-dialog.c:308
 msgid "H_uman"
 msgstr ""
 
@@ -1175,7 +1175,7 @@ msgid ""
 msgstr ""
 
 #: src/gui-gtk/gtk-new-game-record-dialog.c:310
-#: src/gui-gtk/gtk-resume-game-dialog.c:228
+#: src/gui-gtk/gtk-resume-game-dialog.c:227
 msgid "Short Game Information"
 msgstr ""
 
@@ -1641,35 +1641,35 @@ msgstr ""
 msgid "_Resume"
 msgstr ""
 
-#: src/gui-gtk/gtk-resume-game-dialog.c:232
+#: src/gui-gtk/gtk-resume-game-dialog.c:231
 msgid "Game:"
 msgstr ""
 
-#: src/gui-gtk/gtk-resume-game-dialog.c:241
+#: src/gui-gtk/gtk-resume-game-dialog.c:240
 msgid "Board size:"
 msgstr ""
 
-#: src/gui-gtk/gtk-resume-game-dialog.c:259
+#: src/gui-gtk/gtk-resume-game-dialog.c:258
 msgid "Handicap:"
 msgstr ""
 
-#: src/gui-gtk/gtk-resume-game-dialog.c:263
+#: src/gui-gtk/gtk-resume-game-dialog.c:262
 msgid "handicap|Not set"
 msgstr ""
 
-#: src/gui-gtk/gtk-resume-game-dialog.c:269
+#: src/gui-gtk/gtk-resume-game-dialog.c:268
 msgid "Komi:"
 msgstr ""
 
-#: src/gui-gtk/gtk-resume-game-dialog.c:272
+#: src/gui-gtk/gtk-resume-game-dialog.c:271
 msgid "komi|Not set"
 msgstr ""
 
-#: src/gui-gtk/gtk-resume-game-dialog.c:295
+#: src/gui-gtk/gtk-resume-game-dialog.c:294
 msgid "Filename:"
 msgstr ""
 
-#: src/gui-gtk/gtk-resume-game-dialog.c:308
+#: src/gui-gtk/gtk-resume-game-dialog.c:307
 msgid "Compu_ter"
 msgstr ""
 
@@ -1737,7 +1737,7 @@ msgstr ""
 #: src/gui-gtk/quarry-save-confirmation-dialog.c:173
 #, c-format
 msgid ""
-"If you don't save, changes from the last second will be lost permanently."
+"If you don't save, changes from the last %d second will be lost permanently."
 msgid_plural ""
 "If you don't save, changes from the last %d seconds will be lost permanently."
 msgstr[0] ""
@@ -1747,10 +1747,11 @@ msgstr[1] ""
 msgid "If you don't save, changes from the last minute will be discarded."
 msgstr ""
 
+#. TRANSLATORS: Cannot be one minute one second, actually.
 #: src/gui-gtk/quarry-save-confirmation-dialog.c:187
 #, c-format
 msgid ""
-"If you don't save, changes from the last minute and one second will be lost "
+"If you don't save, changes from the last minute and %d second will be lost "
 "permanently."
 msgid_plural ""
 "If you don't save, changes from the last minute and %d seconds will be lost "
@@ -1761,16 +1762,17 @@ msgstr[1] ""
 #: src/gui-gtk/quarry-save-confirmation-dialog.c:198
 #, c-format
 msgid ""
-"If you don't save, changes from the last minute will be lost permanently."
+"If you don't save, changes from the last %d minute will be lost permanently."
 msgid_plural ""
 "If you don't save, changes from the last %d minutes will be lost permanently."
 msgstr[0] ""
 msgstr[1] ""
 
+#. TRANSLATORS: Cannot be one hour one minute, actually.
 #: src/gui-gtk/quarry-save-confirmation-dialog.c:212
 #, c-format
 msgid ""
-"If you don't save, changes from the last hour and one minute will be lost "
+"If you don't save, changes from the last hour and %d minute will be lost "
 "permanently."
 msgid_plural ""
 "If you don't save, changes from the last hour and %d minutes will be lost "
@@ -1780,7 +1782,8 @@ msgstr[1] ""
 
 #: src/gui-gtk/quarry-save-confirmation-dialog.c:224
 #, c-format
-msgid "If you don't save, changes from the last hour will be lost permanently."
+msgid ""
+"If you don't save, changes from the last %d hour will be lost permanently."
 msgid_plural ""
 "If you don't save, changes from the last %d hours will be lost permanently."
 msgstr[0] ""

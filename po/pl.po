@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Quarry 0.1.16\n"
 "Report-Msgid-Bugs-To: quarry-dev@gna.org\n"
-"POT-Creation-Date: 2006-10-29 18:56+0200\n"
-"PO-Revision-Date: 2006-07-16 01:25+0300\n"
+"POT-Creation-Date: 2006-11-07 18:33+0200\n"
+"PO-Revision-Date: 2006-11-07 18:42+0200\n"
 "Last-Translator: Robert Stefaniuk <kacprey@gazeta.pl>\n"
 "Language-Team: Polish <pl@li.org>\n"
 "MIME-Version: 1.1\n"
@@ -35,15 +35,15 @@ msgstr "_Tekst etykiety:"
 msgid "Pick a Color"
 msgstr "Wybór koloru"
 
-#: src/gui-gtk/gtk-control-center.c:61
+#: src/gui-gtk/gtk-control-center.c:64
 msgid "Quarry Control Center"
 msgstr "Centrum sterowania Quarry"
 
-#: src/gui-gtk/gtk-control-center.c:77
+#: src/gui-gtk/gtk-control-center.c:80
 msgid "Ne_w Game Record"
 msgstr "_Nowy zapis gry"
 
-#: src/gui-gtk/gtk-control-center.c:94
+#: src/gui-gtk/gtk-control-center.c:96
 msgid "_Resume Game"
 msgstr "_Dokończ grę"
 
@@ -65,12 +65,12 @@ msgstr ""
 "plikiem?"
 
 #: src/gui-gtk/gtk-game-info-dialog.c:231
-#: src/gui-gtk/gtk-resume-game-dialog.c:326
+#: src/gui-gtk/gtk-resume-game-dialog.c:325
 msgid "N_ame:"
 msgstr "G_racz:"
 
 #: src/gui-gtk/gtk-game-info-dialog.c:231
-#: src/gui-gtk/gtk-resume-game-dialog.c:325
+#: src/gui-gtk/gtk-resume-game-dialog.c:324
 msgid "_Name:"
 msgstr "_Gracz:"
 
@@ -84,13 +84,13 @@ msgstr "Ranking:"
 
 #: src/gui-gtk/gtk-game-info-dialog.c:256
 #: src/gui-gtk/gtk-new-game-dialog.c:226
-#: src/gui-gtk/gtk-resume-game-dialog.c:365
+#: src/gui-gtk/gtk-resume-game-dialog.c:364
 msgid "Black Player"
 msgstr "Czarne"
 
 #: src/gui-gtk/gtk-game-info-dialog.c:256
 #: src/gui-gtk/gtk-new-game-dialog.c:226
-#: src/gui-gtk/gtk-resume-game-dialog.c:365
+#: src/gui-gtk/gtk-resume-game-dialog.c:364
 msgid "White Player"
 msgstr "Białe"
 
@@ -949,16 +949,18 @@ msgid ""
 "GTP engine `%s' reported it could handle %s game, but failed to initialize "
 "itself for it"
 msgstr ""
+"Algorytm GTP „%s” zgłosił możliwośc obsługi gry %s, ale nie zainicjował "
+"swojego działania"
 
 #: src/gui-gtk/gtk-goban-window.c:5070
 #, c-format
 msgid "GTP engine `%s' cannot handle %dx%d board size, sorry"
-msgstr ""
+msgstr "Algorytm GTP „%s” niestety nie obsługuje rozmiaru planszy %dx%d"
 
 #: src/gui-gtk/gtk-goban-window.c:5080
 #, c-format
 msgid "GTP engine `%s' failed to clean the board"
-msgstr ""
+msgstr "Algorytm GTP „%s” nie wyczyścił planszy"
 
 #: src/gui-gtk/gtk-goban-window.c:5086
 #, c-format
@@ -966,15 +968,17 @@ msgid ""
 "GTP engine `%s' failed to set initial time limits (it could ignore them, but "
 "not fail)"
 msgstr ""
+"Algorytm GTP „%s” nie ustawił początkowego limitu czasu (można go ignorować, "
+"ale nie błędnie ustawiać)"
 
 #: src/gui-gtk/gtk-goban-window.c:5094
 #, c-format
 msgid "GTP engine `%s' failed to set handicap stones on board"
-msgstr ""
+msgstr "Algorytm GTP „%s” nie ustawił kamieni handikapowych na planszy"
 
 #: src/gui-gtk/gtk-goban-window.c:5108
 msgid "This is an engine error. You may want to report it to engine authors."
-msgstr ""
+msgstr "To błąd algorytmu. Możesz go zgłosić jego twórcom."
 
 #: src/gui-gtk/gtk-goban-window.c:5392
 msgid "GTP engine is scoring..."
@@ -1059,11 +1063,11 @@ msgstr "* BŁĄD: nierozpoznana linia odpowiedzi:\n"
 #: src/gui-gtk/gtk-gtp-client-interface.c:404
 #, c-format
 msgid "* ERROR: mismatched ID (%d expected):\n"
-msgstr "* BŁĄÐ: niepoprawny ID (oczekiwano %d):\n"
+msgstr "* BŁĄD: niepoprawny ID (oczekiwano %d):\n"
 
 #: src/gui-gtk/gtk-gtp-client-interface.c:408
 msgid "* ERROR: unexpected ID in response (the command had none):\n"
-msgstr "* BŁĄÐ: nieoczekiwany ID w odpowiedzi (komenda nie posiada):\n"
+msgstr "* BŁĄD: nieoczekiwany ID w odpowiedzi (komenda nie posiada):\n"
 
 #. TRANSLATORS: Don't put ellipsis here, this string will most
 #. often go to fixed-width font terminals.
@@ -1113,17 +1117,17 @@ msgid "Game"
 msgstr "Gra"
 
 #: src/gui-gtk/gtk-new-game-dialog.c:173
-#: src/gui-gtk/gtk-resume-game-dialog.c:308
+#: src/gui-gtk/gtk-resume-game-dialog.c:307
 msgid "Hu_man"
 msgstr "Czło_wiek"
 
 #: src/gui-gtk/gtk-new-game-dialog.c:173
-#: src/gui-gtk/gtk-resume-game-dialog.c:309
+#: src/gui-gtk/gtk-resume-game-dialog.c:308
 msgid "Com_puter"
 msgstr "Ko_mputer"
 
 #: src/gui-gtk/gtk-new-game-dialog.c:174
-#: src/gui-gtk/gtk-resume-game-dialog.c:309
+#: src/gui-gtk/gtk-resume-game-dialog.c:308
 msgid "H_uman"
 msgstr "_Człowiek"
 
@@ -1205,7 +1209,7 @@ msgstr ""
 "„Informacje” z paska głównego."
 
 #: src/gui-gtk/gtk-new-game-record-dialog.c:310
-#: src/gui-gtk/gtk-resume-game-dialog.c:228
+#: src/gui-gtk/gtk-resume-game-dialog.c:227
 msgid "Short Game Information"
 msgstr "Krótka informacja o grze"
 
@@ -1701,35 +1705,35 @@ msgstr "Dokończenie przerwanej gry"
 msgid "_Resume"
 msgstr "_Dokończ"
 
-#: src/gui-gtk/gtk-resume-game-dialog.c:232
+#: src/gui-gtk/gtk-resume-game-dialog.c:231
 msgid "Game:"
 msgstr "Gra:"
 
-#: src/gui-gtk/gtk-resume-game-dialog.c:241
+#: src/gui-gtk/gtk-resume-game-dialog.c:240
 msgid "Board size:"
 msgstr "Rozmiar planszy:"
 
-#: src/gui-gtk/gtk-resume-game-dialog.c:259
+#: src/gui-gtk/gtk-resume-game-dialog.c:258
 msgid "Handicap:"
 msgstr "Handikap:"
 
-#: src/gui-gtk/gtk-resume-game-dialog.c:263
+#: src/gui-gtk/gtk-resume-game-dialog.c:262
 msgid "handicap|Not set"
 msgstr "Nie ustalony"
 
-#: src/gui-gtk/gtk-resume-game-dialog.c:269
+#: src/gui-gtk/gtk-resume-game-dialog.c:268
 msgid "Komi:"
 msgstr "Komi:"
 
-#: src/gui-gtk/gtk-resume-game-dialog.c:272
+#: src/gui-gtk/gtk-resume-game-dialog.c:271
 msgid "komi|Not set"
 msgstr "Nie ustalone"
 
-#: src/gui-gtk/gtk-resume-game-dialog.c:295
+#: src/gui-gtk/gtk-resume-game-dialog.c:294
 msgid "Filename:"
 msgstr "Nazwa pliku:"
 
-#: src/gui-gtk/gtk-resume-game-dialog.c:308
+#: src/gui-gtk/gtk-resume-game-dialog.c:307
 msgid "Compu_ter"
 msgstr "_Komputer"
 
@@ -1795,9 +1799,9 @@ msgid "Close _without Saving"
 msgstr "Zamknij _bez zapisywania"
 
 #: src/gui-gtk/quarry-save-confirmation-dialog.c:173
-#, c-format
+#, fuzzy, c-format
 msgid ""
-"If you don't save, changes from the last second will be lost permanently."
+"If you don't save, changes from the last %d second will be lost permanently."
 msgid_plural ""
 "If you don't save, changes from the last %d seconds will be lost permanently."
 msgstr[0] ""
@@ -1814,10 +1818,11 @@ msgstr[2] ""
 msgid "If you don't save, changes from the last minute will be discarded."
 msgstr "Jeśli nie zapiszesz, zmiany z ostatniej minuty zostaną porzucone."
 
+#. TRANSLATORS: Cannot be one minute one second, actually.
 #: src/gui-gtk/quarry-save-confirmation-dialog.c:187
-#, c-format
+#, fuzzy, c-format
 msgid ""
-"If you don't save, changes from the last minute and one second will be lost "
+"If you don't save, changes from the last minute and %d second will be lost "
 "permanently."
 msgid_plural ""
 "If you don't save, changes from the last minute and %d seconds will be lost "
@@ -1833,9 +1838,9 @@ msgstr[2] ""
 "bezpowrotnie utracone."
 
 #: src/gui-gtk/quarry-save-confirmation-dialog.c:198
-#, c-format
+#, fuzzy, c-format
 msgid ""
-"If you don't save, changes from the last minute will be lost permanently."
+"If you don't save, changes from the last %d minute will be lost permanently."
 msgid_plural ""
 "If you don't save, changes from the last %d minutes will be lost permanently."
 msgstr[0] ""
@@ -1847,10 +1852,11 @@ msgstr[2] ""
 "Jeśli nie zapiszesz, zmiany z ostatnich %d minut zostaną bezpowrotnie "
 "utracone."
 
+#. TRANSLATORS: Cannot be one hour one minute, actually.
 #: src/gui-gtk/quarry-save-confirmation-dialog.c:212
-#, c-format
+#, fuzzy, c-format
 msgid ""
-"If you don't save, changes from the last hour and one minute will be lost "
+"If you don't save, changes from the last hour and %d minute will be lost "
 "permanently."
 msgid_plural ""
 "If you don't save, changes from the last hour and %d minutes will be lost "
@@ -1866,8 +1872,9 @@ msgstr[2] ""
 "bezpowrotnie utracone."
 
 #: src/gui-gtk/quarry-save-confirmation-dialog.c:224
-#, c-format
-msgid "If you don't save, changes from the last hour will be lost permanently."
+#, fuzzy, c-format
+msgid ""
+"If you don't save, changes from the last %d hour will be lost permanently."
 msgid_plural ""
 "If you don't save, changes from the last %d hours will be lost permanently."
 msgstr[0] ""
