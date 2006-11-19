@@ -2,10 +2,11 @@
 <!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.1.2//EN"
 	  "http://www.oasis-open.org/docbook/xml/4.1.2/docbookx.dtd"
 	  [ <!ENTITY LEGAL       SYSTEM "legal.xml">
+	    <!ENTITY AUTHORS     SYSTEM "authors.xml">
 	    <!ENTITY FDL         SYSTEM "fdl.xml">
 	    <!ENTITY appversion  "0.2">
 	    <!ENTITY manrevision "0.2">
-	    <!ENTITY date        "October 2006">
+	    <!ENTITY date        "November 2006">
 	    <!ENTITY app         "<application>Quarry</application>"> ]>
 <!--
       (Do not remove this comment block.)
@@ -23,7 +24,7 @@
      code. -->
 <book id="index" lang="en">
   <bookinfo>
-    <title>&app; Manual V&manrevision;</title>
+    <title>&app; Manual</title>
     <copyright>
       <year>2004</year>
       <year>2005</year>
@@ -222,6 +223,13 @@
 
 	    <listitem>
 	      <para>
+		Go board position can be exported in a format suitable for inserting into
+		<ulink type="http" url="http://senseis.xmp.net/">Sensei’s Library</ulink>.
+	      </para>
+	    </listitem>
+
+	    <listitem>
+	      <para>
 		Support for various SGF labels and markup.
 	      </para>
 	    </listitem>
@@ -308,9 +316,7 @@
 	    </imageobject>
 	    <textobject>
 	      <phrase>
-		Shows &app; Control Center window.  Contains three buttons:
-		<guibutton>New Game</guibutton>, <guibutton>Open Game Record</guibutton>
-		and <guibutton>Preferences</guibutton>.
+		Shows &app; Control Center window.
 	      </phrase>
 	    </textobject>
 	  </mediaobject>
@@ -969,9 +975,9 @@
 
       <para>
 	&app; tries to guess players based on their names, as stored in the game record.
-	Normally, if the game record was adjoirned in &app; and you don’t alter computer
-	player names, it should guess correctly.  However, you can always override and
-	correct its decision.
+	Normally, if the game was adjourned in &app; and you don’t alter computer player
+	names, it should guess correctly.  However, you can always override and correct
+	its decision.
       </para>
     </section>
 
@@ -987,6 +993,23 @@
 	view</link> to the bottom of the right pane.
       </para>
 
+      <figure id="board-window-screen-shot">
+	<title>&app; Board Window showing Kogo’s Joseki Dictionary</title>
+	<screenshot>
+	  <mediaobject>
+	    <imageobject>
+	      <imagedata fileref="figures/board-window.png"
+			 format="PNG"/>
+	    </imageobject>
+	    <textobject>
+	      <phrase>
+		Shows &app; Board Window with Kogo’s Joseki Dictionary.
+	      </phrase>
+	    </textobject>
+	  </mediaobject>
+	</screenshot>
+      </figure>
+
       <section id="board">
 	<title>The Board</title>
 	<para>
@@ -996,11 +1019,45 @@
 	  rectangle is drawn if the board has focus.
 	</para>
 
+	<para>
+	  The last move made is marked.  Depending on the markup theme, this can be a
+	  cross or a bullet.  On the screen shot above, last placed stone at P15 is marked
+	  with a cross.
+	</para>
+
 	<note>
 	  <para>
-	    This section can be significantly improved.	<!-- FIXME -->
+	    This section can be improved. <!-- FIXME -->
 	  </para>
 	</note>
+
+	<section id="variations">
+	  <title>Variations</title>
+	  <para>
+	    &app; treats variations as siblings of the current node.  This is like Jago
+	    does and unlike CGoban.  You always see the current variation and it is not a
+	    potential for the next node/move.
+	  </para>
+
+	  <para>
+	    On the board, non-current variations that contain a move are shown as small
+	    ghostly pieces.  Variations that don’t contain a move or contain a pass move
+	    (in Go) can be seen only in the <link linkend="game-tree-view">Game Tree
+	    View</link>.  Screen shot above shows two variations—at Q18 and Q19—of the
+	    white move on the board.
+	  </para>
+
+	  <para>
+	    You can activate (switch to) a particular variation by right-clicking on the
+	    ghost stone on the board.  For instance, right-clicking on Q18 in the window
+	    shown in the screen shot would make White Q18 the current move.  In rare cases
+	    when there are multiple variations with the same move, right-clicking and
+	    shift-right-clicking scrolls through the list of such variations.  Alternative
+	    ways of switching to different variations include using the Game Tree View and
+	    using menu items, toolbar buttons or
+	    <link linkend="board-keyboard-navigation">keyboard shortcuts</link>.
+	  </para>
+	</section>
 
 	<section id="board-keyboard-navigation">
 	  <title>Keyboard Navigation</title>
@@ -1093,9 +1150,9 @@
       <section id="board-window-information-pane">
 	<title>Board Window Information Pane</title>
 	<para>
-	  Game Information Pane shows information about the game in general, about last
-	  made and about the current node.  Some of its components are optional and can be
-	  hidden in the <guimenu>View</guimenu> menu.
+	  Game Information Pane shows information about the game in general, about the
+	  last move made and about the current node.  Some of its components are optional
+	  and can be hidden in the <guimenu>View</guimenu> menu.
 	</para>
 
 	<para>
@@ -1160,7 +1217,7 @@
 		  Below move information game result is shown, but only at the very last
 		  node of the game.  This is done in order to prevent spoiling of watching
 		  of unknown games.  Also, if the game lacks any result or is unfinished
-		  there nothing to show at all.
+		  there is nothing to show at all.
 		</para>
 	      </listitem>
 	    </varlistentry>
@@ -1177,7 +1234,7 @@
 		    <guimenu>View</guimenu>
 		    <guimenuitem>Game Action Buttons</guimenuitem>
 		  </menuchoice> menu item.  They are shown by default mainly as a reminder
-		  of the option you have.
+		  of the options you have.
 		</para>
 	      </listitem>
 	    </varlistentry>
@@ -1202,8 +1259,8 @@
 		    <guimenuitem>Edit Node Name</guimenuitem>
 		  </menuchoice> menu item.  It will insert a placeholder for node name in
 		  the window, which you can then replace with actual name.  To delete a
-		  name, simply delete all its text and &app; will notice it and remove
-		  node line from the window.
+		  name, simply delete all its text.  &app; will notice it and remove node
+		  line from the window.
 		</para>
 	      </listitem>
 	    </varlistentry>
@@ -1213,7 +1270,7 @@
 	      <listitem>
 		<para>
 		  Finally, there can be the Game Tree View, described in detail in the
-		  <link linkend="game-tree-view">next section</link>.  It’s visibility is
+		  <link linkend="game-tree-view">next section</link>.  Its visibility is
 		  controlled by
 		  <menuchoice>
 		    <guimenu>View</guimenu>
@@ -1232,7 +1289,7 @@
 	<para>
 	  Game Tree View shows game record as a tree in a style used
 	  by <application>CGoban1</application>.  Generally, it is of interest only if the
-	  game records contains variations.  For instance, a debut/joseki dictionary or a
+	  game record contains variations.  For instance, a debut/joseki dictionary or a
 	  well-annotated game with alternate branches.  Visibility of Game Tree View is
 	  controlled with <guimenuitem>Game Tree</guimenuitem> item in
 	  <guimenu>View</guimenu> menu and with
@@ -1243,10 +1300,10 @@
 	  Node with a move of a specific player, including pass move in Go, are shown as
 	  pieces of player’s color.  Other nodes, including position setup, at present
 	  lack any icon.  Nodes that belong to a same branch (variation) are connected
-	  with line and the current branch is highlighted.  Current node is shown within a
-	  black rectangle.  If it is not visible, you can bring it onscreen using
-	  <guimenuitem>Recenter on Current Node</guimenuitem> command
-	  from <guimenu>View</guimenu> menu.
+	  with a line and the current branch is highlighted.  Current node is shown within
+	  a black rectangle.  If it is not visible, you can bring it onscreen using
+	  <guimenuitem>Recenter on Current Node</guimenuitem> command from the
+	  <guimenu>View</guimenu> menu.
 	</para>
 
 	<para>
@@ -2300,7 +2357,7 @@
 			<emphasis>or</emphasis> W+R <emphasis>or</emphasis> B+R
 		      </entry>
 		      <entry>
-			A player has won by resignation,
+			A player has won by resignation.
 		      </entry>
 		    </row>
 
@@ -2530,8 +2587,65 @@
     <section id="preferences-game-tree">
       <title>Game Tree</title>
       <para>
-	Sorry, not documented yet… <!-- FIXME -->
+	Here you can customize appearance and behavior of the
+	<link linkend="game-tree-view">Game Tree View</link>.
       </para>
+
+      <variablelist>
+	<varlistentry>
+	  <term><guilabel>Show Game Tree</guilabel></term>
+	  <listitem>
+	    <para>
+	      You can choose whether the Game Tree View is shown in
+	      <link linkend="board-windows">Board Windows</link> by default.  If you
+	      choose <guilabel>Automatically</guilabel> option, it will be shown if game
+	      record has anything in addition to the main branch.  In any case, you can
+	      show or hide the view manually, using
+	      <menuchoice>
+		<guimenu>View</guimenu>
+		<guimenuitem>Game Tree</guimenuitem>
+	      </menuchoice> menu item.  In this case, automatic showing will be disabled,
+	      even if corresponding option is selected.
+	    </para>
+	  </listitem>
+	</varlistentry>
+
+	<varlistentry>
+	  <term><guilabel>Track Tree’s Current Node</guilabel></term>
+	  <listitem>
+	    <para>
+	      You can choose whether the view should track the current node,
+	      i.e. reposition itself to show it.  In automatic mode it only tracks the
+	      current node if it was showing it before.  This mode prevents the view from
+	      scrolling if you intentionally scrolled it to some part of the tree not
+	      containing the current node.  You can always force the view to display the
+	      current node by using
+	      <menuchoice>
+		<guimenu>View</guimenu>
+		<guimenuitem>Recenter on Current Node</guimenuitem>
+	      </menuchoice> menu item.
+	    </para>
+
+	    <para>
+	      You can also choose whether the view will scroll minimal possible distance
+	      while tracking (i.e. the current node will be somewhere near an edge), or if
+	      it will always recenter on the current node if needed.  These options don’t
+	      make sense if tracking is disabled, so they are disabled then too.
+	    </para>
+	  </listitem>
+	</varlistentry>
+
+	<varlistentry>
+	  <term><guilabel>Show tooltips</guilabel></term>
+	  <listitem>
+	    <para>
+	      Choose whether Game Tree View should show tooltips over nodes.
+	      See <link linkend="game-tree-view">view description</link> for details.  You
+	      may want to disable tooltips if they look too distracting.
+	    </para>
+	  </listitem>
+	</varlistentry>
+      </variablelist>
     </section>
 
     <section id="preferences-gtp-engines">
@@ -2724,6 +2838,7 @@
     </section>
   </chapter>
 
+  &AUTHORS;
   &FDL;
 </book>
 
