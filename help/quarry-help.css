@@ -89,12 +89,11 @@ div.appendix {
 }
 
 div.figure {
-	margin-left:	0.5in;
+	margin-left:	0;
 }
 
 span.term {
 	font-style:	italic;
-	
 }
 
 div.note h3 {
