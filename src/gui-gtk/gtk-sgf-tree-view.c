@@ -801,11 +801,16 @@ gtk_sgf_tree_view_update_view_port (GtkSgfTreeView *view)
 void
 gtk_sgf_tree_view_center_on_current_node (GtkSgfTreeView *view)
 {
+  gint view_x;
+  gint view_y;
+
   g_return_if_fail (GTK_IS_SGF_TREE_VIEW (view));
 
+  view_x = (gint) view->hadjustment->value;
+  view_y = (gint) view->vadjustment->value;
+
   center_on_current_node (view);
-  update_view_port_and_maybe_move_or_resize_window
-    (view, (gint) view->hadjustment->value, (gint) view->vadjustment->value);
+  update_view_port_and_maybe_move_or_resize_window (view, view_x, view_y);
 }
 
 
