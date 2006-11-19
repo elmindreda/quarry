@@ -1,0 +1,103 @@
+<!-- I commented out e-mails since otherwise they are shown in plain text on the
+     Internet. -->
+
+<appendix id="authors">
+  <title>&app; Authors</title>
+  <simplesect>
+    <title>Programming</title>
+    <para>
+      <variablelist>
+	<varlistentry>
+	  <term>
+	    <personname>
+	      <firstname>Paul</firstname>
+	      <surname>Pogonyshev</surname>
+	    </personname>
+<!--       <email>pogonyshev@gmx.net</email> -->
+	  </term>
+	  <listitem>
+	    <para>
+	      Main author, programming, design.
+	    </para>
+	  </listitem>
+	</varlistentry>
+
+	<varlistentry>
+	  <term>
+	    <personname>
+	      <firstname>Martin</firstname>
+	      <surname>Holters</surname>
+	    </personname>
+<!--       <email>martin.holters@gmx.de</email> -->
+	  </term>
+	  <listitem>
+	    <para>
+	      Programming.
+	    </para>
+	  </listitem>
+	</varlistentry>
+      </variablelist>
+    </para>
+  </simplesect>
+
+  <simplesect>
+    <title>Translation</title>
+    <para>
+      <variablelist>
+	<!-- Sorted alphabetically by surname. -->
+	<varlistentry>
+	  <term>
+	    <personname>
+	      <firstname>Jérémie</firstname>
+	      <surname>Knuesel</surname>
+	    </personname>
+<!--       <email>knuesel@gmail.com</email> -->
+	  </term>
+	  <listitem>
+	    <para>
+	      French translation.
+	    </para>
+	  </listitem>
+	</varlistentry>
+
+	<varlistentry>
+	  <term>
+	    <personname>
+	      <firstname>Paul</firstname>
+	      <surname>Pogonyshev</surname>
+	    </personname>
+<!--       <email>pogonyshev@gmx.net</email> -->
+	  </term>
+	  <listitem>
+	    <para>
+	      British English and Russian translations.
+	    </para>
+	  </listitem>
+	</varlistentry>
+
+	<varlistentry>
+	  <term>
+	    <personname>
+	      <firstname>Robert</firstname>
+	      <surname>Stefaniuk</surname>
+	    </personname>
+<!--       <email>kacprey@gazeta.pl</email> -->
+	  </term>
+	  <listitem>
+	    <para>
+	      Polish translation.
+	    </para>
+	  </listitem>
+	</varlistentry>
+      </variablelist>
+    </para>
+  </simplesect>
+</appendix>
+
+<!--
+    Local Variables:
+    tab-width: 8
+    sgml-basic-offset: 2
+    fill-column: 90
+    End:
+  -->
