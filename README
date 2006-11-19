@@ -5,9 +5,9 @@ supports three games: Go, Amazons and Reversi.  It is intended to be
 useful for both users and developers of game engines (i.e. programs
 that play board games).
 
-At present, Quarry is slowly approaching first stable release.  It's
-uses are currently limited to playing against a computer program
-(e.g. GNU Go) and browsing and editing SGF game records.
+Quarry uses are currently limited to playing against a computer
+program (e.g. GNU Go) and browsing and editing SGF game records.
+Future versions will also support Internet game servers and more.
 
 Latest Quarry versions can be found at the homepage:
 
@@ -37,9 +37,9 @@ Point your browser to
 
 		  https://gna.org/bugs/?group=quarry
 
-Before submitting a bug, please update to latest CVS version of Quarry
-and verify that the bug is still present.  Don't forget to check if
-the bug has been submitted already.
+Before submitting a bug, please update to the latest CVS version of
+Quarry and verify that the bug is still present.  Don't forget to
+check if the bug has been submitted already.
 
 Please include the following information in your bug report:
 
@@ -96,7 +96,7 @@ COPYING-DOC.
   MacDonald and copyrighted in subsequent years by Paul Pogonyshev.
   They are licensed under GNU GPL version 2 or later.
 
-* File `data/textures/wood1.jpg' can be distributed freely (1).
+* File `data/textures/wood1.jpg' can be distributed freely [1].
 
 * File `data/textures/wood2.jpg' is copyrighted 2005 by Brenn Hill and
   is distributed under Creative Commons Attribution-NonCommercial-
@@ -111,7 +111,7 @@ COPYING-DOC.
   software or are in public domain.
 
 
-(1) This file was taken from
+[1] This file was taken from
 
 	http://www.grsites.com/
 

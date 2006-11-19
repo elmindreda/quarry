@@ -18,8 +18,15 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
 #: src/gui-gtk/gtk-add-or-edit-label-dialog.c:73
-msgid "Although board labels are not limited in length, it is better to use only one or two characters long labels. Longer labels will not be visible immediately or at all in most clients."
-msgstr "Bien que la longueur des étiquettes de plateau ne soit pas limitée, il est préférable de n'utiliser qu'un ou deux caractères. Les étiquettes plus longues ne seront pas visibles (ou pas immédiatement) dans la plupart des clients."
+msgid ""
+"Although board labels are not limited in length, it is better to use only "
+"one or two characters long labels. Longer labels will not be visible "
+"immediately or at all in most clients."
+msgstr ""
+"Bien que la longueur des étiquettes de plateau ne soit pas limitée, il est "
+"préférable de n'utiliser qu'un ou deux caractères. Les étiquettes plus "
+"longues ne seront pas visibles (ou pas immédiatement) dans la plupart des "
+"clients."
 
 #: src/gui-gtk/gtk-add-or-edit-label-dialog.c:87
 msgid "Label _text:"
@@ -42,13 +49,21 @@ msgid "_Resume Game"
 msgstr "_Reprendre une partie"
 
 #: src/gui-gtk/gtk-file-dialog.c:281
-msgid "Note that all information in the existing file will be lost permanently if you choose to overwrite it."
-msgstr "Notez que toutes les informations dans le fichier existant seront définitivement perdues si vous choisissez de l'écraser."
+msgid ""
+"Note that all information in the existing file will be lost permanently if "
+"you choose to overwrite it."
+msgstr ""
+"Notez que toutes les informations dans le fichier existant seront "
+"définitivement perdues si vous choisissez de l'écraser."
 
 #: src/gui-gtk/gtk-file-dialog.c:284
 #, c-format
-msgid "File named `%s' already exists. Do you want to overwrite it with the one you are saving?"
-msgstr "Il existe déjà un fichier portant le nom \"%s\". Voulez-vous l'écraser avec celui que vous êtes en train d'enregistrer ?"
+msgid ""
+"File named `%s' already exists. Do you want to overwrite it with the one you "
+"are saving?"
+msgstr ""
+"Il existe déjà un fichier portant le nom \"%s\". Voulez-vous l'écraser avec "
+"celui que vous êtes en train d'enregistrer ?"
 
 #: src/gui-gtk/gtk-game-info-dialog.c:231
 #: src/gui-gtk/gtk-resume-game-dialog.c:325
@@ -223,8 +238,7 @@ msgstr "Enregistrer"
 msgid "Save the current file"
 msgstr "Enregistrer le fichier courant"
 
-#: src/gui-gtk/gtk-goban-window.c:470
-#: src/gui-gtk/gtk-goban-window.c:2025
+#: src/gui-gtk/gtk-goban-window.c:470 src/gui-gtk/gtk-goban-window.c:2025
 msgid "Find"
 msgstr "Rechercher"
 
@@ -324,8 +338,7 @@ msgstr "/Fichier/_Nouvelle partie..."
 msgid "/File/Ne_w Game Record..."
 msgstr "/Fichier/Nouvel _enregistrement de partie..."
 
-#: src/gui-gtk/gtk-goban-window.c:636
-#: src/gui-gtk/gtk-goban-window.c:653
+#: src/gui-gtk/gtk-goban-window.c:636 src/gui-gtk/gtk-goban-window.c:653
 #: src/gui-gtk/gtk-goban-window.c:661
 msgid "/File/"
 msgstr "/Fichier/"
@@ -378,12 +391,9 @@ msgstr "/Édition/_Annuler"
 msgid "/Edit/_Redo"
 msgstr "/Édition/_Restaurer"
 
-#: src/gui-gtk/gtk-goban-window.c:678
-#: src/gui-gtk/gtk-goban-window.c:695
-#: src/gui-gtk/gtk-goban-window.c:739
-#: src/gui-gtk/gtk-goban-window.c:747
-#: src/gui-gtk/gtk-goban-window.c:767
-#: src/gui-gtk/gtk-goban-window.c:778
+#: src/gui-gtk/gtk-goban-window.c:678 src/gui-gtk/gtk-goban-window.c:695
+#: src/gui-gtk/gtk-goban-window.c:739 src/gui-gtk/gtk-goban-window.c:747
+#: src/gui-gtk/gtk-goban-window.c:767 src/gui-gtk/gtk-goban-window.c:778
 #: src/gui-gtk/gtk-goban-window.c:783
 msgid "/Edit/"
 msgstr "/Édition/"
@@ -420,8 +430,7 @@ msgstr "/Édition/Outils/_Coups"
 msgid "/Edit/Tools/_Setup Tool"
 msgstr "/Édition/Outils/_Situations"
 
-#: src/gui-gtk/gtk-goban-window.c:705
-#: src/gui-gtk/gtk-goban-window.c:722
+#: src/gui-gtk/gtk-goban-window.c:705 src/gui-gtk/gtk-goban-window.c:722
 #: src/gui-gtk/gtk-goban-window.c:730
 msgid "/Edit/Tools/"
 msgstr "/Édition/Outils/"
@@ -530,8 +539,7 @@ msgstr "/Affichage/Barre d'_édition"
 msgid "/View/_Navigation Toolbar"
 msgstr "/Affichage/Barre de _navigation"
 
-#: src/gui-gtk/gtk-goban-window.c:800
-#: src/gui-gtk/gtk-goban-window.c:805
+#: src/gui-gtk/gtk-goban-window.c:800 src/gui-gtk/gtk-goban-window.c:805
 #: src/gui-gtk/gtk-goban-window.c:813
 msgid "/View/"
 msgstr "/Affichage/"
@@ -560,8 +568,7 @@ msgstr "/_Jouer"
 msgid "/Play/_Pass"
 msgstr "/Jouer/_Passer"
 
-#: src/gui-gtk/gtk-goban-window.c:824
-#: src/gui-gtk/gtk-goban-window.c:829
+#: src/gui-gtk/gtk-goban-window.c:824 src/gui-gtk/gtk-goban-window.c:829
 msgid "/Play/"
 msgstr "/Jouer/"
 
@@ -593,8 +600,7 @@ msgstr "/Aller à/Dix noeud en _arrière"
 msgid "/Go/Ten Nodes _Forward"
 msgstr "/Aller à/Dix noeuds en a_vant"
 
-#: src/gui-gtk/gtk-goban-window.c:849
-#: src/gui-gtk/gtk-goban-window.c:857
+#: src/gui-gtk/gtk-goban-window.c:849 src/gui-gtk/gtk-goban-window.c:857
 #: src/gui-gtk/gtk-goban-window.c:867
 msgid "/Go/"
 msgstr "/Aller à/"
@@ -732,8 +738,13 @@ msgid "Error saving to file `%s'"
 msgstr "Erreur lors de l'enregistrement du fichier \"%s\""
 
 #: src/gui-gtk/gtk-goban-window.c:1937
-msgid "You can later resume the game by pressing the `Resume Game' button in Quarry Control Center, or selecting `Resume Game' item from the `File' menu."
-msgstr "Vous pouvez reprendre la partie plus tard en pressant le bouton \"Reprendre la partie\" dans le centre de contrôle Quarry, ou en choisissant l'entrée correspondante du menu \"Fichier\"."
+msgid ""
+"You can later resume the game by pressing the `Resume Game' button in Quarry "
+"Control Center, or selecting `Resume Game' item from the `File' menu."
+msgstr ""
+"Vous pouvez reprendre la partie plus tard en pressant le bouton \"Reprendre "
+"la partie\" dans le centre de contrôle Quarry, ou en choisissant l'entrée "
+"correspondante du menu \"Fichier\"."
 
 #: src/gui-gtk/gtk-goban-window.c:1943
 #, c-format
@@ -746,11 +757,17 @@ msgstr "Le diagramme ASCII a été exporté dans le presse-papier"
 
 #: src/gui-gtk/gtk-goban-window.c:1975
 msgid "Sensei's Library diagram has been exported to clipboard"
-msgstr "Le diagramme au format Sensei's Library a été exporté dans le presse-papier"
+msgstr ""
+"Le diagramme au format Sensei's Library a été exporté dans le presse-papier"
 
 #: src/gui-gtk/gtk-goban-window.c:1990
-msgid "You can usually paste the diagram in another application using `Ctrl+C' key combination or by selecting appropriate menu item."
-msgstr "Vous pouvez généralement coller le diagramme dans une autre application en utilisant la combinaison de touches \"Ctrl + C\", ou en choisissant l'entrée appropriée du menu."
+msgid ""
+"You can usually paste the diagram in another application using `Ctrl+C' key "
+"combination or by selecting appropriate menu item."
+msgstr ""
+"Vous pouvez généralement coller le diagramme dans une autre application en "
+"utilisant la combinaison de touches \"Ctrl + C\", ou en choisissant l'entrée "
+"appropriée du menu."
 
 #: src/gui-gtk/gtk-goban-window.c:2446
 msgid "Sorry, there are no named nodes in this game tree"
@@ -801,8 +818,7 @@ msgstr "modifié"
 msgid "[unknown]"
 msgstr "[inconnu]"
 
-#: src/gui-gtk/gtk-goban-window.c:4121
-#: src/gui-gtk/gtk-goban-window.c:4126
+#: src/gui-gtk/gtk-goban-window.c:4121 src/gui-gtk/gtk-goban-window.c:4126
 #, c-format
 msgid "%d capture"
 msgid_plural "%d captures"
@@ -821,8 +837,7 @@ msgid_plural "%s %s %d komi"
 msgstr[0] "%s %s %d komi"
 msgstr[1] "%s %s %d komi"
 
-#: src/gui-gtk/gtk-goban-window.c:4163
-#: src/gui-gtk/gtk-goban-window.c:4166
+#: src/gui-gtk/gtk-goban-window.c:4163 src/gui-gtk/gtk-goban-window.c:4166
 #, c-format
 msgid "%d disk"
 msgid_plural "%d disks"
@@ -930,13 +945,18 @@ msgstr "Spécifier le numéro du coup"
 #. TRANSLATORS: Note that game name will be in `normal' form.
 #: src/gui-gtk/gtk-goban-window.c:5062
 #, c-format
-msgid "GTP engine `%s' reported it could handle %s game, but failed to initialize itself for it"
-msgstr "Le moteur GTP \"%s\" a affirmé pouvoir prendre en charge le jeu %s, mais n'est pas parvenu a s'initialiser pour lui"
+msgid ""
+"GTP engine `%s' reported it could handle %s game, but failed to initialize "
+"itself for it"
+msgstr ""
+"Le moteur GTP \"%s\" a affirmé pouvoir prendre en charge le jeu %s, mais "
+"n'est pas parvenu a s'initialiser pour lui"
 
 #: src/gui-gtk/gtk-goban-window.c:5070
 #, c-format
 msgid "GTP engine `%s' cannot handle %dx%d board size, sorry"
-msgstr "Désolé, le moteur GTP \"%s\" ne peut gérer les plateaux de taille %dx%d"
+msgstr ""
+"Désolé, le moteur GTP \"%s\" ne peut gérer les plateaux de taille %dx%d"
 
 #: src/gui-gtk/gtk-goban-window.c:5080
 #, c-format
@@ -945,33 +965,51 @@ msgstr "Le moteur GTP \"%s\" n'est pas parvenu à nettoyer le plateau"
 
 #: src/gui-gtk/gtk-goban-window.c:5086
 #, c-format
-msgid "GTP engine `%s' failed to set initial time limits (it could ignore them, but not fail)"
-msgstr "Le moteur GTP \"%s\" n'a pas réussi à définir les limites de temps initiales (il pourrait les ignorer, mais ne devrait pas échouer)"
+msgid ""
+"GTP engine `%s' failed to set initial time limits (it could ignore them, but "
+"not fail)"
+msgstr ""
+"Le moteur GTP \"%s\" n'a pas réussi à définir les limites de temps initiales "
+"(il pourrait les ignorer, mais ne devrait pas échouer)"
 
 #: src/gui-gtk/gtk-goban-window.c:5094
 #, c-format
 msgid "GTP engine `%s' failed to set handicap stones on board"
-msgstr "Le moteur GTP \"%s\" n'est pas parvenu à placer les pierres de handicap sur le plateau"
+msgstr ""
+"Le moteur GTP \"%s\" n'est pas parvenu à placer les pierres de handicap sur "
+"le plateau"
 
 #: src/gui-gtk/gtk-goban-window.c:5108
 msgid "This is an engine error. You may want to report it to engine authors."
-msgstr "Ceci est une erreur provenant du moteur de jeu. Vous pourriez la communiquer aux auteurs de ce dernier."
+msgstr ""
+"Ceci est une erreur provenant du moteur de jeu. Vous pourriez la communiquer "
+"aux auteurs de ce dernier."
 
 #: src/gui-gtk/gtk-goban-window.c:5392
 msgid "GTP engine is scoring..."
 msgstr "Le moteur GTP calcule le score..."
 
 #: src/gui-gtk/gtk-goban-window.c:5771
-msgid "Unable to paste game record fragment from clipboard since it is not intended for pasting"
-msgstr "Impossible de coller le fragment d'enregistrement de partie à partir du presse-papier, car il n'est pas fait pour être collé"
+msgid ""
+"Unable to paste game record fragment from clipboard since it is not intended "
+"for pasting"
+msgstr ""
+"Impossible de coller le fragment d'enregistrement de partie à partir du "
+"presse-papier, car il n'est pas fait pour être collé"
 
 #: src/gui-gtk/gtk-goban-window.c:5774
-msgid "Clipboard SGF probably contains more than one game tree or not a single child of the root of the only game tree."
-msgstr "Le SGF du presse-papier contient probablement plus d'un arbre de partie, ou pas un seul descendant à la racine de l'unique arbre de partie."
+msgid ""
+"Clipboard SGF probably contains more than one game tree or not a single "
+"child of the root of the only game tree."
+msgstr ""
+"Le SGF du presse-papier contient probablement plus d'un arbre de partie, ou "
+"pas un seul descendant à la racine de l'unique arbre de partie."
 
 #: src/gui-gtk/gtk-goban-window.c:5778
 msgid "Unable to paste game record fragment from clipboard"
-msgstr "Impossible de coller le fragment d'enregistrement de partie à partir du presse-papier"
+msgstr ""
+"Impossible de coller le fragment d'enregistrement de partie à partir du "
+"presse-papier"
 
 #. TRANSLATORS: This message is shown if you e.g. copy a part of
 #. 13x13 game tree and try to paste it into a 19x19 game tree; or
@@ -979,11 +1017,15 @@ msgstr "Impossible de coller le fragment d'enregistrement de partie à partir du
 #. Go game tree.
 #: src/gui-gtk/gtk-goban-window.c:5784
 msgid "Clipboard game record fragment must be of different game or board size."
-msgstr "Le fragment d'enregistrement de partie dans le presse-papier a probablement une taille de plateau différente."
+msgstr ""
+"Le fragment d'enregistrement de partie dans le presse-papier a probablement "
+"une taille de plateau différente."
 
 #: src/gui-gtk/gtk-goban-window.c:5788
 msgid "Clipboard contains an invalid game record fragment (SGF)"
-msgstr "Le presse-papier contient un fragment d'enregistrement de partie (SGF) invalide"
+msgstr ""
+"Le presse-papier contient un fragment d'enregistrement de partie (SGF) "
+"invalide"
 
 #: src/gui-gtk/gtk-goban-window.c:5937
 msgid ""
@@ -1036,7 +1078,8 @@ msgstr "* ERREUR : l'ID ne correspond pas (attendu: %d) :\n"
 
 #: src/gui-gtk/gtk-gtp-client-interface.c:408
 msgid "* ERROR: unexpected ID in response (the command had none):\n"
-msgstr "* ERREUR : ID inattendu dans la réponse (l'a commande n'en avant aucun) :\n"
+msgstr ""
+"* ERREUR : ID inattendu dans la réponse (l'a commande n'en avant aucun) :\n"
 
 #. TRANSLATORS: Don't put ellipsis here, this string will most
 #. often go to fixed-width font terminals.
@@ -1045,8 +1088,13 @@ msgid "* WARNING: future GTP version, I don't know about it...\n"
 msgstr "* ATTENTION : version future de GTP, je ne la connais pas.\n"
 
 #: src/gui-gtk/gtk-new-game-dialog.c:98
-msgid "Note that most GTP engines support only one game. Hence certain game / computer player combinations may be not possible to play."
-msgstr "Notez que la plupart des moteurs GTP ne prennent en charge qu'une partie. Par conséquent certaines combinaisons jeu / joueur géré par l'ordinateur peuvent ne pas être possibles."
+msgid ""
+"Note that most GTP engines support only one game. Hence certain game / "
+"computer player combinations may be not possible to play."
+msgstr ""
+"Notez que la plupart des moteurs GTP ne prennent en charge qu'une partie. "
+"Par conséquent certaines combinaisons jeu / joueur géré par l'ordinateur "
+"peuvent ne pas être possibles."
 
 #: src/gui-gtk/gtk-new-game-dialog.c:102
 msgid "Fi_xed handicap:"
@@ -1165,8 +1213,13 @@ msgid "Game _name:"
 msgstr "_Nom de la partie :"
 
 #: src/gui-gtk/gtk-new-game-record-dialog.c:300
-msgid "You can always change and expand game information later. Just choose `Edit/Game Information' menu item or press `Info' button on the main toolbar."
-msgstr "Vous pouvez modifier les informations sur la partie plus tard en choisissant \"Édition/Informations sur la partie\" dans le menu, ou en pression le bouton \"Info\" de la barre d'outils principale."
+msgid ""
+"You can always change and expand game information later. Just choose `Edit/"
+"Game Information' menu item or press `Info' button on the main toolbar."
+msgstr ""
+"Vous pouvez modifier les informations sur la partie plus tard en choisissant "
+"\"Édition/Informations sur la partie\" dans le menu, ou en pression le "
+"bouton \"Info\" de la barre d'outils principale."
 
 #: src/gui-gtk/gtk-new-game-record-dialog.c:310
 #: src/gui-gtk/gtk-resume-game-dialog.c:227
@@ -1184,12 +1237,21 @@ msgid "File `%s' doesn't appear to be a valid SGF file"
 msgstr "Le fichier \"%s\" ne semble pas être un fichier SGF valide"
 
 #: src/gui-gtk/gtk-parser-interface.c:63
-msgid "Please check that the file exists and its permission allow you to read it."
-msgstr "Veuillez vérifier que le fichier existe et que vous êtes autorisé à le lire."
+msgid ""
+"Please check that the file exists and its permission allow you to read it."
+msgstr ""
+"Veuillez vérifier que le fichier existe et que vous êtes autorisé à le lire."
 
 #: src/gui-gtk/gtk-parser-interface.c:67
-msgid "Quarry uses SGF file format for storing game records. SGF files would normally have `sgf' extension, but that's not necessarily true. Please make sure you select a proper SGF file."
-msgstr "Quarry utilise le format de fichier SGF pour stocker les enregistrements de parties. Les fichiers SGF portent normalement l'extention \".sgf\", mais ce n'est pas toujours le cas. Assurez-vous de sélectionner un véritable fichier SGF."
+msgid ""
+"Quarry uses SGF file format for storing game records. SGF files would "
+"normally have `sgf' extension, but that's not necessarily true. Please make "
+"sure you select a proper SGF file."
+msgstr ""
+"Quarry utilise le format de fichier SGF pour stocker les enregistrements de "
+"parties. Les fichiers SGF portent normalement l'extention \".sgf\", mais ce "
+"n'est pas toujours le cas. Assurez-vous de sélectionner un véritable fichier "
+"SGF."
 
 #: src/gui-gtk/gtk-parser-interface.c:101
 msgid "Open SGF File..."
@@ -1216,8 +1278,7 @@ msgstr "Interface générale"
 msgid "<b>Editing &amp; Viewing</b>"
 msgstr "<b>Édition &amp; Affichage</b>"
 
-#: src/gui-gtk/gtk-preferences.c:440
-#: src/gui-gtk/gtk-preferences.c:441
+#: src/gui-gtk/gtk-preferences.c:440 src/gui-gtk/gtk-preferences.c:441
 msgid "Game Tree"
 msgstr "Arbre de la partie"
 
@@ -1225,8 +1286,7 @@ msgstr "Arbre de la partie"
 msgid "<b>GTP</b>"
 msgstr "<b>GTP</b>"
 
-#: src/gui-gtk/gtk-preferences.c:447
-#: src/gui-gtk/gtk-preferences.c:448
+#: src/gui-gtk/gtk-preferences.c:447 src/gui-gtk/gtk-preferences.c:448
 msgid "GTP Engines"
 msgstr "Moteurs GTP"
 
@@ -1334,8 +1394,7 @@ msgstr "Nom :"
 msgid "Version:"
 msgstr "Version :"
 
-#: src/gui-gtk/gtk-preferences.c:875
-#: src/gui-gtk/gtk-preferences.c:1630
+#: src/gui-gtk/gtk-preferences.c:875 src/gui-gtk/gtk-preferences.c:1630
 msgid "Supported game:"
 msgstr "Jeux pris en charge :"
 
@@ -1380,12 +1439,24 @@ msgid "_Recenter view on the current node"
 msgstr "_Recentrer la vue sur le noeud actif"
 
 #: src/gui-gtk/gtk-preferences.c:943
-msgid "In automatic mode the game tree is shown only if it has at least one variation. In any case, you can show/hide game tree in each window separately."
-msgstr "En mode automatique l'arbre de la partie n'est affiché que s'il possède au moins une variation. Dans tous les cas, vous pouvez afficher et cacher l'arbre de la partie dans chaque fenêtre séparément."
+msgid ""
+"In automatic mode the game tree is shown only if it has at least one "
+"variation. In any case, you can show/hide game tree in each window "
+"separately."
+msgstr ""
+"En mode automatique l'arbre de la partie n'est affiché que s'il possède au "
+"moins une variation. Dans tous les cas, vous pouvez afficher et cacher "
+"l'arbre de la partie dans chaque fenêtre séparément."
 
 #: src/gui-gtk/gtk-preferences.c:947
-msgid "In automatic mode the game tree view scrolls to show the current node only if it has been showing current node before. I.e. unless you scrolled it away manually."
-msgstr "En mode automatique la vue sur l'arbre de la partie défile pour afficher le noeud actif, uniquement si le noeud actif était auparavant affiché (c'est-à-dire à moins que vous ayez fait défiler l'arbre manuellement)."
+msgid ""
+"In automatic mode the game tree view scrolls to show the current node only "
+"if it has been showing current node before. I.e. unless you scrolled it away "
+"manually."
+msgstr ""
+"En mode automatique la vue sur l'arbre de la partie défile pour afficher le "
+"noeud actif, uniquement si le noeud actif était auparavant affiché (c'est-à-"
+"dire à moins que vous ayez fait défiler l'arbre manuellement)."
 
 #: src/gui-gtk/gtk-preferences.c:992
 msgid "Show Game Tree"
@@ -1412,8 +1483,15 @@ msgid "Preserve _original encoding"
 msgstr "Préserver l'encodage d'_origine"
 
 #: src/gui-gtk/gtk-preferences.c:1068
-msgid "Note that many characters cannot be represented in non-UTF-8 encodings and thus some information may be lost if you use them. Quarry also works fastest with UTF-8; this may be important if you have very large SGF files."
-msgstr "Notez que de nombreux caractères ne peuvent pas être représentés dans les encodages autres que UTF-8, ainsi certaines informations peuvent être perdues si vous les utilisez. Quarry fonctionne également plus vite avec l'UTF-8; cela peut être important si vous avez de très gros fichiers SGF."
+msgid ""
+"Note that many characters cannot be represented in non-UTF-8 encodings and "
+"thus some information may be lost if you use them. Quarry also works fastest "
+"with UTF-8; this may be important if you have very large SGF files."
+msgstr ""
+"Notez que de nombreux caractères ne peuvent pas être représentés dans les "
+"encodages autres que UTF-8, ainsi certaines informations peuvent être "
+"perdues si vous les utilisez. Quarry fonctionne également plus vite avec "
+"l'UTF-8; cela peut être important si vous avez de très gros fichiers SGF."
 
 #: src/gui-gtk/gtk-preferences.c:1093
 msgid "Encoding"
@@ -1447,8 +1525,7 @@ msgstr "Sur les amazones _blanches :"
 msgid "On _black amazons:"
 msgstr "Sur les amazones _noires :"
 
-#: src/gui-gtk/gtk-preferences.c:1123
-#: src/gui-gtk/gtk-preferences.c:1182
+#: src/gui-gtk/gtk-preferences.c:1123 src/gui-gtk/gtk-preferences.c:1182
 msgid "On _empty fields:"
 msgstr "Sur les cases _vides :"
 
@@ -1545,8 +1622,14 @@ msgid "This engine comes from site configuration."
 msgstr "Ce moteur provient de la configuration du site."
 
 #: src/gui-gtk/gtk-preferences.c:1860
-msgid "You can use `%n' and `%v' strings in <i>Screen name</i> field. They will substituted with name and version of the engine correspondingly. By default, `%n %v' is used."
-msgstr "Vous pouvez utiliser les chaînes de caractères \"%n\" et \"%v\" dans le champ \"Nom à l'écran\". Elles seront remplacées par le nom et la version du moteur, respectivement. Par défaut \"%n %v\" est utilisé comme nom à l'écran."
+msgid ""
+"You can use `%n' and `%v' strings in <i>Screen name</i> field. They will "
+"substituted with name and version of the engine correspondingly. By default, "
+"`%n %v' is used."
+msgstr ""
+"Vous pouvez utiliser les chaînes de caractères \"%n\" et \"%v\" dans le "
+"champ \"Nom à l'écran\". Elles seront remplacées par le nom et la version du "
+"moteur, respectivement. Par défaut \"%n %v\" est utilisé comme nom à l'écran."
 
 #: src/gui-gtk/gtk-preferences.c:1908
 msgid "Modify GTP Engine Information"
@@ -1570,19 +1653,30 @@ msgstr "Nom à l'_écran :"
 
 #: src/gui-gtk/gtk-preferences.c:2018
 msgid "Querying engine's name, version and known commands..."
-msgstr "Interrogation du moteur pour le nom, la version et les commandes connues..."
+msgstr ""
+"Interrogation du moteur pour le nom, la version et les commandes connues..."
 
 #: src/gui-gtk/gtk-preferences.c:2039
-msgid "Please make sure you typed engine's filename correctly and that you have permission to execute it."
-msgstr "Assurez-vous d'avoir bien écrit le nom de fichier du moteur, et que vous êtes autorisé à l'exécuter."
+msgid ""
+"Please make sure you typed engine's filename correctly and that you have "
+"permission to execute it."
+msgstr ""
+"Assurez-vous d'avoir bien écrit le nom de fichier du moteur, et que vous "
+"êtes autorisé à l'exécuter."
 
 #: src/gui-gtk/gtk-preferences.c:2078
 msgid "Waiting for the engine to quit..."
 msgstr "En attente que le moteur quitte"
 
 #: src/gui-gtk/gtk-preferences.c:2182
-msgid "The engine might have crashed, quit prematurely or disconnected. Please verify command line, including options, and consult engine's documentation if needed."
-msgstr "Le moteur a peut-être planté, quitté prématurément ou s'est déconnecté. Veuillez vérifier la ligne de commande, y compris les options, et consultez la documentation du moteur si nécessaire."
+msgid ""
+"The engine might have crashed, quit prematurely or disconnected. Please "
+"verify command line, including options, and consult engine's documentation "
+"if needed."
+msgstr ""
+"Le moteur a peut-être planté, quitté prématurément ou s'est déconnecté. "
+"Veuillez vérifier la ligne de commande, y compris les options, et consultez "
+"la documentation du moteur si nécessaire."
 
 #: src/gui-gtk/gtk-preferences.c:2197
 #, c-format
@@ -1590,8 +1684,13 @@ msgid "Lost connection to GTP Engine (%s)"
 msgstr "Connexion au moteur GTP (%s) perdue"
 
 #: src/gui-gtk/gtk-preferences.c:3011
-msgid "Perhaps engine's binary has been deleted or changed. You will probably need to alter engine's command line in the Preferences dialog."
-msgstr "Le binaire du moteur a peut-être été supprimé ou modifié. Vous devrez probablement modifier la ligne de commande du moteur dans la boîte de dialogue \"Préférences\"."
+msgid ""
+"Perhaps engine's binary has been deleted or changed. You will probably need "
+"to alter engine's command line in the Preferences dialog."
+msgstr ""
+"Le binaire du moteur a peut-être été supprimé ou modifié. Vous devrez "
+"probablement modifier la ligne de commande du moteur dans la boîte de "
+"dialogue \"Préférences\"."
 
 #: src/gui-gtk/gtk-resume-game-dialog.c:92
 msgid "Resume Game..."
@@ -1600,11 +1699,17 @@ msgstr "Reprendre la partie..."
 #: src/gui-gtk/gtk-resume-game-dialog.c:115
 #, c-format
 msgid "The game stored in file `%s' (%s) is not supported by Quarry"
-msgstr "La partie stockée dans le fichier \"%s\" (%s) n'est pas prise en charge par Quarry"
+msgstr ""
+"La partie stockée dans le fichier \"%s\" (%s) n'est pas prise en charge par "
+"Quarry"
 
 #: src/gui-gtk/gtk-resume-game-dialog.c:138
-msgid "This game appears to have been finished. Open it for viewing and/or editing instead?"
-msgstr "Cette partie semble terminée. Voulez-vous l'ouvrir pour affichage et édition ?"
+msgid ""
+"This game appears to have been finished. Open it for viewing and/or editing "
+"instead?"
+msgstr ""
+"Cette partie semble terminée. Voulez-vous l'ouvrir pour affichage et "
+"édition ?"
 
 #: src/gui-gtk/gtk-resume-game-dialog.c:212
 msgid "Resuming Game"
@@ -1709,44 +1814,80 @@ msgstr "Fermer _sans enregistrer"
 
 #: src/gui-gtk/quarry-save-confirmation-dialog.c:173
 #, c-format
-msgid "If you don't save, changes from the last %d second will be lost permanently."
-msgid_plural "If you don't save, changes from the last %d seconds will be lost permanently."
-msgstr[0] "Si vous n'enregistrez pas, les modifications depuis la dernière %d seconde seront définitivement perdues."
-msgstr[1] "Si vous n'enregistrez pas, les modifications depuis les %d dernières secondes seront définitivement perdues."
+msgid ""
+"If you don't save, changes from the last %d second will be lost permanently."
+msgid_plural ""
+"If you don't save, changes from the last %d seconds will be lost permanently."
+msgstr[0] ""
+"Si vous n'enregistrez pas, les modifications depuis la dernière %d seconde "
+"seront définitivement perdues."
+msgstr[1] ""
+"Si vous n'enregistrez pas, les modifications depuis les %d dernières "
+"secondes seront définitivement perdues."
 
 #: src/gui-gtk/quarry-save-confirmation-dialog.c:181
 msgid "If you don't save, changes from the last minute will be discarded."
-msgstr "Si vous n'enregistrez pas, les modifications depuis la dernière minute seront perdues."
+msgstr ""
+"Si vous n'enregistrez pas, les modifications depuis la dernière minute "
+"seront perdues."
 
 #. TRANSLATORS: Cannot be one minute one second, actually.
 #: src/gui-gtk/quarry-save-confirmation-dialog.c:187
 #, c-format
-msgid "If you don't save, changes from the last minute and %d second will be lost permanently."
-msgid_plural "If you don't save, changes from the last minute and %d seconds will be lost permanently."
-msgstr[0] "Si vous n'enregistrez pas, les modifications depuis la dernière minute et %d seconde seront définitivement perdues."
-msgstr[1] "Si vous n'enregistrez pas, les modifications depuis la dernière minute et %d secondes seront définitivement perdues."
+msgid ""
+"If you don't save, changes from the last minute and %d second will be lost "
+"permanently."
+msgid_plural ""
+"If you don't save, changes from the last minute and %d seconds will be lost "
+"permanently."
+msgstr[0] ""
+"Si vous n'enregistrez pas, les modifications depuis la dernière minute et %d "
+"seconde seront définitivement perdues."
+msgstr[1] ""
+"Si vous n'enregistrez pas, les modifications depuis la dernière minute et %d "
+"secondes seront définitivement perdues."
 
 #: src/gui-gtk/quarry-save-confirmation-dialog.c:198
 #, c-format
-msgid "If you don't save, changes from the last %d minute will be lost permanently."
-msgid_plural "If you don't save, changes from the last %d minutes will be lost permanently."
-msgstr[0] "Si vous n'enregistrez pas, les modifications depuis la dernière %d minute seront définitivement perdues."
-msgstr[1] "Si vous n'enregistrez pas, les modifications depuis les %d dernières minutes seront définitivement perdues."
+msgid ""
+"If you don't save, changes from the last %d minute will be lost permanently."
+msgid_plural ""
+"If you don't save, changes from the last %d minutes will be lost permanently."
+msgstr[0] ""
+"Si vous n'enregistrez pas, les modifications depuis la dernière %d minute "
+"seront définitivement perdues."
+msgstr[1] ""
+"Si vous n'enregistrez pas, les modifications depuis les %d dernières minutes "
+"seront définitivement perdues."
 
 #. TRANSLATORS: Cannot be one hour one minute, actually.
 #: src/gui-gtk/quarry-save-confirmation-dialog.c:212
 #, c-format
-msgid "If you don't save, changes from the last hour and %d minute will be lost permanently."
-msgid_plural "If you don't save, changes from the last hour and %d minutes will be lost permanently."
-msgstr[0] "Si vous n'enregistrez pas, les modifications depuis la dernière heure et %d minute seront définitivement perdues."
-msgstr[1] "Si vous n'enregistrez pas, les modifications depuis la dernière heure et %d minutes seront définitivement perdues."
+msgid ""
+"If you don't save, changes from the last hour and %d minute will be lost "
+"permanently."
+msgid_plural ""
+"If you don't save, changes from the last hour and %d minutes will be lost "
+"permanently."
+msgstr[0] ""
+"Si vous n'enregistrez pas, les modifications depuis la dernière heure et %d "
+"minute seront définitivement perdues."
+msgstr[1] ""
+"Si vous n'enregistrez pas, les modifications depuis la dernière heure et %d "
+"minutes seront définitivement perdues."
 
 #: src/gui-gtk/quarry-save-confirmation-dialog.c:224
 #, c-format
-msgid "If you don't save, changes from the last %d hour will be lost permanently."
-msgid_plural "If you don't save, changes from the last %d hours will be lost permanently."
-msgstr[0] "Si vous n'enregistrez pas, les modifications depuis la dernière %d heure seront définitivement perdues."
-msgstr[1] "Si vous n'enregistrez pas, les modifications depuis les %d dernières heures seront définitivement perdues."
+msgid ""
+"If you don't save, changes from the last %d hour will be lost permanently."
+msgid_plural ""
+"If you don't save, changes from the last %d hours will be lost permanently."
+msgstr[0] ""
+"Si vous n'enregistrez pas, les modifications depuis la dernière %d heure "
+"seront définitivement perdues."
+msgstr[1] ""
+"Si vous n'enregistrez pas, les modifications depuis les %d dernières heures "
+"seront définitivement perdues."
 
 #: src/gui-gtk/quarry-stock.c:56
 msgid "_New Game"
@@ -1994,8 +2135,7 @@ msgid_plural "White: %d territory"
 msgstr[0] "Blancs : %d territoire"
 msgstr[1] "Blancs : %d territoires"
 
-#: src/board/go.c:1328
-#: src/board/go.c:1365
+#: src/board/go.c:1328 src/board/go.c:1365
 #, c-format
 msgid " + %d capture"
 msgid_plural " + %d captures"
@@ -2028,4 +2168,3 @@ msgstr[1] "Noirs : %d territoires"
 #: src/board/go.c:1374
 msgid "The game is draw"
 msgstr "Match nul"
-

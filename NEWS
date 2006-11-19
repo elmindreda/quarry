@@ -1,3 +1,42 @@
+*** Quarry 0.2.0 *****************************************************
+*                                                                    *
+*  Quarry 0.2.0 features:                                            *
+*                                                                    *
+*  * Support for Go, Amazons and Reversi games.                      *
+*                                                                    *
+*  * Nice resizable board (see screen shots.)                        *
+*                                                                    *
+*  * Playing games:                                                  *
+*    - GNU Go, GRhino or any other GTP engine can be your opponent.  *
+*    - Computer vs. computer and human vs. human games are an        *
+*      option too.                                                   *
+*    - Good support for time control.                                *
+*    - Games can be adjourned and later resumed.                     *
+*                                                                    *
+*  * Game records:                                                   *
+*    - Game record editor is simple, but supports all standard       *
+*      editing commands and has an undo history.                     *
+*    - All games can be stored in widely supported SGF FF[4] file    *
+*      format.                                                       *
+*    - Fast and robust parser can read SGF files of any version.     *
+*    - In particular, Kogo's Joseki Dictionary can be browsed with   *
+*      Quarry.                                                       *
+*    - Game tree view allows for easy navigation of game records.    *
+*    - Text search in comments is a powerful tool if you know what   *
+*      to search for.                                                *
+*    - Go board position can be exported in a format suitable for    *
+*      inserting into Sensei's Library.                              *
+*    - Support for various SGF labels and markup.                    *
+*                                                                    *
+**********************************************************************
+
+* Some bug-fixes.
+
+* Fixed and somewhat expanded manual.
+
+* Updated translations: en_GB, fr, pl, ru.
+
+
 --- New in Quarry 0.1.20 ---------------------------------------------
 
 * Many bug-fixes, including two crashing bugs on 64-bit platforms.
