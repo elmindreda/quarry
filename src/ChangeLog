@@ -1,3 +1,10 @@
+2006-11-19  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* gui-gtk/gtk-sgf-tree-view.c
+	(gtk_sgf_tree_view_center_on_current_node): Bug-fix: store
+	adjustment values before calling center_on_current_node() for
+	passing to update_view_port_and_maybe_move_or_resize_window().
+
 2006-11-07  Paul Pogonyshev  <pogonyshev@gmx.net>
 
 	* gui-gtk/quarry-save-confirmation-dialog.c

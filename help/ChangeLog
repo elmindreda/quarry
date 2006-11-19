@@ -1,3 +1,14 @@
+2006-11-19  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* C/quarry.xml: Fix, update and expand a little.
+	* C/fdl.xml: Use `simplesect' tag to suppress TOC.
+	* C/authors.xml: New file.
+
+	* C/figures/board-window.png: New file.
+	* C/figures/control-center.png: Update.
+
+	* quarry-help.css (div.figure): Set left margin to zero.
+
 2006-10-29  Paul Pogonyshev  <pogonyshev@gmx.net>
 
 	* (Quarry version 0.1.20.)
