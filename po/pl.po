@@ -1799,13 +1799,13 @@ msgid "Close _without Saving"
 msgstr "Zamknij _bez zapisywania"
 
 #: src/gui-gtk/quarry-save-confirmation-dialog.c:173
-#, fuzzy, c-format
+#, c-format
 msgid ""
 "If you don't save, changes from the last %d second will be lost permanently."
 msgid_plural ""
 "If you don't save, changes from the last %d seconds will be lost permanently."
 msgstr[0] ""
-"Jeśli nie zapiszesz, zmiany z ostatniej sekundy zostaną bezpowrotnie "
+"Jeśli nie zapiszesz, zmiany z ostatniej %d sekundy zostaną bezpowrotnie "
 "utracone."
 msgstr[1] ""
 "Jeśli nie zapiszesz, zmiany z ostatnch %d sekund zostaną bezpowrotnie "
@@ -1820,7 +1820,7 @@ msgstr "Jeśli nie zapiszesz, zmiany z ostatniej minuty zostaną porzucone."
 
 #. TRANSLATORS: Cannot be one minute one second, actually.
 #: src/gui-gtk/quarry-save-confirmation-dialog.c:187
-#, fuzzy, c-format
+#, c-format
 msgid ""
 "If you don't save, changes from the last minute and %d second will be lost "
 "permanently."
@@ -1828,7 +1828,7 @@ msgid_plural ""
 "If you don't save, changes from the last minute and %d seconds will be lost "
 "permanently."
 msgstr[0] ""
-"Jeśli nie zapiszesz, zmiany z ostatniej minuty i sekundyzostaną bezpowrotnie "
+"Jeśli nie zapiszesz, zmiany z ostatniej minuty i %d sekundyzostaną bezpowrotnie "
 "utracone."
 msgstr[1] ""
 "Jeśli nie zapiszesz, zmiany z ostatniej minuty i %d sekund zostaną "
@@ -1838,13 +1838,13 @@ msgstr[2] ""
 "bezpowrotnie utracone."
 
 #: src/gui-gtk/quarry-save-confirmation-dialog.c:198
-#, fuzzy, c-format
+#, c-format
 msgid ""
 "If you don't save, changes from the last %d minute will be lost permanently."
 msgid_plural ""
 "If you don't save, changes from the last %d minutes will be lost permanently."
 msgstr[0] ""
-"Jeśli nie zapiszesz, zmiany z ostatniej minuty zostaną bezpowrotnie utracone."
+"Jeśli nie zapiszesz, zmiany z ostatniej %d minuty zostaną bezpowrotnie utracone."
 msgstr[1] ""
 "Jeśli nie zapiszesz, zmiany z ostatnich %d minut zostaną bezpowrotnie "
 "utracone."
@@ -1854,7 +1854,7 @@ msgstr[2] ""
 
 #. TRANSLATORS: Cannot be one hour one minute, actually.
 #: src/gui-gtk/quarry-save-confirmation-dialog.c:212
-#, fuzzy, c-format
+#, c-format
 msgid ""
 "If you don't save, changes from the last hour and %d minute will be lost "
 "permanently."
@@ -1862,7 +1862,7 @@ msgid_plural ""
 "If you don't save, changes from the last hour and %d minutes will be lost "
 "permanently."
 msgstr[0] ""
-"Jeśli nie zapiszesz, zmiany z ostatniej godziny i jednej minuty zostaną "
+"Jeśli nie zapiszesz, zmiany z ostatniej godziny i %d minuty zostaną "
 "bezpowrotnie utracone."
 msgstr[1] ""
 "Jeśli nie zapiszesz, zmiany z ostatniej godziny i %d minut zostaną "
@@ -1872,13 +1872,13 @@ msgstr[2] ""
 "bezpowrotnie utracone."
 
 #: src/gui-gtk/quarry-save-confirmation-dialog.c:224
-#, fuzzy, c-format
+#, c-format
 msgid ""
 "If you don't save, changes from the last %d hour will be lost permanently."
 msgid_plural ""
 "If you don't save, changes from the last %d hours will be lost permanently."
 msgstr[0] ""
-"Jeśli nie zapiszesz, zmiany z ostatniej godziny zostaną bezpowrotnie "
+"Jeśli nie zapiszesz, zmiany z ostatniej %d godziny zostaną bezpowrotnie "
 "utracone."
 msgstr[1] ""
 "Jeśli nie zapiszesz, zmiany z ostatnich %d godzin zostaną bezpowrotnie "
