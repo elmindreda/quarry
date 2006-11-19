@@ -1,5 +1,7 @@
 2006-11-19  Paul Pogonyshev  <pogonyshev@gmx.net>
 
+	* (Quarry version 0.2.0.)
+
 	* C/quarry.xml: Fix, update and expand a little.
 	* C/fdl.xml: Use `simplesect' tag to suppress TOC.
 	* C/authors.xml: New file.
