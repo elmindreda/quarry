@@ -152,7 +152,7 @@ sharedstatedir = @sharedstatedir@
 sysconfdir = @sysconfdir@
 target_alias = @target_alias@
 
-SUBDIRS = C
+SUBDIRS = C de
 
 cssdir = $(datadir)/quarry/help
 css_DATA = quarry-help.css

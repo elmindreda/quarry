@@ -1,6 +1,6 @@
 # Process this file with Automake to produce `Makefile.in'.
 
-SUBDIRS = C
+SUBDIRS = C de
 
 
 # Convert DocBook help to HTML, which is used as fallback if `yelp' is

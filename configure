@@ -8122,7 +8122,7 @@ fi
 
 
 # Write `Makefile's.
-                                                                                                                                                      ac_config_files="$ac_config_files Makefile data/Makefile data/quarry.desktop data/markup-themes/Makefile data/textures/Makefile help/Makefile help/C/Makefile po/Makefile.in src/Makefile src/board/Makefile src/gtp/Makefile src/gui-gtk/Makefile src/gui-utils/Makefile src/sgf/Makefile src/utils/Makefile"
+                                                                                                                                                                ac_config_files="$ac_config_files Makefile data/Makefile data/quarry.desktop data/markup-themes/Makefile data/textures/Makefile help/Makefile help/C/Makefile help/de/Makefile po/Makefile.in src/Makefile src/board/Makefile src/gtp/Makefile src/gui-gtk/Makefile src/gui-utils/Makefile src/sgf/Makefile src/utils/Makefile"
 
 
 # The end.
@@ -8724,6 +8724,7 @@ do
   "data/textures/Makefile" ) CONFIG_FILES="$CONFIG_FILES data/textures/Makefile" ;;
   "help/Makefile" ) CONFIG_FILES="$CONFIG_FILES help/Makefile" ;;
   "help/C/Makefile" ) CONFIG_FILES="$CONFIG_FILES help/C/Makefile" ;;
+  "help/de/Makefile" ) CONFIG_FILES="$CONFIG_FILES help/de/Makefile" ;;
   "po/Makefile.in" ) CONFIG_FILES="$CONFIG_FILES po/Makefile.in" ;;
   "src/Makefile" ) CONFIG_FILES="$CONFIG_FILES src/Makefile" ;;
   "src/board/Makefile" ) CONFIG_FILES="$CONFIG_FILES src/board/Makefile" ;;

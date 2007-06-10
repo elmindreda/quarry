@@ -169,6 +169,7 @@ AC_CONFIG_FILES(Makefile
 		data/textures/Makefile
 		help/Makefile
 		help/C/Makefile
+		help/de/Makefile
 		po/Makefile.in
 		src/Makefile
 		src/board/Makefile

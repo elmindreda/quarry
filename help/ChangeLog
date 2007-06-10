@@ -1,3 +1,18 @@
+2007-06-10  Dirk Blasejezak  <dblase@web.de>
+
+	* de/quarry.xml: New file, translation to German.
+
+2007-06-10  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* de, de/figures: New directories.
+
+	* de/Makefile.am, de/quarry-de.omf: New files.
+	* de/authors.xml, de/fdl.xml, de/legal.xml: New files, copy from C
+	subdirectory.
+
+	* de/figures/board-window.png, de/figures/control-center.png: New
+	files, copies of English screenshots for now.
+
 2006-11-19  Paul Pogonyshev  <pogonyshev@gmx.net>
 
 	* (Quarry version 0.2.0.)

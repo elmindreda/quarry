@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<omf>
+  <resource>
+    <creator>
+      pogonyshev@gmx.net (Paul Pogonyshev)
+    </creator>
+    <maintainer>
+      pogonyshev@gmx.net (Paul Pogonyshev)
+    </maintainer>
+    <title>
+      Quarry Manual V0.2
+    </title>
+    <date>
+      2006-06-10
+    </date>
+    <version identifier="0.2" date="2006-06-10" description=""/>
+    <subject category="Applications|Games|Board"/>
+    <description>
+      User manual for the Quarry application. 
+    </description>
+    <type>
+      user's guide
+    </type>
+    <format mime="text/xml" dtd="-//OASIS//DTD DocBook XML V4.1.2//EN"/>
+    <identifier url="quarry-manual.xml"/>
+    <language code="de"/>
+    <relation seriesid="0515afa8-17cd-11d9-90ad-db8e253064b5"/>
+    <rights type="GNU FDL" license.version="1.2" holder="Paul Pogonyshev"/>
+  </resource>        
+</omf>
